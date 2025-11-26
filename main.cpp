@@ -19,5 +19,11 @@ int main(int argc, char *argv[]) {
       Qt::QueuedConnection);
   engine.loadFromModule("Comptine", "Main");
 
+  // Load CSV file if provided as command line argument
+  if (argc > 1) {
+    QString csvPath = QString::fromLocal8Bit(argv[1]);
+    transactionModel.loadFromCsv(csvPath);
+  }
+
   return app.exec();
 }
