@@ -13,6 +13,8 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(appComptine 
   main.cpp
+  Transaction.h
+  Transaction.cpp
   TransactionModel.h
   TransactionModel.cpp
 )
