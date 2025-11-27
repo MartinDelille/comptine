@@ -14,9 +14,9 @@ class Transaction : public QObject {
   Q_PROPERTY(QString operationType READ operationType CONSTANT)
   Q_PROPERTY(QString category READ category CONSTANT)
   Q_PROPERTY(QString subCategory READ subCategory CONSTANT)
-  Q_PROPERTY(QString debit READ debit CONSTANT)
-  Q_PROPERTY(QString credit READ credit CONSTANT)
-  Q_PROPERTY(QString amount READ amount CONSTANT)
+  Q_PROPERTY(double debit READ debit CONSTANT)
+  Q_PROPERTY(double credit READ credit CONSTANT)
+  Q_PROPERTY(double amount READ amount CONSTANT)
   Q_PROPERTY(QString operationDate READ operationDate CONSTANT)
   Q_PROPERTY(QString valueDate READ valueDate CONSTANT)
   Q_PROPERTY(QString checkStatus READ checkStatus CONSTANT)
@@ -32,9 +32,9 @@ public:
   QString operationType() const;
   QString category() const;
   QString subCategory() const;
-  QString debit() const;
-  QString credit() const;
-  QString amount() const;
+  double debit() const;
+  double credit() const;
+  double amount() const;
   QString operationDate() const;
   QString valueDate() const;
   QString checkStatus() const;
@@ -53,10 +53,6 @@ public:
   void setOperationDate(const QDate &date);
   void setValueDate(const QDate &date);
   void setCheckStatus(int status);
-
-  // Getters for raw values (for coloring logic)
-  double debitValue() const;
-  double creditValue() const;
 
 private:
   QDate m_accountingDate;

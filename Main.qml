@@ -10,6 +10,10 @@ ApplicationWindow {
     visible: true
     title: qsTr("Comptine - Personal Budget Manager")
 
+    function formatAmount(amount) {
+        return amount.toFixed(2).replace('.', ',') + " €";
+    }
+
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -131,14 +135,11 @@ ApplicationWindow {
                     }
 
                     Label {
-                        text: transaction?.amount ?? ""
+                        text: formatAmount(transaction?.amount ?? 0)
                         verticalAlignment: Text.AlignVCenter
                         horizontalAlignment: Text.AlignRight
                         font.pixelSize: 14
-                        color: {
-                            var amt = parseFloat(transaction?.amount ?? "0");
-                            return amt < 0 ? "#d32f2f" : "#388e3c";
-                        }
+                        color: (transaction?.amount ?? 0) < 0 ? "#d32f2f" : "#388e3c"
                         font.bold: true
                         Layout.preferredWidth: 100
                     }
@@ -222,12 +223,12 @@ ApplicationWindow {
 
                     Label {
                         Layout.fillWidth: true
-                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.amount ?? "") : ""
+                        text: listView.currentIndex >= 0 ? formatAmount(transactionModel.getTransaction(listView.currentIndex)?.amount ?? 0) : ""
                         font.pixelSize: 14
                         font.bold: true
                         color: {
                             if (listView.currentIndex >= 0) {
-                                var amt = parseFloat(transactionModel.getTransaction(listView.currentIndex)?.amount ?? "0");
+                                var amt = transactionModel.getTransaction(listView.currentIndex)?.amount ?? 0;
                                 return amt < 0 ? "#d32f2f" : "#388e3c";
                             }
                             return "#333";

@@ -21,19 +21,16 @@ QString Transaction::category() const { return m_category; }
 
 QString Transaction::subCategory() const { return m_subCategory; }
 
-QString Transaction::debit() const {
-  return m_debitValue == 0.0 ? QString()
-                             : QString::number(m_debitValue, 'f', 2);
+double Transaction::debit() const {
+  return m_debitValue;
 }
 
-QString Transaction::credit() const {
-  return m_creditValue == 0.0 ? QString()
-                              : QString::number(m_creditValue, 'f', 2);
+double Transaction::credit() const {
+  return m_creditValue;
 }
 
-QString Transaction::amount() const {
-  double netAmount = m_creditValue + m_debitValue;  // debit is negative
-  return QString::number(netAmount, 'f', 2);
+double Transaction::amount() const {
+  return m_creditValue + m_debitValue;  // debit is negative
 }
 
 QString Transaction::operationDate() const {
@@ -87,7 +84,3 @@ void Transaction::setOperationDate(const QDate &date) {
 void Transaction::setValueDate(const QDate &date) { m_valueDate = date; }
 
 void Transaction::setCheckStatus(int status) { m_checkStatus = status; }
-
-double Transaction::debitValue() const { return m_debitValue; }
-
-double Transaction::creditValue() const { return m_creditValue; }
