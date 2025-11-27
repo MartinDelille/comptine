@@ -53,7 +53,7 @@ ApplicationWindow {
         }
     }
 
-    ColumnLayout {
+    RowLayout {
         anchors.fill: parent
         anchors.margins: 10
         spacing: 10
@@ -78,9 +78,16 @@ ApplicationWindow {
                 property var transaction: transactionModel.getTransaction(index)
 
                 color: {
+                    if (listView.currentIndex === index)
+                        return "#e3f2fd";
                     if (index % 2 === 0)
                         return "#f9f9f9";
                     return "white";
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: listView.currentIndex = index
                 }
 
                 RowLayout {
@@ -122,6 +129,137 @@ ApplicationWindow {
 
             ScrollBar.vertical: ScrollBar {
                 id: scrollBar
+            }
+        }
+
+        Rectangle {
+            Layout.preferredWidth: 300
+            Layout.fillHeight: true
+            border.width: 1
+            border.color: "#ddd"
+            color: "#fafafa"
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 15
+                spacing: 15
+
+                Label {
+                    text: qsTr("Transaction Details")
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: "#333"
+                }
+
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 1
+                    color: "#ddd"
+                }
+
+                GridLayout {
+                    Layout.fillWidth: true
+                    columns: 1
+                    rowSpacing: 10
+                    visible: listView.currentIndex >= 0
+
+                    Label {
+                        text: qsTr("Date:")
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: "#666"
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.accountingDate ?? "") : ""
+                        font.pixelSize: 12
+                        color: "#333"
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Label {
+                        text: qsTr("Simplified Label:")
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: "#666"
+                        Layout.topMargin: 5
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.simplifiedLabel ?? "") : ""
+                        font.pixelSize: 12
+                        color: "#333"
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Label {
+                        text: qsTr("Amount:")
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: "#666"
+                        Layout.topMargin: 5
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.amount ?? "") : ""
+                        font.pixelSize: 14
+                        font.bold: true
+                        color: {
+                            if (listView.currentIndex >= 0) {
+                                var amt = parseFloat(transactionModel.getTransaction(listView.currentIndex)?.amount ?? "0");
+                                return amt < 0 ? "#d32f2f" : "#388e3c";
+                            }
+                            return "#333";
+                        }
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Label {
+                        text: qsTr("Operation Label:")
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: "#666"
+                        Layout.topMargin: 5
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.operationLabel ?? "") : ""
+                        font.pixelSize: 12
+                        color: "#333"
+                        wrapMode: Text.WordWrap
+                    }
+
+                    Label {
+                        text: qsTr("Operation Type:")
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: "#666"
+                        Layout.topMargin: 5
+                    }
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: listView.currentIndex >= 0 ? (transactionModel.getTransaction(listView.currentIndex)?.operationType ?? "") : ""
+                        font.pixelSize: 12
+                        color: "#333"
+                        wrapMode: Text.WordWrap
+                    }
+                }
+
+                Label {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    text: listView.currentIndex < 0 ? qsTr("Select a transaction to view details") : ""
+                    font.pixelSize: 12
+                    color: "#999"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    wrapMode: Text.WordWrap
+                }
             }
         }
     }
