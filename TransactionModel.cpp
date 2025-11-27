@@ -62,10 +62,10 @@ bool TransactionModel::loadFromCsv(const QString &filePath) {
       transaction->setCategory(fields[6].trimmed());
       transaction->setSubCategory(fields[7].trimmed());
 
-      // Parse debit (negative values)
+      // Parse debit (already negative in CSV)
       QString debitStr = fields[8].trimmed().replace(',', '.');
       if (!debitStr.isEmpty()) {
-        transaction->setDebit(-debitStr.toDouble()); // Remove the minus sign
+        transaction->setDebit(debitStr.toDouble());
       } else {
         transaction->setDebit(0.0);
       }
@@ -124,4 +124,17 @@ Transaction* TransactionModel::getTransaction(int index) const {
     return m_transactions[index];
   }
   return nullptr;
+}
+
+double TransactionModel::balanceAtIndex(int index) const {
+  if (index < 0 || index >= m_transactions.size()) {
+    return 0.0;
+  }
+  // Transactions are sorted from most recent to oldest
+  // Balance at index i = sum of amounts from i to end (oldest transactions first)
+  double balance = 0.0;
+  for (int i = m_transactions.size() - 1; i >= index; --i) {
+    balance += m_transactions[i]->amount();
+  }
+  return balance;
 }
