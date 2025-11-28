@@ -8,7 +8,7 @@ ApplicationWindow {
     width: 1200
     height: 800
     visible: true
-    title: qsTr("Comptine - Personal Budget Manager")
+    title: qsTr("Comptine - La Compta qui Chante")
 
     menuBar: MenuBar {
         Menu {
