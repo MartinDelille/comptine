@@ -16,14 +16,14 @@ When done, you can run the application with a sample CSV file as shown above to 
 
 - Qt6 (6.10.1) QML application with C++ backend
 - CMake build system using `qt_add_executable` and `qt_add_qml_module`
-- Main files: `main.cpp`, `Transaction.{h,cpp}`, `TransactionModel.{h,cpp}`, `Main.qml`
+- Main files: `main.cpp`, `Operation.{h,cpp}`, `BudgetData.{h,cpp}`, `Main.qml`
 
 ## Code Style
 
 ### C++ (Qt Style)
 
 - **Includes**: Qt headers first (`<QObject>`, `<QString>`), then local headers (`"Transaction.h"`)
-- **Naming**: Classes `PascalCase`, methods `camelCase`, private members `m_camelCase`
+- **Naming**: Classes `PascalCase`, methods `camelCase`, private members `_camelCase`
 - **Qt Objects**: Inherit from `QObject`, use `Q_OBJECT` macro, explicit constructors with `QObject *parent = nullptr`
 - **Properties**: Use `Q_PROPERTY` for QML binding, `Q_INVOKABLE` for callable methods
 - **Memory**: Use raw pointers for Qt parent-child ownership (parent deletes children automatically)

@@ -4,53 +4,53 @@ Operation::Operation(QObject *parent) : QObject(parent) {}
 
 Operation::Operation(const QDate &date, double amount, const QString &category,
                      const QString &description, QObject *parent)
-    : QObject(parent), m_date(date), m_amount(amount), m_category(category),
-      m_description(description) {}
+    : QObject(parent), _date(date), _amount(amount), _category(category),
+      _description(description) {}
 
 QString Operation::date() const {
-  return m_date.toString("yyyy-MM-dd");
+  return _date.toString("yyyy-MM-dd");
 }
 
 QDate Operation::dateValue() const {
-  return m_date;
+  return _date;
 }
 
 double Operation::amount() const {
-  return m_amount;
+  return _amount;
 }
 
 QString Operation::category() const {
-  return m_category;
+  return _category;
 }
 
 QString Operation::description() const {
-  return m_description;
+  return _description;
 }
 
 void Operation::setDate(const QDate &date) {
-  if (m_date != date) {
-    m_date = date;
+  if (_date != date) {
+    _date = date;
     emit dateChanged();
   }
 }
 
 void Operation::setAmount(double amount) {
-  if (m_amount != amount) {
-    m_amount = amount;
+  if (_amount != amount) {
+    _amount = amount;
     emit amountChanged();
   }
 }
 
 void Operation::setCategory(const QString &category) {
-  if (m_category != category) {
-    m_category = category;
+  if (_category != category) {
+    _category = category;
     emit categoryChanged();
   }
 }
 
 void Operation::setDescription(const QString &description) {
-  if (m_description != description) {
-    m_description = description;
+  if (_description != description) {
+    _description = description;
     emit descriptionChanged();
   }
 }

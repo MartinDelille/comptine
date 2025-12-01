@@ -67,8 +67,8 @@ private:
   QString escapeYamlString(const QString &str) const;
   QString unescapeYamlString(const QString &str) const;
 
-  QList<Account *> m_accounts;
-  QList<Category *> m_categories;
-  int m_currentAccountIndex = -1;
-  QString m_currentFilePath;
+  QList<Account *> _accounts;
+  QList<Category *> _categories;
+  int _currentAccountIndex = -1;
+  QString _currentFilePath;
 };

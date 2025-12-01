@@ -3,26 +3,26 @@
 Category::Category(QObject *parent) : QObject(parent) {}
 
 Category::Category(const QString &name, double budgetLimit, QObject *parent)
-    : QObject(parent), m_name(name), m_budgetLimit(budgetLimit) {}
+    : QObject(parent), _name(name), _budgetLimit(budgetLimit) {}
 
 QString Category::name() const {
-  return m_name;
+  return _name;
 }
 
 double Category::budgetLimit() const {
-  return m_budgetLimit;
+  return _budgetLimit;
 }
 
 void Category::setName(const QString &name) {
-  if (m_name != name) {
-    m_name = name;
+  if (_name != name) {
+    _name = name;
     emit nameChanged();
   }
 }
 
 void Category::setBudgetLimit(double limit) {
-  if (m_budgetLimit != limit) {
-    m_budgetLimit = limit;
+  if (_budgetLimit != limit) {
+    _budgetLimit = limit;
     emit budgetLimitChanged();
   }
 }

@@ -34,7 +34,7 @@ signals:
   void operationsChanged();
 
 private:
-  QString m_name;
-  double m_balance = 0.0;
-  QList<Operation *> m_operations;
+  QString _name;
+  double _balance = 0.0;
+  QList<Operation *> _operations;
 };

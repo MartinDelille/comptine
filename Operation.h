@@ -34,8 +34,8 @@ signals:
   void descriptionChanged();
 
 private:
-  QDate m_date;
-  double m_amount = 0.0;
-  QString m_category;
-  QString m_description;
+  QDate _date;
+  double _amount = 0.0;
+  QString _category;
+  QString _description;
 };

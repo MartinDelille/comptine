@@ -23,6 +23,6 @@ signals:
   void budgetLimitChanged();
 
 private:
-  QString m_name;
-  double m_budgetLimit = 0.0;
+  QString _name;
+  double _budgetLimit = 0.0;
 };

@@ -13,26 +13,26 @@ BudgetData::~BudgetData() {
 }
 
 QString BudgetData::currentFilePath() const {
-  return m_currentFilePath;
+  return _currentFilePath;
 }
 
 int BudgetData::accountCount() const {
-  return m_accounts.size();
+  return _accounts.size();
 }
 
 QList<Account *> BudgetData::accounts() const {
-  return m_accounts;
+  return _accounts;
 }
 
 Account *BudgetData::getAccount(int index) const {
-  if (index >= 0 && index < m_accounts.size()) {
-    return m_accounts[index];
+  if (index >= 0 && index < _accounts.size()) {
+    return _accounts[index];
   }
   return nullptr;
 }
 
 Account *BudgetData::getAccountByName(const QString &name) const {
-  for (Account *account : m_accounts) {
+  for (Account *account : _accounts) {
     if (account->name() == name) {
       return account;
     }
@@ -43,8 +43,8 @@ Account *BudgetData::getAccountByName(const QString &name) const {
 void BudgetData::addAccount(Account *account) {
   if (account) {
     account->setParent(this);
-    m_accounts.append(account);
-    if (m_currentAccountIndex < 0) {
+    _accounts.append(account);
+    if (_currentAccountIndex < 0) {
       setCurrentAccountIndex(0);
     }
     emit accountsChanged();
@@ -52,30 +52,30 @@ void BudgetData::addAccount(Account *account) {
 }
 
 void BudgetData::removeAccount(int index) {
-  if (index >= 0 && index < m_accounts.size()) {
-    delete m_accounts.takeAt(index);
-    if (m_currentAccountIndex >= m_accounts.size()) {
-      setCurrentAccountIndex(m_accounts.size() - 1);
+  if (index >= 0 && index < _accounts.size()) {
+    delete _accounts.takeAt(index);
+    if (_currentAccountIndex >= _accounts.size()) {
+      setCurrentAccountIndex(_accounts.size() - 1);
     }
     emit accountsChanged();
   }
 }
 
 void BudgetData::clearAccounts() {
-  qDeleteAll(m_accounts);
-  m_accounts.clear();
-  m_currentAccountIndex = -1;
+  qDeleteAll(_accounts);
+  _accounts.clear();
+  _currentAccountIndex = -1;
   emit accountsChanged();
   emit currentAccountChanged();
 }
 
 Account *BudgetData::currentAccount() const {
-  return getAccount(m_currentAccountIndex);
+  return getAccount(_currentAccountIndex);
 }
 
 void BudgetData::setCurrentAccountIndex(int index) {
-  if (index != m_currentAccountIndex && index >= -1 && index < m_accounts.size()) {
-    m_currentAccountIndex = index;
+  if (index != _currentAccountIndex && index >= -1 && index < _accounts.size()) {
+    _currentAccountIndex = index;
     emit currentAccountChanged();
     emit operationsChanged();
   }
@@ -110,22 +110,22 @@ double BudgetData::balanceAtIndex(int index) const {
 }
 
 int BudgetData::categoryCount() const {
-  return m_categories.size();
+  return _categories.size();
 }
 
 QList<Category *> BudgetData::categories() const {
-  return m_categories;
+  return _categories;
 }
 
 Category *BudgetData::getCategory(int index) const {
-  if (index >= 0 && index < m_categories.size()) {
-    return m_categories[index];
+  if (index >= 0 && index < _categories.size()) {
+    return _categories[index];
   }
   return nullptr;
 }
 
 Category *BudgetData::getCategoryByName(const QString &name) const {
-  for (Category *category : m_categories) {
+  for (Category *category : _categories) {
     if (category->name() == name) {
       return category;
     }
@@ -136,21 +136,21 @@ Category *BudgetData::getCategoryByName(const QString &name) const {
 void BudgetData::addCategory(Category *category) {
   if (category) {
     category->setParent(this);
-    m_categories.append(category);
+    _categories.append(category);
     emit categoriesChanged();
   }
 }
 
 void BudgetData::removeCategory(int index) {
-  if (index >= 0 && index < m_categories.size()) {
-    delete m_categories.takeAt(index);
+  if (index >= 0 && index < _categories.size()) {
+    delete _categories.takeAt(index);
     emit categoriesChanged();
   }
 }
 
 void BudgetData::clearCategories() {
-  qDeleteAll(m_categories);
-  m_categories.clear();
+  qDeleteAll(_categories);
+  _categories.clear();
   emit categoriesChanged();
 }
 
@@ -194,14 +194,14 @@ bool BudgetData::saveToYaml(const QString &filePath) const {
 
   // Write categories
   out << "categories:\n";
-  for (const Category *category : m_categories) {
+  for (const Category *category : _categories) {
     out << "  - name: " << escapeYamlString(category->name()) << "\n";
     out << "    budget_limit: " << category->budgetLimit() << "\n";
   }
 
   // Write accounts
   out << "\naccounts:\n";
-  for (const Account *account : m_accounts) {
+  for (const Account *account : _accounts) {
     out << "  - name: " << escapeYamlString(account->name()) << "\n";
     out << "    balance: " << account->balance() << "\n";
     out << "    operations:\n";
@@ -276,7 +276,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
       if (isListItem && key == "name") {
         currentCategory = new Category(this);
         currentCategory->setName(value);
-        m_categories.append(currentCategory);
+        _categories.append(currentCategory);
       } else if (currentCategory && key == "budget_limit") {
         currentCategory->setBudgetLimit(value.toDouble());
       }
@@ -284,7 +284,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
       if (indent == 2 && isListItem && key == "name") {
         currentAccount = new Account(this);
         currentAccount->setName(value);
-        m_accounts.append(currentAccount);
+        _accounts.append(currentAccount);
         currentOperation = nullptr;
       } else if (currentAccount && indent == 4 && key == "balance") {
         currentAccount->setBalance(value.toDouble());
@@ -311,7 +311,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
         currentSection = Section::Accounts;
         currentAccount = new Account(this);
         currentAccount->setName(value);
-        m_accounts.append(currentAccount);
+        _accounts.append(currentAccount);
         currentOperation = nullptr;
       }
     }
@@ -320,18 +320,18 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   file.close();
 
   // Set first account as current
-  if (!m_accounts.isEmpty()) {
+  if (!_accounts.isEmpty()) {
     setCurrentAccountIndex(0);
   }
 
-  m_currentFilePath = filePath;
+  _currentFilePath = filePath;
   emit filePathChanged();
   emit accountsChanged();
   emit categoriesChanged();
   emit dataLoaded();
   qDebug() << "Budget data loaded from:" << filePath;
-  qDebug() << "  Accounts:" << m_accounts.size();
-  qDebug() << "  Categories:" << m_categories.size();
+  qDebug() << "  Accounts:" << _accounts.size();
+  qDebug() << "  Categories:" << _categories.size();
 
   return true;
 }
@@ -350,7 +350,7 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
   Account *account = getAccountByName(name);
   if (!account) {
     account = new Account(name, 0.0, this);
-    m_accounts.append(account);
+    _accounts.append(account);
   }
 
   QTextStream in(&file);
@@ -406,7 +406,7 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
       // Auto-create category if it doesn't exist
       if (!category.isEmpty() && !getCategoryByName(category)) {
         Category *cat = new Category(category, 0.0, this);
-        m_categories.append(cat);
+        _categories.append(cat);
       }
     }
   }
@@ -417,7 +417,7 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
   account->setBalance(totalBalance);
 
   // Set as current account
-  int accountIndex = m_accounts.indexOf(account);
+  int accountIndex = _accounts.indexOf(account);
   if (accountIndex >= 0) {
     setCurrentAccountIndex(accountIndex);
   }
