@@ -12,6 +12,7 @@ class BudgetData : public QObject {
   Q_PROPERTY(int categoryCount READ categoryCount NOTIFY categoriesChanged)
   Q_PROPERTY(Account *currentAccount READ currentAccount NOTIFY currentAccountChanged)
   Q_PROPERTY(int operationCount READ operationCount NOTIFY operationsChanged)
+  Q_PROPERTY(QString currentFilePath READ currentFilePath NOTIFY filePathChanged)
 
 public:
   explicit BudgetData(QObject *parent = nullptr);
@@ -48,6 +49,7 @@ public:
   Q_INVOKABLE bool loadFromYaml(const QString &filePath);
   Q_INVOKABLE bool saveToYaml(const QString &filePath) const;
   Q_INVOKABLE bool importFromCsv(const QString &filePath, const QString &accountName = QString());
+  QString currentFilePath() const;
 
   // Clear all data
   Q_INVOKABLE void clear();
@@ -57,6 +59,7 @@ signals:
   void categoriesChanged();
   void currentAccountChanged();
   void operationsChanged();
+  void filePathChanged();
   void dataLoaded();
   void dataSaved();
 
@@ -67,4 +70,5 @@ private:
   QList<Account *> m_accounts;
   QList<Category *> m_categories;
   int m_currentAccountIndex = -1;
+  QString m_currentFilePath;
 };

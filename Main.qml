@@ -8,7 +8,7 @@ ApplicationWindow {
     width: 1200
     height: 800
     visible: true
-    title: qsTr("Comptine - La Compta qui Chante")
+    title: budgetData.currentFilePath.length > 0 ? "Comptine - " + budgetData.currentFilePath.split('/').pop() : "Comptine"
 
     menuBar: MenuBar {
         Menu {

@@ -12,6 +12,10 @@ BudgetData::~BudgetData() {
   clear();
 }
 
+QString BudgetData::currentFilePath() const {
+  return m_currentFilePath;
+}
+
 int BudgetData::accountCount() const {
   return m_accounts.size();
 }
@@ -320,6 +324,8 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
     setCurrentAccountIndex(0);
   }
 
+  m_currentFilePath = filePath;
+  emit filePathChanged();
   emit accountsChanged();
   emit categoriesChanged();
   emit dataLoaded();
