@@ -13,10 +13,14 @@ qt_standard_project_setup(REQUIRES 6.8)
 
 qt_add_executable(Comptine 
   main.cpp
-  Transaction.h
-  Transaction.cpp
-  TransactionModel.h
-  TransactionModel.cpp
+  Operation.h
+  Operation.cpp
+  Account.h
+  Account.cpp
+  Category.h
+  Category.cpp
+  BudgetData.h
+  BudgetData.cpp
 )
 
 # Generate macOS icon from PNG at build time
@@ -48,9 +52,9 @@ target_sources(Comptine PRIVATE ${APP_ICON_ICNS})
 qt_add_qml_module(Comptine URI Comptine QML_FILES
     Main.qml
     BalanceHeader.qml
-    TransactionDelegate.qml
-    TransactionList.qml
-    TransactionDetails.qml
+    OperationDelegate.qml
+    OperationList.qml
+    OperationDetails.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If

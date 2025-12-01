@@ -1,15 +1,15 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include "TransactionModel.h"
+#include "BudgetData.h"
 
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
 
-  TransactionModel transactionModel;
+  BudgetData budgetData;
 
   QQmlApplicationEngine engine;
-  engine.rootContext()->setContextProperty("transactionModel", &transactionModel);
+  engine.rootContext()->setContextProperty("budgetData", &budgetData);
   
   QObject::connect(
       &engine,
@@ -19,10 +19,14 @@ int main(int argc, char *argv[]) {
       Qt::QueuedConnection);
   engine.loadFromModule("Comptine", "Main");
 
-  // Load CSV file if provided as command line argument
+  // Load file if provided as command line argument
   if (argc > 1) {
-    QString csvPath = QString::fromLocal8Bit(argv[1]);
-    transactionModel.loadFromCsv(csvPath);
+    QString filePath = QString::fromLocal8Bit(argv[1]);
+    if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
+      budgetData.loadFromYaml(filePath);
+    } else if (filePath.endsWith(".csv")) {
+      budgetData.importFromCsv(filePath);
+    }
   }
 
   return app.exec();

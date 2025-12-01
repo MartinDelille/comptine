@@ -7,7 +7,7 @@ Use exact commands below to configure, build, run, and clean the project. If you
 - The project use Qt 6.10.1 installed here: ~/Qt/6.10.1/macos
 - **Configure**: `qt-cmake -B build/agent -S .`
 - **Build**: `cmake --build build/agent`
-- **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine example.csv`
+- **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine`
 - **Clean**: `rm -rf build/agent` (run it only if you need a full clean)
 
 When done, you can run the application with a sample CSV file as shown above to show the progress.

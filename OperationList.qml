@@ -23,11 +23,11 @@ ListView {
         }
     }
 
-    delegate: TransactionDelegate {
+    delegate: OperationDelegate {
         required property int index
         width: root.width - scrollBar.width
-        transaction: transactionModel.getTransaction(index)
-        balance: transactionModel.balanceAtIndex(index)
+        operation: budgetData.getOperation(index)
+        balance: budgetData.balanceAtIndex(index)
         selected: root.currentIndex === index
         alternate: index % 2 === 0
 

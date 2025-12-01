@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Rectangle {
     id: root
 
-    required property var transaction
+    required property var operation
     required property double balance
     required property bool selected
     required property bool alternate
@@ -33,7 +33,7 @@ Rectangle {
         spacing: 10
 
         Label {
-            text: root.transaction?.accountingDate ?? ""
+            text: root.operation?.date ?? ""
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: 14
             color: "#333"
@@ -42,7 +42,7 @@ Rectangle {
 
         Label {
             Layout.fillWidth: true
-            text: root.transaction?.simplifiedLabel ?? ""
+            text: root.operation?.description ?? ""
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             font.pixelSize: 14
@@ -50,11 +50,11 @@ Rectangle {
         }
 
         Label {
-            text: root.formatAmount(root.transaction?.amount ?? 0)
+            text: root.formatAmount(root.operation?.amount ?? 0)
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
             font.pixelSize: 14
-            color: (root.transaction?.amount ?? 0) < 0 ? "#d32f2f" : "#388e3c"
+            color: (root.operation?.amount ?? 0) < 0 ? "#d32f2f" : "#388e3c"
             font.bold: true
             Layout.preferredWidth: 100
         }
