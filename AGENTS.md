@@ -38,4 +38,5 @@ When done, you can run the application with a sample CSV file as shown above to 
 - **IDs**: `camelCase` (e.g., `listView`, `fileDialog`)
 - **Properties**: Declare `required property` for delegate bindings
 - **Strings**: Use `qsTr()` for translatable text
+- **Translations**: When adding new `qsTr()` strings, update all translation files in `translations/` with appropriate translations
 - **Formatting**: 4-space indentation, prefer named properties over property bindings where possible
