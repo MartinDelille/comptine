@@ -108,8 +108,12 @@ ApplicationWindow {
         title: qsTr("Save Budget File")
         fileMode: FileDialog.SaveFile
         nameFilters: ["YAML files (*.yaml *.yml)", "All files (*)"]
+        currentFile: budgetData.currentFilePath.length > 0 ? "file://" + budgetData.currentFilePath : ""
         onAccepted: {
-            budgetData.saveToYaml(selectedFile.toString().replace("file://", ""));
+            var filePath = selectedFile.toString().replace("file://", "");
+            if (budgetData.saveToYaml(filePath)) {
+                budgetData.currentFilePath = filePath;
+            }
         }
     }
 

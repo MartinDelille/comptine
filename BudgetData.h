@@ -17,8 +17,8 @@ class BudgetData : public QObject {
   PROPERTY_RW(int, budgetYear, 0)
   PROPERTY_RW(int, budgetMonth, 0)
 
-  // Data properties (macro-generated, read-only from QML)
-  PROPERTY_RW_INTERNAL(QString, currentFilePath, {})
+  // Data properties (macro-generated)
+  PROPERTY_RW(QString, currentFilePath, {})
 
   // Read-only computed properties (macro-generated, implemented in .cpp)
   PROPERTY_RO(int, accountCount)

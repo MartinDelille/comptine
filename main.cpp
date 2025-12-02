@@ -54,6 +54,15 @@ int main(int argc, char *argv[]) {
                      loadUiState();
                    });
 
+  // Save last file when currentFilePath changes (e.g., Save As)
+  QObject::connect(&budgetData, &BudgetData::currentFilePathChanged,
+                   [&settings, &budgetData]() {
+                     if (!budgetData.currentFilePath().isEmpty()) {
+                       settings.setValue("lastFile",
+                                         budgetData.currentFilePath());
+                     }
+                   });
+
   // Save UI state when app is about to quit
   QObject::connect(&app, &QGuiApplication::aboutToQuit, saveUiState);
 
