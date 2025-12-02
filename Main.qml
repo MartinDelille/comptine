@@ -10,6 +10,8 @@ ApplicationWindow {
     visible: true
     title: budgetData.currentFilePath.length > 0 ? "Comptine - " + budgetData.currentFilePath.split('/').pop() : "Comptine"
 
+    property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
+
     menuBar: MenuBar {
         Menu {
             title: qsTr("&File")
@@ -47,6 +49,46 @@ ApplicationWindow {
             Action {
                 text: qsTr("&About")
                 onTriggered: aboutDialog.open()
+            }
+        }
+        Menu {
+            title: qsTr("&View")
+            Action {
+                text: qsTr("&Operations")
+                shortcut: "Ctrl+1"
+                onTriggered: budgetData.currentTabIndex = 0
+            }
+            Action {
+                text: qsTr("&Budget")
+                shortcut: "Ctrl+2"
+                onTriggered: budgetData.currentTabIndex = 1
+            }
+            MenuSeparator {}
+            Action {
+                text: qsTr("&Previous Month")
+                shortcut: "Left"
+                enabled: !fileDialogOpen
+                onTriggered: {
+                    if (budgetData.budgetMonth === 1) {
+                        budgetData.budgetMonth = 12;
+                        budgetData.budgetYear--;
+                    } else {
+                        budgetData.budgetMonth--;
+                    }
+                }
+            }
+            Action {
+                text: qsTr("&Next Month")
+                shortcut: "Right"
+                enabled: !fileDialogOpen
+                onTriggered: {
+                    if (budgetData.budgetMonth === 12) {
+                        budgetData.budgetMonth = 1;
+                        budgetData.budgetYear++;
+                    } else {
+                        budgetData.budgetMonth++;
+                    }
+                }
             }
         }
     }
@@ -113,6 +155,9 @@ ApplicationWindow {
         Connections {
             target: budgetData
             function onDataLoaded() {
+                tabBar.currentIndex = budgetData.currentTabIndex;
+            }
+            function onCurrentTabIndexChanged() {
                 tabBar.currentIndex = budgetData.currentTabIndex;
             }
         }
