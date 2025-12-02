@@ -68,6 +68,7 @@ qt_add_qml_module(Comptine URI Comptine QML_FILES
     Main.qml
     BalanceHeader.qml
     BudgetView.qml
+    ImportDialog.qml
     MonthSelector.qml
     OperationDelegate.qml
     OperationDetails.qml

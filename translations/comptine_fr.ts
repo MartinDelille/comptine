@@ -246,4 +246,19 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Sombre</translation>
     </message>
 </context>
+<context>
+    <name>ImportDialog</name>
+    <message>
+        <source>Import CSV</source>
+        <translation>Importer CSV</translation>
+    </message>
+    <message>
+        <source>Import into account:</source>
+        <translation>Importer dans le compte :</translation>
+    </message>
+    <message>
+        <source>New account</source>
+        <translation>Nouveau compte</translation>
+    </message>
+</context>
 </TS>

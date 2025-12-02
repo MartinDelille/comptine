@@ -130,9 +130,14 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFile
         nameFilters: ["CSV files (*.csv)", "All files (*)"]
         onAccepted: {
-            budgetData.importFromCsv(selectedFile.toString().replace("file://", ""), budgetData.currentAccount?.name ?? "");
-            budgetData.currentTabIndex = 0;
+            importDialog.filePath = selectedFile.toString().replace("file://", "");
+            importDialog.open();
         }
+    }
+
+    ImportDialog {
+        id: importDialog
+        anchors.centerIn: parent
     }
 
     Dialog {
