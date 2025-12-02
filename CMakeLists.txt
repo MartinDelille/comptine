@@ -22,6 +22,8 @@ qt_add_executable(Comptine
   Category.cpp
   BudgetData.h
   BudgetData.cpp
+  AppSettings.h
+  AppSettings.cpp
 )
 
 # Generate macOS icon from PNG at build time
@@ -59,6 +61,7 @@ qt_add_qml_module(Comptine URI Comptine QML_FILES
     OperationDetails.qml
     OperationList.qml
     OperationView.qml
+    PreferencesDialog.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If

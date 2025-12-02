@@ -39,6 +39,12 @@ ApplicationWindow {
             }
             MenuSeparator {}
             Action {
+                text: qsTr("&Preferences...")
+                shortcut: StandardKey.Preferences
+                onTriggered: preferencesDialog.open()
+            }
+            MenuSeparator {}
+            Action {
                 text: qsTr("&Quit")
                 shortcut: StandardKey.Quit
                 onTriggered: Qt.quit()
@@ -135,6 +141,11 @@ ApplicationWindow {
         Label {
             text: qsTr("Comptine v0.1\n\nPersonal Budget Management Software\n\nImport and manage your bank account data.")
         }
+    }
+
+    PreferencesDialog {
+        id: preferencesDialog
+        anchors.centerIn: parent
     }
 
     ColumnLayout {

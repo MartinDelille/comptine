@@ -6,6 +6,7 @@
 #include <QQmlContext>
 #include <QSettings>
 #include <QTranslator>
+#include "AppSettings.h"
 #include "BudgetData.h"
 
 int main(int argc, char *argv[]) {
@@ -14,11 +15,29 @@ int main(int argc, char *argv[]) {
   app.setOrganizationName("Martin Delille");
   app.setApplicationName("Comptine");
 
-  // Load translations
+  // Load translations based on language preference
   QTranslator translator;
-  if (translator.load(QLocale(), "comptine", "_", ":/i18n")) {
-    app.installTranslator(&translator);
-  }
+  AppSettings appSettings;
+
+  auto loadTranslation = [&translator, &app, &appSettings]() {
+    // Remove existing translator if any
+    app.removeTranslator(&translator);
+
+    QString lang = appSettings.language();
+    if (lang.isEmpty()) {
+      // System default
+      if (translator.load(QLocale(), "comptine", "_", ":/i18n")) {
+        app.installTranslator(&translator);
+      }
+    } else if (lang == "fr") {
+      if (translator.load(":/i18n/comptine_fr.qm")) {
+        app.installTranslator(&translator);
+      }
+    }
+    // If lang == "en", don't load any translator (English is source)
+  };
+
+  loadTranslation();
 
   QSettings settings;
   BudgetData budgetData;
@@ -76,11 +95,19 @@ int main(int argc, char *argv[]) {
 
   QQmlApplicationEngine engine;
   engine.rootContext()->setContextProperty("budgetData", &budgetData);
+  engine.rootContext()->setContextProperty("appSettings", &appSettings);
 
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
       []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
   engine.loadFromModule("Comptine", "Main");
+
+  // Live language switching: reload translation and retranslate QML
+  QObject::connect(&appSettings, &AppSettings::languageChangeRequested,
+                   [&loadTranslation, &engine]() {
+                     loadTranslation();
+                     engine.retranslate();
+                   });
 
   // Load file: command line argument takes priority, otherwise use last opened file
   if (argc > 1) {
