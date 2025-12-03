@@ -11,14 +11,17 @@ Dialog {
     property string filePath: ""
 
     onOpened: {
-        accountComboBox.currentIndex = budgetData.currentAccountIndex >= 0 ? budgetData.currentAccountIndex : 0;
+        // Default to "New account" (last item in the list)
+        accountComboBox.currentIndex = budgetData.accountCount;
     }
 
     onAccepted: {
         var accountName = "";
+        // If not the last item ("New account"), use existing account name
         if (accountComboBox.currentIndex >= 0 && accountComboBox.currentIndex < budgetData.accountCount) {
             accountName = budgetData.getAccount(accountComboBox.currentIndex)?.name ?? "";
         }
+        // Empty accountName will create a new account in importFromCsv
         budgetData.importFromCsv(filePath, accountName);
         budgetData.currentTabIndex = 0;
     }
@@ -35,12 +38,18 @@ Dialog {
             id: accountComboBox
             Layout.fillWidth: true
             Layout.preferredWidth: 250
-            model: budgetData.accountCount
-            displayText: currentIndex >= 0 && currentIndex < budgetData.accountCount ? budgetData.getAccount(currentIndex)?.name ?? qsTr("New account") : qsTr("New account")
+            // +1 for "New account" option at the end
+            model: budgetData.accountCount + 1
+            displayText: {
+                if (currentIndex >= 0 && currentIndex < budgetData.accountCount) {
+                    return budgetData.getAccount(currentIndex)?.name ?? qsTr("New account");
+                }
+                return qsTr("New account");
+            }
             delegate: ItemDelegate {
                 required property int index
                 width: accountComboBox.width
-                text: budgetData.getAccount(index)?.name ?? ""
+                text: index < budgetData.accountCount ? (budgetData.getAccount(index)?.name ?? "") : qsTr("New account")
                 highlighted: accountComboBox.highlightedIndex === index
             }
         }
