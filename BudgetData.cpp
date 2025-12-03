@@ -6,9 +6,11 @@
 
 #include "BudgetData.h"
 #include "CsvParser.h"
+#include <QClipboard>
 #include <QDate>
 #include <QDebug>
 #include <QFile>
+#include <QGuiApplication>
 #include <QTextStream>
 
 using namespace CsvParser;
@@ -652,4 +654,53 @@ double BudgetData::selectedOperationsTotal() const {
     }
   }
   return total;
+}
+
+void BudgetData::copySelectedOperationsToClipboard() const {
+  Account *account = currentAccount();
+  if (!account || _selectedOperations.isEmpty()) {
+    return;
+  }
+
+  // Build CSV content with header
+  QString csv;
+  csv += "Date,Description,Category,Amount,Balance\n";
+
+  // Sort indices for consistent output
+  QList<int> sortedIndices = _selectedOperations.values();
+  std::sort(sortedIndices.begin(), sortedIndices.end());
+
+  for (int index : sortedIndices) {
+    Operation *op = account->getOperation(index);
+    if (op) {
+      // Escape fields that might contain commas or quotes
+      QString description = op->description();
+      QString category = op->category();
+
+      // Escape quotes by doubling them
+      description.replace("\"", "\"\"");
+      category.replace("\"", "\"\"");
+
+      // Quote fields that contain commas, quotes, or newlines
+      if (description.contains(',') || description.contains('"') || description.contains('\n')) {
+        description = "\"" + description + "\"";
+      }
+      if (category.contains(',') || category.contains('"') || category.contains('\n')) {
+        category = "\"" + category + "\"";
+      }
+
+      // Format amount and balance with period as decimal separator (standard CSV format)
+      QString amount = QString::number(op->amount(), 'f', 2);
+      QString balance = QString::number(balanceAtIndex(index), 'f', 2);
+
+      csv += op->date().toString("dd/MM/yyyy") + ","
+           + description + ","
+           + category + ","
+           + amount + ","
+           + balance + "\n";
+    }
+  }
+
+  // Copy to clipboard
+  QGuiApplication::clipboard()->setText(csv);
 }

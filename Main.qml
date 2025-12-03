@@ -52,7 +52,16 @@ ApplicationWindow {
             }
         }
         Menu {
-            title: qsTr("&Help")
+            title: qsTr("&Edit")
+            Action {
+                text: qsTr("&Copy")
+                shortcut: StandardKey.Copy
+                enabled: budgetData.selectionCount > 0
+                onTriggered: budgetData.copySelectedOperationsToClipboard()
+            }
+        }
+        Menu {
+            title: qsTr("&View")
             Action {
                 text: qsTr("&About")
                 onTriggered: aboutDialog.open()

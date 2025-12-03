@@ -91,6 +91,18 @@ Importez et gérez vos données bancaires.</translation>
         <source>Budget</source>
         <translation>Budget</translation>
     </message>
+    <message>
+        <source>&amp;Edit</source>
+        <translation>Édition</translation>
+    </message>
+    <message>
+        <source>&amp;Copy</source>
+        <translation>Copier</translation>
+    </message>
+    <message>
+        <source>&amp;Preferences...</source>
+        <translation>Préférences...</translation>
+    </message>
 </context>
 <context>
     <name>OperationView</name>

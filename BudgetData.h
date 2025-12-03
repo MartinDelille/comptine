@@ -78,6 +78,9 @@ public:
   int selectionCount() const;
   Q_INVOKABLE double selectedOperationsTotal() const;
 
+  // Clipboard operations
+  Q_INVOKABLE void copySelectedOperationsToClipboard() const;
+
 signals:
   void dataLoaded();
   void dataSaved();
