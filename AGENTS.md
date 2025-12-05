@@ -46,3 +46,7 @@ When done, you can run the application as shown above to show the progress.
 ## Testing Guidelines
 
 - **Fake Data**: When creating unit tests, always use fake/fictional data instead of real personal information. Replace names, account numbers, references, and other identifiable data with obviously fictional equivalents (e.g., "NICK LARSONO" instead of real names, "9876543XY0012345" instead of real reference numbers).
+
+## Documentation
+
+- **FEATURES.md**: When adding new features, update `FEATURES.md` to document them.

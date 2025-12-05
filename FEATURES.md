@@ -1,0 +1,51 @@
+# Comptine - Features
+
+## File Management
+
+- **New**: Create a new empty budget (File > New or Cmd+N)
+- **Open**: Load budget data from YAML file (File > Open or Cmd+O)
+- **Save**: Save budget data to YAML file (File > Save or Cmd+S)
+- **Save As**: Save budget data to a new YAML file (File > Save As or Cmd+Shift+S)
+- **Recent Files**: Automatically remembers and reopens last used file
+
+## Account Management
+
+- **Multiple Accounts**: Support for multiple accounts in a single budget file
+- **Account Selector**: ComboBox to switch between accounts (disabled when no accounts exist)
+- **Account Creation**: Create new accounts when importing CSV data
+
+## Operations
+
+- **Operation List**: View all operations for the current account sorted by date (most recent first)
+- **Operation Details**: View detailed information for selected operation(s)
+- **Selection**: Single click, Ctrl+click (toggle), Shift+click (range), Cmd+A (select all)
+- **Keyboard Navigation**: Up/Down arrows to navigate, with Shift for extending selection
+- **Balance Calculation**: Running balance calculated and displayed for each operation
+- **Copy to Clipboard**: Copy selected operations as CSV (Cmd+C)
+
+## Import
+
+- **CSV Import**: Import operations from CSV files (File > Import CSV)
+- **Auto-detect Format**: Automatically detects delimiter (comma or semicolon) and encoding
+- **Column Detection**: Automatically maps CSV columns (date, description, amount, category)
+- **French Bank Support**: Handles French number format and common French bank CSV exports
+- **Duplicate Detection**: Skips operations that already exist (same date, amount, and description)
+- **Account Selection**: Choose existing account or create new one when importing
+
+## Budget View
+
+- **Monthly Budget**: View budget summary by month
+- **Category Tracking**: Track spending by category with budget limits
+- **Month Navigation**: Navigate between months to view historical data
+
+## User Interface
+
+- **Tabs**: Switch between Operations view and Budget view
+- **Theme Support**: Light, Dark, and System theme options
+- **Localization**: Support for English and French languages
+- **Preferences**: Configure language and theme (Cmd+,)
+
+## Data Format
+
+- **YAML Storage**: Human-readable YAML format for budget data
+- **Precision**: Amounts stored with 2 decimal places for accuracy
