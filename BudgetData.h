@@ -59,6 +59,7 @@ public:
   Q_INVOKABLE Category *getCategoryByName(const QString &name) const;
   void addCategory(Category *category);
   void removeCategory(int index);
+  Category *takeCategoryByName(const QString &name);  // Remove without deleting
   void clearCategories();
 
   // Budget calculations (aggregates across all accounts)
@@ -68,7 +69,9 @@ public:
   // File operations
   Q_INVOKABLE bool loadFromYaml(const QString &filePath);
   Q_INVOKABLE bool saveToYaml(const QString &filePath) const;
-  Q_INVOKABLE bool importFromCsv(const QString &filePath, const QString &accountName = QString());
+  Q_INVOKABLE bool importFromCsv(const QString &filePath,
+                                 const QString &accountName = QString(),
+                                 bool useCategories = false);
 
   // Clear all data
   Q_INVOKABLE void clear();

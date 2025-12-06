@@ -32,6 +32,8 @@
 - **French Bank Support**: Handles French number format and common French bank CSV exports
 - **Duplicate Detection**: Skips operations that already exist (same date, amount, and description)
 - **Account Selection**: Choose existing account or create new one when importing
+- **Use Categories Option**: Optionally import categories from CSV (new categories auto-created with budget limit 0)
+- **Post-Import Selection**: All imported operations are automatically selected after import
 
 ## Budget View
 
@@ -43,7 +45,7 @@
 
 - **Undo**: Undo the last action (Edit > Undo or Cmd+Z)
 - **Redo**: Redo the last undone action (Edit > Redo or Cmd+Shift+Z)
-- **Supported Actions**: Account rename, CSV import
+- **Supported Actions**: Account rename, CSV import (including any new categories created)
 
 ## User Interface
 

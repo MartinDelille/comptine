@@ -7,6 +7,7 @@
 class BudgetData;
 class Account;
 class AccountListModel;
+class Category;
 class Operation;
 class OperationListModel;
 
@@ -31,7 +32,9 @@ private:
 class ImportOperationsCommand : public QUndoCommand {
 public:
   ImportOperationsCommand(Account *account, OperationListModel *operationModel,
+                          BudgetData *budgetData,
                           const QList<Operation *> &operations,
+                          const QList<Category *> &newCategories,
                           QUndoCommand *parent = nullptr);
   ~ImportOperationsCommand();
 
@@ -41,6 +44,9 @@ public:
 private:
   Account *_account;
   OperationListModel *_operationModel;
+  BudgetData *_budgetData;
   QList<Operation *> _operations;
+  QList<Category *> _newCategories;
   bool _ownsOperations;  // True when operations are not in the account (after undo)
+  bool _ownsCategories;  // True when categories are not in budgetData (after undo)
 };

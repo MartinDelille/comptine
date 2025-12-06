@@ -49,6 +49,10 @@
         <source>New account</source>
         <translation>Nouveau compte</translation>
     </message>
+    <message>
+        <source>Use categories from CSV</source>
+        <translation>Utiliser les catégories du CSV</translation>
+    </message>
 </context>
 <context>
     <name>Main</name>
@@ -339,6 +343,13 @@ Importez et gérez vos données bancaires.</translation>
         <translation>
             <numerusform>Importer %n opération</numerusform>
             <numerusform>Importer %n opérations</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <source>Import %n operation(s) with %1 new category(ies)</source>
+        <translation>
+            <numerusform>Importer %n opération avec %1 nouvelle(s) catégorie(s)</numerusform>
+            <numerusform>Importer %n opérations avec %1 nouvelle(s) catégorie(s)</numerusform>
         </translation>
     </message>
 </context>

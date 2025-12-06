@@ -157,6 +157,18 @@ void BudgetData::clearCategories() {
   emit categoryCountChanged();
 }
 
+Category *BudgetData::takeCategoryByName(const QString &name) {
+  for (int i = 0; i < _categories.size(); i++) {
+    if (_categories[i]->name().compare(name, Qt::CaseInsensitive) == 0) {
+      Category *cat = _categories.takeAt(i);
+      cat->setParent(nullptr);  // Release Qt ownership
+      emit categoryCountChanged();
+      return cat;
+    }
+  }
+  return nullptr;
+}
+
 double BudgetData::spentInCategory(const QString &categoryName, int year, int month) const {
   double spent = 0.0;
   for (const Account *account : _accounts) {
@@ -349,8 +361,11 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   return true;
 }
 
-bool BudgetData::importFromCsv(const QString &filePath, const QString &accountName) {
+bool BudgetData::importFromCsv(const QString &filePath,
+                               const QString &accountName,
+                               bool useCategories) {
   qDebug() << "Importing CSV from:" << filePath;
+  qDebug() << "  Use categories:" << useCategories;
 
   QFile file(filePath);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -361,7 +376,6 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
   // Create or get account
   QString name = accountName.isEmpty() ? "Imported Account" : accountName;
   Account *account = getAccountByName(name);
-  bool isNewAccount = (account == nullptr);
   if (!account) {
     account = new Account(name, this);
     _accounts.append(account);
@@ -420,6 +434,17 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
   int skippedCount = 0;
   double totalBalance = 0.0;
 
+  // Build case-insensitive lookup for existing categories (only used if useCategories is true)
+  QMap<QString, QString> existingCategoryLookup;  // lowercase -> actual name
+  if (useCategories) {
+    for (const Category *cat : _categories) {
+      existingCategoryLookup.insert(cat->name().toLower(), cat->name());
+    }
+  }
+
+  // Track which new categories need to be created
+  QSet<QString> newCategoryNames;
+
   while (!in.atEnd()) {
     QString line = in.readLine();
 
@@ -442,21 +467,17 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
     double amount = 0.0;
     if (idx.amount >= 0) {
       QString amountStr = getField(fields, idx.amount);
-      qDebug() << "  Amount string from Montant column:" << amountStr;
       if (!amountStr.isEmpty()) {
         amount = parseAmount(amountStr);
-        qDebug() << "  Parsed amount:" << amount;
       }
     } else {
       QString debitStr = getField(fields, idx.debit);
       QString creditStr = getField(fields, idx.credit);
-      qDebug() << "  Debit:" << debitStr << "Credit:" << creditStr;
       if (!debitStr.isEmpty()) {
         amount = parseAmount(debitStr);
       } else if (!creditStr.isEmpty()) {
         amount = parseAmount(creditStr);
       }
-      qDebug() << "  Parsed amount:" << amount;
     }
 
     // Parse description (required)
@@ -472,11 +493,22 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
       continue;
     }
 
-    // Parse category (optional - prefer sub-category if available)
-    QString category = getField(fields, idx.subCategory);
-    if (category.isEmpty()) {
-      category = getField(fields, idx.category);
+    // Determine category based on useCategories flag
+    QString category;
+    if (useCategories) {
+      // Use category from CSV (prefer sub-category if available)
+      category = getField(fields, idx.subCategory);
+      if (category.isEmpty()) {
+        category = getField(fields, idx.category);
+      }
+
+      // Track new categories that will need to be created
+      if (!category.isEmpty() && !existingCategoryLookup.contains(category.toLower())) {
+        newCategoryNames.insert(category);
+        existingCategoryLookup.insert(category.toLower(), category);
+      }
     }
+    // If useCategories is false or category is empty, leave category empty
 
     // Create operation
     Operation *operation = new Operation(account);
@@ -495,10 +527,26 @@ bool BudgetData::importFromCsv(const QString &filePath, const QString &accountNa
   qDebug() << "  Imported:" << importedOperations.size() << "operations";
   qDebug() << "  Skipped:" << skippedCount << "rows";
   qDebug() << "  Total balance delta:" << totalBalance;
+  if (useCategories) {
+    qDebug() << "  New categories:" << newCategoryNames.size();
+  }
 
-  // Add operations via undo command (if any were imported)
+  // Create new category objects (only if useCategories is true)
+  QList<Category *> newCategories;
+  if (useCategories) {
+    for (const QString &catName : newCategoryNames) {
+      Category *cat = new Category(catName, 0.0, this);
+      newCategories.append(cat);
+    }
+  }
+
+  // Add operations and categories via undo command (if any were imported)
   if (!importedOperations.isEmpty()) {
-    _undoStack->push(new ImportOperationsCommand(account, _operationModel, importedOperations));
+    _undoStack->push(new ImportOperationsCommand(account, _operationModel, this,
+                                                 importedOperations, newCategories));
+  } else {
+    // No operations imported, clean up categories
+    qDeleteAll(newCategories);
   }
 
   // Set as current account

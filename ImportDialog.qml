@@ -40,6 +40,8 @@ Dialog {
         } else {
             accountComboBox.currentIndex = importAccountModel.count - 1;
         }
+        // Reset checkbox to unchecked
+        useCategoriesCheckBox.checked = false;
     }
 
     onAccepted: {
@@ -49,8 +51,8 @@ Dialog {
             var account = budgetData.getAccount(selectedItem.accountIndex);
             accountName = account ? account.name : "";
         }
-        // Empty accountName will create a new account in importFromCsv
-        budgetData.importFromCsv(filePath, accountName);
+
+        budgetData.importFromCsv(filePath, accountName, useCategoriesCheckBox.checked);
         budgetData.currentTabIndex = 0;
     }
 
@@ -75,6 +77,12 @@ Dialog {
                 text: name
                 highlighted: accountComboBox.highlightedIndex === index
             }
+        }
+
+        CheckBox {
+            id: useCategoriesCheckBox
+            text: qsTr("Use categories from CSV")
+            checked: false
         }
     }
 }
