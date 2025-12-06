@@ -1,0 +1,122 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Trailing whitespace
+        run: |
+          if grep -rn '[[:blank:]]$' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.txt' --include='*.ts' .; then
+            echo "Error: Found trailing whitespace"
+            exit 1
+          fi
+
+      - name: End of file fixer
+        run: |
+          files_without_newline=""
+          for file in $(find . -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.qml' -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' -o -name '*.txt' -o -name '*.ts' \) -not -path './.git/*'); do
+            if [ -s "$file" ] && [ "$(tail -c 1 "$file" | wc -l)" -eq 0 ]; then
+              files_without_newline="$files_without_newline $file"
+            fi
+          done
+          if [ -n "$files_without_newline" ]; then
+            echo "Error: Files missing final newline:$files_without_newline"
+            exit 1
+          fi
+
+      - name: Check YAML
+        run: |
+          pip install pyyaml
+          python -c "
+          import yaml
+          import glob
+          import sys
+          errors = []
+          for pattern in ['*.yml', '*.yaml', '.github/**/*.yml']:
+              for f in glob.glob(pattern, recursive=True):
+                  try:
+                      with open(f) as file:
+                          yaml.safe_load(file)
+                  except Exception as e:
+                      errors.append(f'{f}: {e}')
+          if errors:
+              for e in errors:
+                  print(e)
+              sys.exit(1)
+          "
+
+      - name: Check large files
+        run: |
+          large_files=$(find . -type f -size +500k -not -path './.git/*')
+          if [ -n "$large_files" ]; then
+            echo "Error: Found large files (>500KB):"
+            echo "$large_files"
+            exit 1
+          fi
+
+      - name: Check merge conflict markers
+        run: |
+          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' .; then
+            echo "Error: Found merge conflict markers"
+            exit 1
+          fi
+
+      - name: Check line endings (LF only)
+        run: |
+          if grep -rIl $'\r' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.txt' --include='*.ts' .; then
+            echo "Error: Found CRLF line endings (should be LF)"
+            exit 1
+          fi
+
+      - name: Install clang-format
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository -y "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-19 main"
+          sudo apt-get update
+          sudo apt-get install -y clang-format-19
+
+      - name: Check C++ formatting
+        run: |
+          find . -name '*.cpp' -o -name '*.h' | while read file; do
+            if ! clang-format-19 --dry-run --Werror "$file" 2>/dev/null; then
+              echo "Error: $file needs formatting"
+              exit 1
+            fi
+          done
+
+      - name: Read Qt version
+        id: qt-version
+        run: echo "version=$(cat .qt-version)" >> $GITHUB_OUTPUT
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ steps.qt-version.outputs.version }}
+
+      - name: Check QML formatting
+        run: |
+          format_errors=""
+          for file in $(find . -name '*.qml'); do
+            original=$(cat "$file")
+            formatted=$(qmlformat "$file")
+            if [ "$original" != "$formatted" ]; then
+              format_errors="$format_errors $file"
+            fi
+          done
+          if [ -n "$format_errors" ]; then
+            echo "Error: QML files need formatting:$format_errors"
+            exit 1
+          fi
+
+      - name: Check translations complete
+        run: ./scripts/check-translations.sh
