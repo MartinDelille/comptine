@@ -13,6 +13,7 @@ ApplicationWindow {
 
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
     property string pendingAction: ""  // "quit", "new", or "open"
+    property bool forceQuit: false  // Set to true when user confirmed quit without saving
 
     function performPendingAction() {
         if (pendingAction === "quit") {
@@ -36,7 +37,7 @@ ApplicationWindow {
     }
 
     onClosing: function (close) {
-        if (!budgetData.undoStack.clean) {
+        if (!budgetData.undoStack.clean && !forceQuit) {
             close.accepted = false;
             pendingAction = "quit";
             unsavedChangesDialog.open();
@@ -250,6 +251,7 @@ ApplicationWindow {
                     saveDialog.open();
                 }
             } else if (button === MessageDialog.Discard) {
+                forceQuit = (pendingAction === "quit");
                 window.performPendingAction();
             } else {
                 // Cancel: clear pending action
