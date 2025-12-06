@@ -71,13 +71,14 @@ Rectangle {
                 required property int index
 
                 width: ListView.view.width
-                height: 80
+                implicitHeight: contentColumn.implicitHeight + 24
                 color: Theme.surfaceElevated
                 border.color: Theme.borderLight
                 border.width: Theme.cardBorderWidth
                 radius: Theme.cardRadius
 
                 ColumnLayout {
+                    id: contentColumn
                     anchors.fill: parent
                     anchors.margins: 12
                     spacing: Theme.spacingSmall
