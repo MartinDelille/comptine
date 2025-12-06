@@ -221,3 +221,42 @@ void SetOperationCategoryCommand::redo() {
     }
   }
 }
+
+SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation *operation,
+                                                             OperationListModel *operationModel,
+                                                             BudgetData *budgetData,
+                                                             const QDate &oldBudgetDate,
+                                                             const QDate &newBudgetDate,
+                                                             QUndoCommand *parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _budgetData(budgetData),
+    _oldBudgetDate(oldBudgetDate),
+    _newBudgetDate(newBudgetDate) {
+  setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy")));
+}
+
+void SetOperationBudgetDateCommand::undo() {
+  if (_operation) {
+    _operation->set_budgetDate(_oldBudgetDate);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+void SetOperationBudgetDateCommand::redo() {
+  if (_operation) {
+    _operation->set_budgetDate(_newBudgetDate);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}

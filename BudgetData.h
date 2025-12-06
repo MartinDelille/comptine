@@ -66,6 +66,7 @@ public:
 
   // Operation category editing
   Q_INVOKABLE void setOperationCategory(int operationIndex, const QString &newCategory);
+  Q_INVOKABLE void setOperationBudgetDate(int operationIndex, const QDate &newBudgetDate);
 
   // Budget calculations (aggregates across all accounts)
   Q_INVOKABLE double spentInCategory(const QString &categoryName, int year, int month) const;

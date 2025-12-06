@@ -107,6 +107,43 @@ Rectangle {
             }
 
             Label {
+                text: qsTr("Budget Date:")
+                font.pixelSize: Theme.fontSizeSmall
+                font.bold: true
+                color: Theme.textSecondary
+                Layout.topMargin: Theme.spacingSmall
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingSmall
+
+                Label {
+                    id: budgetDateLabel
+                    Layout.fillWidth: true
+                    text: root.operation?.budgetDate ? root.operation.budgetDate.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.textPrimary
+                    wrapMode: Text.WordWrap
+                }
+
+                ToolButton {
+                    text: "✏️"
+                    font.pixelSize: Theme.fontSizeSmall
+                    opacity: hovered ? 1.0 : 0.5
+                    onClicked: {
+                        budgetDateDialog.operationIndex = root.currentIndex;
+                        budgetDateDialog.originalBudgetDate = root.operation?.budgetDate ?? new Date();
+                        budgetDateDialog.open();
+                    }
+                }
+            }
+
+            EditBudgetDateDialog {
+                id: budgetDateDialog
+            }
+
+            Label {
                 text: qsTr("Description:")
                 font.pixelSize: Theme.fontSizeSmall
                 font.bold: true

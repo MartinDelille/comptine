@@ -206,6 +206,20 @@ void BudgetData::setOperationCategory(int operationIndex, const QString &newCate
   }
 }
 
+void BudgetData::setOperationBudgetDate(int operationIndex, const QDate &newBudgetDate) {
+  Account *account = currentAccount();
+  if (!account) return;
+
+  Operation *operation = account->getOperation(operationIndex);
+  if (!operation) return;
+
+  QDate oldBudgetDate = operation->budgetDate();
+  if (oldBudgetDate != newBudgetDate) {
+    _undoStack->push(new SetOperationBudgetDateCommand(operation, _operationModel, this,
+                                                       oldBudgetDate, newBudgetDate));
+  }
+}
+
 double BudgetData::spentInCategory(const QString &categoryName, int year, int month) const {
   double spent = 0.0;
   for (const Account *account : _accounts) {

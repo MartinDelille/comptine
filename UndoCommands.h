@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDate>
 #include <QList>
 #include <QString>
 #include <QUndoCommand>
@@ -92,4 +93,25 @@ private:
   BudgetData *_budgetData;
   QString _oldCategory;
   QString _newCategory;
+};
+
+// Command for setting an operation's budget date
+class SetOperationBudgetDateCommand : public QUndoCommand {
+public:
+  SetOperationBudgetDateCommand(Operation *operation,
+                                OperationListModel *operationModel,
+                                BudgetData *budgetData,
+                                const QDate &oldBudgetDate,
+                                const QDate &newBudgetDate,
+                                QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation *_operation;
+  OperationListModel *_operationModel;
+  BudgetData *_budgetData;
+  QDate _oldBudgetDate;
+  QDate _newBudgetDate;
 };
