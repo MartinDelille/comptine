@@ -343,6 +343,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   set_currentFilePath(filePath);
   _undoStack->clear();
   _undoStack->setClean();
+  emit yamlFileLoaded();
   emit dataLoaded();
   qDebug() << "Budget data loaded from:" << filePath;
   qDebug() << "  Accounts:" << _accounts.size();

@@ -81,7 +81,8 @@ public:
   Q_INVOKABLE void redo();
 
 signals:
-  void dataLoaded();
+  void dataLoaded();       // Emitted after any data load (YAML or CSV import)
+  void yamlFileLoaded();   // Emitted only after YAML file load (for UI state restore)
   void dataSaved();
 
 private:

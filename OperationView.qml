@@ -57,8 +57,8 @@ ColumnLayout {
             currentIndex: budgetData.currentAccountIndex
             enabled: budgetData.accountCount > 0
             displayText: budgetData.currentAccount?.name ?? qsTr("No account")
-            onActivated: {
-                budgetData.currentAccountIndex = currentIndex;
+            onActivated: function(index) {
+                budgetData.currentAccountIndex = index;
             }
             delegate: ItemDelegate {
                 required property int index

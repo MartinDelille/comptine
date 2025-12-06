@@ -65,16 +65,16 @@ int main(int argc, char *argv[]) {
   loadUiState();
 
   // Save last opened file when data is loaded, and re-apply UI state for YAML loads only
-  QObject::connect(&budgetData, &BudgetData::dataLoaded,
+  QObject::connect(&budgetData, &BudgetData::yamlFileLoaded,
                    [&settings, &budgetData, &loadUiState]() {
                      if (!budgetData.currentFilePath().isEmpty()) {
                        settings.setValue("lastFile",
                                          budgetData.currentFilePath());
-                       // Re-apply UI state after YAML loads (for selectedOperationIndex
-                       // which needs valid operation count). Skip for CSV imports
-                       // where the import sets the correct account/operation.
-                       loadUiState();
                      }
+                     // Re-apply UI state after YAML loads (for selectedOperationIndex
+                     // which needs valid operation count). Skip for CSV imports
+                     // where the import sets the correct account/operation.
+                     loadUiState();
                    });
 
   // Save or clear last file when currentFilePath changes (e.g., Save As or File > New)
