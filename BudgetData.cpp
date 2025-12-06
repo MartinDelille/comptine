@@ -414,7 +414,6 @@ bool BudgetData::importFromCsv(const QString &filePath,
   qDebug() << "  date:" << idx.date;
   qDebug() << "  description:" << idx.description;
   qDebug() << "  category:" << idx.category;
-  qDebug() << "  subCategory:" << idx.subCategory;
   qDebug() << "  debit:" << idx.debit;
   qDebug() << "  credit:" << idx.credit;
   qDebug() << "  amount:" << idx.amount;
@@ -496,11 +495,8 @@ bool BudgetData::importFromCsv(const QString &filePath,
     // Determine category based on useCategories flag
     QString category;
     if (useCategories) {
-      // Use category from CSV (prefer sub-category if available)
-      category = getField(fields, idx.subCategory);
-      if (category.isEmpty()) {
-        category = getField(fields, idx.category);
-      }
+      // Use category from CSV (last matching category column = most specific)
+      category = getField(fields, idx.category);
 
       // Track new categories that will need to be created
       if (!category.isEmpty() && !existingCategoryLookup.contains(category.toLower())) {

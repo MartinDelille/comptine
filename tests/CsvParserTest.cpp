@@ -121,6 +121,7 @@ private slots:
   // parseHeader tests
   void parseHeader_SemicolonFormat() {
     // Header from example_import.csv
+    // Last category column wins: "Sous categorie" at index 7
     QString header =
         "Date de comptabilisation;Libelle simplifie;Libelle "
         "operation;Reference;Informations complementaires;Type "
@@ -131,8 +132,7 @@ private slots:
 
     QCOMPARE(idx.date, 0);
     QCOMPARE(idx.description, 1);
-    QCOMPARE(idx.category, 6);
-    QCOMPARE(idx.subCategory, 7);
+    QCOMPARE(idx.category, 7);  // Last match: "Sous categorie"
     QCOMPARE(idx.debit, 8);
     QCOMPARE(idx.credit, 9);
     QVERIFY(idx.isValid());
@@ -140,6 +140,7 @@ private slots:
 
   void parseHeader_CommaFormat() {
     // Header from a.csv (with accents)
+    // Last category column wins: "Sous catégorie CE" at index 7
     QString header =
         "Date,Libellé simplifié,Libellé,Réference,Informations "
         "complémentaires,Type opération,Catégorie CE,Sous "
@@ -150,8 +151,28 @@ private slots:
 
     QCOMPARE(idx.date, 0);
     QCOMPARE(idx.description, 1);
-    QCOMPARE(idx.category, 6);
-    QCOMPARE(idx.subCategory, 7);
+    QCOMPARE(idx.category, 7);  // Last match: "Sous catégorie CE"
+    QCOMPARE(idx.debit, 8);
+    QCOMPARE(idx.credit, 9);
+    QCOMPARE(idx.amount, 13);
+    QVERIFY(idx.isValid());
+  }
+
+  void parseHeader_LastCategoryWins() {
+    // Header with multiple category columns - last one should win
+    // This simulates: "Catégorie CE", "Sous catégorie CE", "Catégorie"
+    QString header =
+        "Date,Libellé simplifié,Libellé,Réference,Informations "
+        "complémentaires,Type opération,Catégorie CE,Sous "
+        "catégorie CE,Débit,Crédit,Date opération,Date de "
+        "valeur,Pointage opération,Montant,Solde,\"559,87 "
+        "€\",Date budget,Catégorie,Compte,Check";
+    QStringList fields = parseCsvLine(header, ',');
+    CsvFieldIndices idx = parseHeader(fields);
+
+    QCOMPARE(idx.date, 0);
+    QCOMPARE(idx.description, 1);
+    QCOMPARE(idx.category, 17);  // Last match: "Catégorie" at index 17
     QCOMPARE(idx.debit, 8);
     QCOMPARE(idx.credit, 9);
     QCOMPARE(idx.amount, 13);
@@ -215,8 +236,8 @@ private slots:
 
     QCOMPARE(getField(fields, idx.date), QString("28/11/2025"));
     QCOMPARE(getField(fields, idx.description), QString("CARREFOUR MARKET"));
-    QCOMPARE(getField(fields, idx.category), QString("Alimentation"));
-    QCOMPARE(getField(fields, idx.subCategory), QString("Hyper/supermarche"));
+    // Last match is "Sous categorie" at index 7, which maps to "Hyper/supermarche"
+    QCOMPARE(getField(fields, idx.category), QString("Hyper/supermarche"));
     QCOMPARE(parseAmount(getField(fields, idx.debit)), -52.30);
   }
 
@@ -230,7 +251,7 @@ private slots:
         "€\",,01/12/2022,Virement interne,Livret A2,\"9 103,13 €\"";
     QStringList fields = parseCsvLine(line, ',');
 
-    // Parse header first
+    // Parse header first - this header has "Catégorie CE" (6), "Sous catégorie CE" (7), and "Catégorie" (17)
     QString header =
         "Date,Libellé simplifié,Libellé,Réference,Informations "
         "complémentaires,Type opération,Catégorie CE,Sous "
@@ -241,8 +262,8 @@ private slots:
 
     QCOMPARE(getField(fields, idx.date), QString("26/11/2022"));
     QCOMPARE(getField(fields, idx.description), QString("M NICK LARSONO"));
-    QCOMPARE(getField(fields, idx.category), QString("Transaction exclue"));
-    QCOMPARE(getField(fields, idx.subCategory), QString("Virement interne"));
+    // Last match is "Catégorie" at index 17, which maps to "Virement interne"
+    QCOMPARE(getField(fields, idx.category), QString("Virement interne"));
 
     // Test amount parsing - this is the key test!
     QString debitStr = getField(fields, idx.debit);

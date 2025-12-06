@@ -62,8 +62,7 @@ inline QStringList parseCsvLine(const QString &line, QChar delimiter) {
 struct CsvFieldIndices {
   int date = -1;
   int description = -1;
-  int category = -1;
-  int subCategory = -1;
+  int category = -1;  // Last matching category column (most specific)
   int debit = -1;
   int credit = -1;
   int amount = -1;
@@ -100,13 +99,14 @@ inline QString normalizeHeader(const QString &header) {
 }
 
 // Parse header row to detect column indices
+// For fields that can appear multiple times (category), the LAST match wins
 inline CsvFieldIndices parseHeader(const QStringList &headerFields) {
   CsvFieldIndices indices;
 
   for (int i = 0; i < headerFields.size(); i++) {
     QString h = normalizeHeader(headerFields[i]);
 
-    // Date column (check multiple variants)
+    // Date column (first match wins)
     if (indices.date < 0 && (h == "date" || h == "date de comptabilisation")) {
       indices.date = i;
     }
@@ -114,23 +114,19 @@ inline CsvFieldIndices parseHeader(const QStringList &headerFields) {
     else if (indices.description < 0 && (h == "libelle simplifie" || h == "libelle" || h == "description" || h == "label")) {
       indices.description = i;
     }
-    // Sub-category column (checked before category)
-    else if (indices.subCategory < 0 && (h == "sous categorie ce" || h == "sous categorie" || h == "sub-category" || h == "subcategory")) {
-      indices.subCategory = i;
-    }
-    // Category column
-    else if (indices.category < 0 && (h == "categorie ce" || h == "categorie" || h == "category")) {
+    // Category column (last match wins - keep updating)
+    else if (h == "sous categorie ce" || h == "sous categorie" || h == "sub-category" || h == "subcategory" || h == "categorie ce" || h == "categorie" || h == "category") {
       indices.category = i;
     }
-    // Debit column
+    // Debit column (first match wins)
     else if (indices.debit < 0 && (h == "debit")) {
       indices.debit = i;
     }
-    // Credit column
+    // Credit column (first match wins)
     else if (indices.credit < 0 && (h == "credit")) {
       indices.credit = i;
     }
-    // Single amount column
+    // Single amount column (first match wins)
     else if (indices.amount < 0 && (h == "montant" || h == "amount")) {
       indices.amount = i;
     }
