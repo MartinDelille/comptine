@@ -6,7 +6,7 @@ Use exact commands below to configure, build, run, and clean the project. If you
 
 ### macOS
 
-- The project uses Qt 6.10.1 installed here: ~/Qt/6.10.1/macos
+- The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
 - **Configure**: `qt-cmake -B build/agent -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
 - **Build**: `cmake --build build/agent`
 - **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine`
@@ -16,7 +16,7 @@ When done, you can run the application as shown above to show the progress.
 
 ## Project Structure
 
-- Qt6 (6.10.1) QML application with C++ backend
+- Qt6 QML application with C++ backend (version specified in `.qt-version`)
 - CMake build system using `qt_add_executable` and `qt_add_qml_module`
 - Main files: `main.cpp`, `Operation.{h,cpp}`, `BudgetData.{h,cpp}`, `Main.qml`
 

@@ -17,10 +17,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read Qt version
+        id: qt-version
+        run: echo "version=$(cat .qt-version)" >> $GITHUB_OUTPUT
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.10.1'
+          version: ${{ steps.qt-version.outputs.version }}
 
       - name: Check translations complete
         run: |
