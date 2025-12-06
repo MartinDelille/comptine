@@ -2,8 +2,8 @@
   "$schema": "https://opencode.ai/config.json",
   "lsp": {
     "clangd": {
-      "command": ["clangd", "--compile-commands-dir=build/agent"]
-    }
+      "command": ["clangd", "--compile-commands-dir=build/agent"],
+    },
   },
   "permission": {
     "bash": {
@@ -12,5 +12,11 @@
   },
   "watcher": {
     "ignore": ["Makefile"],
+  },
+  "formatter": {
+    "qmlformat": {
+      "command": ["qmlformat", "-i", "$FILE"],
+      "extensions": [".qml"],
+    },
   },
 }
