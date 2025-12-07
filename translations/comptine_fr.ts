@@ -166,8 +166,24 @@
         <translation>Importer dans le compte :</translation>
     </message>
     <message>
+        <source>Existing account</source>
+        <translation>Compte existant</translation>
+    </message>
+    <message>
         <source>New account</source>
         <translation>Nouveau compte</translation>
+    </message>
+    <message>
+        <source>Account name</source>
+        <translation>Nom du compte</translation>
+    </message>
+    <message>
+        <source>Account name is required</source>
+        <translation>Le nom du compte est requis</translation>
+    </message>
+    <message>
+        <source>An account with this name already exists</source>
+        <translation>Un compte avec ce nom existe déjà</translation>
     </message>
     <message>
         <source>Use categories from CSV</source>

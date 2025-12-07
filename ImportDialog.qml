@@ -10,45 +10,42 @@ Dialog {
 
     property string filePath: ""
 
-    // Build a local model with accounts + "New account" option
-    ListModel {
-        id: importAccountModel
+    // Validation for new account name
+    readonly property string newAccountName: newAccountField.text.trim()
+    readonly property bool newAccountNameEmpty: newAccountRadio.checked && newAccountName === ""
+    readonly property bool newAccountNameExists: {
+        if (!newAccountRadio.checked || newAccountName === "")
+            return false;
+        return budgetData.getAccountByName(newAccountName) !== null;
     }
+    readonly property bool isValid: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
 
-    function refreshAccountModel() {
-        importAccountModel.clear();
-        for (var i = 0; i < budgetData.accountCount; i++) {
-            var account = budgetData.getAccount(i);
-            importAccountModel.append({
-                "name": account.name,
-                "isNewAccount": false,
-                "accountIndex": i
-            });
-        }
-        importAccountModel.append({
-            "name": qsTr("New account"),
-            "isNewAccount": true,
-            "accountIndex": -1
-        });
+    // Disable OK button when invalid
+    onIsValidChanged: {
+        standardButton(Dialog.Ok).enabled = isValid;
     }
 
     onOpened: {
-        refreshAccountModel();
-        // Default to current account, or "New account" if none selected
-        if (budgetData.currentAccountIndex >= 0 && budgetData.currentAccountIndex < budgetData.accountCount) {
+        // Default to existing account if one is selected, otherwise new account
+        if (budgetData.currentAccountIndex >= 0) {
+            existingAccountRadio.checked = true;
             accountComboBox.currentIndex = budgetData.currentAccountIndex;
         } else {
-            accountComboBox.currentIndex = importAccountModel.count - 1;
+            newAccountRadio.checked = true;
         }
-        // Reset checkbox to unchecked
+        newAccountField.text = "";
         useCategoriesCheckBox.checked = false;
+        // Update OK button state
+        standardButton(Dialog.Ok).enabled = isValid;
     }
 
     onAccepted: {
-        var selectedItem = importAccountModel.get(accountComboBox.currentIndex);
         var accountName = "";
-        if (selectedItem && !selectedItem.isNewAccount) {
-            var account = budgetData.getAccount(selectedItem.accountIndex);
+        if (newAccountRadio.checked) {
+            accountName = newAccountName;
+        } else {
+            // Existing account
+            var account = budgetData.getAccount(accountComboBox.currentIndex);
             accountName = account ? account.name : "";
         }
 
@@ -64,11 +61,23 @@ Dialog {
             text: qsTr("Import into account:")
         }
 
+        ButtonGroup {
+            id: accountButtonGroup
+        }
+
+        RadioButton {
+            id: existingAccountRadio
+            text: qsTr("Existing account")
+            ButtonGroup.group: accountButtonGroup
+            enabled: budgetData.accountCount > 0
+        }
+
         ComboBox {
             id: accountComboBox
             Layout.fillWidth: true
-            Layout.preferredWidth: 250
-            model: importAccountModel
+            Layout.leftMargin: Theme.spacingXLarge
+            enabled: existingAccountRadio.checked
+            model: budgetData.accountModel
             textRole: "name"
             delegate: ItemDelegate {
                 required property int index
@@ -76,6 +85,36 @@ Dialog {
                 width: accountComboBox.width
                 text: name
                 highlighted: accountComboBox.highlightedIndex === index
+            }
+        }
+
+        RadioButton {
+            id: newAccountRadio
+            text: qsTr("New account")
+            ButtonGroup.group: accountButtonGroup
+        }
+
+        TextField {
+            id: newAccountField
+            Layout.fillWidth: true
+            Layout.leftMargin: Theme.spacingXLarge
+            enabled: newAccountRadio.checked
+            placeholderText: qsTr("Account name")
+        }
+
+        Label {
+            id: errorLabel
+            Layout.fillWidth: true
+            Layout.leftMargin: Theme.spacingXLarge
+            color: Theme.negative
+            font.pixelSize: Theme.fontSizeSmall
+            visible: newAccountRadio.checked && (newAccountNameEmpty || newAccountNameExists)
+            text: {
+                if (newAccountNameEmpty)
+                    return qsTr("Account name is required");
+                if (newAccountNameExists)
+                    return qsTr("An account with this name already exists");
+                return "";
             }
         }
 
