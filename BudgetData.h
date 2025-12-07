@@ -71,6 +71,7 @@ public:
   // Budget calculations (aggregates across all accounts)
   Q_INVOKABLE double spentInCategory(const QString &categoryName, int year, int month) const;
   Q_INVOKABLE QVariantList monthlyBudgetSummary(int year, int month) const;
+  Q_INVOKABLE QVariantList operationsForCategory(const QString &categoryName, int year, int month) const;
 
   // File operations
   Q_INVOKABLE bool loadFromYaml(const QString &filePath);

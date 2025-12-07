@@ -269,6 +269,31 @@ QVariantList BudgetData::monthlyBudgetSummary(int year, int month) const {
   return result;
 }
 
+QVariantList BudgetData::operationsForCategory(const QString &categoryName, int year, int month) const {
+  QVariantList result;
+  for (const Account *account : _accounts) {
+    for (const Operation *op : account->operations()) {
+      QDate budgetDate = op->budgetDate();
+      if (op->category() == categoryName && budgetDate.year() == year && budgetDate.month() == month) {
+        QVariantMap item;
+        item["date"] = op->date();
+        item["budgetDate"] = budgetDate;
+        item["description"] = op->description();
+        item["amount"] = op->amount();
+        item["accountName"] = account->name();
+        result.append(item);
+      }
+    }
+  }
+
+  // Sort by date (most recent first)
+  std::sort(result.begin(), result.end(), [](const QVariant &a, const QVariant &b) {
+    return a.toMap()["date"].toDate() > b.toMap()["date"].toDate();
+  });
+
+  return result;
+}
+
 void BudgetData::clear() {
   clearAccounts();
   clearCategories();

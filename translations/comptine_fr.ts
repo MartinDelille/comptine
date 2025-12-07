@@ -52,6 +52,24 @@
     </message>
 </context>
 <context>
+    <name>CategoryDetailView</name>
+    <message>
+        <source>Total: %1</source>
+        <translation>Total : %1</translation>
+    </message>
+    <message numerus="yes">
+        <source>%n operation(s)</source>
+        <translation>
+            <numerusform>%n opération</numerusform>
+            <numerusform>%n opérations</numerusform>
+        </translation>
+    </message>
+    <message>
+        <source>No operations for this category</source>
+        <translation>Aucune opération pour cette catégorie</translation>
+    </message>
+</context>
+<context>
     <name>EditBudgetDateDialog</name>
     <message>
         <source>Edit Budget Date</source>

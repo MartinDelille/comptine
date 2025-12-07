@@ -42,6 +42,10 @@ Rectangle {
         id: editCategoryDialog
     }
 
+    CategoryDetailView {
+        id: categoryDetailView
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingXLarge
@@ -72,10 +76,23 @@ Rectangle {
 
                 width: ListView.view.width
                 implicitHeight: contentColumn.implicitHeight + 24
-                color: Theme.surfaceElevated
+                color: delegateMouseArea.containsMouse ? Theme.surface : Theme.surfaceElevated
                 border.color: Theme.borderLight
                 border.width: Theme.cardBorderWidth
                 radius: Theme.cardRadius
+
+                MouseArea {
+                    id: delegateMouseArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                        categoryDetailView.categoryName = modelData.name;
+                        categoryDetailView.year = budgetData.budgetYear;
+                        categoryDetailView.month = budgetData.budgetMonth;
+                        categoryDetailView.open();
+                    }
+                }
 
                 ColumnLayout {
                     id: contentColumn
