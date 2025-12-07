@@ -248,7 +248,19 @@ QVariantList BudgetData::monthlyBudgetSummary(int year, int month) const {
     double displayAmount = isIncome ? total : -total;
     double displayLimit = std::abs(budgetLimit);
     double remaining = displayLimit - displayAmount;
-    double percentUsed = displayLimit > 0 ? (displayAmount / displayLimit) * 100.0 : 0.0;
+
+    // Calculate percent used:
+    // - For zero budget expense: any spending means exceeded (use infinity-like behavior)
+    // - For zero budget income: no expectation yet
+    double percentUsed;
+    if (displayLimit > 0) {
+      percentUsed = (displayAmount / displayLimit) * 100.0;
+    } else if (!isIncome && displayAmount > 0) {
+      // Zero expense budget with spending = exceeded (show as 100%+)
+      percentUsed = 100.0 + displayAmount;  // Will show exceeded status
+    } else {
+      percentUsed = 0.0;
+    }
 
     QVariantMap item;
     item["name"] = category->name();

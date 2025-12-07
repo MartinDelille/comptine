@@ -134,8 +134,6 @@ Rectangle {
 
                         Label {
                             text: {
-                                if (modelData.budgetLimit <= 0)
-                                    return "";
                                 if (modelData.isIncome && modelData.percentUsed < 100)
                                     return qsTr("PENDING");
                                 if (!modelData.isIncome && modelData.percentUsed > 100)
@@ -166,8 +164,6 @@ Rectangle {
                             height: parent.height
                             radius: 4
                             color: {
-                                if (modelData.budgetLimit <= 0)
-                                    return Theme.textMuted;
                                 if (modelData.isIncome) {
                                     // Income: green when complete, warning when pending
                                     return modelData.percentUsed >= 100 ? Theme.positive : Theme.warning;
@@ -185,8 +181,6 @@ Rectangle {
 
                     Label {
                         text: {
-                            if (modelData.budgetLimit <= 0)
-                                return qsTr("No budget defined");
                             if (modelData.isIncome) {
                                 return modelData.remaining > 0 ? qsTr("Expected: %1").arg(Theme.formatAmount(modelData.remaining)) : qsTr("Received: %1 extra").arg(Theme.formatAmount(-modelData.remaining));
                             } else {
@@ -195,8 +189,6 @@ Rectangle {
                         }
                         font.pixelSize: Theme.fontSizeSmall
                         color: {
-                            if (modelData.budgetLimit <= 0)
-                                return Theme.textSecondary;
                             if (modelData.isIncome) {
                                 return modelData.remaining > 0 ? Theme.warning : Theme.positive;
                             } else {

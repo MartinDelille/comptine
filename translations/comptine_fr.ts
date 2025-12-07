@@ -27,10 +27,6 @@
         <translation>Dépassement : %1</translation>
     </message>
     <message>
-        <source>No budget defined</source>
-        <translation>Pas de budget défini</translation>
-    </message>
-    <message>
         <source>(income)</source>
         <translation>(revenu)</translation>
     </message>
