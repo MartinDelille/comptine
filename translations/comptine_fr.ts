@@ -233,6 +233,10 @@
         <translation>Rétablir</translation>
     </message>
     <message>
+        <source>Edit &amp;Category...</source>
+        <translation>Modifier la catégorie...</translation>
+    </message>
+    <message>
         <source>&amp;Operations</source>
         <translation>Opérations</translation>
     </message>

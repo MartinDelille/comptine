@@ -8,6 +8,15 @@ FocusScope {
     property var budgetSummary: []
     property bool dialogOpen: editCategoryDialog.visible || categoryDetailView.visible
 
+    function editCurrentCategory() {
+        if (budgetData.currentCategoryIndex >= 0 && budgetData.currentCategoryIndex < budgetSummary.length) {
+            let category = budgetSummary[budgetData.currentCategoryIndex];
+            editCategoryDialog.originalName = category.name;
+            editCategoryDialog.originalBudgetLimit = category.signedBudgetLimit;
+            editCategoryDialog.open();
+        }
+    }
+
     // Forward focus to the category list
     onActiveFocusChanged: {
         if (activeFocus && budgetSummary.length > 0) {
@@ -123,17 +132,6 @@ FocusScope {
                         categoryDetailView.year = budgetData.budgetYear;
                         categoryDetailView.month = budgetData.budgetMonth;
                         categoryDetailView.open();
-                    }
-                }
-
-                Keys.onPressed: event => {
-                    // 'e' to edit current category
-                    if (event.key === Qt.Key_E && budgetData.currentCategoryIndex >= 0) {
-                        let category = budgetSummary[budgetData.currentCategoryIndex];
-                        editCategoryDialog.originalName = category.name;
-                        editCategoryDialog.originalBudgetLimit = category.signedBudgetLimit;
-                        editCategoryDialog.open();
-                        event.accepted = true;
                     }
                 }
 

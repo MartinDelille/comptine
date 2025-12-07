@@ -127,6 +127,13 @@ ApplicationWindow {
                 enabled: budgetData.operationModel.selectionCount > 0
                 onTriggered: budgetData.copySelectedOperationsToClipboard()
             }
+            MenuSeparator {}
+            Action {
+                text: qsTr("Edit &Category...")
+                shortcut: "Ctrl+E"
+                enabled: budgetData.currentTabIndex === 1 && budgetData.currentCategoryIndex >= 0
+                onTriggered: budgetView.editCurrentCategory()
+            }
         }
         Menu {
             title: qsTr("&View")
