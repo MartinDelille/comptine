@@ -16,6 +16,7 @@ RowLayout {
 
     Button {
         text: "<"
+        focusPolicy: Qt.NoFocus
         onClicked: budgetData.previousMonth()
         implicitWidth: 40
     }
@@ -31,6 +32,7 @@ RowLayout {
 
     Button {
         text: ">"
+        focusPolicy: Qt.NoFocus
         onClicked: budgetData.nextMonth()
         implicitWidth: 40
     }

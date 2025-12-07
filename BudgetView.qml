@@ -172,6 +172,7 @@ FocusScope {
                             ToolButton {
                                 text: "✏️"
                                 font.pixelSize: Theme.fontSizeNormal
+                                focusPolicy: Qt.NoFocus
                                 opacity: hovered ? 1.0 : 0.5
                                 onClicked: {
                                     budgetData.currentCategoryIndex = index;
