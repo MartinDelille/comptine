@@ -22,15 +22,27 @@ FocusScope {
         focus: true
         keyNavigationEnabled: false  // We handle key navigation ourselves
         highlightFollowsCurrentItem: false  // Don't auto-scroll highlight
+        currentIndex: budgetData.currentOperationIndex
+
+        // Sync currentIndex back to budgetData
+        onCurrentIndexChanged: {
+            if (currentIndex >= 0) {
+                budgetData.currentOperationIndex = currentIndex;
+            }
+        }
 
         // Restore focus when YAML file is loaded (not after CSV import, which handles its own selection)
         Connections {
             target: budgetData
             function onYamlFileLoaded() {
                 if (listView.count > 0) {
-                    listView.currentIndex = 0;
-                    budgetData.operationModel.select(0, false);
-                    listView.positionViewAtIndex(0, ListView.Beginning);
+                    // Use the index from the file (already set in budgetData.currentOperationIndex)
+                    let idx = Math.min(budgetData.currentOperationIndex, listView.count - 1);
+                    if (idx < 0)
+                        idx = 0;
+                    listView.currentIndex = idx;
+                    budgetData.operationModel.select(idx, false);
+                    listView.positionViewAtIndex(idx, ListView.Contain);
                 }
                 listView.forceActiveFocus();
             }
@@ -40,7 +52,7 @@ FocusScope {
                 if (listView.count > 0 && listView.currentIndex < 0) {
                     listView.currentIndex = 0;
                 }
-                listView.positionViewAtIndex(0, ListView.Beginning);
+                listView.positionViewAtIndex(listView.currentIndex >= 0 ? listView.currentIndex : 0, ListView.Contain);
                 listView.forceActiveFocus();
             }
             function onOperationSelected(index) {

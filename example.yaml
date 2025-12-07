@@ -1,11 +1,7 @@
-# Comptine Budget Data Format
-# This file stores personal budget information including bank accounts,
-# operations, and budget categories.
-#
-# Budget limits use signed values:
-#   - Negative limit = Expense category (spending budget)
-#   - Positive limit = Income category (expected income)
-
+state:
+  currentTab: 1
+  budgetYear: 2025
+  budgetMonth: 10
 categories:
   - name: Alimentation
     budget_limit: -400.00
@@ -15,6 +11,7 @@ categories:
     budget_limit: -1200.00
   - name: Loisirs
     budget_limit: -200.00
+    current: true
   - name: Sante
     budget_limit: -100.00
   - name: Shopping
@@ -23,10 +20,9 @@ categories:
     budget_limit: 2500.00
   - name: Epargne
     budget_limit: 100.00
-
 accounts:
   - name: Compte Courant
-    balance: 2500.00
+    current: true
     operations:
       - date: 2025-10-08
         amount: -45.00
@@ -40,6 +36,7 @@ accounts:
         amount: -85.00
         category: Logement
         description: Electricite EDF
+        current: true
       - date: 2025-10-03
         amount: 25.00
         category: Sante
@@ -48,9 +45,7 @@ accounts:
         amount: 2500.00
         category: Revenus
         description: Salaire Octobre
-
   - name: Livret A
-    balance: 5000.00
     operations:
       - date: 2025-09-15
         amount: 100.00

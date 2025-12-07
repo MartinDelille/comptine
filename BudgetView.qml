@@ -6,13 +6,12 @@ FocusScope {
     id: root
 
     property var budgetSummary: []
-    property int currentCategoryIndex: -1
 
     // Forward focus to the category list
     onActiveFocusChanged: {
         if (activeFocus && budgetSummary.length > 0) {
-            if (currentCategoryIndex < 0) {
-                currentCategoryIndex = 0;
+            if (budgetData.currentCategoryIndex < 0) {
+                budgetData.currentCategoryIndex = 0;
             }
             categoryListView.forceActiveFocus();
         }
@@ -21,14 +20,14 @@ FocusScope {
     function updateBudgetSummary() {
         budgetSummary = budgetData.monthlyBudgetSummary(budgetData.budgetYear, budgetData.budgetMonth);
         // Reset current index if out of bounds, or initialize to first item
-        if (currentCategoryIndex < 0 && budgetSummary.length > 0) {
-            currentCategoryIndex = 0;
-        } else if (currentCategoryIndex >= budgetSummary.length) {
-            currentCategoryIndex = budgetSummary.length > 0 ? 0 : -1;
+        if (budgetData.currentCategoryIndex < 0 && budgetSummary.length > 0) {
+            budgetData.currentCategoryIndex = 0;
+        } else if (budgetData.currentCategoryIndex >= budgetSummary.length) {
+            budgetData.currentCategoryIndex = budgetSummary.length > 0 ? 0 : -1;
         }
         // Restore scroll position to current category after model update
-        if (currentCategoryIndex >= 0) {
-            categoryListView.positionViewAtIndex(currentCategoryIndex, ListView.Contain);
+        if (budgetData.currentCategoryIndex >= 0) {
+            categoryListView.positionViewAtIndex(budgetData.currentCategoryIndex, ListView.Contain);
         }
     }
 
@@ -91,7 +90,6 @@ FocusScope {
                 }
             }
 
-            // Budget list
             ListView {
                 id: categoryListView
                 Layout.fillWidth: true
@@ -100,26 +98,26 @@ FocusScope {
                 spacing: Theme.spacingNormal
                 clip: true
                 focus: true
-                currentIndex: root.currentCategoryIndex
+                currentIndex: budgetData.currentCategoryIndex
                 keyNavigationEnabled: false
 
                 Keys.onUpPressed: {
-                    if (root.currentCategoryIndex > 0) {
-                        root.currentCategoryIndex--;
-                        categoryListView.positionViewAtIndex(root.currentCategoryIndex, ListView.Contain);
+                    if (budgetData.currentCategoryIndex > 0) {
+                        budgetData.currentCategoryIndex--;
+                        categoryListView.positionViewAtIndex(budgetData.currentCategoryIndex, ListView.Contain);
                     }
                 }
 
                 Keys.onDownPressed: {
-                    if (root.currentCategoryIndex < budgetSummary.length - 1) {
-                        root.currentCategoryIndex++;
-                        categoryListView.positionViewAtIndex(root.currentCategoryIndex, ListView.Contain);
+                    if (budgetData.currentCategoryIndex < budgetSummary.length - 1) {
+                        budgetData.currentCategoryIndex++;
+                        categoryListView.positionViewAtIndex(budgetData.currentCategoryIndex, ListView.Contain);
                     }
                 }
 
                 Keys.onReturnPressed: {
-                    if (root.currentCategoryIndex >= 0 && root.currentCategoryIndex < budgetSummary.length) {
-                        let category = budgetSummary[root.currentCategoryIndex];
+                    if (budgetData.currentCategoryIndex >= 0 && budgetData.currentCategoryIndex < budgetSummary.length) {
+                        let category = budgetSummary[budgetData.currentCategoryIndex];
                         categoryDetailView.categoryName = category.name;
                         categoryDetailView.year = budgetData.budgetYear;
                         categoryDetailView.month = budgetData.budgetMonth;
@@ -129,8 +127,8 @@ FocusScope {
 
                 Keys.onPressed: event => {
                     // 'e' to edit current category
-                    if (event.key === Qt.Key_E && root.currentCategoryIndex >= 0) {
-                        let category = budgetSummary[root.currentCategoryIndex];
+                    if (event.key === Qt.Key_E && budgetData.currentCategoryIndex >= 0) {
+                        let category = budgetSummary[budgetData.currentCategoryIndex];
                         editCategoryDialog.originalName = category.name;
                         editCategoryDialog.originalBudgetLimit = category.signedBudgetLimit;
                         editCategoryDialog.open();
@@ -145,8 +143,8 @@ FocusScope {
                     width: ListView.view.width
                     implicitHeight: contentColumn.implicitHeight + 24
                     color: delegateMouseArea.containsMouse ? Theme.surface : Theme.surfaceElevated
-                    border.color: root.currentCategoryIndex === index ? Theme.accent : Theme.borderLight
-                    border.width: root.currentCategoryIndex === index ? 2 : Theme.cardBorderWidth
+                    border.color: budgetData.currentCategoryIndex === index ? Theme.accent : Theme.borderLight
+                    border.width: budgetData.currentCategoryIndex === index ? 2 : Theme.cardBorderWidth
                     radius: Theme.cardRadius
 
                     MouseArea {
@@ -155,7 +153,7 @@ FocusScope {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            root.currentCategoryIndex = index;
+                            budgetData.currentCategoryIndex = index;
                             categoryListView.forceActiveFocus();
                             categoryDetailView.categoryName = modelData.name;
                             categoryDetailView.year = budgetData.budgetYear;
@@ -192,7 +190,7 @@ FocusScope {
                                 font.pixelSize: Theme.fontSizeNormal
                                 opacity: hovered ? 1.0 : 0.5
                                 onClicked: {
-                                    root.currentCategoryIndex = index;
+                                    budgetData.currentCategoryIndex = index;
                                     editCategoryDialog.originalName = modelData.name;
                                     editCategoryDialog.originalBudgetLimit = modelData.signedBudgetLimit;
                                     editCategoryDialog.open();

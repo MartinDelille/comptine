@@ -18,6 +18,8 @@ class BudgetData : public QObject {
   PROPERTY_RW(int, currentTabIndex, 0)
   PROPERTY_RW(int, budgetYear, 0)
   PROPERTY_RW(int, budgetMonth, 0)
+  PROPERTY_RW(int, currentCategoryIndex, 0)
+  PROPERTY_RW(int, currentOperationIndex, 0)
 
   // Data properties (macro-generated)
   PROPERTY_RW(QString, currentFilePath, {})

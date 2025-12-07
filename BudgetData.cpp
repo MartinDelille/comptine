@@ -360,27 +360,44 @@ bool BudgetData::saveToYaml(const QString &filePath) const {
   ryml::NodeRef root = tree.rootref();
   root |= ryml::MAP;
 
+  // Write state section
+  ryml::NodeRef state = root["state"];
+  state |= ryml::MAP;
+  state["currentTab"] << _currentTabIndex;
+  state["budgetYear"] << _budgetYear;
+  state["budgetMonth"] << _budgetMonth;
+
   // Write categories
   ryml::NodeRef categories = root["categories"];
   categories |= ryml::SEQ;
-  for (const Category *category : _categories) {
+  for (int i = 0; i < _categories.size(); i++) {
+    const Category *category = _categories[i];
     ryml::NodeRef cat = categories.append_child();
     cat |= ryml::MAP;
     cat["name"] << toStdString(category->name());
-    cat["budget_limit"] << category->budgetLimit();
+    cat["budget_limit"] << toStdString(QString::number(category->budgetLimit(), 'f', 2));
+    if (i == _currentCategoryIndex) {
+      cat["current"] << "true";
+    }
   }
 
   // Write accounts
   ryml::NodeRef accounts = root["accounts"];
   accounts |= ryml::SEQ;
-  for (const Account *account : _accounts) {
+  for (int accIdx = 0; accIdx < _accounts.size(); accIdx++) {
+    const Account *account = _accounts[accIdx];
     ryml::NodeRef acc = accounts.append_child();
     acc |= ryml::MAP;
     acc["name"] << toStdString(account->name());
+    if (accIdx == _currentAccountIndex) {
+      acc["current"] << "true";
+    }
 
     ryml::NodeRef operations = acc["operations"];
     operations |= ryml::SEQ;
-    for (const Operation *op : account->operations()) {
+    const auto &ops = account->operations();
+    for (int opIdx = 0; opIdx < ops.size(); opIdx++) {
+      const Operation *op = ops[opIdx];
       ryml::NodeRef opNode = operations.append_child();
       opNode |= ryml::MAP;
       opNode["date"] << toStdString(op->date().toString("yyyy-MM-dd"));
@@ -390,6 +407,10 @@ bool BudgetData::saveToYaml(const QString &filePath) const {
       // Only save budget_date if explicitly set (different from operation date)
       if (op->budgetDate() != op->date()) {
         opNode["budget_date"] << toStdString(op->budgetDate().toString("yyyy-MM-dd"));
+      }
+      // Mark current operation (only for current account)
+      if (accIdx == _currentAccountIndex && opIdx == _currentOperationIndex) {
+        opNode["current"] << "true";
       }
     }
   }
@@ -427,12 +448,35 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
 
   clear();
 
+  // Track current indices from file
+  int currentAccountIdx = 0;
+  int currentCategoryIdx = 0;
+  int currentOperationIdx = 0;
+
   try {
     ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(data.constData()));
     ryml::ConstNodeRef root = tree.crootref();
 
+    // Load state section
+    if (root.has_child("state")) {
+      ryml::ConstNodeRef state = root["state"];
+      if (state.has_child("currentTab")) {
+        auto val = state["currentTab"].val();
+        set_currentTabIndex(QString::fromUtf8(val.str, val.len).toInt());
+      }
+      if (state.has_child("budgetYear")) {
+        auto val = state["budgetYear"].val();
+        set_budgetYear(QString::fromUtf8(val.str, val.len).toInt());
+      }
+      if (state.has_child("budgetMonth")) {
+        auto val = state["budgetMonth"].val();
+        set_budgetMonth(QString::fromUtf8(val.str, val.len).toInt());
+      }
+    }
+
     // Load categories
     if (root.has_child("categories")) {
+      int catIdx = 0;
       for (ryml::ConstNodeRef cat : root["categories"]) {
         auto category = new Category(this);
         if (cat.has_child("name")) {
@@ -443,20 +487,35 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
           auto val = cat["budget_limit"].val();
           category->set_budgetLimit(QString::fromUtf8(val.str, val.len).toDouble());
         }
+        if (cat.has_child("current")) {
+          auto val = cat["current"].val();
+          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+            currentCategoryIdx = catIdx;
+          }
+        }
         _categories.append(category);
+        catIdx++;
       }
     }
 
     // Load accounts
     if (root.has_child("accounts")) {
+      int accIdx = 0;
       for (ryml::ConstNodeRef acc : root["accounts"]) {
         auto account = new Account(this);
         if (acc.has_child("name")) {
           auto val = acc["name"].val();
           account->set_name(QString::fromUtf8(val.str, val.len));
         }
+        if (acc.has_child("current")) {
+          auto val = acc["current"].val();
+          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+            currentAccountIdx = accIdx;
+          }
+        }
         // Note: balance field is ignored - balance is calculated from operations
         if (acc.has_child("operations")) {
+          int opIdx = 0;
           for (ryml::ConstNodeRef opNode : acc["operations"]) {
             auto op = new Operation(account);
             if (opNode.has_child("date")) {
@@ -479,10 +538,21 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
               auto val = opNode["budget_date"].val();
               op->set_budgetDate(QDate::fromString(QString::fromUtf8(val.str, val.len), "yyyy-MM-dd"));
             }
+            if (opNode.has_child("current")) {
+              auto val = opNode["current"].val();
+              if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+                // Only track current operation for the current account
+                if (accIdx == currentAccountIdx) {
+                  currentOperationIdx = opIdx;
+                }
+              }
+            }
             account->addOperation(op);
+            opIdx++;
           }
         }
         _accounts.append(account);
+        accIdx++;
       }
     }
   } catch (const std::exception &e) {
@@ -495,10 +565,14 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   emit accountCountChanged();
   emit categoryCountChanged();
 
-  // Set first account as current
+  // Restore current indices from file
   if (!_accounts.isEmpty()) {
-    set_currentAccountIndex(0);
+    set_currentAccountIndex(qBound(0, currentAccountIdx, _accounts.size() - 1));
   }
+  if (!_categories.isEmpty()) {
+    set_currentCategoryIndex(qBound(0, currentCategoryIdx, _categories.size() - 1));
+  }
+  set_currentOperationIndex(currentOperationIdx);
 
   set_currentFilePath(filePath);
   _undoStack->clear();
