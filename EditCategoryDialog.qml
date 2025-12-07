@@ -61,6 +61,11 @@ Dialog {
                 selectAll()
         }
 
+        CheckBox {
+            id: incomeCheckBox
+            text: qsTr("This is an income category")
+        }
+
         Label {
             text: qsTr("Budget Limit")
             font.pixelSize: Theme.fontSizeNormal
@@ -74,11 +79,6 @@ Dialog {
             font.pixelSize: Theme.fontSizeNormal
             onActiveFocusChanged: if (activeFocus)
                 selectAll()
-        }
-
-        CheckBox {
-            id: incomeCheckBox
-            text: qsTr("This is an income category")
         }
     }
 }
