@@ -66,7 +66,9 @@ jobs:
 
       - name: Deploy Qt (macOS)
         if: matrix.os == 'macos-latest'
-        run: macdeployqt build/Comptine.app -qmldir=.
+        run: |
+          macdeployqt build/Comptine.app -qmldir=.
+          codesign --force --deep --sign - build/Comptine.app
 
       - name: Deploy Qt (Windows)
         if: matrix.os == 'windows-latest'
