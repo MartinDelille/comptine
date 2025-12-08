@@ -125,6 +125,7 @@ set_target_properties(
              MACOSX_BUNDLE_SHORT_VERSION_STRING
              ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
              MACOSX_BUNDLE_ICON_FILE comptine.icns
+             MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
              MACOSX_BUNDLE TRUE
              WIN32_EXECUTABLE TRUE)
 

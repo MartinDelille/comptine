@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
   // Load file: command line argument takes priority, otherwise use last opened file
   if (argc > 1) {
     QString filePath = QString::fromLocal8Bit(argv[1]);
-    if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
+    if (filePath.endsWith(".comptine") || filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
       budgetData.loadFromYaml(filePath);
     } else if (filePath.endsWith(".csv")) {
       budgetData.importFromCsv(filePath);

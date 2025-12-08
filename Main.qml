@@ -180,7 +180,7 @@ ApplicationWindow {
         id: openDialog
         title: qsTr("Open Budget File")
         fileMode: FileDialog.OpenFile
-        nameFilters: ["YAML files (*.yaml *.yml)", "All files (*)"]
+        nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         onAccepted: {
             budgetData.loadFromYaml(selectedFile.toString().replace("file://", ""));
         }
@@ -190,7 +190,7 @@ ApplicationWindow {
         id: saveDialog
         title: qsTr("Save Budget File")
         fileMode: FileDialog.SaveFile
-        nameFilters: ["YAML files (*.yaml *.yml)", "All files (*)"]
+        nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         currentFile: budgetData.currentFilePath.length > 0 ? "file://" + budgetData.currentFilePath : ""
         onAccepted: {
             var filePath = selectedFile.toString().replace("file://", "");
