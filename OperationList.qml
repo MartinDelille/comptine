@@ -35,7 +35,7 @@ FocusScope {
                         idx = 0;
                     budgetData.currentOperationIndex = idx;
                     budgetData.operationModel.select(idx, false);
-                    listView.positionViewAtIndex(idx, ListView.Contain);
+                    listView.positionViewAtIndex(idx, ListView.Center);
                 }
                 listView.forceActiveFocus();
             }

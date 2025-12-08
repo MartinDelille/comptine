@@ -571,7 +571,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   // Track current indices from file
   int currentAccountIdx = 0;
   int currentCategoryIdx = 0;
-  int currentOperationIdx = 0;
+  Operation *currentOperation = nullptr;
 
   try {
     ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(data.constData()));
@@ -679,7 +679,7 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
               if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
                 // Only track current operation for the current account
                 if (accIdx == currentAccountIdx) {
-                  currentOperationIdx = opIdx;
+                  currentOperation = op;
                 }
               }
             }
@@ -707,6 +707,15 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   }
   if (!_categories.isEmpty()) {
     set_currentCategoryIndex(qBound(0, currentCategoryIdx, _categories.size() - 1));
+  }
+  // Find the index of the current operation after sorting
+  int currentOperationIdx = 0;
+  if (currentOperation && currentAccount()) {
+    QList<Operation *> ops = currentAccount()->operations();
+    int idx = ops.indexOf(currentOperation);
+    if (idx >= 0) {
+      currentOperationIdx = idx;
+    }
   }
   set_currentOperationIndex(currentOperationIdx);
 
