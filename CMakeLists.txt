@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Extract version from git tags
-# Format: x.y for release, x.y-N for dev (N commits since tag), x.y-N.dirty for uncommitted changes
+# Format: x.y for release, x.y-dev-<sha> for dev builds
 set(DEFAULT_VERSION "0.0")
 set(APP_VERSION "${DEFAULT_VERSION}")
 set(APP_VERSION_SUFFIX "")
 set(APP_COMMIT_HASH "")
-set(APP_IS_DIRTY FALSE)
 
 find_package(Git QUIET)
 if(GIT_FOUND)
@@ -18,6 +17,15 @@ if(GIT_FOUND)
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET
     RESULT_VARIABLE GIT_TAG_RESULT
+  )
+
+  # Get short commit hash
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    OUTPUT_VARIABLE APP_COMMIT_HASH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
   )
 
   if(GIT_TAG_RESULT EQUAL 0 AND GIT_TAG)
@@ -32,54 +40,21 @@ if(GIT_FOUND)
       ERROR_QUIET
     )
 
-    # Get short commit hash
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      OUTPUT_VARIABLE APP_COMMIT_HASH
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-    )
-
-    # Check if working tree is dirty
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} status --porcelain
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      OUTPUT_VARIABLE GIT_STATUS
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-    )
-
-    if(GIT_STATUS)
-      set(APP_IS_DIRTY TRUE)
-    endif()
-
-    # Build version suffix: -N for dev builds, .dirty for uncommitted changes
+    # Dev build: add -dev-<sha> suffix if there are commits since tag
     if(COMMITS_SINCE_TAG GREATER 0)
-      set(APP_VERSION_SUFFIX "-${COMMITS_SINCE_TAG}")
-    endif()
-    if(APP_IS_DIRTY)
-      set(APP_VERSION_SUFFIX "${APP_VERSION_SUFFIX}.dirty")
+      set(APP_VERSION_SUFFIX "-dev-${APP_COMMIT_HASH}")
     endif()
   else()
     # No tags found, use default with dev suffix
-    set(APP_VERSION_SUFFIX ".dev")
-    # Still try to get commit hash
-    execute_process(
-      COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-      OUTPUT_VARIABLE APP_COMMIT_HASH
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-      ERROR_QUIET
-    )
+    set(APP_VERSION_SUFFIX "-dev-${APP_COMMIT_HASH}")
   endif()
 else()
   # Git not found, use default with dev suffix
-  set(APP_VERSION_SUFFIX ".dev")
+  set(APP_VERSION_SUFFIX "-dev")
 endif()
 
 set(APP_VERSION_FULL "${APP_VERSION}${APP_VERSION_SUFFIX}")
-message(STATUS "Comptine version: ${APP_VERSION_FULL} (commit: ${APP_COMMIT_HASH})")
+message(STATUS "Comptine version: ${APP_VERSION_FULL}")
 
 # Parse version for CMake project() - extract major.minor
 string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" VERSION_MATCH "${APP_VERSION}")
@@ -266,6 +241,16 @@ install(
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
+# Windows: Deploy Qt libraries at install time using qt_generate_deploy_qml_app_script
+if(WIN32)
+  qt_generate_deploy_qml_app_script(
+    TARGET Comptine
+    OUTPUT_SCRIPT deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+  )
+  install(SCRIPT ${deploy_script})
+endif()
+
 # Unit tests
 enable_testing()
 find_package(Qt6 REQUIRED COMPONENTS Test)
@@ -312,6 +297,9 @@ elseif(WIN32)
   set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\Comptine.exe")
   set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_BINARY_DIR}/comptine.ico")
   set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_BINARY_DIR}/comptine.ico")
+
+  # Option to run application after installation
+  set(CPACK_NSIS_MUI_FINISHPAGE_RUN "..\\\\bin\\\\Comptine.exe")
 
   # Start Menu and Desktop shortcuts
   set(CPACK_NSIS_CREATE_ICONS_EXTRA

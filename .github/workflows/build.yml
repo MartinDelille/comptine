@@ -80,30 +80,6 @@ jobs:
           macdeployqt build/Comptine.app -qmldir=.
           codesign --force --deep --sign - build/Comptine.app
 
-      - name: Deploy Qt (Windows)
-        if: matrix.os == 'windows-latest'
-        run: windeployqt build/Release/Comptine.exe --qmldir .
-
-      - name: Sign application (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          # Create self-signed certificate
-          $cert = New-SelfSignedCertificate `
-            -Type CodeSigningCert `
-            -Subject "CN=Comptine, O=Martin Delille" `
-            -KeyUsage DigitalSignature `
-            -KeyAlgorithm RSA `
-            -KeyLength 2048 `
-            -CertStoreLocation Cert:\CurrentUser\My `
-            -NotAfter (Get-Date).AddYears(1)
-
-          # Sign all executables and DLLs
-          $filesToSign = Get-ChildItem -Path build/Release -Include *.exe,*.dll -Recurse
-          foreach ($file in $filesToSign) {
-            Set-AuthenticodeSignature -FilePath $file.FullName -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
-          }
-
       - name: Create installer (macOS)
         if: matrix.os == 'macos-latest'
         run: |
