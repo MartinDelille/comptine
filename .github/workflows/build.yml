@@ -14,14 +14,12 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
-            artifact-path: build/*.app
-            zip-command: cd build && zip -r Comptine-macOS.zip Comptine.app
-            release-file: build/Comptine-macOS.zip
+            artifact-path: build/Comptine-*.dmg
+            release-file: build/Comptine-*.dmg
           - os: windows-latest
             name: Windows
-            artifact-path: build/Release
-            zip-command: cd build && 7z a Comptine-Windows.zip Release
-            release-file: build/Comptine-Windows.zip
+            artifact-path: build/Comptine-*.exe
+            release-file: build/Comptine-*.exe
             cmake-build-args: --config Release
             ctest-args: -C Release
 
@@ -63,6 +61,10 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: choco install imagemagick -y
 
+      - name: Install NSIS (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install nsis -y
+
       - name: Configure
         run: cmake -B build -S .
 
@@ -102,16 +104,23 @@ jobs:
             Set-AuthenticodeSignature -FilePath $file.FullName -Certificate $cert -TimestampServer "http://timestamp.digicert.com"
           }
 
+      - name: Create installer (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd build
+          cpack -G DragNDrop
+
+      - name: Create installer (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd build
+          cpack -G NSIS -C Release
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Comptine-${{ matrix.name }}
           path: ${{ matrix.artifact-path }}
-
-      - name: Create zip for release
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: ${{ matrix.zip-command }}
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')

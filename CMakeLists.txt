@@ -7,8 +7,9 @@ project(
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Fetch rapidyaml
+# Fetch rapidyaml (static library, no install)
 include(FetchContent)
+set(RYML_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
   rapidyaml
   GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
@@ -154,3 +155,71 @@ qt_add_executable(CsvParserTest
 )
 target_link_libraries(CsvParserTest PRIVATE Qt6::Core Qt6::Test)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
+
+# =============================================================================
+# CPack Installer Configuration
+# =============================================================================
+set(CPACK_PACKAGE_NAME "Comptine")
+set(CPACK_PACKAGE_VENDOR "Martin Delille")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Personal budget management application")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Comptine")
+
+# License file (optional)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+endif()
+
+if(APPLE)
+  # macOS: DragNDrop DMG installer
+  set(CPACK_GENERATOR "DragNDrop")
+  set(CPACK_DMG_VOLUME_NAME "Comptine")
+  set(CPACK_DMG_FORMAT "UDZO")
+  set(CPACK_PACKAGE_ICON "${APP_ICON_ICNS}")
+
+  # Include the deployed app bundle
+  set(CPACK_BUNDLE_NAME "Comptine")
+
+elseif(WIN32)
+  # Windows: NSIS installer
+  set(CPACK_GENERATOR "NSIS")
+
+  # Basic NSIS settings
+  set(CPACK_NSIS_DISPLAY_NAME "Comptine")
+  set(CPACK_NSIS_PACKAGE_NAME "Comptine")
+  set(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\Comptine.exe")
+  set(CPACK_NSIS_MUI_ICON "${CMAKE_CURRENT_BINARY_DIR}/comptine.ico")
+  set(CPACK_NSIS_MUI_UNIICON "${CMAKE_CURRENT_BINARY_DIR}/comptine.ico")
+
+  # Start Menu and Desktop shortcuts
+  set(CPACK_NSIS_CREATE_ICONS_EXTRA
+    "CreateShortCut '$SMPROGRAMS\\\\$STARTMENU_FOLDER\\\\Comptine.lnk' '$INSTDIR\\\\bin\\\\Comptine.exe'
+     CreateShortCut '$DESKTOP\\\\Comptine.lnk' '$INSTDIR\\\\bin\\\\Comptine.exe'")
+  set(CPACK_NSIS_DELETE_ICONS_EXTRA
+    "Delete '$SMPROGRAMS\\\\$START_MENU\\\\Comptine.lnk'
+     Delete '$DESKTOP\\\\Comptine.lnk'")
+
+  # Add/Remove Programs entry
+  set(CPACK_NSIS_HELP_LINK "https://github.com/mart1n/Comptine")
+  set(CPACK_NSIS_URL_INFO_ABOUT "https://github.com/mart1n/Comptine")
+  set(CPACK_NSIS_MODIFY_PATH OFF)
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+
+  # File associations for .comptine files
+  set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+    WriteRegStr HKCR '.comptine' '' 'Comptine.Budget'
+    WriteRegStr HKCR 'Comptine.Budget' '' 'Comptine Budget File'
+    WriteRegStr HKCR 'Comptine.Budget\\\\DefaultIcon' '' '$INSTDIR\\\\bin\\\\Comptine.exe,0'
+    WriteRegStr HKCR 'Comptine.Budget\\\\shell\\\\open\\\\command' '' '$\\\"$INSTDIR\\\\bin\\\\Comptine.exe$\\\" $\\\"%1$\\\"'
+    System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+  ")
+  set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+    DeleteRegKey HKCR '.comptine'
+    DeleteRegKey HKCR 'Comptine.Budget'
+    System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+  ")
+endif()
+
+include(CPack)
