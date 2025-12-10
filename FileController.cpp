@@ -47,6 +47,9 @@ static std::string toStdString(const QString &s) {
 bool FileController::saveToYaml(const QString &filePath) {
   if (!_budgetData) return false;
 
+  // Clear any previous error
+  set_errorMessage({});
+
   ryml::Tree tree;
   ryml::NodeRef root = tree.rootref();
   root |= ryml::MAP;
@@ -137,6 +140,7 @@ bool FileController::saveToYaml(const QString &filePath) {
   QFile file(filePath);
   if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
     qWarning() << "Failed to open file for writing:" << filePath;
+    set_errorMessage(tr("Could not save file: %1").arg(file.errorString()));
     return false;
   }
 
@@ -154,9 +158,13 @@ bool FileController::saveToYaml(const QString &filePath) {
 bool FileController::loadFromYaml(const QString &filePath) {
   if (!_budgetData || !_categoryController) return false;
 
+  // Clear any previous error
+  set_errorMessage({});
+
   QFile file(filePath);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     qWarning() << "Failed to open file for reading:" << filePath;
+    set_errorMessage(tr("Could not open file: %1").arg(file.errorString()));
     return false;
   }
 
@@ -293,6 +301,7 @@ bool FileController::loadFromYaml(const QString &filePath) {
     }
   } catch (const std::exception &e) {
     qWarning() << "YAML parsing error:" << e.what();
+    set_errorMessage(tr("Could not parse file: %1").arg(QString::fromUtf8(e.what())));
     return false;
   }
 
@@ -340,6 +349,9 @@ bool FileController::importFromCsv(const QString &filePath,
                                    bool useCategories) {
   if (!_budgetData || !_categoryController) return false;
 
+  // Clear any previous error
+  set_errorMessage({});
+
   qDebug() << "Importing CSV from:" << filePath;
   qDebug() << "  Use categories:" << useCategories;
 
@@ -347,6 +359,7 @@ bool FileController::importFromCsv(const QString &filePath,
   QFile file(filePath);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     qDebug() << "Failed to open file:" << file.errorString();
+    set_errorMessage(tr("Could not open file: %1").arg(file.errorString()));
     return false;
   }
 
@@ -364,6 +377,7 @@ bool FileController::importFromCsv(const QString &filePath,
   // Re-open and re-read with correct encoding
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     qDebug() << "Failed to reopen file:" << file.errorString();
+    set_errorMessage(tr("Could not open file: %1").arg(file.errorString()));
     return false;
   }
 
@@ -404,6 +418,7 @@ bool FileController::importFromCsv(const QString &filePath,
       qDebug() << "  [" << i << "]" << headerFields[i];
     }
     file.close();
+    set_errorMessage(tr("Invalid CSV format: missing required columns (date, description, and debit/credit/amount)"));
     return false;
   }
 

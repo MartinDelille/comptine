@@ -258,6 +258,22 @@ ApplicationWindow {
         }
     }
 
+    MessageDialog {
+        id: fileErrorDialog
+        title: qsTr("File Error")
+        text: AppState.file.errorMessage
+        buttons: MessageDialog.Ok
+    }
+
+    Connections {
+        target: AppState.file
+        function onErrorMessageChanged() {
+            if (AppState.file.errorMessage.length > 0) {
+                fileErrorDialog.open();
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingNormal
