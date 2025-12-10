@@ -134,7 +134,7 @@ jobs:
           message: |
             ## Build Artifacts
 
-            Download the build artifacts for this PR:
+            Download the build artifacts for this PR (commit ${{ github.event.pull_request.head.sha }}):
 
             ${{ steps.artifacts.outputs.links }}
           comment-tag: build-artifacts
