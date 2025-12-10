@@ -137,6 +137,18 @@ void OperationListModel::refresh() {
   endResetModel();
 }
 
+Operation *OperationListModel::operationAt(int index) const {
+  if (!_account || index < 0 || index >= _account->operationCount())
+    return nullptr;
+  return _account->getOperation(index);
+}
+
+double OperationListModel::balanceAt(int index) const {
+  if (index < 0 || index >= _balances.size())
+    return 0.0;
+  return _balances[index];
+}
+
 void OperationListModel::select(int index, bool extend) {
   if (index < 0 || !_account || index >= _account->operationCount())
     return;

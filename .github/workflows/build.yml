@@ -14,20 +14,19 @@ jobs:
         include:
           - os: macos-latest
             name: macOS
-            artifact-path: build/*.app
-            zip-command: cd build && zip -r Comptine-macOS.zip Comptine.app
-            release-file: build/Comptine-macOS.zip
+            artifact-path: build/Comptine-*.dmg
+            release-file: build/Comptine-*.dmg
           - os: windows-latest
             name: Windows
-            artifact-path: build/Release/*.exe
-            zip-command: cd build/Release && 7z a ../Comptine-Windows.zip Comptine.exe
-            release-file: build/Comptine-Windows.zip
+            artifact-path: build/Comptine-*.exe
+            release-file: build/Comptine-*.exe
             cmake-build-args: --config Release
             ctest-args: -C Release
 
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
@@ -54,6 +53,18 @@ jobs:
           fi
           echo "All translations are complete!"
 
+      - name: Install ImageMagick (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install imagemagick
+
+      - name: Install ImageMagick (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install imagemagick -y
+
+      - name: Install NSIS (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install nsis -y
+
       - name: Configure
         run: cmake -B build -S .
 
@@ -63,16 +74,29 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure ${{ matrix.ctest-args }}
 
+      - name: Deploy Qt (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          macdeployqt build/Comptine.app -qmldir=.
+          codesign --force --deep --sign - build/Comptine.app
+
+      - name: Create installer (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd build
+          cpack -G DragNDrop
+
+      - name: Create installer (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd build
+          cpack -G NSIS -C Release
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: Comptine-${{ matrix.name }}
           path: ${{ matrix.artifact-path }}
-
-      - name: Create zip for release
-        if: startsWith(github.ref, 'refs/tags/')
-        shell: bash
-        run: ${{ matrix.zip-command }}
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')
@@ -80,3 +104,37 @@ jobs:
         with:
           files: ${{ matrix.release-file }}
           generate_release_notes: true
+
+  comment-artifacts:
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Get artifact URLs
+        id: artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: artifacts } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId
+            });
+            const links = artifacts.artifacts.map(a =>
+              `- [${a.name}](https://nightly.link/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/${a.name}.zip)`
+            ).join('\n');
+            core.setOutput('links', links);
+
+      - name: Post artifact links
+        uses: thollander/actions-comment-pull-request@v3
+        with:
+          message: |
+            ## Build Artifacts
+
+            Download the build artifacts for this PR (commit ${{ github.event.pull_request.head.sha }}):
+
+            ${{ steps.artifacts.outputs.links }}
+          comment-tag: build-artifacts

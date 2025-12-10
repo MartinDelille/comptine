@@ -5,34 +5,9 @@ import QtQuick.Layouts
 RowLayout {
     id: root
 
-    property int selectedYear: new Date().getFullYear()
-    property int selectedMonth: new Date().getMonth() + 1
-
-    signal monthChanged(int year, int month)
-
     function monthName(month) {
         var months = [qsTr("January"), qsTr("February"), qsTr("March"), qsTr("April"), qsTr("May"), qsTr("June"), qsTr("July"), qsTr("August"), qsTr("September"), qsTr("October"), qsTr("November"), qsTr("December")];
         return months[month - 1];
-    }
-
-    function previousMonth() {
-        if (selectedMonth === 1) {
-            selectedMonth = 12;
-            selectedYear--;
-        } else {
-            selectedMonth--;
-        }
-        monthChanged(selectedYear, selectedMonth);
-    }
-
-    function nextMonth() {
-        if (selectedMonth === 12) {
-            selectedMonth = 1;
-            selectedYear++;
-        } else {
-            selectedMonth++;
-        }
-        monthChanged(selectedYear, selectedMonth);
     }
 
     Layout.fillWidth: true
@@ -41,12 +16,13 @@ RowLayout {
 
     Button {
         text: "<"
-        onClicked: previousMonth()
+        focusPolicy: Qt.NoFocus
+        onClicked: budgetData.previousMonth()
         implicitWidth: 40
     }
 
     Label {
-        text: monthName(selectedMonth) + " " + selectedYear
+        text: monthName(budgetData.budgetMonth) + " " + budgetData.budgetYear
         font.pixelSize: Theme.fontSizeXLarge
         font.bold: true
         color: Theme.textPrimary
@@ -56,7 +32,8 @@ RowLayout {
 
     Button {
         text: ">"
-        onClicked: nextMonth()
+        focusPolicy: Qt.NoFocus
+        onClicked: budgetData.nextMonth()
         implicitWidth: 40
     }
 }

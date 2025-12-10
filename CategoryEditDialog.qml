@@ -15,13 +15,17 @@ Dialog {
 
     onOpened: {
         categoryNameField.text = originalName;
-        budgetLimitField.text = originalBudgetLimit.toFixed(2);
-        categoryNameField.forceActiveFocus();
-        categoryNameField.selectAll();
+        // Set checkbox based on sign (positive = income)
+        incomeCheckBox.checked = originalBudgetLimit > 0;
+        // Display absolute value
+        budgetLimitField.value = Math.abs(originalBudgetLimit);
+        budgetLimitField.forceActiveFocus();
     }
 
     onAccepted: {
-        let newBudgetLimit = parseFloat(budgetLimitField.text.replace(",", ".")) || 0;
+        let amount = budgetLimitField.value;
+        // Apply sign based on checkbox: income = positive, expense = negative
+        let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
         budgetData.editCategory(originalName, categoryNameField.text, newBudgetLimit);
     }
 
@@ -44,25 +48,21 @@ Dialog {
                 selectAll()
         }
 
+        CheckBox {
+            id: incomeCheckBox
+            text: qsTr("This is an income category")
+        }
+
         Label {
             text: qsTr("Budget Limit")
             font.pixelSize: Theme.fontSizeNormal
             color: Theme.textPrimary
         }
 
-        TextField {
+        AmountField {
             id: budgetLimitField
             Layout.fillWidth: true
-            placeholderText: qsTr("0.00")
             font.pixelSize: Theme.fontSizeNormal
-            onActiveFocusChanged: if (activeFocus)
-                selectAll()
-        }
-
-        Label {
-            text: qsTr("Negative = expense, Positive = income")
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.textMuted
         }
     }
 }

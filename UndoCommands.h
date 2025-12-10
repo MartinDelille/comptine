@@ -4,12 +4,12 @@
 #include <QList>
 #include <QString>
 #include <QUndoCommand>
+#include "Operation.h"  // For CategoryAllocation
 
 class BudgetData;
 class Account;
 class AccountListModel;
 class Category;
-class Operation;
 class OperationListModel;
 
 // Command for renaming an account
@@ -114,4 +114,67 @@ private:
   BudgetData *_budgetData;
   QDate _oldBudgetDate;
   QDate _newBudgetDate;
+};
+
+// Command for splitting an operation across multiple categories
+class SplitOperationCommand : public QUndoCommand {
+public:
+  SplitOperationCommand(Operation *operation,
+                        OperationListModel *operationModel,
+                        BudgetData *budgetData,
+                        const QString &oldCategory,
+                        const QList<CategoryAllocation> &oldAllocations,
+                        const QList<CategoryAllocation> &newAllocations,
+                        QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation *_operation;
+  OperationListModel *_operationModel;
+  BudgetData *_budgetData;
+  QString _oldCategory;
+  QList<CategoryAllocation> _oldAllocations;
+  QList<CategoryAllocation> _newAllocations;
+};
+
+// Command for setting an operation's amount
+class SetOperationAmountCommand : public QUndoCommand {
+public:
+  SetOperationAmountCommand(Operation *operation,
+                            OperationListModel *operationModel,
+                            BudgetData *budgetData, double oldAmount,
+                            double newAmount,
+                            QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation *_operation;
+  OperationListModel *_operationModel;
+  BudgetData *_budgetData;
+  double _oldAmount;
+  double _newAmount;
+};
+
+// Command for setting an operation's date
+class SetOperationDateCommand : public QUndoCommand {
+public:
+  SetOperationDateCommand(Operation *operation,
+                          OperationListModel *operationModel,
+                          BudgetData *budgetData, const QDate &oldDate,
+                          const QDate &newDate,
+                          QUndoCommand *parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation *_operation;
+  OperationListModel *_operationModel;
+  BudgetData *_budgetData;
+  QDate _oldDate;
+  QDate _newDate;
 };

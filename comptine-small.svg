@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <!-- Funky pink-purple gradient for body -->
+    <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B9D"/>
+      <stop offset="30%" style="stop-color:#C850C0"/>
+      <stop offset="60%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#4F46E5"/>
+    </linearGradient>
+    <!-- Cyan/teal gradient for buttons -->
+    <linearGradient id="copperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00D9FF"/>
+      <stop offset="50%" style="stop-color:#00B4D8"/>
+      <stop offset="100%" style="stop-color:#0096C7"/>
+    </linearGradient>
+    <!-- Dark purple screen gradient -->
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A1A2E"/>
+      <stop offset="100%" style="stop-color:#0F0F1A"/>
+    </linearGradient>
+    <!-- Warm yellow-orange-red accent -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD93D"/>
+      <stop offset="50%" style="stop-color:#FF6B6B"/>
+      <stop offset="100%" style="stop-color:#EE5A24"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Calculator body -->
+  <rect x="0" y="0" width="200" height="200" rx="16" ry="16" fill="url(#brassGrad)"/>
+  
+  <!-- Screen - simplified -->
+  <rect x="28" y="28" width="144" height="36" rx="4" ry="4" fill="#0F0F1A" stroke="#4F46E5" stroke-width="3"/>
+  <rect x="32" y="32" width="136" height="28" rx="2" ry="2" fill="url(#glassGrad)"/>
+  <!-- Screen glow effect -->
+  <rect x="32" y="32" width="136" height="12" rx="2" ry="2" fill="#FF6B9D" opacity="0.2"/>
+  
+  <!-- Calculator keys grid - simplified buttons without text/symbols -->
+  <!-- Row 1 (center y=86) -->
+  <circle cx="44" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="84" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="124" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="164" cy="86" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+  
+  <!-- Row 2 (center y=126) -->
+  <circle cx="44" cy="126" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="84" cy="126" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="124" cy="126" r="14" fill="#FF6B9D" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="164" cy="126" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+  
+  <!-- Row 3 (center y=166) -->
+  <circle cx="44" cy="166" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="84" cy="166" r="14" fill="#FF6B9D" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="124" cy="166" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <circle cx="164" cy="166" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+</svg>

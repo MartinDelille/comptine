@@ -18,6 +18,8 @@ class BudgetData : public QObject {
   PROPERTY_RW(int, currentTabIndex, 0)
   PROPERTY_RW(int, budgetYear, 0)
   PROPERTY_RW(int, budgetMonth, 0)
+  PROPERTY_RW(int, currentCategoryIndex, 0)
+  PROPERTY_RW(int, currentOperationIndex, 0)
 
   // Data properties (macro-generated)
   PROPERTY_RW(QString, currentFilePath, {})
@@ -26,6 +28,8 @@ class BudgetData : public QObject {
   PROPERTY_RO(int, accountCount)
   PROPERTY_RO(int, categoryCount)
   PROPERTY_RO(Account *, currentAccount)
+  PROPERTY_RO(bool, hasUnsavedChanges)
+  PROPERTY_RO(QString, currentCategoryName)
 
   // Custom property with validation logic (implemented in .cpp)
   PROPERTY_RW_CUSTOM(int, currentAccountIndex, -1)
@@ -64,13 +68,28 @@ public:
   Category *takeCategoryByName(const QString &name);  // Remove without deleting
   void clearCategories();
 
-  // Operation category editing
+  // Operation editing
   Q_INVOKABLE void setOperationCategory(int operationIndex, const QString &newCategory);
   Q_INVOKABLE void setOperationBudgetDate(int operationIndex, const QDate &newBudgetDate);
+  Q_INVOKABLE void setOperationAmount(int operationIndex, double newAmount);
+  Q_INVOKABLE void setOperationDate(int operationIndex, const QDate &newDate);
+  Q_INVOKABLE void splitOperation(int operationIndex, const QVariantList &allocations);
 
   // Budget calculations (aggregates across all accounts)
   Q_INVOKABLE double spentInCategory(const QString &categoryName, int year, int month) const;
   Q_INVOKABLE QVariantList monthlyBudgetSummary(int year, int month) const;
+  Q_INVOKABLE QVariantList operationsForCategory(const QString &categoryName, int year, int month) const;
+
+  // Navigation
+  Q_INVOKABLE void selectOperation(const QString &accountName, const QDate &date, const QString &description, double amount);
+  Q_INVOKABLE void previousMonth();
+  Q_INVOKABLE void nextMonth();
+  Q_INVOKABLE void previousCategory();
+  Q_INVOKABLE void nextCategory();
+  Q_INVOKABLE void previousOperation(bool extendSelection = false);
+  Q_INVOKABLE void nextOperation(bool extendSelection = false);
+  Q_INVOKABLE void showOperationsTab();
+  Q_INVOKABLE void showBudgetTab();
 
   // File operations
   Q_INVOKABLE bool loadFromYaml(const QString &filePath);
@@ -93,7 +112,8 @@ signals:
   void dataLoaded();      // Emitted after any data load (YAML or CSV import)
   void yamlFileLoaded();  // Emitted only after YAML file load (for UI state restore)
   void dataSaved();
-  void operationDataChanged();  // Emitted when operation data changes (e.g., category edit)
+  void operationDataChanged();        // Emitted when operation data changes (e.g., category edit)
+  void operationSelected(int index);  // Emitted when an operation is selected via selectOperation()
 
 private:
   QList<Account *> _accounts;

@@ -12,6 +12,7 @@ ApplicationWindow {
     color: Theme.background
 
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
+    property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen
     property string pendingAction: ""  // "quit", "new", or "open"
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
 
@@ -28,7 +29,7 @@ ApplicationWindow {
     }
 
     function checkUnsavedChanges(action) {
-        if (!budgetData.undoStack.clean) {
+        if (budgetData.hasUnsavedChanges) {
             pendingAction = action;
             unsavedChangesDialog.open();
             return true;  // Has unsaved changes, action deferred
@@ -37,7 +38,7 @@ ApplicationWindow {
     }
 
     onClosing: function (close) {
-        if (!budgetData.undoStack.clean && !forceQuit) {
+        if (budgetData.hasUnsavedChanges && !forceQuit) {
             close.accepted = false;
             pendingAction = "quit";
             unsavedChangesDialog.open();
@@ -90,12 +91,6 @@ ApplicationWindow {
             }
             MenuSeparator {}
             Action {
-                text: qsTr("&Preferences...")
-                shortcut: StandardKey.Preferences
-                onTriggered: preferencesDialog.open()
-            }
-            MenuSeparator {}
-            Action {
                 text: qsTr("&Quit")
                 shortcut: StandardKey.Quit
                 onTriggered: {
@@ -126,12 +121,24 @@ ApplicationWindow {
                 enabled: budgetData.operationModel.selectionCount > 0
                 onTriggered: budgetData.copySelectedOperationsToClipboard()
             }
-        }
-        Menu {
-            title: qsTr("&View")
+            MenuSeparator {}
             Action {
-                text: qsTr("&About")
-                onTriggered: aboutDialog.open()
+                text: budgetData.currentTabIndex === 0 ? qsTr("Edit &Operation...") : qsTr("Edit &Category...")
+                shortcut: "Ctrl+E"
+                enabled: (budgetData.currentTabIndex === 0 && budgetData.operationModel.selectionCount === 1) || (budgetData.currentTabIndex === 1 && budgetData.currentCategoryIndex >= 0)
+                onTriggered: {
+                    if (budgetData.currentTabIndex === 0) {
+                        operationView.editCurrentOperation();
+                    } else {
+                        budgetView.editCurrentCategory();
+                    }
+                }
+            }
+            MenuSeparator {}
+            Action {
+                text: qsTr("&Preferences...")
+                shortcut: StandardKey.Preferences
+                onTriggered: preferencesDialog.open()
             }
         }
         Menu {
@@ -139,39 +146,37 @@ ApplicationWindow {
             Action {
                 text: qsTr("&Operations")
                 shortcut: "Ctrl+1"
-                onTriggered: budgetData.currentTabIndex = 0
+                onTriggered: budgetData.showOperationsTab()
             }
             Action {
                 text: qsTr("&Budget")
                 shortcut: "Ctrl+2"
-                onTriggered: budgetData.currentTabIndex = 1
+                onTriggered: budgetData.showBudgetTab()
             }
             MenuSeparator {}
             Action {
                 text: qsTr("&Previous Month")
                 shortcut: "Left"
-                enabled: !fileDialogOpen
-                onTriggered: {
-                    if (budgetData.budgetMonth === 1) {
-                        budgetData.budgetMonth = 12;
-                        budgetData.budgetYear--;
-                    } else {
-                        budgetData.budgetMonth--;
-                    }
-                }
+                enabled: budgetData.currentTabIndex === 1 && !anyDialogOpen
+                onTriggered: budgetData.previousMonth()
             }
             Action {
                 text: qsTr("&Next Month")
                 shortcut: "Right"
-                enabled: !fileDialogOpen
-                onTriggered: {
-                    if (budgetData.budgetMonth === 12) {
-                        budgetData.budgetMonth = 1;
-                        budgetData.budgetYear++;
-                    } else {
-                        budgetData.budgetMonth++;
-                    }
-                }
+                enabled: budgetData.currentTabIndex === 1 && !anyDialogOpen
+                onTriggered: budgetData.nextMonth()
+            }
+        }
+        Menu {
+            title: qsTr("&Help")
+            Action {
+                text: qsTr("&Project Page")
+                onTriggered: Qt.openUrlExternally("https://github.com/MartinDelille/Comptine")
+            }
+            MenuSeparator {}
+            Action {
+                text: qsTr("&About Comptine")
+                onTriggered: aboutDialog.open()
             }
         }
     }
@@ -180,7 +185,7 @@ ApplicationWindow {
         id: openDialog
         title: qsTr("Open Budget File")
         fileMode: FileDialog.OpenFile
-        nameFilters: ["YAML files (*.yaml *.yml)", "All files (*)"]
+        nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         onAccepted: {
             budgetData.loadFromYaml(selectedFile.toString().replace("file://", ""));
         }
@@ -190,7 +195,7 @@ ApplicationWindow {
         id: saveDialog
         title: qsTr("Save Budget File")
         fileMode: FileDialog.SaveFile
-        nameFilters: ["YAML files (*.yaml *.yml)", "All files (*)"]
+        nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         currentFile: budgetData.currentFilePath.length > 0 ? "file://" + budgetData.currentFilePath : ""
         onAccepted: {
             var filePath = selectedFile.toString().replace("file://", "");
@@ -222,14 +227,9 @@ ApplicationWindow {
         anchors.centerIn: parent
     }
 
-    Dialog {
+    AboutDialog {
         id: aboutDialog
-        title: qsTr("About Comptine")
-        standardButtons: Dialog.Ok
-
-        Label {
-            text: qsTr("Comptine v0.1\n\nPersonal Budget Management Software\n\nImport and manage your bank account data.")
-        }
+        anchors.centerIn: parent
     }
 
     PreferencesDialog {
@@ -289,10 +289,20 @@ ApplicationWindow {
         Connections {
             target: budgetData
             function onDataLoaded() {
-                tabBar.currentIndex = budgetData.currentTabIndex;
+                // Focus the appropriate view after data load
+                if (budgetData.currentTabIndex === 0) {
+                    operationView.forceActiveFocus();
+                } else {
+                    budgetView.forceActiveFocus();
+                }
             }
             function onCurrentTabIndexChanged() {
-                tabBar.currentIndex = budgetData.currentTabIndex;
+                // Focus the appropriate view when tab changes
+                if (budgetData.currentTabIndex === 0) {
+                    operationView.forceActiveFocus();
+                } else {
+                    budgetView.forceActiveFocus();
+                }
             }
         }
 
@@ -303,12 +313,14 @@ ApplicationWindow {
 
             // Operations view
             OperationView {
+                id: operationView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
 
             // Budget view
             BudgetView {
+                id: budgetView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

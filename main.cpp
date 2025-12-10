@@ -8,6 +8,7 @@
 #include <QTranslator>
 #include "AppSettings.h"
 #include "BudgetData.h"
+#include "Version.h"
 
 int main(int argc, char *argv[]) {
   QGuiApplication app(argc, argv);
@@ -41,40 +42,17 @@ int main(int argc, char *argv[]) {
   QSettings settings;
   BudgetData budgetData;
 
-  // Load UI state from settings (before QML loads)
-  auto loadUiState = [&settings, &budgetData]() {
-    budgetData.set_currentAccountIndex(
-        settings.value("ui/currentAccount", 0).toInt());
-    budgetData.set_currentTabIndex(settings.value("ui/currentTab", 0).toInt());
-    budgetData.set_budgetYear(
-        settings.value("ui/budgetYear", QDate::currentDate().year()).toInt());
-    budgetData.set_budgetMonth(
-        settings.value("ui/budgetMonth", QDate::currentDate().month()).toInt());
-  };
+  // Set default budget year/month to current date (will be overridden when file loads)
+  budgetData.set_budgetYear(QDate::currentDate().year());
+  budgetData.set_budgetMonth(QDate::currentDate().month());
 
-  // Save UI state to settings
-  auto saveUiState = [&settings, &budgetData]() {
-    settings.setValue("ui/currentAccount", budgetData.currentAccountIndex());
-    settings.setValue("ui/currentTab", budgetData.currentTabIndex());
-    settings.setValue("ui/budgetYear", budgetData.budgetYear());
-    settings.setValue("ui/budgetMonth", budgetData.budgetMonth());
-    settings.sync();
-  };
-
-  // Load UI state immediately (sets defaults before QML binds)
-  loadUiState();
-
-  // Save last opened file when data is loaded, and re-apply UI state for YAML loads only
+  // Save last opened file when YAML is loaded
   QObject::connect(&budgetData, &BudgetData::yamlFileLoaded,
-                   [&settings, &budgetData, &loadUiState]() {
+                   [&settings, &budgetData]() {
                      if (!budgetData.currentFilePath().isEmpty()) {
                        settings.setValue("lastFile",
                                          budgetData.currentFilePath());
                      }
-                     // Re-apply UI state after YAML loads (for selectedOperationIndex
-                     // which needs valid operation count). Skip for CSV imports
-                     // where the import sets the correct account/operation.
-                     loadUiState();
                    });
 
   // Save or clear last file when currentFilePath changes (e.g., Save As or File > New)
@@ -89,12 +67,11 @@ int main(int argc, char *argv[]) {
                      }
                    });
 
-  // Save UI state when app is about to quit
-  QObject::connect(&app, &QGuiApplication::aboutToQuit, saveUiState);
-
   QQmlApplicationEngine engine;
   engine.rootContext()->setContextProperty("budgetData", &budgetData);
   engine.rootContext()->setContextProperty("appSettings", &appSettings);
+  engine.rootContext()->setContextProperty("appVersion", APP_VERSION_FULL);
+  engine.rootContext()->setContextProperty("appCommitHash", APP_COMMIT_HASH);
 
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
@@ -111,7 +88,7 @@ int main(int argc, char *argv[]) {
   // Load file: command line argument takes priority, otherwise use last opened file
   if (argc > 1) {
     QString filePath = QString::fromLocal8Bit(argv[1]);
-    if (filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
+    if (filePath.endsWith(".comptine") || filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
       budgetData.loadFromYaml(filePath);
     } else if (filePath.endsWith(".csv")) {
       budgetData.importFromCsv(filePath);

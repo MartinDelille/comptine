@@ -1,0 +1,9 @@
+#pragma once
+
+// Auto-generated version information - do not edit manually
+// Generated from git tags by CMake
+
+#define APP_VERSION "@APP_VERSION@"
+#define APP_VERSION_FULL "@APP_VERSION_FULL@"
+#define APP_COMMIT_HASH "@APP_COMMIT_HASH@"
+#define APP_IS_DIRTY @APP_IS_DIRTY@

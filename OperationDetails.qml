@@ -7,22 +7,15 @@ Rectangle {
 
     required property int currentIndex
 
-    // Get operation and balance from the model
-    readonly property var operation: currentIndex >= 0 ? budgetData.operationModel.data(budgetData.operationModel.index(currentIndex, 0), 263) : null
-    readonly property double balance: currentIndex >= 0 ? budgetData.operationModel.data(budgetData.operationModel.index(currentIndex, 0), 261) : 0
+    // Signal to request opening edit dialog (handled by parent)
+    signal editRequested(int operationIndex, double amount, date operationDate, date budgetDate, var allocations, string currentCategory)
+
+    // Get operation and balance from the model using helper methods
+    readonly property var operation: currentIndex >= 0 ? budgetData.operationModel.operationAt(currentIndex) : null
+    readonly property double balance: currentIndex >= 0 ? budgetData.operationModel.balanceAt(currentIndex) : 0
 
     // Multi-selection state
     readonly property bool multipleSelected: budgetData.operationModel.selectionCount > 1
-
-    // Category list for ComboBox (reactive to category changes)
-    property var categoryList: [""].concat(budgetData.categoryNames())
-
-    Connections {
-        target: budgetData
-        function onCategoryCountChanged() {
-            root.categoryList = [""].concat(budgetData.categoryNames());
-        }
-    }
 
     radius: Theme.cardRadius
     border.width: Theme.cardBorderWidth
@@ -34,11 +27,36 @@ Rectangle {
         anchors.margins: Theme.spacingLarge
         spacing: Theme.spacingLarge
 
-        Label {
-            text: root.multipleSelected ? qsTr("Multiple Operations") : qsTr("Operation Details")
-            font.pixelSize: Theme.fontSizeLarge
-            font.bold: true
-            color: Theme.textPrimary
+        // Header with title and edit button
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingNormal
+
+            Label {
+                text: root.multipleSelected ? qsTr("Multiple Operations") : qsTr("Operation Details")
+                font.pixelSize: Theme.fontSizeLarge
+                font.bold: true
+                color: Theme.textPrimary
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            ToolButton {
+                text: "\u270F\uFE0F"
+                font.pixelSize: Theme.fontSizeNormal
+                focusPolicy: Qt.NoFocus
+                visible: root.operation !== null && !root.multipleSelected
+                opacity: hovered ? 1.0 : 0.5
+                ToolTip.visible: hovered
+                ToolTip.text: qsTr("Edit operation...")
+                onClicked: {
+                    if (root.operation) {
+                        root.editRequested(root.currentIndex, root.operation.amount, root.operation.date, root.operation.budgetDate, root.operation.isSplit ? root.operation.allocations : [], root.operation.category ?? "");
+                    }
+                }
+            }
         }
 
         Rectangle {
@@ -114,33 +132,12 @@ Rectangle {
                 Layout.topMargin: Theme.spacingSmall
             }
 
-            RowLayout {
+            Label {
                 Layout.fillWidth: true
-                spacing: Theme.spacingSmall
-
-                Label {
-                    id: budgetDateLabel
-                    Layout.fillWidth: true
-                    text: root.operation?.budgetDate ? root.operation.budgetDate.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textPrimary
-                    wrapMode: Text.WordWrap
-                }
-
-                ToolButton {
-                    text: "✏️"
-                    font.pixelSize: Theme.fontSizeSmall
-                    opacity: hovered ? 1.0 : 0.5
-                    onClicked: {
-                        budgetDateDialog.operationIndex = root.currentIndex;
-                        budgetDateDialog.originalBudgetDate = root.operation?.budgetDate ?? new Date();
-                        budgetDateDialog.open();
-                    }
-                }
-            }
-
-            EditBudgetDateDialog {
-                id: budgetDateDialog
+                text: root.operation?.budgetDate ? root.operation.budgetDate.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textPrimary
+                wrapMode: Text.WordWrap
             }
 
             Label {
@@ -167,28 +164,44 @@ Rectangle {
                 Layout.topMargin: Theme.spacingSmall
             }
 
-            RowLayout {
+            // Single category view (when not split)
+            Label {
+                Layout.fillWidth: true
+                visible: !root.operation?.isSplit
+                text: root.operation?.category || qsTr("Uncategorized")
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textPrimary
+                wrapMode: Text.WordWrap
+            }
+
+            // Split allocations view (when split)
+            ColumnLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingSmall
+                visible: root.operation?.isSplit ?? false
 
-                ComboBox {
-                    id: categoryComboBox
-                    Layout.fillWidth: true
-                    model: root.categoryList
-                    currentIndex: {
-                        if (!root.operation)
-                            return 0;
-                        let cat = root.operation.category ?? "";
-                        if (cat === "")
-                            return 0;
-                        let idx = root.categoryList.indexOf(cat);
-                        return idx >= 0 ? idx : 0;
-                    }
-                    displayText: currentIndex === 0 ? qsTr("Uncategorized") : currentText
-                    onActivated: index => {
-                        if (root.currentIndex >= 0) {
-                            let newCategory = index === 0 ? "" : root.categoryList[index];
-                            budgetData.setOperationCategory(root.currentIndex, newCategory);
+                Repeater {
+                    model: root.operation?.allocations ?? []
+
+                    RowLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.spacingSmall
+
+                        required property var modelData
+
+                        Label {
+                            Layout.fillWidth: true
+                            text: modelData.category || qsTr("Uncategorized")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textPrimary
+                            elide: Text.ElideRight
+                        }
+
+                        Label {
+                            text: Theme.formatAmount(modelData.amount)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.amountColor(modelData.amount)
                         }
                     }
                 }

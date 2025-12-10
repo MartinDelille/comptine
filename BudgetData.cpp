@@ -116,6 +116,20 @@ int BudgetData::categoryCount() const {
   return _categories.size();
 }
 
+bool BudgetData::hasUnsavedChanges() const {
+  return !_undoStack->isClean();
+}
+
+QString BudgetData::currentCategoryName() const {
+  // Categories are sorted alphabetically in monthlyBudgetSummary, so we need to
+  // get the sorted list and return the name at currentCategoryIndex
+  QVariantList summary = monthlyBudgetSummary(_budgetYear, _budgetMonth);
+  if (_currentCategoryIndex >= 0 && _currentCategoryIndex < summary.size()) {
+    return summary[_currentCategoryIndex].toMap()["name"].toString();
+  }
+  return QString();
+}
+
 QList<Category *> BudgetData::categories() const {
   return _categories;
 }
@@ -221,14 +235,71 @@ void BudgetData::setOperationBudgetDate(int operationIndex, const QDate &newBudg
   }
 }
 
+void BudgetData::setOperationAmount(int operationIndex, double newAmount) {
+  Account *account = currentAccount();
+  if (!account) return;
+
+  Operation *operation = account->getOperation(operationIndex);
+  if (!operation) return;
+
+  double oldAmount = operation->amount();
+  if (!qFuzzyCompare(oldAmount, newAmount)) {
+    _undoStack->push(new SetOperationAmountCommand(operation, _operationModel, this,
+                                                   oldAmount, newAmount));
+  }
+}
+
+void BudgetData::setOperationDate(int operationIndex, const QDate &newDate) {
+  Account *account = currentAccount();
+  if (!account) return;
+
+  Operation *operation = account->getOperation(operationIndex);
+  if (!operation) return;
+
+  QDate oldDate = operation->date();
+  if (oldDate != newDate) {
+    _undoStack->push(new SetOperationDateCommand(operation, _operationModel, this,
+                                                 oldDate, newDate));
+  }
+}
+
+void BudgetData::splitOperation(int operationIndex, const QVariantList &allocations) {
+  Account *account = currentAccount();
+  if (!account) return;
+
+  Operation *operation = account->getOperation(operationIndex);
+  if (!operation) return;
+
+  // Convert QVariantList to QList<CategoryAllocation>
+  QList<CategoryAllocation> newAllocations;
+  for (const QVariant &v : allocations) {
+    QVariantMap m = v.toMap();
+    CategoryAllocation alloc;
+    alloc.category = m["category"].toString();
+    alloc.amount = m["amount"].toDouble();
+    newAllocations.append(alloc);
+  }
+
+  // Get current state
+  QString oldCategory = operation->category();
+  QList<CategoryAllocation> oldAllocations = operation->allocationsList();
+
+  // Only create command if something changed
+  if (newAllocations != oldAllocations || (newAllocations.size() == 1 && newAllocations.first().category != oldCategory)) {
+    _undoStack->push(new SplitOperationCommand(operation, _operationModel, this,
+                                               oldCategory, oldAllocations, newAllocations));
+  }
+}
+
 double BudgetData::spentInCategory(const QString &categoryName, int year, int month) const {
   double total = 0.0;
   for (const Account *account : _accounts) {
     for (const Operation *op : account->operations()) {
       // Use budgetDate for budget calculations (falls back to date if not set)
       QDate budgetDate = op->budgetDate();
-      if (op->category() == categoryName && budgetDate.year() == year && budgetDate.month() == month) {
-        total += op->amount();
+      if (budgetDate.year() == year && budgetDate.month() == month) {
+        // Use amountForCategory which handles both split and non-split operations
+        total += op->amountForCategory(categoryName);
       }
     }
   }
@@ -248,7 +319,19 @@ QVariantList BudgetData::monthlyBudgetSummary(int year, int month) const {
     double displayAmount = isIncome ? total : -total;
     double displayLimit = std::abs(budgetLimit);
     double remaining = displayLimit - displayAmount;
-    double percentUsed = displayLimit > 0 ? (displayAmount / displayLimit) * 100.0 : 0.0;
+
+    // Calculate percent used:
+    // - For zero budget expense: any spending means exceeded (use infinity-like behavior)
+    // - For zero budget income: no expectation yet
+    double percentUsed;
+    if (displayLimit > 0) {
+      percentUsed = (displayAmount / displayLimit) * 100.0;
+    } else if (!isIncome && displayAmount > 0) {
+      // Zero expense budget with spending = exceeded (show as 100%+)
+      percentUsed = 100.0 + displayAmount;  // Will show exceeded status
+    } else {
+      percentUsed = 0.0;
+    }
 
     QVariantMap item;
     item["name"] = category->name();
@@ -269,6 +352,131 @@ QVariantList BudgetData::monthlyBudgetSummary(int year, int month) const {
   return result;
 }
 
+QVariantList BudgetData::operationsForCategory(const QString &categoryName, int year, int month) const {
+  QVariantList result;
+  for (const Account *account : _accounts) {
+    for (const Operation *op : account->operations()) {
+      QDate budgetDate = op->budgetDate();
+      if (budgetDate.year() == year && budgetDate.month() == month) {
+        // Check if this operation contributes to this category
+        double categoryAmount = op->amountForCategory(categoryName);
+        if (!qFuzzyIsNull(categoryAmount)) {
+          QVariantMap item;
+          item["date"] = op->date();
+          item["budgetDate"] = budgetDate;
+          item["description"] = op->description();
+          item["amount"] = categoryAmount;     // Show only the amount for this category
+          item["totalAmount"] = op->amount();  // Total operation amount
+          item["isSplit"] = op->isSplit();
+          item["accountName"] = account->name();
+          result.append(item);
+        }
+      }
+    }
+  }
+
+  // Sort by date (most recent first)
+  std::sort(result.begin(), result.end(), [](const QVariant &a, const QVariant &b) {
+    return a.toMap()["date"].toDate() > b.toMap()["date"].toDate();
+  });
+
+  return result;
+}
+
+void BudgetData::selectOperation(const QString &accountName, const QDate &date,
+                                 const QString &description, double amount) {
+  // Find the account index
+  int accountIndex = -1;
+  for (int i = 0; i < _accounts.size(); ++i) {
+    if (_accounts[i]->name() == accountName) {
+      accountIndex = i;
+      break;
+    }
+  }
+
+  if (accountIndex < 0) {
+    return;
+  }
+
+  // Switch to the account
+  set_currentAccountIndex(accountIndex);
+
+  // Find the operation in the account
+  Account *account = _accounts[accountIndex];
+  const QList<Operation *> &ops = account->operations();
+  for (int i = 0; i < ops.size(); ++i) {
+    Operation *op = ops[i];
+    if (op->date() == date && op->description() == description && qFuzzyCompare(op->amount(), amount)) {
+      // Select this operation
+      _operationModel->select(i);
+
+      // Emit signal so OperationList can focus the operation
+      emit operationSelected(i);
+
+      // Switch to Operations tab
+      set_currentTabIndex(0);
+      return;
+    }
+  }
+}
+
+void BudgetData::previousMonth() {
+  if (_budgetMonth == 1) {
+    set_budgetMonth(12);
+    set_budgetYear(_budgetYear - 1);
+  } else {
+    set_budgetMonth(_budgetMonth - 1);
+  }
+}
+
+void BudgetData::nextMonth() {
+  if (_budgetMonth == 12) {
+    set_budgetMonth(1);
+    set_budgetYear(_budgetYear + 1);
+  } else {
+    set_budgetMonth(_budgetMonth + 1);
+  }
+}
+
+void BudgetData::previousCategory() {
+  // Get sorted category count from budget summary
+  QVariantList summary = monthlyBudgetSummary(_budgetYear, _budgetMonth);
+  if (_currentCategoryIndex > 0) {
+    set_currentCategoryIndex(_currentCategoryIndex - 1);
+  }
+}
+
+void BudgetData::nextCategory() {
+  // Get sorted category count from budget summary
+  QVariantList summary = monthlyBudgetSummary(_budgetYear, _budgetMonth);
+  if (_currentCategoryIndex < summary.size() - 1) {
+    set_currentCategoryIndex(_currentCategoryIndex + 1);
+  }
+}
+
+void BudgetData::previousOperation(bool extendSelection) {
+  if (_currentOperationIndex > 0) {
+    set_currentOperationIndex(_currentOperationIndex - 1);
+    _operationModel->select(_currentOperationIndex, extendSelection);
+  }
+}
+
+void BudgetData::nextOperation(bool extendSelection) {
+  Account *account = currentAccount();
+  if (account && _currentOperationIndex < account->operationCount() - 1) {
+    set_currentOperationIndex(_currentOperationIndex + 1);
+    _operationModel->select(_currentOperationIndex, extendSelection);
+  }
+}
+
+void BudgetData::showOperationsTab() {
+  set_currentTabIndex(0);
+}
+
+void BudgetData::showBudgetTab() {
+  set_currentTabIndex(1);
+}
+
 void BudgetData::clear() {
   clearAccounts();
   clearCategories();
@@ -286,36 +494,71 @@ bool BudgetData::saveToYaml(const QString &filePath) const {
   ryml::NodeRef root = tree.rootref();
   root |= ryml::MAP;
 
+  // Write state section
+  ryml::NodeRef state = root["state"];
+  state |= ryml::MAP;
+  state["currentTab"] << _currentTabIndex;
+  state["budgetYear"] << _budgetYear;
+  state["budgetMonth"] << _budgetMonth;
+
   // Write categories
   ryml::NodeRef categories = root["categories"];
   categories |= ryml::SEQ;
-  for (const Category *category : _categories) {
+  for (int i = 0; i < _categories.size(); i++) {
+    const Category *category = _categories[i];
     ryml::NodeRef cat = categories.append_child();
     cat |= ryml::MAP;
     cat["name"] << toStdString(category->name());
-    cat["budget_limit"] << category->budgetLimit();
+    cat["budget_limit"] << toStdString(QString::number(category->budgetLimit(), 'f', 2));
+    if (i == _currentCategoryIndex) {
+      cat["current"] << "true";
+    }
   }
 
   // Write accounts
   ryml::NodeRef accounts = root["accounts"];
   accounts |= ryml::SEQ;
-  for (const Account *account : _accounts) {
+  for (int accIdx = 0; accIdx < _accounts.size(); accIdx++) {
+    const Account *account = _accounts[accIdx];
     ryml::NodeRef acc = accounts.append_child();
     acc |= ryml::MAP;
     acc["name"] << toStdString(account->name());
+    if (accIdx == _currentAccountIndex) {
+      acc["current"] << "true";
+    }
 
     ryml::NodeRef operations = acc["operations"];
     operations |= ryml::SEQ;
-    for (const Operation *op : account->operations()) {
+    const auto &ops = account->operations();
+    for (int opIdx = 0; opIdx < ops.size(); opIdx++) {
+      const Operation *op = ops[opIdx];
       ryml::NodeRef opNode = operations.append_child();
       opNode |= ryml::MAP;
       opNode["date"] << toStdString(op->date().toString("yyyy-MM-dd"));
       opNode["amount"] << toStdString(QString::number(op->amount(), 'f', 2));
-      opNode["category"] << toStdString(op->category());
       opNode["description"] << toStdString(op->description());
+
+      // Handle split operations vs single category
+      if (op->isSplit()) {
+        ryml::NodeRef allocsNode = opNode["allocations"];
+        allocsNode |= ryml::SEQ;
+        for (const auto &alloc : op->allocationsList()) {
+          ryml::NodeRef allocNode = allocsNode.append_child();
+          allocNode |= ryml::MAP;
+          allocNode["category"] << toStdString(alloc.category);
+          allocNode["amount"] << toStdString(QString::number(alloc.amount, 'f', 2));
+        }
+      } else {
+        opNode["category"] << toStdString(op->category());
+      }
+
       // Only save budget_date if explicitly set (different from operation date)
       if (op->budgetDate() != op->date()) {
         opNode["budget_date"] << toStdString(op->budgetDate().toString("yyyy-MM-dd"));
+      }
+      // Mark current operation (only for current account)
+      if (accIdx == _currentAccountIndex && opIdx == _currentOperationIndex) {
+        opNode["current"] << "true";
       }
     }
   }
@@ -353,12 +596,35 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
 
   clear();
 
+  // Track current indices from file
+  int currentAccountIdx = 0;
+  int currentCategoryIdx = 0;
+  Operation *currentOperation = nullptr;
+
   try {
     ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(data.constData()));
     ryml::ConstNodeRef root = tree.crootref();
 
+    // Load state section
+    if (root.has_child("state")) {
+      ryml::ConstNodeRef state = root["state"];
+      if (state.has_child("currentTab")) {
+        auto val = state["currentTab"].val();
+        set_currentTabIndex(QString::fromUtf8(val.str, val.len).toInt());
+      }
+      if (state.has_child("budgetYear")) {
+        auto val = state["budgetYear"].val();
+        set_budgetYear(QString::fromUtf8(val.str, val.len).toInt());
+      }
+      if (state.has_child("budgetMonth")) {
+        auto val = state["budgetMonth"].val();
+        set_budgetMonth(QString::fromUtf8(val.str, val.len).toInt());
+      }
+    }
+
     // Load categories
     if (root.has_child("categories")) {
+      int catIdx = 0;
       for (ryml::ConstNodeRef cat : root["categories"]) {
         auto category = new Category(this);
         if (cat.has_child("name")) {
@@ -369,20 +635,35 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
           auto val = cat["budget_limit"].val();
           category->set_budgetLimit(QString::fromUtf8(val.str, val.len).toDouble());
         }
+        if (cat.has_child("current")) {
+          auto val = cat["current"].val();
+          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+            currentCategoryIdx = catIdx;
+          }
+        }
         _categories.append(category);
+        catIdx++;
       }
     }
 
     // Load accounts
     if (root.has_child("accounts")) {
+      int accIdx = 0;
       for (ryml::ConstNodeRef acc : root["accounts"]) {
         auto account = new Account(this);
         if (acc.has_child("name")) {
           auto val = acc["name"].val();
           account->set_name(QString::fromUtf8(val.str, val.len));
         }
+        if (acc.has_child("current")) {
+          auto val = acc["current"].val();
+          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+            currentAccountIdx = accIdx;
+          }
+        }
         // Note: balance field is ignored - balance is calculated from operations
         if (acc.has_child("operations")) {
+          int opIdx = 0;
           for (ryml::ConstNodeRef opNode : acc["operations"]) {
             auto op = new Operation(account);
             if (opNode.has_child("date")) {
@@ -393,7 +674,23 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
               auto val = opNode["amount"].val();
               op->set_amount(QString::fromUtf8(val.str, val.len).toDouble());
             }
-            if (opNode.has_child("category")) {
+            // Handle split operations (allocations) vs single category
+            if (opNode.has_child("allocations")) {
+              QList<CategoryAllocation> allocations;
+              for (ryml::ConstNodeRef allocNode : opNode["allocations"]) {
+                CategoryAllocation alloc;
+                if (allocNode.has_child("category")) {
+                  auto val = allocNode["category"].val();
+                  alloc.category = QString::fromUtf8(val.str, val.len);
+                }
+                if (allocNode.has_child("amount")) {
+                  auto val = allocNode["amount"].val();
+                  alloc.amount = QString::fromUtf8(val.str, val.len).toDouble();
+                }
+                allocations.append(alloc);
+              }
+              op->setAllocations(allocations);
+            } else if (opNode.has_child("category")) {
               auto val = opNode["category"].val();
               op->set_category(QString::fromUtf8(val.str, val.len));
             }
@@ -405,10 +702,21 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
               auto val = opNode["budget_date"].val();
               op->set_budgetDate(QDate::fromString(QString::fromUtf8(val.str, val.len), "yyyy-MM-dd"));
             }
+            if (opNode.has_child("current")) {
+              auto val = opNode["current"].val();
+              if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+                // Only track current operation for the current account
+                if (accIdx == currentAccountIdx) {
+                  currentOperation = op;
+                }
+              }
+            }
             account->addOperation(op);
+            opIdx++;
           }
         }
         _accounts.append(account);
+        accIdx++;
       }
     }
   } catch (const std::exception &e) {
@@ -421,10 +729,23 @@ bool BudgetData::loadFromYaml(const QString &filePath) {
   emit accountCountChanged();
   emit categoryCountChanged();
 
-  // Set first account as current
+  // Restore current indices from file
   if (!_accounts.isEmpty()) {
-    set_currentAccountIndex(0);
+    set_currentAccountIndex(qBound(0, currentAccountIdx, _accounts.size() - 1));
   }
+  if (!_categories.isEmpty()) {
+    set_currentCategoryIndex(qBound(0, currentCategoryIdx, _categories.size() - 1));
+  }
+  // Find the index of the current operation after sorting
+  int currentOperationIdx = 0;
+  if (currentOperation && currentAccount()) {
+    QList<Operation *> ops = currentAccount()->operations();
+    int idx = ops.indexOf(currentOperation);
+    if (idx >= 0) {
+      currentOperationIdx = idx;
+    }
+  }
+  set_currentOperationIndex(currentOperationIdx);
 
   set_currentFilePath(filePath);
   _undoStack->clear();
@@ -444,11 +765,36 @@ bool BudgetData::importFromCsv(const QString &filePath,
   qDebug() << "Importing CSV from:" << filePath;
   qDebug() << "  Use categories:" << useCategories;
 
+  // First pass: detect delimiter from first line
   QFile file(filePath);
   if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
     qDebug() << "Failed to open file:" << file.errorString();
     return false;
   }
+
+  QTextStream firstPass(&file);
+  QString headerLine = firstPass.readLine();
+  file.close();
+
+  qDebug() << "Header (raw):" << headerLine;
+
+  // Auto-detect delimiter: if header contains semicolons, use semicolon; otherwise use comma
+  QChar delimiter = headerLine.contains(';') ? ';' : ',';
+  qDebug() << "Detected delimiter:" << delimiter;
+
+  // Semicolon-separated files from French banks typically use Latin1
+  // Re-open and re-read with correct encoding
+  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    qDebug() << "Failed to reopen file:" << file.errorString();
+    return false;
+  }
+
+  QTextStream in(&file);
+  if (delimiter == ';') {
+    in.setEncoding(QStringConverter::Latin1);
+  }
+  headerLine = in.readLine();
+  qDebug() << "Header (decoded):" << headerLine;
 
   // Create or get account
   QString name = accountName.isEmpty() ? "Imported Account" : accountName;
@@ -456,30 +802,6 @@ bool BudgetData::importFromCsv(const QString &filePath,
   if (!account) {
     account = new Account(name, this);
     _accounts.append(account);
-  }
-
-  QTextStream in(&file);
-  // Default to UTF-8 for reading header (most modern files use UTF-8)
-  in.setEncoding(QStringConverter::Utf8);
-
-  // Read header line to detect format
-  if (in.atEnd()) {
-    qDebug() << "Empty CSV file";
-    file.close();
-    return false;
-  }
-
-  QString headerLine = in.readLine();
-  qDebug() << "Header:" << headerLine;
-
-  // Auto-detect delimiter: if header contains semicolons, use semicolon; otherwise use comma
-  QChar delimiter = headerLine.contains(';') ? ';' : ',';
-  qDebug() << "Detected delimiter:" << delimiter;
-
-  // Adjust encoding for remaining lines based on format
-  // Semicolon-separated files from French banks typically use Latin1
-  if (delimiter == ';') {
-    in.setEncoding(QStringConverter::Latin1);
   }
 
   // Parse header to detect column indices

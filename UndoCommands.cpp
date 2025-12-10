@@ -260,3 +260,146 @@ void SetOperationBudgetDateCommand::redo() {
     }
   }
 }
+
+SplitOperationCommand::SplitOperationCommand(Operation *operation,
+                                             OperationListModel *operationModel,
+                                             BudgetData *budgetData,
+                                             const QString &oldCategory,
+                                             const QList<CategoryAllocation> &oldAllocations,
+                                             const QList<CategoryAllocation> &newAllocations,
+                                             QUndoCommand *parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _budgetData(budgetData),
+    _oldCategory(oldCategory),
+    _oldAllocations(oldAllocations),
+    _newAllocations(newAllocations) {
+  if (newAllocations.size() > 1) {
+    setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
+  } else if (newAllocations.size() == 1) {
+    setText(QObject::tr("Set operation category to \"%1\"").arg(newAllocations.first().category));
+  } else {
+    setText(QObject::tr("Clear operation split"));
+  }
+}
+
+void SplitOperationCommand::undo() {
+  if (_operation) {
+    if (_oldAllocations.isEmpty()) {
+      // Was a single category, restore it
+      _operation->clearAllocations();
+      _operation->set_category(_oldCategory);
+    } else {
+      // Was already split, restore old allocations
+      _operation->setAllocations(_oldAllocations);
+    }
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+void SplitOperationCommand::redo() {
+  if (_operation) {
+    if (_newAllocations.size() == 1) {
+      // Single category - use regular category field
+      _operation->clearAllocations();
+      _operation->set_category(_newAllocations.first().category);
+    } else if (_newAllocations.isEmpty()) {
+      // Clear everything
+      _operation->clearAllocations();
+      _operation->set_category(QString());
+    } else {
+      // Multiple categories - use allocations
+      _operation->setAllocations(_newAllocations);
+    }
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+SetOperationAmountCommand::SetOperationAmountCommand(Operation *operation,
+                                                     OperationListModel *operationModel,
+                                                     BudgetData *budgetData,
+                                                     double oldAmount,
+                                                     double newAmount,
+                                                     QUndoCommand *parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _budgetData(budgetData),
+    _oldAmount(oldAmount),
+    _newAmount(newAmount) {
+  setText(QObject::tr("Set operation amount to %1").arg(newAmount, 0, 'f', 2));
+}
+
+void SetOperationAmountCommand::undo() {
+  if (_operation) {
+    _operation->set_amount(_oldAmount);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+void SetOperationAmountCommand::redo() {
+  if (_operation) {
+    _operation->set_amount(_newAmount);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+SetOperationDateCommand::SetOperationDateCommand(Operation *operation,
+                                                 OperationListModel *operationModel,
+                                                 BudgetData *budgetData,
+                                                 const QDate &oldDate,
+                                                 const QDate &newDate,
+                                                 QUndoCommand *parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _budgetData(budgetData),
+    _oldDate(oldDate),
+    _newDate(newDate) {
+  setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy")));
+}
+
+void SetOperationDateCommand::undo() {
+  if (_operation) {
+    _operation->set_date(_oldDate);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}
+
+void SetOperationDateCommand::redo() {
+  if (_operation) {
+    _operation->set_date(_newDate);
+    if (_operationModel) {
+      _operationModel->refresh();
+    }
+    if (_budgetData) {
+      emit _budgetData->operationDataChanged();
+    }
+  }
+}

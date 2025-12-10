@@ -23,6 +23,12 @@
 - **Keyboard Navigation**: Up/Down arrows to navigate, with Shift for extending selection
 - **Balance Calculation**: Running balance calculated and displayed for each operation
 - **Copy to Clipboard**: Copy selected operations as CSV (Cmd+C)
+- **Edit Operation**: Edit operation details via the edit button (✏️) or menu (Ctrl+E)
+  - Edit amount (with undo support)
+  - Edit date (day/month/year spinboxes)
+  - Edit budget date (for deferred budget calculations)
+  - Split operation across multiple categories with specific amounts
+  - All changes are undoable
 
 ## Import
 
@@ -45,7 +51,7 @@
 
 - **Undo**: Undo the last action (Edit > Undo or Cmd+Z)
 - **Redo**: Redo the last undone action (Edit > Redo or Cmd+Shift+Z)
-- **Supported Actions**: Account rename, CSV import (including any new categories created)
+- **Supported Actions**: Account rename, CSV import (including any new categories created), category changes, split operations, operation amount/date/budget date changes
 
 ## User Interface
 

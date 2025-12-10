@@ -49,6 +49,10 @@ public:
   // Refresh balances after data changes
   void refresh();
 
+  // QML helper methods to avoid magic role numbers
+  Q_INVOKABLE Operation *operationAt(int index) const;
+  Q_INVOKABLE double balanceAt(int index) const;
+
 signals:
   void countChanged();
   void selectionChanged();
