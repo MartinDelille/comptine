@@ -209,6 +209,7 @@ qt_add_qml_module(Comptine URI Comptine
         ClipboardController.h ClipboardController.cpp
         NavigationController.h NavigationController.cpp
         FileController.h FileController.cpp
+        TranslationManager.h TranslationManager.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If
