@@ -13,6 +13,9 @@ class FileController : public QObject {
   // Current file path (macro-generated)
   PROPERTY_RW(QString, currentFilePath, {})
 
+  // Error message for file operations (empty if no error)
+  PROPERTY_RW(QString, errorMessage, {})
+
   // Read-only property for unsaved changes
   PROPERTY_RO(bool, hasUnsavedChanges)
 

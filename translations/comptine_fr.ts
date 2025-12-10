@@ -264,6 +264,10 @@ Importez et gérez vos données bancaires.</translation>
         <source>&amp;Preferences...</source>
         <translation>Préférences...</translation>
     </message>
+    <message>
+        <source>File Error</source>
+        <translation>Erreur de fichier</translation>
+    </message>
 </context>
 <context>
     <name>MonthSelector</name>
@@ -586,6 +590,25 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Set operation date to %1</source>
         <translation>Définir la date de l&apos;opération à %1</translation>
+    </message>
+</context>
+<context>
+    <name>FileController</name>
+    <message>
+        <source>Could not open file: %1</source>
+        <translation>Impossible d&apos;ouvrir le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Could not save file: %1</source>
+        <translation>Impossible d&apos;enregistrer le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Could not parse file: %1</source>
+        <translation>Impossible d&apos;analyser le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
+        <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
     </message>
 </context>
 </TS>
