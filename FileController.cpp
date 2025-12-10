@@ -9,6 +9,7 @@
 #include <QFile>
 #include <QTextStream>
 #include "Account.h"
+#include "AppSettings.h"
 #include "BudgetData.h"
 #include "Category.h"
 #include "CategoryController.h"
@@ -21,6 +22,10 @@
 using namespace CsvParser;
 
 FileController::FileController(QObject *parent) : QObject(parent) {
+}
+
+void FileController::setAppSettings(AppSettings *settings) {
+  _appSettings = settings;
 }
 
 void FileController::setBudgetData(BudgetData *budgetData) {
@@ -335,6 +340,12 @@ bool FileController::loadFromYaml(const QString &filePath) {
   set_currentFilePath(filePath);
   _budgetData->undoStack()->clear();
   _budgetData->undoStack()->setClean();
+
+  // Add to recent files
+  if (_appSettings) {
+    _appSettings->addRecentFile(filePath);
+  }
+
   emit yamlFileLoaded();
   emit dataLoaded();
   qDebug() << "Budget data loaded from:" << filePath;

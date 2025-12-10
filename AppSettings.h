@@ -3,6 +3,7 @@
 #include <QObject>
 #include <QSettings>
 #include <QString>
+#include <QStringListModel>
 #include "PropertyMacros.h"
 
 class AppSettings : public QObject {
@@ -14,12 +15,25 @@ class AppSettings : public QObject {
   // Theme: empty string = system default, "light" = Light, "dark" = Dark
   PROPERTY_RW_CUSTOM(QString, theme, QString())
 
+  // Recent files model for proper QML binding
+  Q_PROPERTY(QStringListModel *recentFilesModel READ recentFilesModel CONSTANT)
+
 public:
   explicit AppSettings(QObject *parent = nullptr);
+
+  QStringListModel *recentFilesModel();
+  QStringList recentFiles() const;
+  Q_INVOKABLE void addRecentFile(const QString &filePath);
+  Q_INVOKABLE void clearRecentFiles();
+
+  static constexpr int MaxRecentFiles = 10;
 
 signals:
   void languageChangeRequested();
 
 private:
+  void saveRecentFiles();
+
   QSettings _settings;
+  QStringListModel _recentFilesModel;
 };

@@ -169,6 +169,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Enregistrer sous...</translation>
     </message>
     <message>
+        <source>Open &amp;Recent</source>
+        <translation>Ouvrir un fichier &amp;récent</translation>
+    </message>
+    <message>
+        <source>Clear Recent Files</source>
+        <translation>Effacer les fichiers récents</translation>
+    </message>
+    <message>
         <source>&amp;Import CSV...</source>
         <translation>Importer CSV...</translation>
     </message>

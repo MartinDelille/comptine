@@ -3,6 +3,7 @@
 #include <QObject>
 #include "PropertyMacros.h"
 
+class AppSettings;
 class BudgetData;
 class CategoryController;
 class NavigationController;
@@ -23,6 +24,7 @@ public:
   explicit FileController(QObject *parent = nullptr);
 
   // Set references to other controllers
+  void setAppSettings(AppSettings *settings);
   void setBudgetData(BudgetData *budgetData);
   void setCategoryController(CategoryController *categoryController);
   void setNavigationController(NavigationController *navController);
@@ -47,6 +49,7 @@ signals:
                              int accountIndex, int categoryIndex, int operationIndex);
 
 private:
+  AppSettings *_appSettings = nullptr;
   BudgetData *_budgetData = nullptr;
   CategoryController *_categoryController = nullptr;
   NavigationController *_navController = nullptr;

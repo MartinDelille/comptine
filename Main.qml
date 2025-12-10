@@ -14,6 +14,7 @@ ApplicationWindow {
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
     property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen
     property string pendingAction: ""  // "quit", "new", or "open"
+    property string pendingRecentFile: ""  // File path to open from recent files
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
 
     function performPendingAction() {
@@ -23,8 +24,19 @@ ApplicationWindow {
             AppState.file.clear();
         } else if (pendingAction === "open") {
             openDialog.open();
+        } else if (pendingAction === "openRecent") {
+            AppState.file.loadFromYaml(pendingRecentFile);
+            pendingRecentFile = "";
         }
         pendingAction = "";
+    }
+
+    function openRecentFile(filePath) {
+        if (checkUnsavedChanges("openRecent")) {
+            pendingRecentFile = filePath;
+        } else {
+            AppState.file.loadFromYaml(filePath);
+        }
     }
 
     function checkUnsavedChanges(action) {
@@ -80,6 +92,31 @@ ApplicationWindow {
                 text: qsTr("&Save As...")
                 shortcut: StandardKey.SaveAs
                 onTriggered: saveDialog.open()
+            }
+            Menu {
+                id: recentFilesMenu
+                title: qsTr("Open &Recent")
+                enabled: AppState.settings.recentFilesModel.rowCount() > 0
+
+                Instantiator {
+                    model: AppState.settings.recentFilesModel
+                    delegate: MenuItem {
+                        text: model.display
+                        onTriggered: window.openRecentFile(model.display)
+                    }
+                    onObjectAdded: (index, object) => recentFilesMenu.insertItem(index, object)
+                    onObjectRemoved: (index, object) => recentFilesMenu.removeItem(object)
+                }
+
+                MenuSeparator {
+                    visible: AppState.settings.recentFilesModel.rowCount() > 0
+                }
+
+                MenuItem {
+                    text: qsTr("Clear Recent Files")
+                    enabled: AppState.settings.recentFilesModel.rowCount() > 0
+                    onTriggered: AppState.settings.clearRecentFiles()
+                }
             }
             MenuSeparator {}
             Action {
