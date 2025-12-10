@@ -98,11 +98,33 @@ jobs:
           name: Comptine-${{ matrix.name }}
           path: ${{ matrix.artifact-path }}
 
-      - name: Publish release
+      - name: Upload release artifact
         if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.name }}
+          path: ${{ matrix.release-file }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          merge-multiple: true
+
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ matrix.release-file }}
+          files: |
+            *.dmg
+            *.exe
           generate_release_notes: true
 
   comment-artifacts:
