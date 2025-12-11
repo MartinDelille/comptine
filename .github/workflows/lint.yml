@@ -43,7 +43,7 @@ jobs:
           INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
           INCLUDES="$INCLUDES --include=*.yml --include=*.yaml"
           INCLUDES="$INCLUDES --include=*.md --include=*.txt --include=*.ts"
-          if grep -rn '[[:blank:]]$' $INCLUDES .; then
+          if grep -rn '[[:blank:]]$' $INCLUDES --exclude-dir=.venv .; then
             echo "Error: Found trailing whitespace"
             exit 1
           fi
@@ -54,7 +54,7 @@ jobs:
           find_args="-type f \( -name *.cpp -o -name *.h -o -name *.qml"
           find_args="$find_args -o -name *.yml -o -name *.yaml"
           find_args="$find_args -o -name *.md -o -name *.txt -o -name *.ts \)"
-          find_args="$find_args -not -path ./.git/*"
+          find_args="$find_args -not -path ./.git/* -not -path ./.venv/*"
           for file in $(eval "find . $find_args"); do
             if [ -s "$file" ] && [ "$(tail -c 1 "$file" | wc -l)" -eq 0 ]; then
               files_without_newline="$files_without_newline $file"
@@ -70,7 +70,8 @@ jobs:
 
       - name: Check large files
         run: |
-          large_files=$(find . -type f -size +500k -not -path './.git/*')
+          large_files=$(find . -type f -size +500k \
+            -not -path './.git/*' -not -path './.venv/*')
           if [ -n "$large_files" ]; then
             echo "Error: Found large files (>500KB):"
             echo "$large_files"
@@ -81,7 +82,8 @@ jobs:
         run: |
           INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
           INCLUDES="$INCLUDES --include=*.yml --include=*.yaml --include=*.md"
-          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' $INCLUDES --exclude=lint.yml .; then
+          EXCLUDES="--exclude=lint.yml --exclude-dir=.venv"
+          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' $INCLUDES $EXCLUDES .; then
             echo "Error: Found merge conflict markers"
             exit 1
           fi
@@ -91,7 +93,7 @@ jobs:
           INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
           INCLUDES="$INCLUDES --include=*.yml --include=*.yaml"
           INCLUDES="$INCLUDES --include=*.md --include=*.txt --include=*.ts"
-          if grep -rIl $'\r' $INCLUDES .; then
+          if grep -rIl $'\r' $INCLUDES --exclude-dir=.venv .; then
             echo "Error: Found CRLF line endings (should be LF)"
             exit 1
           fi
