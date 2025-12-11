@@ -1,0 +1,25 @@
+title: Comptine
+description: La Compta qui Chante !
+url: ""
+baseurl: "/comptine"
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+# Exclude from processing
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+
+# Custom variables
+github_repo: https://github.com/MartinDelille/comptine
+latest_release: https://github.com/MartinDelille/comptine/releases/latest
+
+# Default layout
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

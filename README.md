@@ -75,3 +75,17 @@ cpack -G NSIS -C Release
 ```
 
 The installer will be at `build/Comptine-<version>-Windows.exe`
+
+## Website
+
+The project website is in the `docs/` folder and uses Jekyll.
+
+### Serve locally
+
+```bash
+cd docs
+bundle install  # First time only
+bundle exec jekyll serve --livereload
+```
+
+Then open http://localhost:4000/comptine

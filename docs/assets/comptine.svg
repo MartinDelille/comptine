@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <!-- Funky pink-purple gradient for body -->
+    <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B9D"/>
+      <stop offset="30%" style="stop-color:#C850C0"/>
+      <stop offset="60%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#4F46E5"/>
+    </linearGradient>
+    <!-- Cyan/teal gradient for buttons -->
+    <linearGradient id="copperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#00D9FF"/>
+      <stop offset="50%" style="stop-color:#00B4D8"/>
+      <stop offset="100%" style="stop-color:#0096C7"/>
+    </linearGradient>
+    <!-- Dark purple screen gradient -->
+    <linearGradient id="glassGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1A1A2E"/>
+      <stop offset="100%" style="stop-color:#0F0F1A"/>
+    </linearGradient>
+    <!-- Warm yellow-orange-red accent -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD93D"/>
+      <stop offset="50%" style="stop-color:#FF6B6B"/>
+      <stop offset="100%" style="stop-color:#EE5A24"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Calculator body - wood plate -->
+  <rect x="0" y="0" width="200" height="200" rx="16" ry="16" fill="url(#brassGrad)"/>
+
+  <!-- Decorative rivets in corners -->
+  <circle cx="16" cy="16" r="5" fill="#00B4D8" stroke="#4F46E5" stroke-width="1"/>
+  <circle cx="16" cy="16" r="2" fill="#00D9FF"/>
+  <circle cx="184" cy="16" r="5" fill="#00B4D8" stroke="#4F46E5" stroke-width="1"/>
+  <circle cx="184" cy="16" r="2" fill="#00D9FF"/>
+  <circle cx="16" cy="184" r="5" fill="#00B4D8" stroke="#4F46E5" stroke-width="1"/>
+  <circle cx="16" cy="184" r="2" fill="#00D9FF"/>
+  <circle cx="184" cy="184" r="5" fill="#00B4D8" stroke="#4F46E5" stroke-width="1"/>
+  <circle cx="184" cy="184" r="2" fill="#00D9FF"/>
+
+  <!-- Screen - funky glass display -->
+  <rect x="28" y="28" width="144" height="36" rx="4" ry="4" fill="#0F0F1A" stroke="#4F46E5" stroke-width="3"/>
+  <rect x="32" y="32" width="136" height="28" rx="2" ry="2" fill="url(#glassGrad)"/>
+  <!-- Screen glow effect -->
+  <rect x="32" y="32" width="136" height="12" rx="2" ry="2" fill="#FF6B9D" opacity="0.2"/>
+
+  <!-- Screen screws -->
+  <circle cx="30" cy="46" r="3" fill="#00B4D8" stroke="#4F46E5" stroke-width="0.5"/>
+  <line x1="28" y1="46" x2="32" y2="46" stroke="#4F46E5" stroke-width="1"/>
+  <circle cx="170" cy="46" r="3" fill="#00B4D8" stroke="#4F46E5" stroke-width="0.5"/>
+  <line x1="168" y1="46" x2="172" y2="46" stroke="#4F46E5" stroke-width="1"/>
+
+  <!-- Calculator keys grid - funky buttons -->
+  <!-- Row 1: C, ±, %, ÷ (center y=86) -->
+  <circle cx="44" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="44" y="90" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">C</text>
+
+  <circle cx="84" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="84" y="90" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">±</text>
+
+  <circle cx="124" cy="86" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="124" y="90" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">%</text>
+
+  <circle cx="164" cy="86" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="164" y="91" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">÷</text>
+
+  <!-- Row 2: 7, 8, ♪, × (center y=126) -->
+  <circle cx="44" cy="126" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="44" y="130" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">7</text>
+
+  <circle cx="84" cy="126" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="84" y="130" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">8</text>
+
+  <!-- Musical note key - special with hot pink -->
+  <circle cx="124" cy="126" r="14" fill="#FF6B9D" stroke="#4F46E5" stroke-width="2"/>
+  <g transform="translate(124, 126)">
+    <ellipse cx="-2" cy="3" rx="4" ry="3" fill="#FFFFFF"/>
+    <rect x="0" y="-9" width="2" height="12" fill="#FFFFFF"/>
+  </g>
+
+  <circle cx="164" cy="126" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="164" y="131" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">×</text>
+
+  <!-- Row 3: 4, ♪, 6, − (center y=166) -->
+  <circle cx="44" cy="166" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="44" y="168" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">4</text>
+
+  <!-- Musical note key with flag -->
+  <circle cx="84" cy="166" r="14" fill="#FF6B9D" stroke="#4F46E5" stroke-width="2"/>
+  <g transform="translate(84, 166)">
+    <ellipse cx="-2" cy="3" rx="4" ry="3" fill="#FFFFFF"/>
+    <rect x="0" y="-9" width="2" height="12" fill="#FFFFFF"/>
+    <path d="M1,-9 Q4,-4 7,-6" stroke="#FFFFFF" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <circle cx="124" cy="166" r="14" fill="url(#copperGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="124" y="170" font-family="Georgia, serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="middle">6</text>
+
+  <circle cx="164" cy="166" r="14" fill="url(#goldGrad)" stroke="#4F46E5" stroke-width="2"/>
+  <text x="164" y="170" font-family="Georgia, serif" font-size="14" font-weight="bold" fill="#FFFFFF" text-anchor="middle">−</text>
+
+  <!-- Floating notes on screen - funky neon style -->
+  <g fill="#00FFFF">
+    <g transform="translate(55, 50)">
+      <ellipse cx="0" cy="0" rx="4" ry="3"/>
+      <rect x="3" y="-12" width="1.5" height="12"/>
+    </g>
+    <g transform="translate(130, 46)">
+      <ellipse cx="0" cy="0" rx="3.5" ry="2.5"/>
+      <rect x="2.5" y="-10" width="1.5" height="10"/>
+      <path d="M3,-9 Q7,-7 9,-7" stroke="#00FFFF" stroke-width="1.2" fill="none"/>
+    </g>
+  </g>
+</svg>
