@@ -98,7 +98,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(rapidyaml)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools)
+find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools Network)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
@@ -196,6 +196,7 @@ qt_add_qml_module(Comptine URI Comptine
         OperationView.qml
         PreferencesDialog.qml
         Theme.qml
+        UpdateDialog.qml
     SOURCES
         Operation.h Operation.cpp
         Account.h Account.cpp
@@ -210,6 +211,7 @@ qt_add_qml_module(Comptine URI Comptine
         NavigationController.h NavigationController.cpp
         FileController.h FileController.cpp
         TranslationManager.h TranslationManager.cpp
+        UpdateController.h UpdateController.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If
@@ -226,7 +228,7 @@ set_target_properties(
              MACOSX_BUNDLE TRUE
              WIN32_EXECUTABLE TRUE)
 
-target_link_libraries(Comptine PRIVATE Qt6::Quick ryml::ryml)
+target_link_libraries(Comptine PRIVATE Qt6::Quick Qt6::Network ryml::ryml)
 
 # Translations
 qt_add_translations(Comptine

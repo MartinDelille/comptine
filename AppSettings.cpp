@@ -7,6 +7,8 @@ AppSettings::AppSettings(QObject *parent) :
     _recentFilesModel(this) {
   _language = _settings.value("language", QString()).toString();
   _theme = _settings.value("theme", QString()).toString();
+  _checkForUpdates = _settings.value("checkForUpdates", true).toBool();
+  _lastUpdateCheck = _settings.value("lastUpdateCheck", QDateTime()).toDateTime();
   _recentFilesModel.setStringList(
       _settings.value("recentFiles", QStringList()).toStringList());
 }
@@ -35,6 +37,32 @@ void AppSettings::set_theme(QString value) {
     _settings.setValue("theme", value);
     _settings.sync();
     emit themeChanged();
+  }
+}
+
+bool AppSettings::checkForUpdates() const {
+  return _checkForUpdates;
+}
+
+void AppSettings::set_checkForUpdates(bool value) {
+  if (_checkForUpdates != value) {
+    _checkForUpdates = value;
+    _settings.setValue("checkForUpdates", value);
+    _settings.sync();
+    emit checkForUpdatesChanged();
+  }
+}
+
+QDateTime AppSettings::lastUpdateCheck() const {
+  return _lastUpdateCheck;
+}
+
+void AppSettings::set_lastUpdateCheck(QDateTime value) {
+  if (_lastUpdateCheck != value) {
+    _lastUpdateCheck = value;
+    _settings.setValue("lastUpdateCheck", value);
+    _settings.sync();
+    emit lastUpdateCheckChanged();
   }
 }
 

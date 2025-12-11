@@ -10,11 +10,13 @@ Dialog {
 
     property string originalLanguage: ""
     property string originalTheme: ""
+    property bool originalCheckForUpdates: true
 
     onOpened: {
         // Save original values to restore on cancel
         originalLanguage = AppState.settings.language;
         originalTheme = AppState.settings.theme;
+        originalCheckForUpdates = AppState.settings.checkForUpdates;
 
         // Set initial language combo box value
         if (AppState.settings.language === "") {
@@ -33,6 +35,9 @@ Dialog {
         } else if (AppState.settings.theme === "dark") {
             themeComboBox.currentIndex = 2;
         }
+
+        // Set initial update checkbox value
+        updateCheckBox.checked = AppState.settings.checkForUpdates;
     }
 
     onRejected: {
@@ -42,6 +47,9 @@ Dialog {
         }
         if (AppState.settings.theme !== originalTheme) {
             AppState.settings.theme = originalTheme;
+        }
+        if (AppState.settings.checkForUpdates !== originalCheckForUpdates) {
+            AppState.settings.checkForUpdates = originalCheckForUpdates;
         }
     }
 
@@ -91,6 +99,18 @@ Dialog {
                         newTheme = "dark";
                     }
                     AppState.settings.theme = newTheme;
+                }
+            }
+
+            Label {
+                text: qsTr("Updates:")
+            }
+
+            CheckBox {
+                id: updateCheckBox
+                text: qsTr("Check for updates on startup")
+                onToggled: {
+                    AppState.settings.checkForUpdates = checked;
                 }
             }
         }

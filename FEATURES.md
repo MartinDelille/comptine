@@ -79,6 +79,14 @@ The following actions modify user data and support undo/redo:
 - **Localization**: Support for English and French languages
 - **Preferences**: Configure language and theme (Cmd+,)
 
+## Updates
+
+- **Auto-Update Check**: Automatically checks for new releases on startup (once per day)
+- **Manual Check**: Check for updates via Help > Check for Updates
+- **Release Notes**: View release notes for new versions
+- **Download Link**: Opens GitHub releases page for easy download
+- **Preferences**: Enable or disable automatic update checks in Preferences
+
 ## Data Format
 
 - **YAML Storage**: Human-readable YAML format for budget data

@@ -5,6 +5,7 @@
 #include "ClipboardController.h"
 #include "FileController.h"
 #include "NavigationController.h"
+#include "UpdateController.h"
 
 AppState::AppState(QObject *parent) :
     QObject(parent),
@@ -13,7 +14,8 @@ AppState::AppState(QObject *parent) :
     _categories(new CategoryController(this)),
     _clipboard(new ClipboardController(this)),
     _navigation(new NavigationController(this)),
-    _file(new FileController(this)) {
+    _file(new FileController(this)),
+    _update(new UpdateController(this)) {
   // Connect controllers together
   _navigation->setBudgetData(_data);
   _navigation->setCategoryController(_categories);
@@ -25,6 +27,7 @@ AppState::AppState(QObject *parent) :
   _file->setBudgetData(_data);
   _file->setNavigationController(_navigation);
   _file->setCategoryController(_categories);
+  _update->setAppSettings(_settings);
 
   // Connect navigation state loading signal from FileController
   connect(_file, &FileController::navigationStateLoaded,

@@ -112,6 +112,25 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>FileController</name>
+    <message>
+        <source>Could not open file: %1</source>
+        <translation>Impossible d&apos;ouvrir le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Could not save file: %1</source>
+        <translation>Impossible d&apos;enregistrer le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Could not parse file: %1</source>
+        <translation>Impossible d&apos;analyser le fichier : %1</translation>
+    </message>
+    <message>
+        <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
+        <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
+    </message>
+</context>
+<context>
     <name>ImportDialog</name>
     <message>
         <source>Import CSV</source>
@@ -225,6 +244,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>&amp;Aide</translation>
     </message>
     <message>
+        <source>Check for &amp;Updates...</source>
+        <translation>Vérifier les &amp;mises à jour...</translation>
+    </message>
+    <message>
         <source>&amp;Project Page</source>
         <translation>&amp;Page du projet</translation>
     </message>
@@ -275,6 +298,18 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>File Error</source>
         <translation>Erreur de fichier</translation>
+    </message>
+    <message>
+        <source>No Update Available</source>
+        <translation>Aucune mise à jour disponible</translation>
+    </message>
+    <message>
+        <source>You are running the latest version of Comptine (%1).</source>
+        <translation>Vous utilisez la dernière version de Comptine (%1).</translation>
+    </message>
+    <message>
+        <source>Update Check Failed</source>
+        <translation>Échec de la vérification des mises à jour</translation>
     </message>
 </context>
 <context>
@@ -538,6 +573,14 @@ Importez et gérez vos données bancaires.</translation>
         <source>Dark</source>
         <translation>Sombre</translation>
     </message>
+    <message>
+        <source>Updates:</source>
+        <translation>Mises à jour :</translation>
+    </message>
+    <message>
+        <source>Check for updates on startup</source>
+        <translation>Vérifier les mises à jour au démarrage</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
@@ -601,22 +644,37 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
-    <name>FileController</name>
+    <name>UpdateController</name>
     <message>
-        <source>Could not open file: %1</source>
-        <translation>Impossible d&apos;ouvrir le fichier : %1</translation>
+        <source>Invalid response from GitHub</source>
+        <translation>Réponse invalide de GitHub</translation>
+    </message>
+</context>
+<context>
+    <name>UpdateDialog</name>
+    <message>
+        <source>Update Available</source>
+        <translation>Mise à jour disponible</translation>
     </message>
     <message>
-        <source>Could not save file: %1</source>
-        <translation>Impossible d&apos;enregistrer le fichier : %1</translation>
+        <source>A new version of Comptine is available!</source>
+        <translation>Une nouvelle version de Comptine est disponible !</translation>
     </message>
     <message>
-        <source>Could not parse file: %1</source>
-        <translation>Impossible d&apos;analyser le fichier : %1</translation>
+        <source>Current version: %1</source>
+        <translation>Version actuelle : %1</translation>
     </message>
     <message>
-        <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
-        <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
+        <source>Latest version: %1</source>
+        <translation>Dernière version : %1</translation>
+    </message>
+    <message>
+        <source>Release Notes</source>
+        <translation>Notes de version</translation>
+    </message>
+    <message>
+        <source>Download Update</source>
+        <translation>Télécharger la mise à jour</translation>
     </message>
 </context>
 </TS>

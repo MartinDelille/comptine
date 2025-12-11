@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDateTime>
 #include <QObject>
 #include <QSettings>
 #include <QString>
@@ -14,6 +15,12 @@ class AppSettings : public QObject {
 
   // Theme: empty string = system default, "light" = Light, "dark" = Dark
   PROPERTY_RW_CUSTOM(QString, theme, QString())
+
+  // Auto-check for updates on startup
+  PROPERTY_RW_CUSTOM(bool, checkForUpdates, true)
+
+  // Last time we checked for updates
+  PROPERTY_RW_CUSTOM(QDateTime, lastUpdateCheck, QDateTime())
 
   // Recent files model for proper QML binding
   Q_PROPERTY(QStringListModel *recentFilesModel READ recentFilesModel CONSTANT)

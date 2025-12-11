@@ -8,6 +8,7 @@
 #include "ClipboardController.h"
 #include "FileController.h"
 #include "NavigationController.h"
+#include "UpdateController.h"
 
 class AppState : public QObject {
   Q_OBJECT
@@ -20,6 +21,7 @@ class AppState : public QObject {
   Q_PROPERTY(ClipboardController *clipboard READ clipboard CONSTANT)
   Q_PROPERTY(NavigationController *navigation READ navigation CONSTANT)
   Q_PROPERTY(FileController *file READ file CONSTANT)
+  Q_PROPERTY(UpdateController *update READ update CONSTANT)
 
 public:
   explicit AppState(QObject *parent = nullptr);
@@ -30,6 +32,7 @@ public:
   ClipboardController *clipboard() const { return _clipboard; }
   NavigationController *navigation() const { return _navigation; }
   FileController *file() const { return _file; }
+  UpdateController *update() const { return _update; }
 
 private:
   AppSettings *_settings;
@@ -38,4 +41,5 @@ private:
   ClipboardController *_clipboard;
   NavigationController *_navigation;
   FileController *_file;
+  UpdateController *_update;
 };

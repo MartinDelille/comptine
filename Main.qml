@@ -12,7 +12,7 @@ ApplicationWindow {
     color: Theme.background
 
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
-    property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen
+    property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen || updateDialog.visible
     property string pendingAction: ""  // "quit", "new", or "open"
     property string pendingRecentFile: ""  // File path to open from recent files
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
@@ -205,6 +205,13 @@ ApplicationWindow {
         Menu {
             title: qsTr("&Help")
             Action {
+                text: qsTr("Check for &Updates...")
+                onTriggered: {
+                    window.manualUpdateCheck = true;
+                    AppState.update.checkForUpdates();
+                }
+            }
+            Action {
                 text: qsTr("&Project Page")
                 onTriggered: Qt.openUrlExternally("https://github.com/MartinDelille/Comptine")
             }
@@ -270,6 +277,55 @@ ApplicationWindow {
     PreferencesDialog {
         id: preferencesDialog
         anchors.centerIn: parent
+    }
+
+    UpdateDialog {
+        id: updateDialog
+        anchors.centerIn: parent
+    }
+
+    MessageDialog {
+        id: noUpdateDialog
+        title: qsTr("No Update Available")
+        text: qsTr("You are running the latest version of Comptine (%1).").arg(AppState.update.currentVersion())
+        buttons: MessageDialog.Ok
+    }
+
+    MessageDialog {
+        id: updateErrorDialog
+        title: qsTr("Update Check Failed")
+        text: AppState.update.errorMessage
+        buttons: MessageDialog.Ok
+    }
+
+    // Track if update check was manual (user clicked menu) vs automatic
+    property bool manualUpdateCheck: false
+
+    // Handle update check results
+    Connections {
+        target: AppState.update
+        function onUpdateCheckCompleted() {
+            AppState.update.markUpdateChecked();
+            if (AppState.update.updateAvailable) {
+                updateDialog.open();
+            } else if (window.manualUpdateCheck) {
+                noUpdateDialog.open();
+            }
+            window.manualUpdateCheck = false;
+        }
+        function onUpdateCheckFailed(error) {
+            if (window.manualUpdateCheck) {
+                updateErrorDialog.open();
+            }
+            window.manualUpdateCheck = false;
+        }
+    }
+
+    // Auto-check for updates on startup
+    Component.onCompleted: {
+        if (AppState.update.shouldAutoCheck()) {
+            AppState.update.checkForUpdates();
+        }
     }
 
     MessageDialog {
