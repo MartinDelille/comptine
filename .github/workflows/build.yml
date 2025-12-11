@@ -146,6 +146,8 @@ jobs:
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
+        env:
+          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare
         with:
           files: |
             *.dmg
@@ -155,7 +157,7 @@ jobs:
 
             ${{ steps.changelog.outputs.content }}
 
-            **[Full Changelog](https://github.com/${{ github.repository }}/compare/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
+            **[Full Changelog](${{ env.COMPARE_URL }}/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
 
   comment-artifacts:
     if: github.event_name == 'pull_request'
@@ -175,9 +177,12 @@ jobs:
               repo: context.repo.repo,
               run_id: context.runId
             });
-            const links = artifacts.artifacts.map(a =>
-              `- [${a.name}](https://nightly.link/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/${a.name}.zip)`
-            ).join('\n');
+            const links = artifacts.artifacts.map(a => {
+              const baseUrl = 'https://nightly.link';
+              const repo = `${context.repo.owner}/${context.repo.repo}`;
+              const path = `actions/runs/${context.runId}/${a.name}.zip`;
+              return `- [${a.name}](${baseUrl}/${repo}/${path})`;
+            }).join('\n');
             core.setOutput('links', links);
 
       - name: Post artifact links

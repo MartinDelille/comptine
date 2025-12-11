@@ -40,7 +40,10 @@ jobs:
 
       - name: Trailing whitespace
         run: |
-          if grep -rn '[[:blank:]]$' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.txt' --include='*.ts' .; then
+          INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
+          INCLUDES="$INCLUDES --include=*.yml --include=*.yaml"
+          INCLUDES="$INCLUDES --include=*.md --include=*.txt --include=*.ts"
+          if grep -rn '[[:blank:]]$' $INCLUDES .; then
             echo "Error: Found trailing whitespace"
             exit 1
           fi
@@ -48,7 +51,11 @@ jobs:
       - name: End of file fixer
         run: |
           files_without_newline=""
-          for file in $(find . -type f \( -name '*.cpp' -o -name '*.h' -o -name '*.qml' -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' -o -name '*.txt' -o -name '*.ts' \) -not -path './.git/*'); do
+          find_args="-type f \( -name *.cpp -o -name *.h -o -name *.qml"
+          find_args="$find_args -o -name *.yml -o -name *.yaml"
+          find_args="$find_args -o -name *.md -o -name *.txt -o -name *.ts \)"
+          find_args="$find_args -not -path ./.git/*"
+          for file in $(eval "find . $find_args"); do
             if [ -s "$file" ] && [ "$(tail -c 1 "$file" | wc -l)" -eq 0 ]; then
               files_without_newline="$files_without_newline $file"
             fi
@@ -59,24 +66,7 @@ jobs:
           fi
 
       - name: Check YAML
-        run: |
-          uv run python -c "
-          import yaml
-          import glob
-          import sys
-          errors = []
-          for pattern in ['*.yml', '*.yaml', '.github/**/*.yml']:
-              for f in glob.glob(pattern, recursive=True):
-                  try:
-                      with open(f) as file:
-                          yaml.safe_load(file)
-                  except Exception as e:
-                      errors.append(f'{f}: {e}')
-          if errors:
-              for e in errors:
-                  print(e)
-              sys.exit(1)
-          "
+        run: uv run yamllint .
 
       - name: Check large files
         run: |
@@ -89,14 +79,19 @@ jobs:
 
       - name: Check merge conflict markers
         run: |
-          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' --exclude='lint.yml' .; then
+          INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
+          INCLUDES="$INCLUDES --include=*.yml --include=*.yaml --include=*.md"
+          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' $INCLUDES --exclude=lint.yml .; then
             echo "Error: Found merge conflict markers"
             exit 1
           fi
 
       - name: Check line endings (LF only)
         run: |
-          if grep -rIl $'\r' --include='*.cpp' --include='*.h' --include='*.qml' --include='*.yml' --include='*.yaml' --include='*.md' --include='*.txt' --include='*.ts' .; then
+          INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
+          INCLUDES="$INCLUDES --include=*.yml --include=*.yaml"
+          INCLUDES="$INCLUDES --include=*.md --include=*.txt --include=*.ts"
+          if grep -rIl $'\r' $INCLUDES .; then
             echo "Error: Found CRLF line endings (should be LF)"
             exit 1
           fi
