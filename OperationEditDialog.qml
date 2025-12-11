@@ -204,6 +204,11 @@ Dialog {
                 value: root.editedAmount
                 onEdited: newValue => {
                     root.editedAmount = newValue;
+                    // When there's only one allocation (single category operation),
+                    // automatically update its amount to match the total
+                    if (allocationModel.count === 1) {
+                        allocationModel.setProperty(0, "amount", newValue);
+                    }
                 }
             }
         }
