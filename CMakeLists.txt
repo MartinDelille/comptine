@@ -69,7 +69,7 @@ endif()
 project(
   Comptine
   VERSION ${VERSION_MAJOR}.${VERSION_MINOR}
-  LANGUAGES CXX)
+  LANGUAGES CXX OBJCXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -229,6 +229,14 @@ set_target_properties(
              WIN32_EXECUTABLE TRUE)
 
 target_link_libraries(Comptine PRIVATE Qt6::Quick Qt6::Network ryml::ryml)
+
+# Platform-specific file coordination for cloud storage support (Dropbox, iCloud, etc.)
+if(APPLE)
+  target_sources(Comptine PRIVATE FileCoordinator.h FileCoordinator.mm)
+  target_link_libraries(Comptine PRIVATE "-framework Foundation")
+else()
+  target_sources(Comptine PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp)
+endif()
 
 # Translations
 qt_add_translations(Comptine

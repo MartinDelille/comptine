@@ -16,6 +16,7 @@
 #include "CategoryController.h"
 #include "CsvParser.h"
 #include "FileController.h"
+#include "FileCoordinator.h"
 #include "NavigationController.h"
 #include "Operation.h"
 #include "UndoCommands.h"
@@ -168,15 +169,15 @@ bool FileController::loadFromYaml(const QString& filePath) {
   // Clear any previous error
   set_errorMessage({});
 
-  QFile file(filePath);
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    qWarning() << "Failed to open file for reading:" << filePath;
-    set_errorMessage(tr("Could not open file: %1").arg(file.errorString()));
+  // Use FileCoordinator to read the file - this triggers cloud file downloads
+  // on macOS (Dropbox, iCloud, etc.) via NSFileCoordinator
+  QByteArray data;
+  QString readError;
+  if (!FileCoordinator::readFile(filePath, data, readError)) {
+    qWarning() << "Failed to open file for reading:" << filePath << readError;
+    set_errorMessage(tr("Could not open file: %1").arg(readError));
     return false;
   }
-
-  QByteArray data = file.readAll();
-  file.close();
 
   // Check for empty file
   if (data.isEmpty()) {
