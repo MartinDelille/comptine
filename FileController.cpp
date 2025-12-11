@@ -188,9 +188,11 @@ bool FileController::loadFromYaml(const QString& filePath) {
   _budgetData->clear();
 
   // Track state from file for NavigationController
+  // Default to current year/month if not specified in file
+  QDate today = QDate::currentDate();
   int loadedTabIndex = 0;
-  int loadedBudgetYear = 0;
-  int loadedBudgetMonth = 0;
+  int loadedBudgetYear = today.year();
+  int loadedBudgetMonth = today.month();
   int loadedAccountIdx = 0;
   int loadedCategoryIdx = 0;
   Operation* currentOperation = nullptr;
