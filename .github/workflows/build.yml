@@ -113,11 +113,36 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Download all release artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: release-*
           merge-multiple: true
+
+      - name: Get previous tag
+        id: prev-tag
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "tag=$PREV_TAG" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG="${{ steps.prev-tag.outputs.tag }}"
+          if [ -n "$PREV_TAG" ]; then
+            # Get commits, exclude merge commits
+            CHANGELOG=$(git log --pretty=format:"- %s" --no-merges $PREV_TAG..HEAD)
+          else
+            CHANGELOG="- Initial release"
+          fi
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
@@ -125,7 +150,12 @@ jobs:
           files: |
             *.dmg
             *.exe
-          generate_release_notes: true
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.content }}
+
+            **[Full Changelog](https://github.com/${{ github.repository }}/compare/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
 
   comment-artifacts:
     if: github.event_name == 'pull_request'
