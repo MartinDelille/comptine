@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ page.lang | default: 'fr' }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,18 +10,7 @@
 </head>
 <body>
   <header class="site-header">
-    <nav class="nav-container">
-      <a href="{{ '/' | relative_url }}" class="logo">
-        <img src="{{ '/assets/comptine.svg' | relative_url }}" alt="Comptine" height="32">
-        <span>Comptine</span>
-      </a>
-      <ul class="nav-links">
-        <li><a href="{{ '/' | relative_url }}"{% if page.url == '/' %} class="active"{% endif %}>Accueil</a></li>
-        <li><a href="{{ '/features' | relative_url }}"{% if page.url == '/features.html' %} class="active"{% endif %}>Fonctionnalites</a></li>
-        <li><a href="{{ '/download' | relative_url }}"{% if page.url == '/download.html' %} class="active"{% endif %}>Telecharger</a></li>
-        <li><a href="{{ site.github_repo }}" class="github-link">GitHub</a></li>
-      </ul>
-    </nav>
+    {% include nav.html %}
   </header>
 
   <main class="main-content">
@@ -29,10 +18,7 @@
   </main>
 
   <footer class="site-footer">
-    <div class="footer-container">
-      <p>&copy; {{ 'now' | date: '%Y' }} Comptine. Logiciel libre sous licence open source.</p>
-      <p><a href="{{ site.github_repo }}">Code source sur GitHub</a></p>
-    </div>
+    {% include footer.html %}
   </footer>
 </body>
 </html>

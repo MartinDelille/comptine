@@ -1,0 +1,28 @@
+---
+layout: default
+---
+<section class="hero">
+  <img src="{{ '/assets/comptine.svg' | relative_url }}" alt="Comptine" class="hero-logo">
+  <h1>Comptine</h1>
+  <p class="tagline">{{ page.hero.tagline }}</p>
+  <div class="cta-buttons">
+    <a href="{{ '/' | append: page.lang | append: '/download/' | relative_url }}" class="btn btn-primary">{{ page.hero.cta_primary }}</a>
+    <a href="{{ '/' | append: page.lang | append: '/features/' | relative_url }}" class="btn btn-secondary">{{ page.hero.cta_secondary }}</a>
+  </div>
+</section>
+
+<section class="features-grid">
+  {% for feature in page.features %}
+  {% include feature-card.html icon=feature.icon title=feature.title description=feature.description %}
+  {% endfor %}
+</section>
+
+<section class="screenshots">
+  <h2>{{ page.screenshots_title }}</h2>
+  <div class="screenshot-grid">
+    {% assign strings = site.data.strings[page.lang] %}
+    {% for screenshot in page.screenshots %}
+    {% include screenshot.html image=screenshot.image caption=screenshot.caption placeholder=strings.screenshot_placeholder %}
+    {% endfor %}
+  </div>
+</section>

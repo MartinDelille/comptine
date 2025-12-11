@@ -1,0 +1,5 @@
+<div class="footer-container">
+  {% assign strings = site.data.strings[page.lang] %}
+  <p>&copy; {{ 'now' | date: '%Y' }} {{ strings.footer_copyright }}</p>
+  <p><a href="{{ site.github_repo }}">{{ strings.footer_source }}</a></p>
+</div>

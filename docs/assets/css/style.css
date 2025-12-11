@@ -91,6 +91,17 @@ body {
   font-size: 0.8em;
 }
 
+.lang-switcher a {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.lang-switcher a:hover {
+  background: var(--color-background);
+}
+
 /* Main content */
 .main-content {
   flex: 1;

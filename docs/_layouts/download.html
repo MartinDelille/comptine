@@ -1,0 +1,16 @@
+---
+layout: default
+---
+<div class="page-header">
+  <h1>{{ page.title }}</h1>
+</div>
+
+<div class="download-cards">
+  {% for platform in page.platforms %}
+  {% include download-card.html icon=platform.icon platform=platform.name requirements=platform.requirements button=platform.button %}
+  {% endfor %}
+</div>
+
+<div class="content">
+  {{ content }}
+</div>

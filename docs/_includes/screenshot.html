@@ -1,0 +1,8 @@
+<div class="screenshot">
+  {% if include.image %}
+  <img src="{{ include.image | relative_url }}" alt="{{ include.caption }}">
+  {% else %}
+  <div class="screenshot-placeholder">{{ include.placeholder }}</div>
+  {% endif %}
+  <p class="screenshot-caption">{{ include.caption }}</p>
+</div>

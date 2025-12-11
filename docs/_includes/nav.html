@@ -1,0 +1,20 @@
+<nav class="nav-container">
+  <a href="{{ '/' | append: page.lang | append: '/' | relative_url }}" class="logo">
+    <img src="{{ '/assets/comptine.svg' | relative_url }}" alt="Comptine" height="32">
+    <span>Comptine</span>
+  </a>
+  <ul class="nav-links">
+    {% assign nav = site.data.navigation[page.lang] %}
+    {% for item in nav.links %}
+    <li><a href="{{ item.url | relative_url }}"{% if page.url == item.url %} class="active"{% endif %}>{{ item.title }}</a></li>
+    {% endfor %}
+    <li><a href="{{ site.github_repo }}" class="github-link">GitHub</a></li>
+    <li class="lang-switcher">
+      {% if page.lang == 'fr' %}
+      <a href="{{ page.url | replace: '/fr/', '/en/' | relative_url }}" title="English">EN</a>
+      {% else %}
+      <a href="{{ page.url | replace: '/en/', '/fr/' | relative_url }}" title="Français">FR</a>
+      {% endif %}
+    </li>
+  </ul>
+</nav>

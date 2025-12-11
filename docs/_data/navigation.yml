@@ -1,0 +1,17 @@
+fr:
+  links:
+    - title: Accueil
+      url: /fr/
+    - title: Fonctionnalités
+      url: /fr/features/
+    - title: Télécharger
+      url: /fr/download/
+
+en:
+  links:
+    - title: Home
+      url: /en/
+    - title: Features
+      url: /en/features/
+    - title: Download
+      url: /en/download/

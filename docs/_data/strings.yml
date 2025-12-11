@@ -1,0 +1,9 @@
+fr:
+  footer_copyright: "Comptine. Logiciel libre sous licence open source."
+  footer_source: "Code source sur GitHub"
+  screenshot_placeholder: "Capture d'écran à venir"
+
+en:
+  footer_copyright: "Comptine. Free and open source software."
+  footer_source: "Source code on GitHub"
+  screenshot_placeholder: "Screenshot coming soon"
