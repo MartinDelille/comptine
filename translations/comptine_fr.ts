@@ -126,6 +126,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Impossible d&apos;analyser le fichier : %1</translation>
     </message>
     <message>
+        <source>File is empty: %1</source>
+        <translation>Le fichier est vide : %1</translation>
+    </message>
+    <message>
         <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
         <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
     </message>

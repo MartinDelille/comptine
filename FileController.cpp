@@ -22,7 +22,8 @@
 
 using namespace CsvParser;
 
-FileController::FileController(QObject* parent) : QObject(parent) {
+FileController::FileController(QObject* parent) :
+    QObject(parent) {
 }
 
 void FileController::setAppSettings(AppSettings* settings) {
@@ -176,6 +177,12 @@ bool FileController::loadFromYaml(const QString& filePath) {
 
   QByteArray data = file.readAll();
   file.close();
+
+  // Check for empty file
+  if (data.isEmpty()) {
+    set_errorMessage(tr("File is empty: %1").arg(filePath));
+    return false;
+  }
 
   _budgetData->clear();
 
