@@ -8,12 +8,14 @@ platforms:
     name: "macOS"
     requirements: "macOS 11 (Big Sur) or later"
     button: "Download .dmg"
-    url: "download_macos"
+  - icon: "🐧"
+    name: "Linux"
+    requirements: "Ubuntu 22.04 or equivalent"
+    button: "Download .AppImage"
   - icon: "🪟"
     name: "Windows"
     requirements: "Windows 10 or later"
     button: "Download .exe"
-    url: "download_windows"
 ---
 
 ## Installation
@@ -24,6 +26,12 @@ platforms:
 2. Open the downloaded file
 3. Drag Comptine to the Applications folder
 4. On first launch, right-click > Open to authorize the application
+
+### Linux
+
+1. Download the `.AppImage` file
+2. Make it executable: `chmod +x Comptine-*.AppImage`
+3. Run the application: `./Comptine-*.AppImage`
 
 ### Windows
 

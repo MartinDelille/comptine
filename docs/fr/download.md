@@ -8,12 +8,14 @@ platforms:
     name: "macOS"
     requirements: "macOS 11 (Big Sur) ou plus récent"
     button: "Télécharger .dmg"
-    url: "download_macos"
+  - icon: "🐧"
+    name: "Linux"
+    requirements: "Ubuntu 22.04 ou équivalent"
+    button: "Télécharger .AppImage"
   - icon: "🪟"
     name: "Windows"
     requirements: "Windows 10 ou plus récent"
     button: "Télécharger .exe"
-    url: "download_windows"
 ---
 
 ## Installation
@@ -24,6 +26,12 @@ platforms:
 2. Ouvrez le fichier téléchargé
 3. Glissez Comptine dans le dossier Applications
 4. Au premier lancement, faites clic droit > Ouvrir pour autoriser l'application
+
+### Linux
+
+1. Téléchargez le fichier `.AppImage`
+2. Rendez-le exécutable : `chmod +x Comptine-*.AppImage`
+3. Lancez l'application : `./Comptine-*.AppImage`
 
 ### Windows
 

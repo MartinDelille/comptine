@@ -69,7 +69,12 @@ endif()
 project(
   Comptine
   VERSION ${VERSION_MAJOR}.${VERSION_MINOR}
-  LANGUAGES CXX OBJCXX)
+  LANGUAGES CXX)
+
+# Enable Objective-C++ on macOS (required for FileCoordinator.mm)
+if(APPLE)
+  enable_language(OBJCXX)
+endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -227,6 +232,11 @@ set_target_properties(
              MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in
              MACOSX_BUNDLE TRUE
              WIN32_EXECUTABLE TRUE)
+
+# On Linux, rename executable to lowercase to avoid collision with Comptine/ QML module directory
+if(UNIX AND NOT APPLE)
+  set_target_properties(Comptine PROPERTIES OUTPUT_NAME comptine)
+endif()
 
 target_link_libraries(Comptine PRIVATE Qt6::Quick Qt6::Network ryml::ryml)
 

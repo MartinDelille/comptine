@@ -16,6 +16,10 @@ jobs:
             name: macOS
             artifact-path: build/Comptine-*.dmg
             release-file: build/Comptine-*.dmg
+          - os: ubuntu-latest
+            name: Linux
+            artifact-path: build/Comptine-*.AppImage
+            release-file: build/Comptine-*.AppImage
           - os: windows-latest
             name: Windows
             artifact-path: build/Comptine-*.exe
@@ -57,6 +61,12 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: brew install imagemagick
 
+      - name: Install dependencies (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick libxcb-cursor0 libfuse2
+
       - name: Install ImageMagick (Windows)
         if: matrix.os == 'windows-latest'
         run: choco install imagemagick -y
@@ -91,6 +101,25 @@ jobs:
         run: |
           cd build
           cpack -G NSIS -C Release
+
+      - name: Create installer (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          LINUXDEPLOY_URL: https://github.com/linuxdeploy/linuxdeploy/releases/download
+          PLUGIN_QT_URL: https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download
+        run: |
+          cd build
+          wget -q $LINUXDEPLOY_URL/continuous/linuxdeploy-x86_64.AppImage
+          wget -q $PLUGIN_QT_URL/continuous/linuxdeploy-plugin-qt-x86_64.AppImage
+          chmod +x linuxdeploy*.AppImage
+          export QML_SOURCES_PATHS="${{ github.workspace }}"
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --executable comptine \
+            --icon-file ../comptine.svg \
+            --desktop-file ../comptine.desktop \
+            --plugin qt \
+            --output appimage
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -151,6 +180,7 @@ jobs:
         with:
           files: |
             *.dmg
+            *.AppImage
             *.exe
           body: |
             ## What's Changed
