@@ -102,6 +102,43 @@ body {
   background: var(--color-background);
 }
 
+/* Mobile nav toggle */
+.nav-toggle {
+  display: none;
+}
+
+.nav-toggle-label {
+  display: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.nav-toggle-label span,
+.nav-toggle-label span::before,
+.nav-toggle-label span::after {
+  display: block;
+  background: var(--color-text);
+  height: 2px;
+  width: 24px;
+  border-radius: 2px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.nav-toggle-label span::before,
+.nav-toggle-label span::after {
+  content: '';
+  position: absolute;
+}
+
+.nav-toggle-label span::before {
+  top: -7px;
+}
+
+.nav-toggle-label span::after {
+  top: 7px;
+}
+
 /* Main content */
 .main-content {
   flex: 1;
@@ -254,13 +291,19 @@ body {
 
 /* Page content */
 .page-header {
-  margin-bottom: 2rem;
+  max-width: 600px;
+  margin: 0 auto 2rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--color-border);
 }
 
 .page-header h1 {
   font-size: 2.5rem;
+}
+
+.content {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .content h2 {
@@ -349,12 +392,46 @@ body {
 /* Responsive */
 @media (max-width: 768px) {
   .nav-container {
-    flex-direction: column;
-    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .nav-toggle-label {
+    display: block;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
   }
 
   .nav-links {
-    gap: 1rem;
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+    padding: 1rem 0;
+    gap: 0;
+  }
+
+  .nav-links li {
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-toggle:checked ~ .nav-links {
+    display: flex;
+  }
+
+  .nav-toggle:checked ~ .nav-toggle-label span {
+    background: transparent;
+  }
+
+  .nav-toggle:checked ~ .nav-toggle-label span::before {
+    transform: rotate(45deg);
+    top: 0;
+  }
+
+  .nav-toggle:checked ~ .nav-toggle-label span::after {
+    transform: rotate(-45deg);
+    top: 0;
   }
 
   .hero h1 {
@@ -366,6 +443,14 @@ body {
   }
 
   .screenshot-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .download-cards {
     grid-template-columns: 1fr;
   }
 }

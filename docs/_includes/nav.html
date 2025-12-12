@@ -3,6 +3,10 @@
     <img src="{{ '/assets/comptine.svg' | relative_url }}" alt="Comptine" height="32">
     <span>Comptine</span>
   </a>
+  <input type="checkbox" id="nav-toggle" class="nav-toggle">
+  <label for="nav-toggle" class="nav-toggle-label">
+    <span></span>
+  </label>
   <ul class="nav-links">
     {% assign nav = site.data.navigation[page.lang] %}
     {% for item in nav.links %}
