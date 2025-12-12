@@ -392,3 +392,38 @@ void SetOperationDateCommand::redo() {
     }
   }
 }
+
+SetOperationDescriptionCommand::SetOperationDescriptionCommand(Operation* operation,
+                                                               OperationListModel* operationModel,
+                                                               const QString& oldDescription,
+                                                               const QString& newDescription,
+                                                               QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _oldDescription(oldDescription),
+    _newDescription(newDescription) {
+  setText(QObject::tr("Set operation description"));
+}
+
+void SetOperationDescriptionCommand::undo() {
+  if (_operation) {
+    _operation->set_description(_oldDescription);
+    if (_operationModel) {
+      _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
+      emit _operationModel->operationDataChanged();
+    }
+  }
+}
+
+void SetOperationDescriptionCommand::redo() {
+  if (_operation) {
+    _operation->set_description(_newDescription);
+    if (_operationModel) {
+      _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
+      emit _operationModel->operationDataChanged();
+    }
+  }
+}

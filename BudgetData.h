@@ -56,6 +56,7 @@ public:
   Q_INVOKABLE void setOperationBudgetDate(int operationIndex, const QDate& newBudgetDate);
   Q_INVOKABLE void setOperationAmount(int operationIndex, double newAmount);
   Q_INVOKABLE void setOperationDate(int operationIndex, const QDate& newDate);
+  Q_INVOKABLE void setOperationDescription(int operationIndex, const QString& newDescription);
   Q_INVOKABLE void splitOperation(int operationIndex, const QVariantList& allocations);
 
   // Clear all data (called by FileController)

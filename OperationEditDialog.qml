@@ -11,6 +11,7 @@ BaseDialog {
     property double originalAmount: 0
     property date originalDate: new Date()
     property date originalBudgetDate: new Date()
+    property string originalDescription: ""
     property string originalCategory: ""
     property var originalAllocations: []
 
@@ -77,14 +78,18 @@ BaseDialog {
         id: allocationModel
     }
 
-    function initialize(opIndex, amount, date, budgetDate, allocations, currentCategory) {
+    function initialize(opIndex, amount, date, budgetDate, description, allocations, currentCategory) {
         operationIndex = opIndex;
         originalAmount = amount;
         editedAmount = amount;
         originalDate = date;
         originalBudgetDate = budgetDate;
+        originalDescription = description;
         originalCategory = currentCategory;
         originalAllocations = allocations ? allocations.slice() : [];
+
+        // Set description field
+        descriptionField.text = description;
 
         // Set date spinboxes
         dateDay.value = date.getDate();
@@ -129,6 +134,12 @@ BaseDialog {
     }
 
     onAccepted: {
+        // Apply description change if different
+        let newDescription = descriptionField.text.trim();
+        if (newDescription !== originalDescription) {
+            AppState.data.setOperationDescription(operationIndex, newDescription);
+        }
+
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
             AppState.data.setOperationAmount(operationIndex, editedAmount);
@@ -185,6 +196,25 @@ BaseDialog {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.spacingLarge
+
+        // Description section
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingNormal
+
+            Label {
+                text: qsTr("Description:")
+                font.bold: true
+                color: Theme.textSecondary
+                Layout.preferredWidth: 100
+            }
+
+            TextField {
+                id: descriptionField
+                Layout.fillWidth: true
+                placeholderText: qsTr("Enter description")
+            }
+        }
 
         // Amount section
         RowLayout {
