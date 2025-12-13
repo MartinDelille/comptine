@@ -115,7 +115,7 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
       indices.budgetDate = i;
     }
     // Description column (first match wins)
-    else if (indices.description < 0 && (h == "libelle simplifie" || h == "libelle" || h == "description" || h == "label")) {
+    else if (indices.description < 0 && (h == "libelle simplifie" || h == "libelle" || h == "description" || h == "label" || h == "operation")) {
       indices.description = i;
     }
     // Category column (last match wins - keep updating)
