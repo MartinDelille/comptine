@@ -197,6 +197,20 @@ private slots:
     QCOMPARE(fields[15], QString("Date budget"));
   }
 
+  void parseHeader_OperationAsDescription() {
+    // Header from Budget - Cash.csv uses "Opération" as description column
+    QString header = "Date,Montant,Opération,Catégorie,Solde,\"618,93 €\",Date budget,Compte";
+    QStringList fields = parseCsvLine(header, ',');
+    CsvFieldIndices idx = parseHeader(fields);
+
+    QCOMPARE(idx.date, 0);
+    QCOMPARE(idx.description, 2);  // "Opération" maps to description
+    QCOMPARE(idx.amount, 1);       // "Montant"
+    QCOMPARE(idx.category, 3);     // "Catégorie"
+    QCOMPARE(idx.budgetDate, 6);   // "Date budget"
+    QVERIFY(idx.isValid());
+  }
+
   void parseHeader_NormalizeAccents() {
     QCOMPARE(normalizeHeader("Débit"), QString("debit"));
     QCOMPARE(normalizeHeader("Crédit"), QString("credit"));
@@ -313,6 +327,22 @@ private slots:
     // Debit is empty, credit has +2500,00
     QCOMPARE(debitStr, QString(""));
     QCOMPARE(parseAmount(creditStr), 2500.00);
+  }
+
+  void integration_BudgetCashCsv() {
+    // Line from Budget - Cash.csv - uses "Opération" instead of "Libellé"
+    QString header = "Date,Montant,Opération,Catégorie,Solde,\"618,93 €\",Date budget,Compte";
+    QString line = "13/05/2020,\"-15,00 €\",Panier producteur,Courses du quotidien,\"110,00 €\",,13/05/2020,Cash";
+
+    QStringList headerFields = parseCsvLine(header, ',');
+    QStringList fields = parseCsvLine(line, ',');
+    CsvFieldIndices idx = parseHeader(headerFields);
+
+    QCOMPARE(getField(fields, idx.date), QString("13/05/2020"));
+    QCOMPARE(getField(fields, idx.description), QString("Panier producteur"));
+    QCOMPARE(getField(fields, idx.category), QString("Courses du quotidien"));
+    QCOMPARE(parseAmount(getField(fields, idx.amount)), -15.00);
+    QCOMPARE(getField(fields, idx.budgetDate), QString("13/05/2020"));
   }
 };
 
