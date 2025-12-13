@@ -27,11 +27,25 @@ void Account::addOperation(Operation* operation) {
   if (operation) {
     operation->setParent(this);
     // Insert in sorted order (most recent first)
+    // For same-date operations, insert at the END of the same-date group to preserve order
     int insertIndex = 0;
     while (insertIndex < _operations.size() && _operations[insertIndex]->date() > operation->date()) {
       insertIndex++;
     }
+    // Skip past any operations with the same date (insert after them)
+    while (insertIndex < _operations.size() && _operations[insertIndex]->date() == operation->date()) {
+      insertIndex++;
+    }
     _operations.insert(insertIndex, operation);
+    emit operationCountChanged();
+  }
+}
+
+void Account::appendOperation(Operation* operation) {
+  if (operation) {
+    operation->setParent(this);
+    // Append without sorting - preserves file order when loading
+    _operations.append(operation);
     emit operationCountChanged();
   }
 }
@@ -87,8 +101,8 @@ void Account::clearOperations() {
 }
 
 void Account::sortOperations() {
-  std::sort(_operations.begin(), _operations.end(), [](Operation* a, Operation* b) {
-    return a->date() > b->date();  // Most recent first
+  std::stable_sort(_operations.begin(), _operations.end(), [](Operation* a, Operation* b) {
+    return a->date() > b->date();  // Most recent first, preserve relative order for same date
   });
   // The index of currentOperation may have changed after sorting
   // Selection is pointer-based so no update needed, but we need to notify

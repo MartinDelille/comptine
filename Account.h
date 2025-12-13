@@ -36,6 +36,7 @@ public:
   QList<Operation*> operations() const;
 
   void addOperation(Operation* operation);
+  void appendOperation(Operation* operation);  // Append without sorting (for file loading)
   void removeOperation(int index);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
   void clearOperations();

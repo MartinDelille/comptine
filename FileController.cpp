@@ -308,7 +308,7 @@ bool FileController::loadFromYaml(const QString& filePath) {
                 }
               }
             }
-            account->addOperation(op);
+            account->appendOperation(op);  // Preserve file order
             opIdx++;
           }
         }
