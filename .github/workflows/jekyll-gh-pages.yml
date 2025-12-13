@@ -4,7 +4,6 @@ on:
   workflow_run:
     workflows: ["Build"]
     types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -31,8 +30,9 @@ jobs:
           workflow: build.yml
           name: screenshots
           path: docs/assets/screenshots
-          branch: main
-          search_artifacts: true
+          run_id: ${{ github.event.workflow_run.id || '' }}
+          search_artifacts: ${{ github.event_name == 'workflow_dispatch' }}
+          if_no_artifact_found: warn
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
