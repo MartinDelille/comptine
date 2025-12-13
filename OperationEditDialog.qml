@@ -240,6 +240,14 @@ BaseDialog {
                         allocationModel.setProperty(0, "amount", newValue);
                     }
                 }
+                onLiveEdited: newValue => {
+                    root.editedAmount = newValue;
+                    // When there's only one allocation (single category operation),
+                    // automatically update its amount to match the total
+                    if (allocationModel.count === 1) {
+                        allocationModel.setProperty(0, "amount", newValue);
+                    }
+                }
             }
         }
 
@@ -356,11 +364,18 @@ BaseDialog {
         ListView {
             id: allocationListView
             Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 100
+            Layout.preferredHeight: Math.min(contentHeight, maxListHeight)
+            clip: contentHeight > maxListHeight
+
+            // Maximum height: leave room for other dialog content (about 60% of window)
+            readonly property real maxListHeight: root.parent ? root.parent.height * 0.4 : 300
+
             model: allocationModel
             spacing: Theme.spacingSmall
-            clip: true
+
+            ScrollBar.vertical: ScrollBar {
+                policy: allocationListView.contentHeight > allocationListView.maxListHeight ? ScrollBar.AlwaysOn : ScrollBar.AsNeeded
+            }
 
             delegate: RowLayout {
                 width: allocationListView.width
@@ -393,15 +408,30 @@ BaseDialog {
                     onEdited: newValue => {
                         allocationModel.setProperty(index, "amount", newValue);
                     }
+                    onLiveEdited: newValue => {
+                        allocationModel.setProperty(index, "amount", newValue);
+                    }
                 }
 
                 ToolButton {
-                    text: "-"
-                    font.bold: true
-                    font.pixelSize: Theme.fontSizeLarge
+                    text: "⚖️"
+                    focusPolicy: Qt.NoFocus
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Balance to remaining amount")
+                    onClicked: {
+                        // Add the remaining amount to this allocation's amount
+                        let newAmount = amount + root.remainingAmount;
+                        allocationModel.setProperty(index, "amount", newAmount);
+                    }
+                }
+
+                ToolButton {
+                    text: "🗑️"
                     enabled: allocationModel.count > 1
                     opacity: enabled ? 1.0 : 0.3
                     focusPolicy: Qt.NoFocus
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Remove category")
                     onClicked: root.removeAllocation(index)
                 }
             }

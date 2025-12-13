@@ -10,16 +10,46 @@ TextField {
     // The numeric value of the amount
     property double value: 0
 
-    // Signal emitted when the value changes via user input
+    // Track if text is being edited by user (to avoid reformatting during typing)
+    property bool _userEditing: false
+
+    // Signal emitted when the value changes via user input (on editing finished)
     signal edited(double newValue)
 
-    horizontalAlignment: Text.AlignRight
-    text: value.toFixed(2)
+    // Signal emitted on each text change for live updates (e.g., sum recalculation)
+    signal liveEdited(double newValue)
 
-    // Select all text when focused
+    horizontalAlignment: Text.AlignRight
+
+    // Update text from value when not being edited by user
+    onValueChanged: {
+        if (!_userEditing) {
+            text = value.toFixed(2);
+        }
+    }
+
+    // Initialize text on completion
+    Component.onCompleted: {
+        text = value.toFixed(2);
+    }
+
+    // Track focus for user editing state
     onActiveFocusChanged: {
         if (activeFocus) {
             selectAll();
+        } else {
+            _userEditing = false;
+        }
+    }
+
+    // Emit live updates as user types for real-time sum recalculation
+    onTextChanged: {
+        if (activeFocus) {
+            _userEditing = true;
+        }
+        let parsed = root.parseAmount(text);
+        if (!isNaN(parsed)) {
+            root.liveEdited(parsed);
         }
     }
 

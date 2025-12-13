@@ -88,7 +88,12 @@ accounts:
       - date: 2025-11-10
         amount: -38.00
         description: Supermarche Leclerc
-        category: Alimentation
+        allocations:
+          - category: Alimentation
+            amount: -30.00
+          - category: Loisirs
+            amount: -8.00
+        current: true
       - date: 2025-11-08
         amount: -19.99
         description: Netflix
@@ -226,7 +231,6 @@ accounts:
         amount: 60.00
         description: Remboursement Secu
         category: Sante
-        current: true
       - date: 2025-08-30
         amount: -45.00
         description: Supermarche Casino

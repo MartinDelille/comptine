@@ -535,6 +535,14 @@ Importez et gérez vos données bancaires.</translation>
         <source>At least one allocation is required</source>
         <translation>Au moins une allocation est requise</translation>
     </message>
+    <message>
+        <source>Balance to remaining amount</source>
+        <translation>Équilibrer avec le montant restant</translation>
+    </message>
+    <message>
+        <source>Remove category</source>
+        <translation>Supprimer la catégorie</translation>
+    </message>
 </context>
 <context>
     <name>OperationView</name>
