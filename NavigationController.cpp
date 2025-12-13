@@ -171,8 +171,16 @@ void NavigationController::navigateToOperation(const QString& accountName, const
 void NavigationController::onNavigationStateLoaded(int tabIndex, int budgetYear, int budgetMonth,
                                                    int accountIndex, int categoryIndex, int operationIndex) {
   set_currentTabIndex(tabIndex);
+
+  // Validate budget year/month - default to current date if invalid (0 means not set)
+  if (budgetYear <= 0 || budgetMonth <= 0 || budgetMonth > 12) {
+    QDate today = QDate::currentDate();
+    budgetYear = today.year();
+    budgetMonth = today.month();
+  }
   set_budgetYear(budgetYear);
   set_budgetMonth(budgetMonth);
+
   set_currentAccountIndex(accountIndex);
   set_currentCategoryIndex(categoryIndex);
 
