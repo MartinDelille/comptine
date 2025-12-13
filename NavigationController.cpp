@@ -1,5 +1,6 @@
 #include <QDate>
 
+#include "Account.h"
 #include "BudgetData.h"
 #include "CategoryController.h"
 #include "NavigationController.h"
@@ -19,6 +20,10 @@ void NavigationController::setBudgetData(BudgetData* budgetData) {
   _budgetData = budgetData;
 }
 
+Account* NavigationController::currentAccount() const {
+  return _currentAccount;
+}
+
 int NavigationController::currentAccountIndex() const {
   return _currentAccountIndex;
 }
@@ -28,13 +33,24 @@ void NavigationController::set_currentAccountIndex(int index) {
 
   int accountCount = _budgetData->accountCount();
   if (index >= -1 && index < accountCount) {
-    bool changed = (index != _currentAccountIndex);
+    bool indexChanged = (index != _currentAccountIndex);
     _currentAccountIndex = index;
+
+    Account* newAccount = _budgetData->getAccount(index);
+    bool accountChanged = (_currentAccount != newAccount);
+    _currentAccount = newAccount;
+
     // Always update the operation model with the current account pointer
     // (the model has its own guard to avoid unnecessary resets)
-    _budgetData->operationModel()->setAccount(_budgetData->getAccount(index));
-    if (changed) {
+    _budgetData->operationModel()->setAccount(newAccount);
+
+    // Emit signals if either the index or the actual account pointer changed
+    // (account pointer can change even with same index when loading a new file)
+    if (indexChanged) {
       emit currentAccountIndexChanged();
+    }
+    if (accountChanged) {
+      emit currentAccountChanged();
     }
   }
 }
@@ -78,19 +94,28 @@ void NavigationController::nextCategory() {
 void NavigationController::previousOperation(bool extendSelection) {
   if (!_budgetData) return;
 
-  if (_currentOperationIndex > 0) {
-    set_currentOperationIndex(_currentOperationIndex - 1);
-    _budgetData->operationModel()->select(_currentOperationIndex, extendSelection);
+  Account* account = currentAccount();
+  if (!account) return;
+
+  int currentIndex = account->currentOperationIndex();
+  if (currentIndex > 0) {
+    int newIndex = currentIndex - 1;
+    account->selectAt(newIndex, extendSelection);
+    account->set_currentOperationIndex(newIndex);
   }
 }
 
 void NavigationController::nextOperation(bool extendSelection) {
   if (!_budgetData) return;
 
-  Account* account = _budgetData->getAccount(_currentAccountIndex);
-  if (account && _currentOperationIndex < account->operationCount() - 1) {
-    set_currentOperationIndex(_currentOperationIndex + 1);
-    _budgetData->operationModel()->select(_currentOperationIndex, extendSelection);
+  Account* account = currentAccount();
+  if (!account) return;
+
+  int currentIndex = account->currentOperationIndex();
+  if (currentIndex < account->operationCount() - 1) {
+    int newIndex = currentIndex + 1;
+    account->selectAt(newIndex, extendSelection);
+    account->set_currentOperationIndex(newIndex);
   }
 }
 
@@ -102,8 +127,8 @@ void NavigationController::showBudgetTab() {
   set_currentTabIndex(1);
 }
 
-void NavigationController::selectOperation(const QString& accountName, const QDate& date,
-                                           const QString& description, double amount) {
+void NavigationController::navigateToOperation(const QString& accountName, const QDate& date,
+                                               const QString& description, double amount) {
   if (!_budgetData) return;
 
   // Find the account index
@@ -129,8 +154,9 @@ void NavigationController::selectOperation(const QString& accountName, const QDa
   for (int i = 0; i < ops.size(); ++i) {
     Operation* op = ops[i];
     if (op->date() == date && op->description() == description && qFuzzyCompare(op->amount(), amount)) {
-      // Select this operation
-      _budgetData->operationModel()->select(i);
+      // Set this operation as the current operation and select it
+      account->set_currentOperation(op);
+      account->select(op, false);
 
       // Emit signal so OperationList can focus the operation
       emit operationSelected(i);
@@ -145,9 +171,22 @@ void NavigationController::selectOperation(const QString& accountName, const QDa
 void NavigationController::onNavigationStateLoaded(int tabIndex, int budgetYear, int budgetMonth,
                                                    int accountIndex, int categoryIndex, int operationIndex) {
   set_currentTabIndex(tabIndex);
+
+  // Validate budget year/month - default to current date if invalid (0 means not set)
+  if (budgetYear <= 0 || budgetMonth <= 0 || budgetMonth > 12) {
+    QDate today = QDate::currentDate();
+    budgetYear = today.year();
+    budgetMonth = today.month();
+  }
   set_budgetYear(budgetYear);
   set_budgetMonth(budgetMonth);
+
   set_currentAccountIndex(accountIndex);
   set_currentCategoryIndex(categoryIndex);
-  set_currentOperationIndex(operationIndex);
+
+  // Set the operation index on the current account
+  Account* account = currentAccount();
+  if (account) {
+    account->set_currentOperationIndex(operationIndex);
+  }
 }

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: root
 
     property int operationIndex: -1
@@ -11,6 +11,7 @@ Dialog {
     property double originalAmount: 0
     property date originalDate: new Date()
     property date originalBudgetDate: new Date()
+    property string originalDescription: ""
     property string originalCategory: ""
     property var originalAllocations: []
 
@@ -18,9 +19,6 @@ Dialog {
     property var categoryList: []
 
     title: qsTr("Edit Operation")
-    modal: true
-    parent: Overlay.overlay
-    anchors.centerIn: parent
     width: Math.min(500, parent.width - 40)
     standardButtons: Dialog.Ok | Dialog.Cancel
 
@@ -60,6 +58,9 @@ Dialog {
     readonly property bool budgetDateValid: budgetDateDay.value >= 1 && budgetDateDay.value <= 31
     readonly property bool isValid: allocationsValid && dateValid && budgetDateValid
 
+    // Use BaseDialog's canSubmit for Enter key validation
+    canSubmit: isValid
+
     // Disable OK button when invalid
     onOpened: {
         // Refresh category list when dialog opens
@@ -77,14 +78,18 @@ Dialog {
         id: allocationModel
     }
 
-    function initialize(opIndex, amount, date, budgetDate, allocations, currentCategory) {
+    function initialize(opIndex, amount, date, budgetDate, description, allocations, currentCategory) {
         operationIndex = opIndex;
         originalAmount = amount;
         editedAmount = amount;
         originalDate = date;
         originalBudgetDate = budgetDate;
+        originalDescription = description;
         originalCategory = currentCategory;
         originalAllocations = allocations ? allocations.slice() : [];
+
+        // Set description field
+        descriptionField.text = description;
 
         // Set date spinboxes
         dateDay.value = date.getDate();
@@ -129,15 +134,15 @@ Dialog {
     }
 
     onAccepted: {
+        // Apply description change if different
+        let newDescription = descriptionField.text.trim();
+        if (newDescription !== originalDescription) {
+            AppState.data.setOperationDescription(operationIndex, newDescription);
+        }
+
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
             AppState.data.setOperationAmount(operationIndex, editedAmount);
-        }
-
-        // Apply date change if different
-        let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
-        if (newDate.getTime() !== originalDate.getTime()) {
-            AppState.data.setOperationDate(operationIndex, newDate);
         }
 
         // Apply budget date change if different
@@ -180,11 +185,36 @@ Dialog {
                 AppState.data.splitOperation(operationIndex, allocations);
             }
         }
+
+        // Apply date change LAST (since it sorts and changes the operation's index)
+        let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
+        if (newDate.getTime() !== originalDate.getTime()) {
+            AppState.data.setOperationDate(operationIndex, newDate);
+        }
     }
 
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.spacingLarge
+
+        // Description section
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingNormal
+
+            Label {
+                text: qsTr("Description:")
+                font.bold: true
+                color: Theme.textSecondary
+                Layout.preferredWidth: 100
+            }
+
+            TextField {
+                id: descriptionField
+                Layout.fillWidth: true
+                placeholderText: qsTr("Enter description")
+            }
+        }
 
         // Amount section
         RowLayout {
@@ -204,6 +234,11 @@ Dialog {
                 value: root.editedAmount
                 onEdited: newValue => {
                     root.editedAmount = newValue;
+                    // When there's only one allocation (single category operation),
+                    // automatically update its amount to match the total
+                    if (allocationModel.count === 1) {
+                        allocationModel.setProperty(0, "amount", newValue);
+                    }
                 }
             }
         }
@@ -220,12 +255,11 @@ Dialog {
                 Layout.preferredWidth: 100
             }
 
-            SpinBox {
+            DateSpinBox {
                 id: dateDay
                 from: 1
                 to: 31
                 value: 1
-                editable: true
                 Layout.preferredWidth: 80
             }
 
@@ -235,12 +269,11 @@ Dialog {
                 Layout.fillWidth: true
             }
 
-            SpinBox {
+            DateSpinBox {
                 id: dateYear
                 from: 2000
                 to: 2100
                 value: 2024
-                editable: true
                 Layout.preferredWidth: 100
                 textFromValue: function (value) {
                     return value.toString();
@@ -260,12 +293,11 @@ Dialog {
                 Layout.preferredWidth: 100
             }
 
-            SpinBox {
+            DateSpinBox {
                 id: budgetDateDay
                 from: 1
                 to: 31
                 value: 1
-                editable: true
                 Layout.preferredWidth: 80
             }
 
@@ -275,12 +307,11 @@ Dialog {
                 Layout.fillWidth: true
             }
 
-            SpinBox {
+            DateSpinBox {
                 id: budgetDateYear
                 from: 2000
                 to: 2100
                 value: 2024
-                editable: true
                 Layout.preferredWidth: 100
                 textFromValue: function (value) {
                     return value.toString();

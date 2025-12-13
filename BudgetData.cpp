@@ -163,6 +163,21 @@ void BudgetData::setOperationDate(int operationIndex, const QDate& newDate) {
   }
 }
 
+void BudgetData::setOperationDescription(int operationIndex, const QString& newDescription) {
+  if (!_navController) return;
+  Account* account = getAccount(_navController->currentAccountIndex());
+  if (!account) return;
+
+  Operation* operation = account->getOperation(operationIndex);
+  if (!operation) return;
+
+  QString oldDescription = operation->description();
+  if (oldDescription != newDescription) {
+    _undoStack->push(new SetOperationDescriptionCommand(operation, _operationModel,
+                                                        oldDescription, newDescription));
+  }
+}
+
 void BudgetData::splitOperation(int operationIndex, const QVariantList& allocations) {
   if (!_navController) return;
   Account* account = getAccount(_navController->currentAccountIndex());

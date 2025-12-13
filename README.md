@@ -10,14 +10,15 @@ La Compta qui Chante !
 
 - Qt 6.8+ (see `.qt-version` for exact version)
 - CMake 3.16+
-- ImageMagick (for icon generation)
+- librsvg (for icon generation from SVG)
+- ImageMagick (Windows only, for ICO creation)
 - NSIS (Windows only, for installer)
 
 ### macOS
 
 ```bash
-# Install ImageMagick
-brew install imagemagick
+# Install librsvg
+brew install librsvg
 
 # Configure
 qt-cmake -B build -S .
@@ -32,7 +33,7 @@ cmake --build build
 ### Windows
 
 ```powershell
-# Install ImageMagick and NSIS
+# Install ImageMagick (for ICO creation) and NSIS
 choco install imagemagick nsis -y
 
 # Configure

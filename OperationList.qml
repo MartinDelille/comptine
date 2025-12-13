@@ -6,6 +6,9 @@ FocusScope {
     id: focusScope
     activeFocusOnTab: true  // Allow Tab to focus this component
 
+    // Convenience property to access current account
+    readonly property var currentAccount: AppState.navigation.currentAccount
+
     onActiveFocusChanged: {
         if (activeFocus) {
             listView.forceActiveFocus();
@@ -21,30 +24,31 @@ FocusScope {
         focus: true
         keyNavigationEnabled: false  // We handle key navigation ourselves
         highlightFollowsCurrentItem: false  // Don't auto-scroll highlight
-        currentIndex: AppState.navigation.currentOperationIndex
+        currentIndex: currentAccount ? currentAccount.currentOperationIndex : -1
 
-        // Restore focus when YAML file is loaded (not after CSV import, which handles its own selection)
+        // Restore focus when YAML file is loaded
         Connections {
             target: AppState.file
             function onYamlFileLoaded() {
-                if (listView.count > 0) {
-                    // Use the index from the file (already set in AppState.navigation.currentOperationIndex)
-                    let idx = Math.min(AppState.navigation.currentOperationIndex, listView.count - 1);
+                if (listView.count > 0 && currentAccount) {
+                    // Use the index from the file (already set in account.currentOperationIndex)
+                    let idx = Math.min(currentAccount.currentOperationIndex, listView.count - 1);
                     if (idx < 0)
                         idx = 0;
-                    AppState.navigation.currentOperationIndex = idx;
-                    AppState.data.operationModel.select(idx, false);
+                    currentAccount.currentOperationIndex = idx;
+                    currentAccount.selectAt(idx, false);
                     listView.positionViewAtIndex(idx, ListView.Center);
                 }
                 listView.forceActiveFocus();
             }
             function onDataLoaded() {
                 // For CSV import: sync ListView currentIndex with model selection
-                // The model already has the correct selection, just update the view
-                if (listView.count > 0 && AppState.navigation.currentOperationIndex < 0) {
-                    AppState.navigation.currentOperationIndex = 0;
+                if (listView.count > 0 && currentAccount && currentAccount.currentOperationIndex < 0) {
+                    currentAccount.currentOperationIndex = 0;
+                    currentAccount.selectAt(0, false);
                 }
-                listView.positionViewAtIndex(AppState.navigation.currentOperationIndex >= 0 ? AppState.navigation.currentOperationIndex : 0, ListView.Contain);
+                let idx = currentAccount ? currentAccount.currentOperationIndex : 0;
+                listView.positionViewAtIndex(idx >= 0 ? idx : 0, ListView.Contain);
                 listView.forceActiveFocus();
             }
         }
@@ -53,26 +57,59 @@ FocusScope {
             target: AppState.navigation
             function onOperationSelected(index) {
                 // Navigate from CategoryDetailView: focus and scroll to the operation
-                AppState.navigation.currentOperationIndex = index;
+                if (currentAccount) {
+                    currentAccount.currentOperationIndex = index;
+                    currentAccount.selectAt(index, false);
+                }
                 listView.positionViewAtIndex(index, ListView.Center);
                 listView.forceActiveFocus();
+            }
+            function onCurrentAccountChanged() {
+                // When account changes, scroll to the account's current operation
+                // Selection is already per-account, no need to call select()
+                if (!currentAccount)
+                    return;
+                let idx = currentAccount.currentOperationIndex;
+                if (idx < 0 && listView.count > 0) {
+                    // Account has no current operation yet, default to first operation
+                    idx = 0;
+                    currentAccount.currentOperationIndex = idx;
+                    currentAccount.selectAt(idx, false);
+                }
+                if (idx >= 0 && idx < listView.count) {
+                    listView.positionViewAtIndex(idx, ListView.Contain);
+                }
+            }
+        }
+
+        Connections {
+            target: AppState.data.operationModel
+            function onOperationFocused(index) {
+                // Programmatic selection (e.g., after undo/redo): scroll to the operation
+                listView.positionViewAtIndex(index, ListView.Center);
             }
         }
 
         Keys.onUpPressed: event => {
             AppState.navigation.previousOperation(event.modifiers & Qt.ShiftModifier);
-            positionViewAtIndex(AppState.navigation.currentOperationIndex, ListView.Contain);
+            if (currentAccount) {
+                positionViewAtIndex(currentAccount.currentOperationIndex, ListView.Contain);
+            }
         }
 
         Keys.onDownPressed: event => {
             AppState.navigation.nextOperation(event.modifiers & Qt.ShiftModifier);
-            positionViewAtIndex(AppState.navigation.currentOperationIndex, ListView.Contain);
+            if (currentAccount) {
+                positionViewAtIndex(currentAccount.currentOperationIndex, ListView.Contain);
+            }
         }
 
         // Cmd+A to select all
         Keys.onPressed: event => {
             if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_A) {
-                AppState.data.operationModel.selectRange(0, count - 1);
+                if (currentAccount) {
+                    currentAccount.selectRange(0, count - 1);
+                }
                 event.accepted = true;
             }
         }
@@ -90,18 +127,28 @@ FocusScope {
             MouseArea {
                 anchors.fill: parent
                 onClicked: mouse => {
-                    AppState.navigation.currentOperationIndex = parent.index;
                     listView.forceActiveFocus();
 
                     if (mouse.modifiers & Qt.ControlModifier) {
                         // Cmd/Ctrl+click: toggle selection
-                        AppState.data.operationModel.toggleSelection(parent.index);
+                        if (currentAccount) {
+                            currentAccount.toggleSelectionAt(parent.index);
+                        }
                     } else if (mouse.modifiers & Qt.ShiftModifier) {
-                        // Shift+click: range selection from current
-                        AppState.data.operationModel.selectRange(AppState.navigation.currentOperationIndex, parent.index);
+                        // Shift+click: range selection from current operation
+                        if (currentAccount) {
+                            currentAccount.selectAt(parent.index, true);
+                        }
                     } else {
                         // Plain click: single selection (clear others)
-                        AppState.data.operationModel.select(parent.index, false);
+                        if (currentAccount) {
+                            currentAccount.selectAt(parent.index, false);
+                        }
+                    }
+
+                    // Update cursor (current operation) after selection handling
+                    if (currentAccount) {
+                        currentAccount.currentOperationIndex = parent.index;
                     }
                 }
             }

@@ -175,3 +175,22 @@ private:
   QDate _oldDate;
   QDate _newDate;
 };
+
+// Command for setting an operation's description
+class SetOperationDescriptionCommand : public QUndoCommand {
+public:
+  SetOperationDescriptionCommand(Operation* operation,
+                                 OperationListModel* operationModel,
+                                 const QString& oldDescription,
+                                 const QString& newDescription,
+                                 QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation* _operation;
+  OperationListModel* _operationModel;
+  QString _oldDescription;
+  QString _newDescription;
+};

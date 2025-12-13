@@ -44,6 +44,11 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
 
 void CategoryController::addCategory(Category* category) {
   if (category) {
+    // Skip if category with same name already exists
+    if (getCategoryByName(category->name())) {
+      delete category;
+      return;
+    }
     category->setParent(this);
     _categories.append(category);
     emit categoryCountChanged();

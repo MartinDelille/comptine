@@ -1,16 +1,17 @@
 name: Deploy website to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
-    paths:
-      - "docs/**"
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read
 
 concurrency:
   group: "pages"
@@ -19,9 +20,19 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download screenshots from Build workflow
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: build.yml
+          name: screenshots
+          path: docs/assets/screenshots
+          branch: main
+          search_artifacts: true
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

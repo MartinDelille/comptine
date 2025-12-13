@@ -124,12 +124,12 @@ if(APPLE)
   set(APP_ICON_ICNS ${CMAKE_CURRENT_BINARY_DIR}/comptine.icns)
   set(APP_ICONSET_DIR ${CMAKE_CURRENT_BINARY_DIR}/comptine.iconset)
 
-  # Use ImageMagick to render SVGs to PNG with transparency preserved
+  # Use rsvg-convert to render SVGs to PNG (preserves gradients and transparency)
   # Use small version for icons < 128px, full version for >= 128px
   add_custom_command(
     OUTPUT ${APP_ICON_ICNS}
-    COMMAND magick -background none ${APP_ICON_SVG} -resize 1024x1024 ${APP_ICON_PNG}
-    COMMAND magick -background none ${APP_ICON_SMALL_SVG} -resize 64x64 ${APP_ICON_SMALL_PNG}
+    COMMAND rsvg-convert -w 1024 -h 1024 ${APP_ICON_SVG} -o ${APP_ICON_PNG}
+    COMMAND rsvg-convert -w 64 -h 64 ${APP_ICON_SMALL_SVG} -o ${APP_ICON_SMALL_PNG}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${APP_ICONSET_DIR}
     COMMAND sips -z 16 16 ${APP_ICON_SMALL_PNG} --out ${APP_ICONSET_DIR}/icon_16x16.png
     COMMAND sips -z 32 32 ${APP_ICON_SMALL_PNG} --out ${APP_ICONSET_DIR}/icon_16x16@2x.png
@@ -154,12 +154,13 @@ elseif(WIN32)
   set(APP_ICON_PNG ${CMAKE_CURRENT_BINARY_DIR}/comptine.png)
   set(APP_ICON_SMALL_PNG ${CMAKE_CURRENT_BINARY_DIR}/comptine-small.png)
 
-  # Use ImageMagick to create multi-resolution ICO file
+  # Use rsvg-convert for SVG to PNG (preserves gradients and transparency)
+  # Then use ImageMagick for resizing PNGs and creating ICO file
   # Use small version for icons < 128px, full version for >= 128px
   add_custom_command(
     OUTPUT ${APP_ICON_ICO}
-    COMMAND magick -background none ${APP_ICON_SVG} -resize 256x256 ${APP_ICON_PNG}
-    COMMAND magick -background none ${APP_ICON_SMALL_SVG} -resize 64x64 ${APP_ICON_SMALL_PNG}
+    COMMAND rsvg-convert -w 256 -h 256 ${APP_ICON_SVG} -o ${APP_ICON_PNG}
+    COMMAND rsvg-convert -w 64 -h 64 ${APP_ICON_SMALL_SVG} -o ${APP_ICON_SMALL_PNG}
     COMMAND magick ${APP_ICON_SMALL_PNG} -resize 16x16 ${CMAKE_CURRENT_BINARY_DIR}/icon_16.png
     COMMAND magick ${APP_ICON_SMALL_PNG} -resize 32x32 ${CMAKE_CURRENT_BINARY_DIR}/icon_32.png
     COMMAND magick ${APP_ICON_SMALL_PNG} -resize 48x48 ${CMAKE_CURRENT_BINARY_DIR}/icon_48.png
@@ -189,9 +190,11 @@ qt_add_qml_module(Comptine URI Comptine
         AboutDialog.qml
         AmountField.qml
         BalanceHeader.qml
+        BaseDialog.qml
         BudgetView.qml
         CategoryDetailView.qml
         CategoryEditDialog.qml
+        DateSpinBox.qml
         ImportDialog.qml
         MonthSelector.qml
         OperationDelegate.qml

@@ -33,7 +33,7 @@ QVariant OperationListModel::data(const QModelIndex& index, int role) const {
     case BalanceRole:
       return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
     case SelectedRole:
-      return _selection.contains(row);
+      return _account->isSelectedAt(row);
     case OperationRole:
       return QVariant::fromValue(op);
     default:
@@ -43,20 +43,18 @@ QVariant OperationListModel::data(const QModelIndex& index, int role) const {
 
 bool OperationListModel::setData(const QModelIndex& index, const QVariant& value,
                                  int role) {
-  if (!index.isValid() || role != SelectedRole)
+  if (!index.isValid() || !_account || role != SelectedRole)
     return false;
 
   const int row = index.row();
   bool selected = value.toBool();
 
   if (selected) {
-    _selection.insert(row);
+    _account->selectAt(row, false);
   } else {
-    _selection.remove(row);
+    _account->toggleSelectionAt(row);  // Toggle off if already selected
   }
 
-  emit dataChanged(index, index, { SelectedRole });
-  emit selectionChanged();
   return true;
 }
 
@@ -83,13 +81,13 @@ void OperationListModel::setAccount(Account* account) {
   }
 
   _account = account;
-  _selection.clear();
-  _lastClickedIndex = -1;
 
   // Connect to new account
   if (_account) {
     connect(_account, &Account::operationCountChanged, this,
             &OperationListModel::onOperationCountChanged);
+    connect(_account, &Account::selectionChanged, this,
+            &OperationListModel::onAccountSelectionChanged);
   }
 
   recalculateBalances();
@@ -103,11 +101,19 @@ void OperationListModel::setAccount(Account* account) {
 
 void OperationListModel::onOperationCountChanged() {
   beginResetModel();
-  _selection.clear();
-  _lastClickedIndex = -1;
   recalculateBalances();
   endResetModel();
   emit countChanged();
+  emit selectionChanged();
+}
+
+void OperationListModel::onAccountSelectionChanged() {
+  // Notify that SelectedRole changed for all rows
+  if (_account && _account->operationCount() > 0) {
+    emit dataChanged(createIndex(0, 0),
+                     createIndex(_account->operationCount() - 1, 0),
+                     { SelectedRole });
+  }
   emit selectionChanged();
 }
 
@@ -151,139 +157,64 @@ double OperationListModel::balanceAt(int index) const {
 }
 
 void OperationListModel::select(int index, bool extend) {
-  if (index < 0 || !_account || index >= _account->operationCount())
+  if (!_account)
     return;
-
-  if (!extend) {
-    // Clear existing selection
-    QSet<int> oldSelection = _selection;
-    _selection.clear();
-    _selection.insert(index);
-
-    // Emit dataChanged for deselected items
-    for (int i : oldSelection) {
-      if (i != index) {
-        QModelIndex mi = createIndex(i, 0);
-        emit dataChanged(mi, mi, { SelectedRole });
-      }
-    }
-  } else {
-    // Extend selection from last clicked to current
-    if (_lastClickedIndex >= 0) {
-      int from = qMin(_lastClickedIndex, index);
-      int to = qMax(_lastClickedIndex, index);
-      for (int i = from; i <= to; ++i) {
-        _selection.insert(i);
-      }
-      // Emit dataChanged for range
-      emit dataChanged(createIndex(from, 0), createIndex(to, 0), { SelectedRole });
-    } else {
-      _selection.insert(index);
-    }
-  }
-
-  _lastClickedIndex = index;
-
-  // Emit dataChanged for newly selected item
-  QModelIndex mi = createIndex(index, 0);
-  emit dataChanged(mi, mi, { SelectedRole });
-  emit selectionChanged();
+  _account->selectAt(index, extend);
 }
 
 void OperationListModel::toggleSelection(int index) {
-  if (index < 0 || !_account || index >= _account->operationCount())
+  if (!_account)
     return;
-
-  if (_selection.contains(index)) {
-    _selection.remove(index);
-  } else {
-    _selection.insert(index);
-  }
-
-  _lastClickedIndex = index;
-
-  QModelIndex mi = createIndex(index, 0);
-  emit dataChanged(mi, mi, { SelectedRole });
-  emit selectionChanged();
+  _account->toggleSelectionAt(index);
 }
 
 void OperationListModel::selectRange(int fromIndex, int toIndex) {
   if (!_account)
     return;
-
-  int from = qMax(0, qMin(fromIndex, toIndex));
-  int to = qMin(_account->operationCount() - 1, qMax(fromIndex, toIndex));
-
-  for (int i = from; i <= to; ++i) {
-    _selection.insert(i);
-  }
-
-  emit dataChanged(createIndex(from, 0), createIndex(to, 0), { SelectedRole });
-  emit selectionChanged();
+  _account->selectRange(fromIndex, toIndex);
 }
 
 void OperationListModel::clearSelection() {
-  if (_selection.isEmpty())
+  if (!_account)
     return;
-
-  QSet<int> oldSelection = _selection;
-  _selection.clear();
-  _lastClickedIndex = -1;
-
-  for (int i : oldSelection) {
-    QModelIndex mi = createIndex(i, 0);
-    emit dataChanged(mi, mi, { SelectedRole });
-  }
-
-  emit selectionChanged();
+  _account->clearSelection();
 }
 
 bool OperationListModel::isSelected(int index) const {
-  return _selection.contains(index);
+  if (!_account)
+    return false;
+  return _account->isSelectedAt(index);
+}
+
+void OperationListModel::selectByPointer(Operation* operation) {
+  if (!_account || !operation)
+    return;
+
+  // Set the operation as the account's current operation and select it
+  _account->set_currentOperation(operation);
+  _account->select(operation, false);
+
+  // Find the index and emit operationFocused for QML to scroll
+  int index = _account->currentOperationIndex();
+  if (index >= 0) {
+    emit operationFocused(index);
+  }
+}
+
+int OperationListModel::selectionCount() const {
+  if (!_account)
+    return 0;
+  return _account->selectionCount();
 }
 
 double OperationListModel::selectedTotal() const {
-  if (!_account || _selection.isEmpty())
+  if (!_account)
     return 0.0;
-
-  double total = 0.0;
-  for (int index : _selection) {
-    Operation* op = _account->getOperation(index);
-    if (op) {
-      total += op->amount();
-    }
-  }
-  return total;
+  return _account->selectedTotal();
 }
 
 QString OperationListModel::selectedOperationsAsCsv() const {
-  if (!_account || _selection.isEmpty())
+  if (!_account)
     return QString();
-
-  QString csv;
-  csv += "Date,Description,Amount,Category\n";
-
-  // Sort indices for consistent output
-  QList<int> sortedIndices = _selection.values();
-  std::sort(sortedIndices.begin(), sortedIndices.end());
-
-  for (int index : sortedIndices) {
-    Operation* op = _account->getOperation(index);
-    if (op) {
-      csv += QString("%1,\"%2\",%3,%4\n")
-                 .arg(op->date().toString("yyyy-MM-dd"))
-                 .arg(op->description().replace("\"", "\"\""))
-                 .arg(op->amount(), 0, 'f', 2)
-                 .arg(op->category());
-    }
-  }
-
-  return csv;
-}
-
-void OperationListModel::emitSelectionDataChanged() {
-  for (int i : _selection) {
-    QModelIndex mi = createIndex(i, 0);
-    emit dataChanged(mi, mi, { SelectedRole });
-  }
+  return _account->selectedOperationsAsCsv();
 }

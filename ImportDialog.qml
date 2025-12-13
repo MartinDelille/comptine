@@ -2,11 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: importDialog
     title: qsTr("Import CSV")
     standardButtons: Dialog.Ok | Dialog.Cancel
-    modal: true
 
     property string filePath: ""
 
@@ -19,6 +18,9 @@ Dialog {
         return AppState.data.getAccountByName(newAccountName) !== null;
     }
     readonly property bool isValid: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
+
+    // Use BaseDialog's canSubmit for Enter key validation
+    canSubmit: isValid
 
     // Disable OK button when invalid
     onIsValidChanged: {

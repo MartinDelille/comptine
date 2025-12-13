@@ -2,11 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: preferencesDialog
     title: qsTr("Preferences")
     standardButtons: Dialog.Ok | Dialog.Cancel
-    modal: true
 
     property string originalLanguage: ""
     property string originalTheme: ""

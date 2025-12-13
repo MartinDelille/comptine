@@ -2,11 +2,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: updateDialog
     title: qsTr("Update Available")
     standardButtons: Dialog.Close
-    modal: true
     width: 400
 
     ColumnLayout {
@@ -34,7 +33,7 @@ Dialog {
             Label {
                 text: qsTr("Latest version: %1").arg(AppState.update.latestVersion)
                 font.bold: true
-                color: Theme.primary
+                color: Theme.accent
             }
         }
 

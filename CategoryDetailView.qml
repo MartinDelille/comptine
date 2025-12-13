@@ -82,7 +82,7 @@ Dialog {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        AppState.navigation.selectOperation(modelData.accountName, modelData.date, modelData.description, modelData.totalAmount);
+                        AppState.navigation.navigateToOperation(modelData.accountName, modelData.date, modelData.description, modelData.totalAmount);
                         root.close();
                     }
                 }

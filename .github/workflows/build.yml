@@ -57,19 +57,19 @@ jobs:
           fi
           echo "All translations are complete!"
 
-      - name: Install ImageMagick (macOS)
+      - name: Install librsvg (macOS)
         if: matrix.os == 'macos-latest'
-        run: brew install imagemagick
+        run: brew install librsvg yq
 
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y imagemagick libxcb-cursor0 libfuse2
+          sudo apt-get install -y librsvg2-bin imagemagick libxcb-cursor0 libfuse2
 
-      - name: Install ImageMagick (Windows)
+      - name: Install dependencies (Windows)
         if: matrix.os == 'windows-latest'
-        run: choco install imagemagick -y
+        run: choco install imagemagick rsvg-convert -y
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
@@ -89,6 +89,21 @@ jobs:
         run: |
           macdeployqt build/Comptine.app -qmldir=.
           codesign --force --deep --sign - build/Comptine.app
+
+      - name: Capture screenshots (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          ./scripts/capture-screenshots.sh \
+            build/Comptine.app \
+            example_long.comptine \
+            screenshots
+
+      - name: Upload screenshots
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/*.png
 
       - name: Create installer (macOS)
         if: matrix.os == 'macos-latest'

@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: aboutDialog
     title: qsTr("About Comptine")
     standardButtons: Dialog.Ok

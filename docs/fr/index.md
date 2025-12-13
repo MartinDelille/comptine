@@ -28,6 +28,8 @@ features:
     description: "Interface disponible en français et en anglais."
 screenshots_title: "Aperçu"
 screenshots:
-  - caption: "Vue des opérations"
-  - caption: "Vue du budget"
+  - image: "/assets/screenshots/operations.png"
+    caption: "Vue des opérations"
+  - image: "/assets/screenshots/budget.png"
+    caption: "Vue du budget"
 ---

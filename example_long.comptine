@@ -1,10 +1,7 @@
-# Comptine Budget Data Format - Extended Example
-# This file contains a larger dataset for testing and demonstration purposes.
-#
-# Budget limits use signed values:
-#   - Negative limit = Expense category (spending budget)
-#   - Positive limit = Income category (expected income)
-
+state:
+  currentTab: 0
+  budgetYear: 2025
+  budgetMonth: 10
 categories:
   - name: Alimentation
     budget_limit: -400.00
@@ -12,6 +9,7 @@ categories:
     budget_limit: -150.00
   - name: Logement
     budget_limit: -1200.00
+    current: true
   - name: Loisirs
     budget_limit: -200.00
   - name: Sante
@@ -19,342 +17,335 @@ categories:
   - name: Shopping
     budget_limit: -150.00
   - name: Revenus
-    budget_limit: 2800.00
+    budget_limit: 2500.00
   - name: Epargne
-    budget_limit: 300.00
+    budget_limit: 100.00
   - name: Restaurants
     budget_limit: -150.00
   - name: Abonnements
     budget_limit: -80.00
-
 accounts:
   - name: Compte Courant
-    balance: 3250.00
+    current: true
     operations:
-      # Novembre 2025
       - date: 2025-11-28
         amount: -52.30
-        category: Alimentation
         description: Supermarche Carrefour
+        category: Alimentation
       - date: 2025-11-27
         amount: -35.00
-        category: Restaurants
         description: Restaurant Le Bistrot
+        category: Restaurants
       - date: 2025-11-26
         amount: -15.90
-        category: Transports
         description: Essence station Total
+        category: Transports
       - date: 2025-11-25
         amount: -89.00
-        category: Shopping
         description: Vetements Zara
+        category: Shopping
       - date: 2025-11-24
         amount: -12.99
-        category: Loisirs
         description: Cinema Gaumont
+        category: Loisirs
       - date: 2025-11-22
         amount: -67.50
-        category: Alimentation
         description: Marche fermier
+        category: Alimentation
       - date: 2025-11-21
         amount: -45.00
-        category: Sante
         description: Pharmacie centrale
+        category: Sante
       - date: 2025-11-20
         amount: -9.99
-        category: Abonnements
         description: Spotify Premium
+        category: Abonnements
       - date: 2025-11-19
         amount: -850.00
-        category: Logement
         description: Loyer Novembre
+        category: Logement
       - date: 2025-11-18
         amount: -42.00
-        category: Alimentation
         description: Boulangerie Paul
+        category: Alimentation
       - date: 2025-11-17
         amount: -28.50
-        category: Restaurants
         description: Pizzeria Napoli
-      - date: 2025-11-15
-        amount: 2800.00
-        category: Revenus
-        description: Salaire Novembre
+        category: Restaurants
       - date: 2025-11-14
         amount: -300.00
-        category: Epargne
         description: Virement Livret A
+        category: Epargne
       - date: 2025-11-12
         amount: -55.00
-        category: Transports
         description: Abonnement Metro
+        category: Transports
+      - date: 2025-11-10
+        amount: 45.00
+        description: Remboursement Secu
+        category: Sante
+        budget_date: 2025-11-03
       - date: 2025-11-10
         amount: -38.00
-        category: Alimentation
         description: Supermarche Leclerc
+        category: Alimentation
       - date: 2025-11-08
         amount: -19.99
-        category: Abonnements
         description: Netflix
+        category: Abonnements
       - date: 2025-11-05
         amount: -125.00
-        category: Sante
         description: Consultation dentiste
-      - date: 2025-11-03
-        amount: 45.00
         category: Sante
-        description: Remboursement Secu
-
-      # Octobre 2025
+      - date: 2025-11-05
+        amount: 2500.00
+        description: Salaire Novembre
+        category: Revenus
+        budget_date: 2025-11-15
       - date: 2025-10-30
         amount: -48.00
-        category: Alimentation
         description: Supermarche Auchan
+        category: Alimentation
       - date: 2025-10-28
         amount: -22.00
-        category: Loisirs
         description: Librairie Fnac
+        category: Loisirs
       - date: 2025-10-26
         amount: -65.00
-        category: Shopping
         description: Chaussures Decathlon
+        category: Shopping
       - date: 2025-10-25
         amount: -32.50
-        category: Restaurants
         description: Brasserie du Parc
+        category: Restaurants
       - date: 2025-10-23
         amount: -850.00
-        category: Logement
         description: Loyer Octobre
+        category: Logement
       - date: 2025-10-22
         amount: -85.00
-        category: Logement
         description: Electricite EDF
+        category: Logement
       - date: 2025-10-20
         amount: -41.00
-        category: Alimentation
         description: Primeur Bio
-      - date: 2025-10-18
-        amount: 2800.00
-        category: Revenus
-        description: Salaire Octobre
+        category: Alimentation
       - date: 2025-10-17
-        amount: -300.00
-        category: Epargne
+        amount: -100.00
         description: Virement Livret A
+        category: Epargne
       - date: 2025-10-15
         amount: -55.00
-        category: Transports
         description: Abonnement Metro
+        category: Transports
       - date: 2025-10-14
         amount: -9.99
-        category: Abonnements
         description: Spotify Premium
+        category: Abonnements
       - date: 2025-10-12
         amount: -75.00
-        category: Alimentation
         description: Supermarche Carrefour
+        category: Alimentation
       - date: 2025-10-10
         amount: -19.99
+        description: Arte.tv
         category: Abonnements
-        description: Netflix
       - date: 2025-10-08
-        amount: -45.00
+        amount: -19.99
+        description: Concert Noga Erez au Transbordeur
         category: Loisirs
-        description: Concert Zenith
+      - date: 2025-10-05
+        amount: 2500.00
+        description: Salaire Octobre
+        category: Revenus
       - date: 2025-10-05
         amount: -28.00
+        description: Mac Donalds
         category: Restaurants
-        description: Sushi Shop
       - date: 2025-10-03
         amount: 35.00
-        category: Sante
         description: Remboursement mutuelle
-
-      # Septembre 2025
+        category: Sante
       - date: 2025-09-29
         amount: -52.00
-        category: Alimentation
         description: Supermarche Monoprix
+        category: Alimentation
       - date: 2025-09-27
         amount: -120.00
-        category: Shopping
         description: Electromenager Darty
+        category: Shopping
       - date: 2025-09-25
         amount: -850.00
-        category: Logement
         description: Loyer Septembre
+        category: Logement
       - date: 2025-09-24
         amount: -35.00
-        category: Transports
         description: Essence station BP
+        category: Transports
       - date: 2025-09-22
         amount: -18.50
-        category: Restaurants
         description: Cafe de Flore
+        category: Restaurants
       - date: 2025-09-20
         amount: 2800.00
-        category: Revenus
         description: Salaire Septembre
+        category: Revenus
       - date: 2025-09-19
         amount: -300.00
-        category: Epargne
         description: Virement Livret A
+        category: Epargne
       - date: 2025-09-17
         amount: -55.00
-        category: Transports
         description: Abonnement Metro
+        category: Transports
       - date: 2025-09-15
         amount: -9.99
-        category: Abonnements
         description: Spotify Premium
+        category: Abonnements
       - date: 2025-09-14
         amount: -62.00
-        category: Alimentation
         description: Supermarche Intermarche
+        category: Alimentation
       - date: 2025-09-12
         amount: -19.99
-        category: Abonnements
         description: Netflix
+        category: Abonnements
       - date: 2025-09-10
         amount: -15.00
-        category: Loisirs
         description: Musee du Louvre
+        category: Loisirs
       - date: 2025-09-08
         amount: -42.00
-        category: Restaurants
         description: Restaurant Thai
+        category: Restaurants
       - date: 2025-09-05
         amount: -78.00
-        category: Sante
         description: Opticien Afflelou
+        category: Sante
       - date: 2025-09-03
         amount: 60.00
-        category: Sante
         description: Remboursement Secu
-
-      # Aout 2025
+        category: Sante
+        current: true
       - date: 2025-08-30
         amount: -45.00
-        category: Alimentation
         description: Supermarche Casino
+        category: Alimentation
       - date: 2025-08-28
         amount: -250.00
-        category: Loisirs
         description: Location vacances
+        category: Loisirs
       - date: 2025-08-25
         amount: -850.00
-        category: Logement
         description: Loyer Aout
+        category: Logement
       - date: 2025-08-23
         amount: -95.00
-        category: Transports
         description: Billet train SNCF
+        category: Transports
       - date: 2025-08-20
-        amount: 2800.00
-        category: Revenus
+        amount: 2500.00
         description: Salaire Aout
+        category: Revenus
       - date: 2025-08-18
         amount: -300.00
-        category: Epargne
         description: Virement Livret A
+        category: Epargne
       - date: 2025-08-15
         amount: -55.00
-        category: Transports
         description: Abonnement Metro
+        category: Transports
       - date: 2025-08-12
         amount: -9.99
-        category: Abonnements
         description: Spotify Premium
+        category: Abonnements
       - date: 2025-08-10
         amount: -19.99
-        category: Abonnements
         description: Netflix
+        category: Abonnements
       - date: 2025-08-08
         amount: -68.00
-        category: Alimentation
         description: Supermarche Carrefour
+        category: Alimentation
       - date: 2025-08-05
         amount: -35.00
-        category: Shopping
         description: Livre Amazon
-
+        category: Shopping
   - name: Livret A
-    balance: 6200.00
     operations:
       - date: 2025-11-14
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-10-17
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-09-19
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-08-18
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-07-15
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-06-15
         amount: 300.00
-        category: Epargne
         description: Virement depuis Compte Courant
+        category: Epargne
       - date: 2025-01-01
         amount: 25.00
-        category: Revenus
         description: Interets annuels
-
+        category: Revenus
+        current: true
   - name: Compte Joint
-    balance: 1850.00
     operations:
       - date: 2025-11-25
         amount: -120.00
-        category: Alimentation
         description: Courses familiales Carrefour
+        category: Alimentation
       - date: 2025-11-20
         amount: -45.00
-        category: Logement
         description: Assurance habitation
+        category: Logement
       - date: 2025-11-15
         amount: 500.00
-        category: Revenus
         description: Virement mensuel
+        category: Revenus
+        current: true
       - date: 2025-11-10
         amount: -85.00
-        category: Alimentation
         description: Courses familiales Leclerc
+        category: Alimentation
       - date: 2025-10-25
         amount: -110.00
-        category: Alimentation
         description: Courses familiales Auchan
+        category: Alimentation
       - date: 2025-10-20
         amount: -45.00
-        category: Logement
         description: Assurance habitation
+        category: Logement
       - date: 2025-10-15
         amount: 500.00
-        category: Revenus
         description: Virement mensuel
+        category: Revenus
       - date: 2025-10-08
         amount: -95.00
-        category: Alimentation
         description: Courses familiales Carrefour
+        category: Alimentation
       - date: 2025-09-25
         amount: -105.00
-        category: Alimentation
         description: Courses familiales Monoprix
+        category: Alimentation
       - date: 2025-09-20
         amount: -45.00
-        category: Logement
         description: Assurance habitation
+        category: Logement
       - date: 2025-09-15
         amount: 500.00
-        category: Revenus
         description: Virement mensuel
+        category: Revenus

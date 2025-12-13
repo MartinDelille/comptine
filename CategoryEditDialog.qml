@@ -2,11 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: root
     title: qsTr("Edit Category")
-    modal: true
-    anchors.centerIn: parent
     width: 400
     standardButtons: Dialog.Ok | Dialog.Cancel
 

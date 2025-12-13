@@ -28,6 +28,8 @@ features:
     description: "Interface available in French and English."
 screenshots_title: "Preview"
 screenshots:
-  - caption: "Operations view"
-  - caption: "Budget view"
+  - image: "/assets/screenshots/operations.png"
+    caption: "Operations view"
+  - image: "/assets/screenshots/budget.png"
+    caption: "Budget view"
 ---

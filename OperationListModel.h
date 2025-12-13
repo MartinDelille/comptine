@@ -3,7 +3,6 @@
 #include <QAbstractListModel>
 #include <QPointer>
 #include <QQmlEngine>
-#include <QSet>
 
 #include "Account.h"
 
@@ -39,13 +38,14 @@ public:
   void setAccount(Account* account);
   Account* account() const { return _account; }
 
-  // Selection management
+  // Selection management (delegates to Account)
   Q_INVOKABLE void select(int index, bool extend = false);
   Q_INVOKABLE void toggleSelection(int index);
   Q_INVOKABLE void selectRange(int fromIndex, int toIndex);
   Q_INVOKABLE void clearSelection();
   Q_INVOKABLE bool isSelected(int index) const;
-  int selectionCount() const { return _selection.size(); }
+  void selectByPointer(Operation* operation);  // Select by operation pointer (finds current index)
+  int selectionCount() const;
   double selectedTotal() const;
   QString selectedOperationsAsCsv() const;
 
@@ -59,15 +59,14 @@ public:
 signals:
   void countChanged();
   void selectionChanged();
-  void operationDataChanged();  // Emitted when operation data is modified (used by undo commands)
+  void operationDataChanged();       // Emitted when operation data is modified (used by undo commands)
+  void operationFocused(int index);  // Emitted when selectByPointer() programmatically selects an operation
 
 private:
   QPointer<Account> _account;
   QVector<double> _balances;
-  QSet<int> _selection;
-  int _lastClickedIndex = -1;
 
   void recalculateBalances();
   void onOperationCountChanged();
-  void emitSelectionDataChanged();
+  void onAccountSelectionChanged();
 };

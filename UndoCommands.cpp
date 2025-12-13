@@ -204,6 +204,7 @@ void SetOperationCategoryCommand::undo() {
     _operation->set_category(_oldCategory);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -214,6 +215,7 @@ void SetOperationCategoryCommand::redo() {
     _operation->set_category(_newCategory);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -237,6 +239,7 @@ void SetOperationBudgetDateCommand::undo() {
     _operation->set_budgetDate(_oldBudgetDate);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -247,6 +250,7 @@ void SetOperationBudgetDateCommand::redo() {
     _operation->set_budgetDate(_newBudgetDate);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -285,6 +289,7 @@ void SplitOperationCommand::undo() {
     }
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -306,6 +311,7 @@ void SplitOperationCommand::redo() {
     }
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -329,6 +335,7 @@ void SetOperationAmountCommand::undo() {
     _operation->set_amount(_oldAmount);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -339,6 +346,7 @@ void SetOperationAmountCommand::redo() {
     _operation->set_amount(_newAmount);
     if (_operationModel) {
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -361,7 +369,11 @@ void SetOperationDateCommand::undo() {
   if (_operation) {
     _operation->set_date(_oldDate);
     if (_operationModel) {
+      if (_operationModel->account()) {
+        _operationModel->account()->sortOperations();
+      }
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }
@@ -371,7 +383,46 @@ void SetOperationDateCommand::redo() {
   if (_operation) {
     _operation->set_date(_newDate);
     if (_operationModel) {
+      if (_operationModel->account()) {
+        _operationModel->account()->sortOperations();
+      }
       _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
+      emit _operationModel->operationDataChanged();
+    }
+  }
+}
+
+SetOperationDescriptionCommand::SetOperationDescriptionCommand(Operation* operation,
+                                                               OperationListModel* operationModel,
+                                                               const QString& oldDescription,
+                                                               const QString& newDescription,
+                                                               QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _oldDescription(oldDescription),
+    _newDescription(newDescription) {
+  setText(QObject::tr("Set operation description"));
+}
+
+void SetOperationDescriptionCommand::undo() {
+  if (_operation) {
+    _operation->set_description(_oldDescription);
+    if (_operationModel) {
+      _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
+      emit _operationModel->operationDataChanged();
+    }
+  }
+}
+
+void SetOperationDescriptionCommand::redo() {
+  if (_operation) {
+    _operation->set_description(_newDescription);
+    if (_operationModel) {
+      _operationModel->refresh();
+      _operationModel->selectByPointer(_operation);
       emit _operationModel->operationDataChanged();
     }
   }

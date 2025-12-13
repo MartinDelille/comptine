@@ -440,6 +440,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Montant :</translation>
     </message>
     <message>
+        <source>Description:</source>
+        <translation>Description :</translation>
+    </message>
+    <message>
+        <source>Enter description</source>
+        <translation>Entrez une description</translation>
+    </message>
+    <message>
         <source>Date:</source>
         <translation>Date :</translation>
     </message>
@@ -645,6 +653,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Set operation date to %1</source>
         <translation>Définir la date de l&apos;opération à %1</translation>
+    </message>
+    <message>
+        <source>Set operation description</source>
+        <translation>Définir la description de l&apos;opération</translation>
     </message>
 </context>
 <context>
