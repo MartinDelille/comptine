@@ -310,6 +310,9 @@ bool FileController::loadFromYaml(const QString& filePath) {
     return false;
   }
 
+  // Add any categories referenced in operations but missing from the category list
+  addMissingCategoriesFromOperations();
+
   // Refresh account model
   _budgetData.accountModel()->refresh();
 
@@ -599,6 +602,9 @@ bool FileController::importFromCsv(const QString& filePath,
 
   _budgetData.accountModel()->refresh();
 
+  // Ensure all categories used in operations exist in the category list
+  addMissingCategoriesFromOperations();
+
   // Select all imported operations
   if (!importedOperations.isEmpty()) {
     account->clearSelection();
@@ -639,5 +645,40 @@ void FileController::loadInitialFile(const QStringList& args) {
     if (QFile::exists(lastFile)) {
       loadFromYaml(lastFile);
     }
+  }
+}
+
+void FileController::addMissingCategoriesFromOperations() {
+  // Build case-insensitive lookup for existing categories
+  QMap<QString, QString> existingCategoryLookup;  // lowercase -> actual name
+  for (const Category* cat : _categoryController.categories()) {
+    existingCategoryLookup.insert(cat->name().toLower(), cat->name());
+  }
+
+  // Collect all unique category names from operations that are missing
+  QSet<QString> missingCategories;
+  for (const Account* account : _budgetData.accounts()) {
+    for (const Operation* op : account->operations()) {
+      // Check single category
+      QString category = op->category();
+      if (!category.isEmpty() && !existingCategoryLookup.contains(category.toLower())) {
+        missingCategories.insert(category);
+        existingCategoryLookup.insert(category.toLower(), category);  // Prevent duplicates
+      }
+
+      // Check split allocations
+      for (const CategoryAllocation& alloc : op->allocationsList()) {
+        if (!alloc.category.isEmpty() && !existingCategoryLookup.contains(alloc.category.toLower())) {
+          missingCategories.insert(alloc.category);
+          existingCategoryLookup.insert(alloc.category.toLower(), alloc.category);
+        }
+      }
+    }
+  }
+
+  // Add missing categories
+  for (const QString& catName : missingCategories) {
+    qDebug() << "Adding missing category from operations:" << catName;
+    _categoryController.addCategory(new Category(catName, 0.0));
   }
 }

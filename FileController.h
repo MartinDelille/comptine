@@ -55,4 +55,7 @@ private:
   BudgetData& _budgetData;
   CategoryController& _categoryController;
   NavigationController& _navController;
+
+  // Helper to add missing categories from operations
+  void addMissingCategoriesFromOperations();
 };
