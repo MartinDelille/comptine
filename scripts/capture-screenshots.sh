@@ -15,7 +15,7 @@
 #   - Screen Recording permission granted to Terminal/shell
 #
 # Examples:
-#   ./scripts/capture-screenshots.sh build/Comptine.app example_long.comptine
+#   ./scripts/capture-screenshots.sh build/Comptine.app long_example.comptine
 #   ./scripts/capture-screenshots.sh /path/to/Comptine.app /path/to/data.comptine ./screenshots
 
 set -e

@@ -46,6 +46,20 @@
 - **Monthly Budget**: View budget summary by month
 - **Category Tracking**: Track spending by category with budget limits
 - **Month Navigation**: Navigate between months to view historical data
+- **Accumulated Leftover Display**: Budget display shows carried-over amounts (e.g., "€150 / €200 (+€50)")
+
+## Budget Leftover
+
+Manage unspent budget at the end of each month with flexible options:
+
+- **Leftover Dialog**: Access via "Leftover..." button in Budget View to manage end-of-month budget decisions
+- **Per-Category Decisions**: For each category with unspent budget, choose to:
+  - **Save**: Transfer leftover to personal savings (removed from budget system)
+  - **Report**: Carry forward to increase next month's available budget
+- **Accumulated Leftovers**: Reported amounts accumulate and are added to future months' effective budget limits
+- **Monthly Summary**: View totals for savings, amounts to/from leftover account, and net transfer
+- **Undoable**: All leftover decisions support undo/redo
+- **Persistence**: Leftover decisions are saved in the YAML file per category
 
 ## Undo/Redo
 
@@ -64,6 +78,7 @@ The following actions modify user data and support undo/redo:
 - **Operation amount**: Editing an operation's amount
 - **Operation date**: Editing an operation's date
 - **Operation budget date**: Changing when an operation counts in the budget
+- **Leftover decision**: Setting save/report decisions for end-of-month leftovers
 
 ### Non-Undoable Actions (by design)
 

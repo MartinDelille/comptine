@@ -21,10 +21,36 @@ TextField {
 
     horizontalAlignment: Text.AlignRight
 
-    // Update text from value when not being edited by user
+    // Handle undo/redo: always forward to app's undo stack and clear focus
+    // The app's undo stack handles all data changes, TextField's internal undo is not used
+    Keys.onPressed: event => {
+        if (event.modifiers & Qt.ControlModifier) {
+            let isUndo = event.key === Qt.Key_Z && !(event.modifiers & Qt.ShiftModifier);
+            let isRedo = (event.key === Qt.Key_Z && (event.modifiers & Qt.ShiftModifier)) || event.key === Qt.Key_Y;
+
+            if (isUndo || isRedo) {
+                focus = false;
+                if (isUndo)
+                    AppState.data.undoStack.undo();
+                else
+                    AppState.data.undoStack.redo();
+                event.accepted = true;
+            }
+        }
+    }
+
+    // Update text from value when not being edited by user,
+    // or when the external value differs significantly from what's displayed
     onValueChanged: {
         if (!_userEditing) {
             text = value.toFixed(2);
+        } else {
+            // Even during editing, update if external value differs from displayed
+            // This handles undo/redo while field has focus
+            let displayedValue = parseAmount(text);
+            if (isNaN(displayedValue) || Math.abs(displayedValue - value) > 0.001) {
+                text = value.toFixed(2);
+            }
         }
     }
 
@@ -43,13 +69,14 @@ TextField {
     }
 
     // Emit live updates as user types for real-time sum recalculation
+    // Only emit when user is actively editing (has focus), not during initialization
     onTextChanged: {
         if (activeFocus) {
             _userEditing = true;
-        }
-        let parsed = root.parseAmount(text);
-        if (!isNaN(parsed)) {
-            root.liveEdited(parsed);
+            let parsed = root.parseAmount(text);
+            if (!isNaN(parsed)) {
+                root.liveEdited(parsed);
+            }
         }
     }
 
@@ -57,10 +84,13 @@ TextField {
     onEditingFinished: {
         let parsed = root.parseAmount(text);
         if (!isNaN(parsed)) {
-            root.value = parsed;
+            // Don't set root.value here - it would break the binding!
+            // Instead, emit the edited signal and let the model update the value,
+            // which will flow back through the binding.
             root.edited(parsed);
         }
-        // Reset display to normalized format
+        // Reset display to normalized format based on current value
+        // (the value may have been updated by the model in response to edited signal)
         text = root.value.toFixed(2);
     }
 

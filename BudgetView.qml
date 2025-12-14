@@ -87,6 +87,10 @@ FocusScope {
         id: categoryDetailView
     }
 
+    LeftoverDialog {
+        id: leftoverDialog
+    }
+
     Rectangle {
         anchors.fill: parent
         color: Theme.background
@@ -97,8 +101,22 @@ FocusScope {
             spacing: Theme.spacingXLarge
 
             // Month navigation
-            MonthSelector {
-                id: monthSelector
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Theme.spacingNormal
+
+                MonthSelector {
+                    id: monthSelector
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: qsTr("Leftover...")
+                    onClicked: leftoverDialog.open()
+                }
             }
 
             ListView {
@@ -212,7 +230,13 @@ FocusScope {
                             }
 
                             Label {
-                                text: Theme.formatAmount(modelData.amount) + " / " + Theme.formatAmount(modelData.budgetLimit)
+                                text: {
+                                    let base = Theme.formatAmount(modelData.amount) + " / " + Theme.formatAmount(modelData.budgetLimit);
+                                    if (modelData.accumulated > 0) {
+                                        return base + " (+" + Theme.formatAmount(modelData.accumulated) + ")";
+                                    }
+                                    return base;
+                                }
                                 font.pixelSize: Theme.fontSizeNormal
                                 color: Theme.textSecondary
                             }

@@ -196,6 +196,7 @@ qt_add_qml_module(Comptine URI Comptine
         CategoryEditDialog.qml
         DateSpinBox.qml
         ImportDialog.qml
+        LeftoverDialog.qml
         MonthSelector.qml
         OperationDelegate.qml
         OperationDetails.qml
@@ -211,6 +212,7 @@ qt_add_qml_module(Comptine URI Comptine
         Category.h Category.cpp
         BudgetData.h BudgetData.cpp
         OperationListModel.h OperationListModel.cpp
+        LeftoverListModel.h LeftoverListModel.cpp
         AccountListModel.h AccountListModel.cpp
         AppSettings.h AppSettings.cpp
         AppState.h AppState.cpp
