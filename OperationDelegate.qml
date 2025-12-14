@@ -48,6 +48,30 @@ Rectangle {
         }
 
         Label {
+            text: {
+                if (!root.operation)
+                    return "";
+                if (root.operation.isSplit) {
+                    let categories = [];
+                    let allocations = root.operation.allocations;
+                    for (let i = 0; i < allocations.length; i++) {
+                        if (allocations[i].category) {
+                            categories.push(allocations[i].category);
+                        }
+                    }
+                    return categories.join(", ");
+                }
+                return root.operation.category || "";
+            }
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            elide: Text.ElideRight
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            Layout.preferredWidth: 120
+        }
+
+        Label {
             text: Theme.formatAmount(root.operation?.amount ?? 0)
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
