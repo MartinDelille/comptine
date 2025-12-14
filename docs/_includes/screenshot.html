@@ -1,6 +1,6 @@
 <div class="screenshot">
   {% if include.image %}
-  <img src="{{ include.image | relative_url }}" alt="{{ include.caption }}">
+  <img src="{{ include.image | relative_url }}" alt="{{ include.caption }}" onclick="openLightbox(this.src, this.alt)">
   {% else %}
   <div class="screenshot-placeholder">{{ include.placeholder }}</div>
   {% endif %}
