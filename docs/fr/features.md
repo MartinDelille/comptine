@@ -46,6 +46,19 @@ permalink: /fr/features/
 - **Budget mensuel** : Visualisez votre budget mois par mois
 - **Suivi par catégorie** : Suivez vos dépenses par rapport aux limites définies
 - **Navigation temporelle** : Naviguez entre les mois pour consulter l'historique
+- **Restes accumulés** : L'affichage du budget montre les montants reportés
+
+## Gestion des restes
+
+Gérez le budget non dépensé à la fin de chaque mois :
+
+- **Dialogue des restes** : Accédez via le bouton "Restes..." dans la Vue Budget
+- **Décisions par catégorie** : Pour chaque catégorie avec un reste, choisissez de :
+  - **Épargner** : Transférez le reste vers votre épargne personnelle
+  - **Reporter** : Reportez pour augmenter le budget du mois suivant
+- **Restes accumulés** : Les montants reportés s'ajoutent aux limites des mois futurs
+- **Résumé mensuel** : Consultez les totaux d'épargne et de transferts
+- **Annulable** : Toutes les décisions de restes supportent annuler/refaire
 
 ## Annuler / Refaire
 
@@ -60,6 +73,7 @@ permalink: /fr/features/
 - Affectation de catégorie
 - Répartition d'opération
 - Modification de montant, date, date budget
+- Décision de reste
 
 ## Interface utilisateur
 

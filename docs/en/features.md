@@ -46,6 +46,19 @@ permalink: /en/features/
 - **Monthly budget**: View your budget month by month
 - **Category tracking**: Track spending against defined limits
 - **Time navigation**: Navigate between months to view history
+- **Accumulated leftover**: Budget display shows carried-over amounts
+
+## Budget leftover
+
+Manage unspent budget at the end of each month:
+
+- **Leftover dialog**: Access via "Leftover..." button in Budget View
+- **Per-category decisions**: For each category with unspent budget, choose to:
+  - **Save**: Transfer leftover to personal savings
+  - **Report**: Carry forward to increase next month's budget
+- **Accumulated leftovers**: Reported amounts add to future months' limits
+- **Monthly summary**: View totals for savings and transfers
+- **Undoable**: All leftover decisions support undo/redo
 
 ## Undo / Redo
 
@@ -60,6 +73,7 @@ permalink: /en/features/
 - Category assignment
 - Operation split
 - Amount, date, budget date modification
+- Leftover decision
 
 ## User interface
 
