@@ -18,8 +18,6 @@ categories:
     budget_limit: -150.00
   - name: Revenus
     budget_limit: 2500.00
-  - name: Epargne
-    budget_limit: 100.00
   - name: Restaurants
     budget_limit: -150.00
   - name: Abonnements
@@ -72,10 +70,6 @@ accounts:
         amount: -28.50
         description: Pizzeria Napoli
         category: Restaurants
-      - date: 2025-11-14
-        amount: -300.00
-        description: Virement Livret A
-        category: Epargne
       - date: 2025-11-12
         amount: -55.00
         description: Abonnement Metro
@@ -135,10 +129,6 @@ accounts:
         amount: -41.00
         description: Primeur Bio
         category: Alimentation
-      - date: 2025-10-17
-        amount: -100.00
-        description: Virement Livret A
-        category: Epargne
       - date: 2025-10-15
         amount: -55.00
         description: Abonnement Metro
@@ -195,10 +185,6 @@ accounts:
         amount: 2800.00
         description: Salaire Septembre
         category: Revenus
-      - date: 2025-09-19
-        amount: -300.00
-        description: Virement Livret A
-        category: Epargne
       - date: 2025-09-17
         amount: -55.00
         description: Abonnement Metro
@@ -251,10 +237,6 @@ accounts:
         amount: 2500.00
         description: Salaire Aout
         category: Revenus
-      - date: 2025-08-18
-        amount: -300.00
-        description: Virement Livret A
-        category: Epargne
       - date: 2025-08-15
         amount: -55.00
         description: Abonnement Metro
@@ -275,37 +257,6 @@ accounts:
         amount: -35.00
         description: Livre Amazon
         category: Shopping
-  - name: Livret A
-    operations:
-      - date: 2025-11-14
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-10-17
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-09-19
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-08-18
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-07-15
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-06-15
-        amount: 300.00
-        description: Virement depuis Compte Courant
-        category: Epargne
-      - date: 2025-01-01
-        amount: 25.00
-        description: Interets annuels
-        category: Revenus
-        current: true
   - name: Compte Joint
     operations:
       - date: 2025-11-25
@@ -320,7 +271,6 @@ accounts:
         amount: 500.00
         description: Virement mensuel
         category: Revenus
-        current: true
       - date: 2025-11-10
         amount: -85.00
         description: Courses familiales Leclerc
@@ -337,6 +287,7 @@ accounts:
         amount: 500.00
         description: Virement mensuel
         category: Revenus
+        current: true
       - date: 2025-10-08
         amount: -95.00
         description: Courses familiales Carrefour

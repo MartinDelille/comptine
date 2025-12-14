@@ -36,8 +36,8 @@ DATA_FILE="$2"
 OUTPUT_DIR="${3:-docs/assets/screenshots}"
 
 # Configuration
-WINDOW_WIDTH=800
-WINDOW_HEIGHT=600
+WINDOW_WIDTH=960
+WINDOW_HEIGHT=720
 WAIT_TIME=3 # seconds to wait for app to render
 SCREENSHOT_FILE_NAME="Comptabilité Familiale.comptine"
 
