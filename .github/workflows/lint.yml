@@ -13,6 +13,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for WIP/fixup commits
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA=${{ github.event.pull_request.base.sha }}
+          HEAD_SHA=${{ github.event.pull_request.head.sha }}
+          PATTERN='^[a-f0-9]+ (wip[: ]|fixup!|squash!|amend!|\[skip ci\])'
+          WIP_COMMITS=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | \
+            grep -iE "$PATTERN" || true)
+          if [ -n "$WIP_COMMITS" ]; then
+            echo "Error: Found WIP/fixup commits that should be cleaned up:"
+            echo "$WIP_COMMITS"
+            echo ""
+            echo "Please squash or rebase these commits before merging."
+            exit 1
+          fi
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
