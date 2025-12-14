@@ -1,7 +1,17 @@
 :root {
-  --color-primary: #4a90a4;
-  --color-primary-dark: #3a7a8a;
-  --color-accent: #e8a87c;
+  /* Gradient colors from logo */
+  --color-pink: #FF6B9D;
+  --color-purple: #C850C0;
+  --color-indigo: #6366F1;
+  --color-indigo-dark: #4F46E5;
+  --color-cyan: #00D9FF;
+  --color-teal: #00B4D8;
+  --gradient-primary: linear-gradient(135deg, #FF6B9D 0%, #C850C0 30%, #6366F1 60%, #4F46E5 100%);
+  --gradient-gold: linear-gradient(135deg, #FFD93D 0%, #FF6B6B 50%, #EE5A24 100%);
+
+  --color-primary: #6366F1;
+  --color-primary-dark: #4F46E5;
+  --color-accent: #FF6B9D;
   --color-background: #fafafa;
   --color-surface: #ffffff;
   --color-text: #333333;
@@ -190,14 +200,16 @@ body {
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   color: white;
+  border: none;
 }
 
 .btn-primary:hover {
-  background: var(--color-primary-dark);
+  background: var(--gradient-primary);
+  filter: brightness(1.1);
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
 }
 
 .btn-secondary {
