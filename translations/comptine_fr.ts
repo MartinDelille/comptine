@@ -38,6 +38,10 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>BudgetView</name>
     <message>
+        <source>Leftover...</source>
+        <translation>Report...</translation>
+    </message>
+    <message>
         <source>EXCEEDED</source>
         <translation>DÉPASSÉ</translation>
     </message>
@@ -167,6 +171,121 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Use categories from CSV</source>
         <translation>Utiliser les catégories du CSV</translation>
+    </message>
+</context>
+<context>
+    <name>LeftoverDialog</name>
+    <message>
+        <source>Monthly Leftover Summary</source>
+        <translation>Résumé mensuel des reports</translation>
+    </message>
+    <message>
+        <source>%1 %2</source>
+        <translation>%1 %2</translation>
+    </message>
+    <message>
+        <source>January</source>
+        <translation>Janvier</translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation>Février</translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation>Mars</translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation>Avril</translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation>Mai</translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation>Juin</translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation>Juillet</translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation>Août</translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation>Septembre</translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation>Octobre</translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation>Novembre</translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation>Décembre</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Catégorie</translation>
+    </message>
+    <message>
+        <source>Leftover</source>
+        <translation>Report</translation>
+    </message>
+    <message>
+        <source>Budget: %1</source>
+        <translation>Budget : %1</translation>
+    </message>
+    <message>
+        <source>Spent: %1</source>
+        <translation>Dépensé : %1</translation>
+    </message>
+    <message>
+        <source>Carried: +%1</source>
+        <translation>Reporté : +%1</translation>
+    </message>
+    <message>
+        <source>Save</source>
+        <translation>Épargner</translation>
+    </message>
+    <message>
+        <source>Report</source>
+        <translation>Reporter</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Save</source>
+        <translation>Allouer le reste à l&apos;épargne</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Report</source>
+        <translation>Allouer le reste au report</translation>
+    </message>
+    <message>
+        <source>Monthly Summary</source>
+        <translation>Résumé mensuel</translation>
+    </message>
+    <message>
+        <source>To Savings:</source>
+        <translation>Vers l&apos;épargne :</translation>
+    </message>
+    <message>
+        <source>To Leftover Account:</source>
+        <translation>Vers le compte report :</translation>
+    </message>
+    <message>
+        <source>From Leftover Account:</source>
+        <translation>Du compte report :</translation>
+    </message>
+    <message>
+        <source>Net Leftover Transfer:</source>
+        <translation>Transfert net du report :</translation>
     </message>
 </context>
 <context>
@@ -690,6 +809,26 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Set operation description</source>
         <translation>Définir la description de l&apos;opération</translation>
+    </message>
+    <message>
+        <source>save %1 and report %2</source>
+        <translation>épargner %1 et reporter %2</translation>
+    </message>
+    <message>
+        <source>save %1</source>
+        <translation>épargner %1</translation>
+    </message>
+    <message>
+        <source>report %1</source>
+        <translation>reporter %1</translation>
+    </message>
+    <message>
+        <source>Set leftover for &quot;%1&quot; to %2</source>
+        <translation>Définir le report de « %1 » à %2</translation>
+    </message>
+    <message>
+        <source>clear</source>
+        <translation>effacer</translation>
     </message>
 </context>
 <context>

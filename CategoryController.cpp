@@ -8,7 +8,8 @@
 #include "Operation.h"
 #include "UndoCommands.h"
 
-CategoryController::CategoryController(QObject* parent) : QObject(parent) {
+CategoryController::CategoryController(QObject* parent) : QObject(parent), _leftoverModel(this) {
+  _leftoverModel.setCategoryController(this);
 }
 
 void CategoryController::setBudgetData(BudgetData* budgetData) {
@@ -133,19 +134,25 @@ QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const
     double budgetLimit = category->budgetLimit();
     bool isIncome = budgetLimit > 0;
 
+    // Get accumulated leftover from previous months
+    double accumulated = category->accumulatedLeftoverBefore(year, month);
+
     // For display: show positive values
     // - Expenses: total is negative, we show as positive "spent"
     // - Income: total is positive, we show as positive "received"
     double displayAmount = isIncome ? total : -total;
     double displayLimit = std::abs(budgetLimit);
-    double remaining = displayLimit - displayAmount;
 
-    // Calculate percent used:
+    // Effective budget includes accumulated leftover
+    double effectiveLimit = displayLimit + accumulated;
+    double remaining = effectiveLimit - displayAmount;
+
+    // Calculate percent used based on effective limit:
     // - For zero budget expense: any spending means exceeded (use infinity-like behavior)
     // - For zero budget income: no expectation yet
     double percentUsed;
-    if (displayLimit > 0) {
-      percentUsed = (displayAmount / displayLimit) * 100.0;
+    if (effectiveLimit > 0) {
+      percentUsed = (displayAmount / effectiveLimit) * 100.0;
     } else if (!isIncome && displayAmount > 0) {
       // Zero expense budget with spending = exceeded (show as 100%+)
       percentUsed = 100.0 + displayAmount;  // Will show exceeded status
@@ -161,6 +168,8 @@ QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const
     item["remaining"] = remaining;
     item["percentUsed"] = percentUsed;
     item["isIncome"] = isIncome;
+    item["accumulated"] = accumulated;        // Accumulated leftover from previous months
+    item["effectiveLimit"] = effectiveLimit;  // Budget + accumulated
     result.append(item);
   }
 
@@ -205,4 +214,133 @@ QVariantList CategoryController::operationsForCategory(const QString& categoryNa
   });
 
   return result;
+}
+
+double CategoryController::leftoverForCategory(const QString& categoryName, int year, int month) const {
+  Category* category = getCategoryByName(categoryName);
+  if (!category) return 0.0;
+
+  double budgetLimit = category->budgetLimit();
+  double spent = spentInCategory(categoryName, year, month);
+  double accumulated = category->accumulatedLeftoverBefore(year, month);
+
+  // For expense categories (negative budget limit):
+  // leftover = |budgetLimit| - |spent| + accumulated
+  // For income categories (positive budget limit):
+  // leftover = received - expected + accumulated (extra income can be saved)
+
+  bool isIncome = budgetLimit > 0;
+  if (isIncome) {
+    // Income: positive spent means income received
+    // leftover = actual income - expected income + accumulated
+    return spent - budgetLimit + accumulated;
+  } else {
+    // Expense: negative spent means money spent
+    // leftover = budget - spent + accumulated = -budgetLimit - (-spent) + accumulated
+    return -budgetLimit + spent + accumulated;
+  }
+}
+
+double CategoryController::accumulatedLeftover(const QString& categoryName, int year, int month) const {
+  Category* category = getCategoryByName(categoryName);
+  if (!category) return 0.0;
+  return category->accumulatedLeftoverBefore(year, month);
+}
+
+QVariantMap CategoryController::leftoverDecision(const QString& categoryName, int year, int month) const {
+  Category* category = getCategoryByName(categoryName);
+  QVariantMap result;
+  result["saveAmount"] = 0.0;
+  result["reportAmount"] = 0.0;
+
+  if (!category) return result;
+
+  LeftoverDecision decision = category->leftoverDecision(year, month);
+  result["saveAmount"] = decision.saveAmount;
+  result["reportAmount"] = decision.reportAmount;
+  return result;
+}
+
+QVariantList CategoryController::leftoverSummary(int year, int month) const {
+  QVariantList result;
+
+  for (const Category* category : _categories) {
+    double budgetLimit = category->budgetLimit();
+    double spent = spentInCategory(category->name(), year, month);
+    double accumulated = category->accumulatedLeftoverBefore(year, month);
+    bool isIncome = budgetLimit > 0;
+
+    // Calculate leftover
+    double leftover;
+    if (isIncome) {
+      leftover = spent - budgetLimit + accumulated;
+    } else {
+      leftover = -budgetLimit + spent + accumulated;
+    }
+
+    // Get existing decision for this month
+    LeftoverDecision decision = category->leftoverDecision(year, month);
+
+    QVariantMap item;
+    item["name"] = category->name();
+    item["budgetLimit"] = std::abs(budgetLimit);
+    item["spent"] = isIncome ? spent : -spent;  // Show as positive
+    item["accumulated"] = accumulated;
+    item["leftover"] = leftover;
+    item["isIncome"] = isIncome;
+
+    // Decision amounts
+    item["saveAmount"] = decision.saveAmount;
+    item["reportAmount"] = decision.reportAmount;
+
+    result.append(item);
+  }
+
+  // Sort by category name
+  QCollator collator;
+  collator.setCaseSensitivity(Qt::CaseInsensitive);
+  std::sort(result.begin(), result.end(), [&collator](const QVariant& a, const QVariant& b) {
+    return collator.compare(a.toMap()["name"].toString(), b.toMap()["name"].toString()) < 0;
+  });
+
+  return result;
+}
+
+QVariantMap CategoryController::leftoverTotals(int year, int month) const {
+  double totalToSave = 0.0;
+  double totalToReport = 0.0;
+  double totalFromReport = 0.0;  // Negative leftovers drawn from accumulated
+
+  for (const Category* category : _categories) {
+    LeftoverDecision decision = category->leftoverDecision(year, month);
+    totalToSave += decision.saveAmount;
+    if (decision.reportAmount > 0) {
+      totalToReport += decision.reportAmount;
+    } else if (decision.reportAmount < 0) {
+      totalFromReport += -decision.reportAmount;  // Track as positive "from" amount
+    }
+  }
+
+  QVariantMap result;
+  result["toSave"] = totalToSave;
+  result["toReport"] = totalToReport;
+  result["fromReport"] = totalFromReport;
+  result["netReport"] = totalToReport - totalFromReport;
+  return result;
+}
+
+void CategoryController::setLeftoverAmounts(const QString& categoryName, int year, int month,
+                                            double saveAmount, double reportAmount) {
+  if (!_undoStack) return;
+
+  Category* category = getCategoryByName(categoryName);
+  if (!category) return;
+
+  LeftoverDecision oldDecision = category->leftoverDecision(year, month);
+  LeftoverDecision newDecision{ saveAmount, reportAmount };
+
+  // Only create undo command if something changed
+  if (!qFuzzyCompare(oldDecision.saveAmount, newDecision.saveAmount) || !qFuzzyCompare(oldDecision.reportAmount, newDecision.reportAmount)) {
+    _undoStack->push(new SetLeftoverDecisionCommand(*category, this, year, month, oldDecision, newDecision));
+  }
 }

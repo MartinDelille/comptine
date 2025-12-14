@@ -79,6 +79,29 @@ bool FileController::saveToYaml(const QString& filePath) {
     if (i == currentCategoryIndex) {
       cat["current"] << "true";
     }
+
+    // Write leftover decisions
+    QMap<YearMonth, LeftoverDecision> decisions = category->allLeftoverDecisions();
+    if (!decisions.isEmpty()) {
+      ryml::NodeRef leftoverNode = cat["leftover_decisions"];
+      leftoverNode |= ryml::SEQ;
+      for (auto it = decisions.constBegin(); it != decisions.constEnd(); ++it) {
+        const YearMonth& ym = it.key();
+        const LeftoverDecision& decision = it.value();
+        if (!decision.isEmpty()) {
+          ryml::NodeRef decisionNode = leftoverNode.append_child();
+          decisionNode |= ryml::MAP;
+          decisionNode["year"] << ym.year;
+          decisionNode["month"] << ym.month;
+          if (decision.saveAmount != 0.0) {
+            decisionNode["save_amount"] << toStdString(QString::number(decision.saveAmount, 'f', 2));
+          }
+          if (decision.reportAmount != 0.0) {
+            decisionNode["report_amount"] << toStdString(QString::number(decision.reportAmount, 'f', 2));
+          }
+        }
+      }
+    }
   }
 
   // Write accounts
@@ -224,6 +247,49 @@ bool FileController::loadFromYaml(const QString& filePath) {
             loadedCategoryIdx = catIdx;
           }
         }
+
+        // Load leftover decisions
+        if (cat.has_child("leftover_decisions")) {
+          for (ryml::ConstNodeRef decisionNode : cat["leftover_decisions"]) {
+            int year = 0, month = 0;
+            LeftoverDecision decision;
+
+            if (decisionNode.has_child("year")) {
+              auto val = decisionNode["year"].val();
+              year = QString::fromUtf8(val.str, val.len).toInt();
+            }
+            if (decisionNode.has_child("month")) {
+              auto val = decisionNode["month"].val();
+              month = QString::fromUtf8(val.str, val.len).toInt();
+            }
+            // New format: separate save_amount and report_amount
+            if (decisionNode.has_child("save_amount")) {
+              auto val = decisionNode["save_amount"].val();
+              decision.saveAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            }
+            if (decisionNode.has_child("report_amount")) {
+              auto val = decisionNode["report_amount"].val();
+              decision.reportAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            }
+            // Legacy format: action + amount
+            if (decisionNode.has_child("action") && decisionNode.has_child("amount")) {
+              auto actionVal = decisionNode["action"].val();
+              QString actionStr = QString::fromUtf8(actionVal.str, actionVal.len).toLower();
+              auto amountVal = decisionNode["amount"].val();
+              double amount = QString::fromUtf8(amountVal.str, amountVal.len).toDouble();
+              if (actionStr == "save") {
+                decision.saveAmount = amount;
+              } else if (actionStr == "report") {
+                decision.reportAmount = amount;
+              }
+            }
+
+            if (year > 0 && month > 0 && !decision.isEmpty()) {
+              category->setLeftoverDecision(year, month, decision);
+            }
+          }
+        }
+
         _categoryController.addCategory(category);
         catIdx++;
       }

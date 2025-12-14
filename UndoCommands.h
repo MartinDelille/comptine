@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUndoCommand>
 
+#include "Category.h"   // For LeftoverDecision
 #include "Operation.h"  // For CategoryAllocation
 
 class Account;
@@ -226,4 +227,28 @@ private:
   OperationListModel* _operationModel;
   QString _oldDescription;
   QString _newDescription;
+};
+
+// Command for setting a category's leftover decision
+class SetLeftoverDecisionCommand : public QUndoCommand {
+public:
+  SetLeftoverDecisionCommand(Category& category,
+                             CategoryController* categoryController,
+                             int year, int month,
+                             const LeftoverDecision& oldDecision,
+                             const LeftoverDecision& newDecision,
+                             QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+  int id() const override;
+  bool mergeWith(const QUndoCommand* other) override;
+
+private:
+  Category& _category;
+  CategoryController* _categoryController;
+  int _year;
+  int _month;
+  LeftoverDecision _oldDecision;
+  LeftoverDecision _newDecision;
 };

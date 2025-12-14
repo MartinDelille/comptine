@@ -443,3 +443,90 @@ void SetOperationDescriptionCommand::redo() {
     emit _operationModel->operationDataChanged();
   }
 }
+
+// SetLeftoverDecisionCommand implementation
+
+SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
+                                                       CategoryController* categoryController,
+                                                       int year, int month,
+                                                       const LeftoverDecision& oldDecision,
+                                                       const LeftoverDecision& newDecision,
+                                                       QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _category(category),
+    _categoryController(categoryController),
+    _year(year),
+    _month(month),
+    _oldDecision(oldDecision),
+    _newDecision(newDecision) {
+  QString actionStr;
+  if (newDecision.saveAmount > 0 && newDecision.reportAmount > 0) {
+    actionStr = QObject::tr("save %1 and report %2")
+                    .arg(newDecision.saveAmount, 0, 'f', 2)
+                    .arg(newDecision.reportAmount, 0, 'f', 2);
+  } else if (newDecision.saveAmount > 0) {
+    actionStr = QObject::tr("save %1").arg(newDecision.saveAmount, 0, 'f', 2);
+  } else if (newDecision.reportAmount != 0) {
+    actionStr = QObject::tr("report %1").arg(newDecision.reportAmount, 0, 'f', 2);
+  } else {
+    actionStr = QObject::tr("clear");
+  }
+  setText(QObject::tr("Set leftover for \"%1\" to %2").arg(category.name(), actionStr));
+}
+
+void SetLeftoverDecisionCommand::undo() {
+  if (_oldDecision.isEmpty()) {
+    _category.clearLeftoverDecision(_year, _month);
+  } else {
+    _category.setLeftoverDecision(_year, _month, _oldDecision);
+  }
+  if (_categoryController) {
+    emit _categoryController->leftoverDataChanged();
+  }
+}
+
+void SetLeftoverDecisionCommand::redo() {
+  if (_newDecision.isEmpty()) {
+    _category.clearLeftoverDecision(_year, _month);
+  } else {
+    _category.setLeftoverDecision(_year, _month, _newDecision);
+  }
+  if (_categoryController) {
+    emit _categoryController->leftoverDataChanged();
+  }
+}
+
+int SetLeftoverDecisionCommand::id() const {
+  // Unique ID for leftover decision commands to enable merging
+  return 1001;
+}
+
+bool SetLeftoverDecisionCommand::mergeWith(const QUndoCommand* other) {
+  const SetLeftoverDecisionCommand* cmd = dynamic_cast<const SetLeftoverDecisionCommand*>(other);
+  if (!cmd)
+    return false;
+
+  // Only merge if same category, year, month
+  if (&cmd->_category != &_category || cmd->_year != _year || cmd->_month != _month)
+    return false;
+
+  // Keep our old decision (for undo), take their new decision (for redo)
+  _newDecision = cmd->_newDecision;
+
+  // Update the command text to reflect the final state
+  QString actionStr;
+  if (_newDecision.saveAmount > 0 && _newDecision.reportAmount > 0) {
+    actionStr = QObject::tr("save %1 and report %2")
+                    .arg(_newDecision.saveAmount, 0, 'f', 2)
+                    .arg(_newDecision.reportAmount, 0, 'f', 2);
+  } else if (_newDecision.saveAmount > 0) {
+    actionStr = QObject::tr("save %1").arg(_newDecision.saveAmount, 0, 'f', 2);
+  } else if (_newDecision.reportAmount != 0) {
+    actionStr = QObject::tr("report %1").arg(_newDecision.reportAmount, 0, 'f', 2);
+  } else {
+    actionStr = QObject::tr("clear");
+  }
+  setText(QObject::tr("Set leftover for \"%1\" to %2").arg(_category.name(), actionStr));
+
+  return true;
+}

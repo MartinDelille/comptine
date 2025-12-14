@@ -1,27 +1,64 @@
 state:
-  currentTab: 0
+  currentTab: 1
   budgetYear: 2025
   budgetMonth: 10
 categories:
   - name: Alimentation
     budget_limit: -400.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        report_amount: 181.00
   - name: Transports
     budget_limit: -150.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        report_amount: 60.00
   - name: Logement
     budget_limit: -1200.00
     current: true
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        save_amount: 305.00
   - name: Loisirs
     budget_limit: -200.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        save_amount: 185.00
   - name: Sante
     budget_limit: -100.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        report_amount: 82.00
   - name: Shopping
     budget_limit: -150.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        save_amount: 10.00
+        report_amount: 20.00
   - name: Revenus
     budget_limit: 2500.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        save_amount: 800.00
   - name: Restaurants
     budget_limit: -150.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        report_amount: 89.50
   - name: Abonnements
     budget_limit: -80.00
+    leftover_decisions:
+      - year: 2025
+        month: 9
+        report_amount: 50.02
 accounts:
   - name: Compte Courant
     current: true

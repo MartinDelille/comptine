@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     branches: [main]
-    tags: ['[0-9]*']
+    tags: ["[0-9]*"]
   pull_request:
     branches: [main]
 
@@ -95,7 +95,7 @@ jobs:
         run: |
           ./scripts/capture-screenshots.sh \
             build/Comptine.app \
-            example_long.comptine \
+            long_example.comptine \
             screenshots
 
       - name: Upload screenshots
