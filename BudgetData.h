@@ -56,6 +56,7 @@ public:
 
   // Operation editing
   Q_INVOKABLE void setOperationCategory(int operationIndex, const QString& newCategory);
+  Q_INVOKABLE void setOperationCategory(Operation* operation, const QString& newCategory);
   Q_INVOKABLE void setOperationBudgetDate(int operationIndex, const QDate& newBudgetDate);
   Q_INVOKABLE void setOperationAmount(int operationIndex, double newAmount);
   Q_INVOKABLE void setOperationDate(int operationIndex, const QDate& newDate);

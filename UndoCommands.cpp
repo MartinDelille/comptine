@@ -2,10 +2,13 @@
 #include "Account.h"
 #include "AccountListModel.h"
 #include "BudgetData.h"
+#include "CategorizationRule.h"
 #include "Category.h"
 #include "CategoryController.h"
 #include "Operation.h"
 #include "OperationListModel.h"
+#include "RuleController.h"
+#include "RuleListModel.h"
 
 // AddAccountCommand implementation
 
@@ -529,4 +532,145 @@ bool SetLeftoverDecisionCommand::mergeWith(const QUndoCommand* other) {
   setText(QObject::tr("Set leftover for \"%1\" to %2").arg(_category.name(), actionStr));
 
   return true;
+}
+
+// AddRuleCommand implementation
+
+AddRuleCommand::AddRuleCommand(RuleController* ruleController, CategorizationRule* rule,
+                               QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _ruleController(ruleController),
+    _rule(rule),
+    _ownsRule(true) {
+  setText(QObject::tr("Add rule for \"%1\"").arg(rule->descriptionPrefix()));
+}
+
+AddRuleCommand::~AddRuleCommand() {
+  if (_ownsRule) {
+    delete _rule;
+  }
+}
+
+void AddRuleCommand::undo() {
+  if (_ruleController) {
+    // Find and remove the rule
+    int index = _ruleController->rules().indexOf(_rule);
+    if (index >= 0) {
+      _ruleController->takeRule(index);
+      _ownsRule = true;
+    }
+  }
+}
+
+void AddRuleCommand::redo() {
+  if (_ruleController) {
+    _ruleController->addRule(_rule);
+    _ownsRule = false;
+  }
+}
+
+// RemoveRuleCommand implementation
+
+RemoveRuleCommand::RemoveRuleCommand(RuleController* ruleController, int index,
+                                     QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _ruleController(ruleController),
+    _rule(nullptr),
+    _index(index),
+    _ownsRule(false) {
+  if (ruleController && index >= 0 && index < ruleController->rules().size()) {
+    _rule = ruleController->rules().at(index);
+    setText(QObject::tr("Remove rule for \"%1\"").arg(_rule->descriptionPrefix()));
+  }
+}
+
+RemoveRuleCommand::~RemoveRuleCommand() {
+  if (_ownsRule) {
+    delete _rule;
+  }
+}
+
+void RemoveRuleCommand::undo() {
+  if (_ruleController && _rule) {
+    // Re-insert the rule at the original index
+    _ruleController->addRule(_rule);
+    // Move it to the original position if needed
+    int currentIndex = _ruleController->rules().indexOf(_rule);
+    if (currentIndex != _index && currentIndex >= 0) {
+      _ruleController->moveRule(currentIndex, _index);
+    }
+    _ownsRule = false;
+  }
+}
+
+void RemoveRuleCommand::redo() {
+  if (_ruleController && _rule) {
+    int index = _ruleController->rules().indexOf(_rule);
+    if (index >= 0) {
+      _rule = _ruleController->takeRule(index);
+      _ownsRule = true;
+    }
+  }
+}
+
+// EditRuleCommand implementation
+
+EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
+                                 const QString& oldCategory, const QString& newCategory,
+                                 const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
+                                 QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _ruleController(ruleController),
+    _index(index),
+    _oldCategory(oldCategory),
+    _newCategory(newCategory),
+    _oldDescriptionPrefix(oldDescriptionPrefix),
+    _newDescriptionPrefix(newDescriptionPrefix) {
+  setText(QObject::tr("Edit rule for \"%1\"").arg(newDescriptionPrefix));
+}
+
+void EditRuleCommand::undo() {
+  if (_ruleController) {
+    CategorizationRule* rule = _ruleController->getRule(_index);
+    if (rule) {
+      rule->set_category(_oldCategory);
+      rule->set_descriptionPrefix(_oldDescriptionPrefix);
+      _ruleController->ruleModel()->refresh();
+      emit _ruleController->rulesChanged();
+    }
+  }
+}
+
+void EditRuleCommand::redo() {
+  if (_ruleController) {
+    CategorizationRule* rule = _ruleController->getRule(_index);
+    if (rule) {
+      rule->set_category(_newCategory);
+      rule->set_descriptionPrefix(_newDescriptionPrefix);
+      _ruleController->ruleModel()->refresh();
+      emit _ruleController->rulesChanged();
+    }
+  }
+}
+
+// MoveRuleCommand implementation
+MoveRuleCommand::MoveRuleCommand(RuleController* ruleController, int fromIndex, int toIndex,
+                                 QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _ruleController(ruleController),
+    _fromIndex(fromIndex),
+    _toIndex(toIndex) {
+  setText(QObject::tr("Move rule"));
+}
+
+void MoveRuleCommand::undo() {
+  if (_ruleController) {
+    _ruleController->moveRuleDirect(_toIndex, _fromIndex);
+  }
+}
+
+void MoveRuleCommand::redo() {
+  if (_ruleController) {
+    _ruleController->moveRuleDirect(_fromIndex, _toIndex);
+  }
 }

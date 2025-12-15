@@ -9,6 +9,7 @@
 #include "ClipboardController.h"
 #include "FileController.h"
 #include "NavigationController.h"
+#include "RuleController.h"
 #include "UpdateController.h"
 
 class AppState : public QObject {
@@ -22,6 +23,7 @@ class AppState : public QObject {
   Q_PROPERTY(ClipboardController* clipboard READ clipboard CONSTANT)
   Q_PROPERTY(NavigationController* navigation READ navigation CONSTANT)
   Q_PROPERTY(FileController* file READ file CONSTANT)
+  Q_PROPERTY(RuleController* rules READ rules CONSTANT)
   Q_PROPERTY(UpdateController* update READ update CONSTANT)
 
 public:
@@ -33,6 +35,7 @@ public:
   ClipboardController* clipboard() { return &_clipboard; }
   NavigationController* navigation() { return &_navigation; }
   FileController* file() { return &_file; }
+  RuleController* rules() { return &_rules; }
   UpdateController* update() { return &_update; }
 
 private:
@@ -40,6 +43,7 @@ private:
   AppSettings _settings;
   BudgetData _data;
   CategoryController _categories;
+  RuleController _rules;
   NavigationController _navigation;
   ClipboardController _clipboard;  // Depends on BudgetData::operationModel()
   FileController _file;            // Depends on all 4 controllers

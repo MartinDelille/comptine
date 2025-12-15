@@ -12,8 +12,10 @@ class Account;
 class AccountListModel;
 class BudgetData;
 class Category;
+class CategorizationRule;
 class CategoryController;
 class OperationListModel;
+class RuleController;
 
 // Command for adding a new account
 // Note: This command manages account lifecycle in BudgetData
@@ -251,4 +253,72 @@ private:
   int _month;
   LeftoverDecision _oldDecision;
   LeftoverDecision _newDecision;
+};
+
+// Command for adding a categorization rule
+class AddRuleCommand : public QUndoCommand {
+public:
+  AddRuleCommand(RuleController* ruleController, CategorizationRule* rule,
+                 QUndoCommand* parent = nullptr);
+  ~AddRuleCommand();
+
+  void undo() override;
+  void redo() override;
+
+private:
+  RuleController* _ruleController;
+  CategorizationRule* _rule;
+  bool _ownsRule;
+};
+
+// Command for removing a categorization rule
+class RemoveRuleCommand : public QUndoCommand {
+public:
+  RemoveRuleCommand(RuleController* ruleController, int index,
+                    QUndoCommand* parent = nullptr);
+  ~RemoveRuleCommand();
+
+  void undo() override;
+  void redo() override;
+
+private:
+  RuleController* _ruleController;
+  CategorizationRule* _rule;
+  int _index;
+  bool _ownsRule;
+};
+
+// Command for editing a categorization rule
+class EditRuleCommand : public QUndoCommand {
+public:
+  EditRuleCommand(RuleController* ruleController, int index,
+                  const QString& oldCategory, const QString& newCategory,
+                  const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
+                  QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  RuleController* _ruleController;
+  int _index;
+  QString _oldCategory;
+  QString _newCategory;
+  QString _oldDescriptionPrefix;
+  QString _newDescriptionPrefix;
+};
+
+// Command for moving a categorization rule (reordering priority)
+class MoveRuleCommand : public QUndoCommand {
+public:
+  MoveRuleCommand(RuleController* ruleController, int fromIndex, int toIndex,
+                  QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  RuleController* _ruleController;
+  int _fromIndex;
+  int _toIndex;
 };

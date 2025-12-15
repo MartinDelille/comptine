@@ -8,6 +8,7 @@ class AppSettings;
 class BudgetData;
 class CategoryController;
 class NavigationController;
+class RuleController;
 
 class FileController : public QObject {
   Q_OBJECT
@@ -26,6 +27,7 @@ public:
                  BudgetData& budgetData,
                  CategoryController& categoryController,
                  NavigationController& navController,
+                 RuleController& ruleController,
                  QObject* parent = nullptr);
 
   // File operations
@@ -55,6 +57,7 @@ private:
   BudgetData& _budgetData;
   CategoryController& _categoryController;
   NavigationController& _navController;
+  RuleController& _ruleController;
 
   // Helper to add missing categories from operations
   void addMissingCategoriesFromOperations();

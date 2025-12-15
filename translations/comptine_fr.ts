@@ -75,6 +75,53 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>CategorizeDialog</name>
+    <message>
+        <source>Categorize Operations</source>
+        <translation>Catégoriser les opérations</translation>
+    </message>
+    <message>
+        <source>Operation %1 of %2</source>
+        <translation>Opération %1 sur %2</translation>
+    </message>
+    <message>
+        <source>No uncategorized operations</source>
+        <translation>Aucune opération non catégorisée</translation>
+    </message>
+    <message>
+        <source>Ref: %1</source>
+        <translation>Réf : %1</translation>
+    </message>
+    <message>
+        <source>Account: %1</source>
+        <translation>Compte : %1</translation>
+    </message>
+    <message>
+        <source>All operations are categorized!</source>
+        <translation>Toutes les opérations sont catégorisées !</translation>
+    </message>
+    <message>
+        <source>Assign Category</source>
+        <translation>Assigner une catégorie</translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation>Appliquer</translation>
+    </message>
+    <message>
+        <source>Or create a rule to auto-categorize similar operations:</source>
+        <translation>Ou créer une règle pour catégoriser automatiquement les opérations similaires :</translation>
+    </message>
+    <message>
+        <source>Create Rule...</source>
+        <translation>Créer une règle...</translation>
+    </message>
+    <message>
+        <source>Skip</source>
+        <translation>Passer</translation>
+    </message>
+</context>
+<context>
     <name>CategoryDetailView</name>
     <message>
         <source>Total: %1</source>
@@ -345,6 +392,14 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Edit &amp;Category...</source>
         <translation>Modifier la &amp;catégorie...</translation>
+    </message>
+    <message>
+        <source>&amp;Categorize...</source>
+        <translation>&amp;Catégoriser...</translation>
+    </message>
+    <message>
+        <source>Categorization &amp;Rules...</source>
+        <translation>&amp;Règles de catégorisation...</translation>
     </message>
     <message>
         <source>&amp;Operations</source>
@@ -827,8 +882,104 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Définir le report de « %1 » à %2</translation>
     </message>
     <message>
+        <source>Add rule for &quot;%1&quot;</source>
+        <translation>Ajouter une règle pour « %1 »</translation>
+    </message>
+    <message>
+        <source>Remove rule for &quot;%1&quot;</source>
+        <translation>Supprimer la règle pour « %1 »</translation>
+    </message>
+    <message>
+        <source>Edit rule for &quot;%1&quot;</source>
+        <translation>Modifier la règle pour « %1 »</translation>
+    </message>
+    <message>
+        <source>Move rule</source>
+        <translation>Déplacer la règle</translation>
+    </message>
+    <message>
         <source>clear</source>
         <translation>effacer</translation>
+    </message>
+</context>
+<context>
+    <name>RuleEditDialog</name>
+    <message>
+        <source>Add Rule</source>
+        <translation>Ajouter une règle</translation>
+    </message>
+    <message>
+        <source>Edit Rule</source>
+        <translation>Modifier la règle</translation>
+    </message>
+    <message>
+        <source>Description Prefix</source>
+        <translation>Préfixe de description</translation>
+    </message>
+    <message>
+        <source>Operations starting with this text will match</source>
+        <translation>Les opérations commençant par ce texte seront associées</translation>
+    </message>
+    <message>
+        <source>Assign Category</source>
+        <translation>Assigner une catégorie</translation>
+    </message>
+    <message>
+        <source>Rules are matched in order. The first matching rule wins.</source>
+        <translation>Les règles sont appliquées dans l&apos;ordre. La première règle correspondante est utilisée.</translation>
+    </message>
+</context>
+<context>
+    <name>RulesView</name>
+    <message>
+        <source>Categorization Rules</source>
+        <translation>Règles de catégorisation</translation>
+    </message>
+    <message>
+        <source>Rules are matched in order. The first matching rule wins.</source>
+        <translation>Les règles sont appliquées dans l&apos;ordre. La première règle correspondante est utilisée.</translation>
+    </message>
+    <message>
+        <source>Add Rule...</source>
+        <translation>Ajouter une règle...</translation>
+    </message>
+    <message>
+        <source>Prefix: &quot;%1&quot;</source>
+        <translation>Préfixe : « %1 »</translation>
+    </message>
+    <message>
+        <source>Assign to: %1</source>
+        <translation>Assigner à : %1</translation>
+    </message>
+    <message>
+        <source>Move up (higher priority)</source>
+        <translation>Monter (priorité plus haute)</translation>
+    </message>
+    <message>
+        <source>Move down (lower priority)</source>
+        <translation>Descendre (priorité plus basse)</translation>
+    </message>
+    <message>
+        <source>Edit rule</source>
+        <translation>Modifier la règle</translation>
+    </message>
+    <message>
+        <source>Delete rule</source>
+        <translation>Supprimer la règle</translation>
+    </message>
+    <message>
+        <source>No rules defined.
+Click &quot;Add Rule...&quot; to create one.</source>
+        <translation>Aucune règle définie.
+Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
+    </message>
+    <message>
+        <source>%1 rule(s)</source>
+        <translation>%1 règle(s)</translation>
+    </message>
+    <message>
+        <source>%1 uncategorized operation(s)</source>
+        <translation>%1 opération(s) non catégorisée(s)</translation>
     </message>
 </context>
 <context>

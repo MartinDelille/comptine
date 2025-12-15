@@ -192,6 +192,7 @@ qt_add_qml_module(Comptine URI Comptine
         BalanceHeader.qml
         BaseDialog.qml
         BudgetView.qml
+        CategorizeDialog.qml
         CategoryDetailView.qml
         CategoryEditDialog.qml
         DateSpinBox.qml
@@ -204,6 +205,8 @@ qt_add_qml_module(Comptine URI Comptine
         OperationList.qml
         OperationView.qml
         PreferencesDialog.qml
+        RuleEditDialog.qml
+        RulesView.qml
         Theme.qml
         UpdateDialog.qml
     SOURCES
@@ -211,14 +214,17 @@ qt_add_qml_module(Comptine URI Comptine
         Account.h Account.cpp
         Category.h Category.cpp
         BudgetData.h BudgetData.cpp
+        CategorizationRule.h CategorizationRule.cpp
         OperationListModel.h OperationListModel.cpp
         LeftoverListModel.h LeftoverListModel.cpp
         AccountListModel.h AccountListModel.cpp
+        RuleListModel.h RuleListModel.cpp
         AppSettings.h AppSettings.cpp
         AppState.h AppState.cpp
         CategoryController.h CategoryController.cpp
         ClipboardController.h ClipboardController.cpp
         NavigationController.h NavigationController.cpp
+        RuleController.h RuleController.cpp
         FileController.h FileController.cpp
         TranslationManager.h TranslationManager.cpp
         UpdateController.h UpdateController.cpp
