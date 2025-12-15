@@ -86,3 +86,5 @@ CMakeLists.txt.user*
 .envrc
 .venv
 docs/assets/screenshots
+compile_commands.json
+.cache
