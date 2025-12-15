@@ -315,6 +315,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Allouer le reste au report</translation>
     </message>
     <message>
+        <source>Carry forward deficit</source>
+        <translation>Reporter le déficit</translation>
+    </message>
+    <message>
         <source>Monthly Summary</source>
         <translation>Résumé mensuel</translation>
     </message>

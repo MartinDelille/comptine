@@ -258,19 +258,26 @@ BaseDialog {
                             id: reportTopButton
                             text: "⬆"
                             font.pixelSize: Theme.fontSizeSmall
-                            enabled: delegateRoot.remainingLeftover > 0
+                            // Enable for positive remaining OR negative leftover that hasn't been fully reported
+                            enabled: delegateRoot.remainingLeftover > 0 || (delegateRoot.leftover < 0 && delegateRoot.reportAmount > delegateRoot.leftover)
                             opacity: enabled ? 1.0 : 0.3
                             Layout.preferredWidth: 24
                             Layout.preferredHeight: 24
                             padding: 0
 
                             onClicked: {
-                                let newReport = delegateRoot.reportAmount + delegateRoot.remainingLeftover;
-                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, newReport);
+                                if (delegateRoot.leftover >= 0) {
+                                    // Positive leftover: allocate remaining to report
+                                    let newReport = delegateRoot.reportAmount + delegateRoot.remainingLeftover;
+                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, newReport);
+                                } else {
+                                    // Negative leftover: set report to full negative amount (carry forward debt)
+                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, delegateRoot.leftover);
+                                }
                             }
 
                             ToolTip.visible: hovered
-                            ToolTip.text: qsTr("Allocate remaining to Report")
+                            ToolTip.text: delegateRoot.leftover >= 0 ? qsTr("Allocate remaining to Report") : qsTr("Carry forward deficit")
                             ToolTip.delay: 500
                         }
                     }
