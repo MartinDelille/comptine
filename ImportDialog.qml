@@ -35,7 +35,10 @@ BaseDialog {
         } else {
             newAccountRadio.checked = true;
         }
-        newAccountField.text = "";
+        // Extract filename without extension as default account name
+        var fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+        var baseName = fileName.substring(0, fileName.lastIndexOf("."));
+        newAccountField.text = baseName || "";
         useCategoriesCheckBox.checked = false;
         // Update OK button state
         standardButton(Dialog.Ok).enabled = isValid;
