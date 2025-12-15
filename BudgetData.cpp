@@ -149,6 +149,16 @@ void BudgetData::setOperationCategory(int operationIndex, const QString& newCate
   }
 }
 
+void BudgetData::setOperationCategory(Operation* operation, const QString& newCategory) {
+  if (!operation) return;
+
+  QString oldCategory = operation->category();
+  if (oldCategory != newCategory) {
+    _undoStack->push(new SetOperationCategoryCommand(*operation, _operationModel,
+                                                     oldCategory, newCategory));
+  }
+}
+
 void BudgetData::setOperationBudgetDate(int operationIndex, const QDate& newBudgetDate) {
   if (!_navController) return;
   Account* account = getAccount(_navController->currentAccountIndex());

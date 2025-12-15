@@ -12,7 +12,7 @@ ApplicationWindow {
     color: Theme.background
 
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
-    property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen || updateDialog.visible
+    property bool anyDialogOpen: fileDialogOpen || importDialog.visible || aboutDialog.visible || preferencesDialog.visible || unsavedChangesDialog.visible || budgetView.dialogOpen || updateDialog.visible || categorizeDialog.visible || rulesView.visible
     property string pendingAction: ""  // "quit", "new", or "open"
     property string pendingRecentFile: ""  // File path to open from recent files
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
@@ -170,6 +170,17 @@ ApplicationWindow {
                 }
             }
             MenuSeparator {}
+            MenuSeparator {}
+            Action {
+                text: qsTr("&Categorize...")
+                shortcut: "Ctrl+Shift+C"
+                onTriggered: categorizeDialog.open()
+            }
+            Action {
+                text: qsTr("Categorization &Rules...")
+                onTriggered: rulesView.open()
+            }
+            MenuSeparator {}
             Action {
                 text: qsTr("&Preferences...")
                 shortcut: StandardKey.Preferences
@@ -276,6 +287,16 @@ ApplicationWindow {
 
     PreferencesDialog {
         id: preferencesDialog
+        anchors.centerIn: parent
+    }
+
+    CategorizeDialog {
+        id: categorizeDialog
+        anchors.centerIn: parent
+    }
+
+    RulesView {
+        id: rulesView
         anchors.centerIn: parent
     }
 

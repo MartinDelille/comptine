@@ -12,6 +12,7 @@
 #include "Account.h"
 #include "AppSettings.h"
 #include "BudgetData.h"
+#include "CategorizationRule.h"
 #include "Category.h"
 #include "CategoryController.h"
 #include "CsvParser.h"
@@ -19,6 +20,7 @@
 #include "FileCoordinator.h"
 #include "NavigationController.h"
 #include "Operation.h"
+#include "RuleController.h"
 #include "UndoCommands.h"
 
 using namespace CsvParser;
@@ -27,12 +29,14 @@ FileController::FileController(AppSettings& appSettings,
                                BudgetData& budgetData,
                                CategoryController& categoryController,
                                NavigationController& navController,
+                               RuleController& ruleController,
                                QObject* parent) :
     QObject(parent),
     _appSettings(appSettings),
     _budgetData(budgetData),
     _categoryController(categoryController),
-    _navController(navController) {
+    _navController(navController),
+    _ruleController(ruleController) {
 }
 
 bool FileController::hasUnsavedChanges() const {
@@ -150,6 +154,19 @@ bool FileController::saveToYaml(const QString& filePath) {
       if (op == account->currentOperation()) {
         opNode["current"] << "true";
       }
+    }
+  }
+
+  // Write categorization rules
+  QList<CategorizationRule*> rulesList = _ruleController.rules();
+  if (!rulesList.isEmpty()) {
+    ryml::NodeRef rules = root["rules"];
+    rules |= ryml::SEQ;
+    for (const CategorizationRule* rule : rulesList) {
+      ryml::NodeRef ruleNode = rules.append_child();
+      ruleNode |= ryml::MAP;
+      ruleNode["category"] << toStdString(rule->category());
+      ruleNode["description_prefix"] << toStdString(rule->descriptionPrefix());
     }
   }
 
@@ -368,6 +385,29 @@ bool FileController::loadFromYaml(const QString& filePath) {
         }
         _budgetData.addAccount(account);
         accIdx++;
+      }
+    }
+
+    // Load categorization rules
+    if (root.has_child("rules")) {
+      _ruleController.clearRules();
+      for (ryml::ConstNodeRef ruleNode : root["rules"]) {
+        QString category;
+        QString descriptionPrefix;
+
+        if (ruleNode.has_child("category")) {
+          auto val = ruleNode["category"].val();
+          category = QString::fromUtf8(val.str, val.len);
+        }
+        if (ruleNode.has_child("description_prefix")) {
+          auto val = ruleNode["description_prefix"].val();
+          descriptionPrefix = QString::fromUtf8(val.str, val.len);
+        }
+
+        if (!category.isEmpty() && !descriptionPrefix.isEmpty()) {
+          auto* rule = new CategorizationRule(category, descriptionPrefix);
+          _ruleController.addRule(rule);
+        }
       }
     }
   } catch (const std::exception& e) {
@@ -670,6 +710,17 @@ bool FileController::importFromCsv(const QString& filePath,
 
   // Ensure all categories used in operations exist in the category list
   addMissingCategoriesFromOperations();
+
+  // Apply categorization rules to imported operations
+  int rulesApplied = 0;
+  for (Operation* op : importedOperations) {
+    rulesApplied += _ruleController.applyRulesToOperation(op);
+  }
+  if (rulesApplied > 0) {
+    qDebug() << "  Rules applied to:" << rulesApplied << "operations";
+    // Add any categories from rules that might be new
+    addMissingCategoriesFromOperations();
+  }
 
   // Select all imported operations
   if (!importedOperations.isEmpty()) {

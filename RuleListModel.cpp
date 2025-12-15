@@ -1,0 +1,55 @@
+#include "RuleListModel.h"
+
+#include "CategorizationRule.h"
+#include "RuleController.h"
+
+RuleListModel::RuleListModel(QObject* parent) : QAbstractListModel(parent) {
+}
+
+void RuleListModel::setRuleController(RuleController* controller) {
+  _controller = controller;
+}
+
+int RuleListModel::rowCount(const QModelIndex& parent) const {
+  if (parent.isValid() || !_controller) {
+    return 0;
+  }
+  return _controller->rules().size();
+}
+
+QVariant RuleListModel::data(const QModelIndex& index, int role) const {
+  if (!index.isValid() || !_controller) {
+    return QVariant();
+  }
+
+  int row = index.row();
+  if (row < 0 || row >= _controller->rules().size()) {
+    return QVariant();
+  }
+
+  const CategorizationRule* rule = _controller->rules().at(row);
+  if (!rule) {
+    return QVariant();
+  }
+
+  switch (role) {
+    case CategoryRole:
+      return rule->category();
+    case DescriptionPrefixRole:
+      return rule->descriptionPrefix();
+    default:
+      return QVariant();
+  }
+}
+
+QHash<int, QByteArray> RuleListModel::roleNames() const {
+  QHash<int, QByteArray> roles;
+  roles[CategoryRole] = "category";
+  roles[DescriptionPrefixRole] = "descriptionPrefix";
+  return roles;
+}
+
+void RuleListModel::refresh() {
+  beginResetModel();
+  endResetModel();
+}
