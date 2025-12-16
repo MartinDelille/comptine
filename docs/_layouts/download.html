@@ -6,7 +6,7 @@ layout: default
 </div>
 
 <div class="download-cards">
-  {% for platform in page.platforms %}
+  {% for platform in site.platforms %}
   {% include download-card.html icon=platform.icon platform=platform.name requirements=platform.requirements button=platform.button url=platform.url %}
   {% endfor %}
 </div>
