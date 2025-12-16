@@ -3,19 +3,7 @@ layout: download
 lang: fr
 title: Télécharger Comptine
 permalink: /fr/download/
-platforms:
-  - icon: "🍎"
-    name: "macOS"
-    requirements: "macOS 11 (Big Sur) ou plus récent"
-    button: "Télécharger .dmg"
-  - icon: "🐧"
-    name: "Linux"
-    requirements: "Ubuntu 22.04 ou équivalent"
-    button: "Télécharger .AppImage"
-  - icon: "🪟"
-    name: "Windows"
-    requirements: "Windows 10 ou plus récent"
-    button: "Télécharger .exe"
+
 ---
 
 ## Installation
