@@ -346,6 +346,10 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>Main</name>
     <message>
+        <source>Add New Category...</source>
+        <translation>Ajouter une nouvelle catégorie...</translation>
+    </message>
+    <message>
         <source>&amp;File</source>
         <translation>Fichier</translation>
     </message>
@@ -793,6 +797,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Add account &quot;%1&quot;</source>
         <translation>Ajouter le compte « %1 »</translation>
+    </message>
+    <message>
+        <source>Add category &quot;%1&quot;</source>
+        <translation>Ajouter la catégorie «&#xa0;%1&#xa0;»</translation>
     </message>
     <message numerus="yes">
         <source>Add %n category(ies)</source>

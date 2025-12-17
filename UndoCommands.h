@@ -79,6 +79,23 @@ private:
   double _newBudgetLimit;
 };
 
+// Command for adding a single category
+// Note: This command manages category lifecycle in CategoryController
+class AddCategoryCommand : public QUndoCommand {
+public:
+  AddCategoryCommand(CategoryController* categoryController, Category* category,
+                     QUndoCommand* parent = nullptr);
+  ~AddCategoryCommand();
+
+  void undo() override;
+  void redo() override;
+
+private:
+  CategoryController* _categoryController;
+  Category* _category;
+  bool _ownsCategory;  // True when not in controller (after undo)
+};
+
 // Command for adding categories
 // Note: This command manages category lifecycle in CategoryController
 class AddCategoriesCommand : public QUndoCommand {
