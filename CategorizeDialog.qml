@@ -15,7 +15,14 @@ BaseDialog {
     // Override commitAndAccept to apply category instead of closing
     function commitAndAccept() {
         if (currentOperation && categoryCombo.currentText.length > 0) {
-            AppState.data.setOperationCategory(currentOperation, categoryCombo.currentText);
+            applyCategoryAndNext(categoryCombo.currentText);
+        }
+    }
+
+    // Applies a category to the current operation and loads the next
+    function applyCategoryAndNext(category) {
+        if (currentOperation && category && category.length > 0) {
+            AppState.data.setOperationCategory(currentOperation, category);
             loadNextOperation();
         }
     }
@@ -94,10 +101,13 @@ BaseDialog {
             if (currentOperation) {
                 let matchingCategory = AppState.rules.matchingCategoryForDescription(currentOperation.description);
                 if (matchingCategory.length > 0) {
-                    AppState.data.setOperationCategory(currentOperation, matchingCategory);
+                    applyCategoryAndNext(matchingCategory);
+                } else {
+                    loadNextOperation();
                 }
+            } else {
+                loadNextOperation();
             }
-            loadNextOperation();
         }
     }
 
@@ -261,8 +271,7 @@ BaseDialog {
                         enabled: categoryCombo.currentIndex >= 0
                         onClicked: {
                             if (currentOperation && categoryCombo.currentText.length > 0) {
-                                AppState.data.setOperationCategory(currentOperation, categoryCombo.currentText);
-                                loadNextOperation();
+                                applyCategoryAndNext(categoryCombo.currentText);
                             }
                         }
                     }
