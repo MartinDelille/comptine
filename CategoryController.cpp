@@ -8,17 +8,13 @@
 #include "Operation.h"
 #include "UndoCommands.h"
 
-CategoryController::CategoryController(QObject* parent) :
-    QObject(parent), _leftoverModel(this) {
+CategoryController::CategoryController(QUndoStack& undoStack, QObject* parent) :
+    QObject(parent), _undoStack(undoStack), _leftoverModel(this) {
   _leftoverModel.setCategoryController(this);
 }
 
 void CategoryController::setBudgetData(BudgetData* budgetData) {
   _budgetData = budgetData;
-}
-
-void CategoryController::setUndoStack(QUndoStack* undoStack) {
-  _undoStack = undoStack;
 }
 
 int CategoryController::categoryCount() const {
@@ -46,12 +42,7 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
 }
 
 void CategoryController::addCategory(const QString& name, double budgetLimit) {
-  if (_undoStack) {
-    // Use undoable single-add command
-    _undoStack->push(new AddCategoryCommand(this, new Category(name, budgetLimit)));
-  } else {
-    addCategory(new Category(name, budgetLimit));
-  }
+  _undoStack.push(new AddCategoryCommand(this, new Category(name, budgetLimit)));
 }
 
 void CategoryController::addCategory(Category* category) {
@@ -104,8 +95,6 @@ QStringList CategoryController::categoryNames() const {
 }
 
 void CategoryController::editCategory(const QString& originalName, const QString& newName, double newBudgetLimit) {
-  if (!_undoStack) return;
-
   Category* category = getCategoryByName(originalName);
   if (!category) return;
 
@@ -114,9 +103,9 @@ void CategoryController::editCategory(const QString& originalName, const QString
 
   // Only create undo command if something changed
   if (oldName != newName || oldBudgetLimit != newBudgetLimit) {
-    _undoStack->push(new EditCategoryCommand(*category, _budgetData, this,
-                                             oldName, newName,
-                                             oldBudgetLimit, newBudgetLimit));
+    _undoStack.push(new EditCategoryCommand(*category, _budgetData, this,
+                                            oldName, newName,
+                                            oldBudgetLimit, newBudgetLimit));
   }
 }
 
@@ -341,8 +330,6 @@ QVariantMap CategoryController::leftoverTotals(int year, int month) const {
 
 void CategoryController::setLeftoverAmounts(const QString& categoryName, int year, int month,
                                             double saveAmount, double reportAmount) {
-  if (!_undoStack) return;
-
   Category* category = getCategoryByName(categoryName);
   if (!category) return;
 
@@ -351,6 +338,6 @@ void CategoryController::setLeftoverAmounts(const QString& categoryName, int yea
 
   // Only create undo command if something changed
   if (!qFuzzyCompare(oldDecision.saveAmount, newDecision.saveAmount) || !qFuzzyCompare(oldDecision.reportAmount, newDecision.reportAmount)) {
-    _undoStack->push(new SetLeftoverDecisionCommand(*category, this, year, month, oldDecision, newDecision));
+    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, year, month, oldDecision, newDecision));
   }
 }

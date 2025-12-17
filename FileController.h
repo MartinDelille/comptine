@@ -28,6 +28,7 @@ public:
                  CategoryController& categoryController,
                  NavigationController& navController,
                  RuleController& ruleController,
+                 QUndoStack& undoStack,
                  QObject* parent = nullptr);
 
   // File operations
@@ -60,6 +61,7 @@ private:
   CategoryController& _categoryController;
   NavigationController& _navController;
   RuleController& _ruleController;
+  QUndoStack& _undoStack;
 
   // Helper to add missing categories from operations
   void addMissingCategoriesFromOperations();

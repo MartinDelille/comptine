@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QUndoStack>
 
 #include "AppSettings.h"
 #include "BudgetData.h"
@@ -25,6 +26,7 @@ class AppState : public QObject {
   Q_PROPERTY(FileController* file READ file CONSTANT)
   Q_PROPERTY(RuleController* rules READ rules CONSTANT)
   Q_PROPERTY(UpdateController* update READ update CONSTANT)
+  Q_PROPERTY(QUndoStack* undoStack READ undoStack CONSTANT)
 
 public:
   explicit AppState(QObject* parent = nullptr);
@@ -38,14 +40,17 @@ public:
   RuleController* rules() { return &_rules; }
   UpdateController* update() { return &_update; }
 
+public:
+  QUndoStack* undoStack() { return &_undoStack; }
+
 private:
-  // Declaration order matters - dependencies must come first
+  QUndoStack _undoStack;
   AppSettings _settings;
   BudgetData _data;
   CategoryController _categories;
   RuleController _rules;
   NavigationController _navigation;
-  ClipboardController _clipboard;  // Depends on BudgetData::operationModel()
-  FileController _file;            // Depends on all 4 controllers
-  UpdateController _update;        // Depends on AppSettings
+  ClipboardController _clipboard;
+  FileController _file;
+  UpdateController _update;
 };

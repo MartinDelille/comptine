@@ -30,17 +30,19 @@ FileController::FileController(AppSettings& appSettings,
                                CategoryController& categoryController,
                                NavigationController& navController,
                                RuleController& ruleController,
+                               QUndoStack& undoStack,
                                QObject* parent) :
     QObject(parent),
     _appSettings(appSettings),
     _budgetData(budgetData),
     _categoryController(categoryController),
     _navController(navController),
-    _ruleController(ruleController) {
+    _ruleController(ruleController),
+    _undoStack(undoStack) {
 }
 
 bool FileController::hasUnsavedChanges() const {
-  return !_budgetData.undoStack()->isClean();
+  return !_undoStack.isClean();
 }
 
 // Helper to convert QString to std::string for ryml
@@ -197,7 +199,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   file.close();
 
   qDebug() << "Budget data saved to:" << filePath;
-  _budgetData.undoStack()->setClean();
+  _undoStack.setClean();
   emit dataSaved();
   set_currentFilePath(filePath);
   return true;
@@ -470,8 +472,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
       loadedOperationIdx);
 
   set_currentFilePath(filePath);
-  _budgetData.undoStack()->clear();
-  _budgetData.undoStack()->setClean();
+  _undoStack.clear();
+  _undoStack.setClean();
 
   // Add to recent files
   _appSettings.addRecentFile(filePath);
@@ -715,7 +717,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
       macroCommand->setText(QObject::tr("Import %n operation(s)", "", importedOperations.size()));
     }
 
-    _budgetData.undoStack()->push(macroCommand);
+    _undoStack.push(macroCommand);
   } else {
     // No operations imported, clean up
     qDeleteAll(newCategories);
