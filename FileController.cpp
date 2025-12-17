@@ -197,7 +197,7 @@ bool FileController::loadFromYaml(const QString& filePath) {
   set_errorMessage({});
 
   // Use FileCoordinator to read the file - this triggers cloud file downloads
-  // on macOS (Dropbox, iCloud, etc.) via NSFileCoordinator
+  // on MacOS (Dropbox, iCloud, etc.) via NSFileCoordinator
   QByteArray data;
   QString readError;
   if (!FileCoordinator::readFile(filePath, data, readError)) {

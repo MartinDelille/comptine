@@ -19,20 +19,20 @@ latest_release: https://github.com/MartinDelille/comptine/releases/latest
 
 platforms:
   - icon: "🍎"
-    name: "macOS"
+    name: "MacOS"
     url: "https://github.com/MartinDelille/comptine/releases/latest/download/Comptine-MacOS.dmg"
-    requirements: "macOS 11 (Big Sur) ou plus récent"
+    requirements: "MacOS 11 (Big Sur) ou plus récent"
     button: "Télécharger .dmg"
-  - icon: "🐧"
-    name: "Linux"
-    url: "https://github.com/MartinDelille/comptine/releases/latest/download/Comptine-x86_64.AppImage"
-    requirements: "Ubuntu 22.04 ou équivalent"
-    button: "Télécharger .AppImage"
   - icon: "🪟"
     name: "Windows"
     url: "https://github.com/MartinDelille/comptine/releases/latest/download/Comptine-Windows.exe"
     requirements: "Windows 10 ou plus récent"
     button: "Télécharger .exe"
+  - icon: "🐧"
+    name: "Linux"
+    url: "https://github.com/MartinDelille/comptine/releases/latest/download/Comptine-x86_64.AppImage"
+    requirements: "Ubuntu 22.04 ou équivalent"
+    button: "Télécharger .AppImage"
 
 # Default layout
 defaults:

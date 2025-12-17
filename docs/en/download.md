@@ -5,8 +5,8 @@ title: Download Comptine
 permalink: /en/download/
 platforms:
   - icon: "🍎"
-    name: "macOS"
-    requirements: "macOS 11 (Big Sur) or later"
+    name: "MacOS"
+    requirements: "MacOS 11 (Big Sur) or later"
     button: "Download .dmg"
   - icon: "🐧"
     name: "Linux"
@@ -20,7 +20,7 @@ platforms:
 
 ## Installation
 
-### macOS
+### MacOS
 
 1. Download the `.dmg` file
 2. Open the downloaded file

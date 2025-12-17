@@ -14,7 +14,7 @@ La Compta qui Chante !
 - ImageMagick (Windows only, for ICO creation)
 - NSIS (Windows only, for installer)
 
-### macOS
+### MacOS
 
 ```bash
 # Install librsvg
@@ -48,7 +48,7 @@ cmake --build build --config Release
 
 ## Creating Installers
 
-### macOS (DMG)
+### MacOS (DMG)
 
 ```bash
 # Build and deploy Qt dependencies

@@ -3,12 +3,11 @@ layout: download
 lang: fr
 title: Télécharger Comptine
 permalink: /fr/download/
-
 ---
 
 ## Installation
 
-### macOS
+### MacOS
 
 1. Téléchargez le fichier `.dmg`
 2. Ouvrez le fichier téléchargé

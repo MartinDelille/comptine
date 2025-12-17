@@ -10,7 +10,7 @@
 #   output_dir - Directory for screenshots (default: docs/assets/screenshots)
 #
 # Requirements:
-#   - macOS (uses screencapture)
+#   - MacOS (uses screencapture)
 #   - yq (for YAML manipulation)
 #   - Screen Recording permission granted to Terminal/shell
 #
@@ -65,7 +65,7 @@ log_error() {
 # Check requirements
 check_requirements() {
   if [[ "$(uname)" != "Darwin" ]]; then
-    log_error "This script only works on macOS"
+    log_error "This script only works on MacOS"
     exit 1
   fi
 

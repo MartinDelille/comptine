@@ -4,7 +4,7 @@
 
 Use exact commands below to configure, build, run, and clean the project. If you have issues, please report them instead of changing commands.
 
-### macOS
+### MacOS
 
 - The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
 - **Configure**: `qt-cmake -B build/agent -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`

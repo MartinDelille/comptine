@@ -71,14 +71,14 @@ project(
   VERSION ${VERSION_MAJOR}.${VERSION_MINOR}
   LANGUAGES CXX)
 
-# Enable Objective-C++ on macOS (required for FileCoordinator.mm)
+# Enable Objective-C++ on MacOS (required for FileCoordinator.mm)
 if(APPLE)
   enable_language(OBJCXX)
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# On macOS, skip install rpath fixup since macdeployqt handles Qt library deployment
+# On MacOS, skip install rpath fixup since macdeployqt handles Qt library deployment
 # This prevents conflicts with duplicate rpath modifications during CPack
 if(APPLE)
   set(CMAKE_SKIP_INSTALL_RPATH TRUE)
@@ -143,7 +143,7 @@ if(APPLE)
     COMMAND sips -z 1024 1024 ${APP_ICON_PNG} --out ${APP_ICONSET_DIR}/icon_512x512@2x.png
     COMMAND iconutil -c icns ${APP_ICONSET_DIR} -o ${APP_ICON_ICNS}
     DEPENDS ${APP_ICON_SVG} ${APP_ICON_SMALL_SVG}
-    COMMENT "Generating macOS icon from comptine.svg and comptine-small.svg"
+    COMMENT "Generating MacOS icon from comptine.svg and comptine-small.svg"
   )
 
   set_source_files_properties(${APP_ICON_ICNS} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
@@ -231,7 +231,7 @@ qt_add_qml_module(Comptine URI Comptine
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If
-# you are developing for iOS or macOS you should consider setting an explicit,
+# you are developing for iOS or MacOS you should consider setting an explicit,
 # fixed bundle identifier manually though.
 set_target_properties(
   Comptine
@@ -310,7 +310,7 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 endif()
 
 if(APPLE)
-  # macOS: DragNDrop DMG installer
+  # MacOS: DragNDrop DMG installer
   set(CPACK_GENERATOR "DragNDrop")
   set(CPACK_DMG_VOLUME_NAME "Comptine")
   set(CPACK_DMG_FORMAT "UDZO")
