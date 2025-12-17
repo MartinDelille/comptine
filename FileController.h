@@ -31,9 +31,11 @@ public:
                  QObject* parent = nullptr);
 
   // File operations
-  Q_INVOKABLE bool loadFromYaml(const QString& filePath);
-  Q_INVOKABLE bool saveToYaml(const QString& filePath);
-  Q_INVOKABLE bool importFromCsv(const QString& filePath,
+  Q_INVOKABLE bool loadFromYamlUrl(const QUrl& fileUrl);
+  Q_INVOKABLE bool loadFromYamlFile(const QString& filePath);
+  Q_INVOKABLE bool saveToYamlUrl(const QUrl& fileUrl);
+  Q_INVOKABLE bool saveToYamlFile(const QString& filePath);
+  Q_INVOKABLE bool importFromCsv(const QUrl& fileUrl,
                                  const QString& accountName = QString(),
                                  bool useCategories = false);
 
