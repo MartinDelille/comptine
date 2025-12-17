@@ -24,7 +24,13 @@ BaseDialog {
         let amount = budgetLimitField.value;
         // Apply sign based on checkbox: income = positive, expense = negative
         let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
-        AppState.categories.editCategory(originalName, categoryNameField.text, newBudgetLimit);
+        if (originalName === "") {
+            // Adding a new category
+            AppState.categories.addCategory(categoryNameField.text, newBudgetLimit);
+        } else {
+            // Editing an existing category
+            AppState.categories.editCategory(originalName, categoryNameField.text, newBudgetLimit);
+        }
     }
 
     ColumnLayout {
@@ -61,6 +67,9 @@ BaseDialog {
             id: budgetLimitField
             Layout.fillWidth: true
             font.pixelSize: Theme.fontSizeNormal
+            onEdited: function (newValue) {
+                value = newValue;
+            }
         }
     }
 }

@@ -8,7 +8,8 @@
 #include "Operation.h"
 #include "UndoCommands.h"
 
-CategoryController::CategoryController(QObject* parent) : QObject(parent), _leftoverModel(this) {
+CategoryController::CategoryController(QObject* parent) :
+    QObject(parent), _leftoverModel(this) {
   _leftoverModel.setCategoryController(this);
 }
 
@@ -42,6 +43,15 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
     }
   }
   return nullptr;
+}
+
+void CategoryController::addCategory(const QString& name, double budgetLimit) {
+  if (_undoStack) {
+    // Use undoable single-add command
+    _undoStack->push(new AddCategoryCommand(this, new Category(name, budgetLimit)));
+  } else {
+    addCategory(new Category(name, budgetLimit));
+  }
 }
 
 void CategoryController::addCategory(Category* category) {

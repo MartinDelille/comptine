@@ -17,6 +17,12 @@ FocusScope {
         }
     }
 
+    function addCategory() {
+        categoryEditDialog.originalName = "";
+        categoryEditDialog.originalBudgetLimit = 0;
+        categoryEditDialog.open();
+    }
+
     // Forward focus to the category list
     onActiveFocusChanged: {
         if (activeFocus && budgetSummary.length > 0) {

@@ -158,6 +158,14 @@ ApplicationWindow {
             }
             MenuSeparator {}
             Action {
+                text: qsTr("Add New Category...")
+                shortcut: "Ctrl+Shift+N"
+                enabled: AppState.navigation.currentTabIndex === 1
+                onTriggered: {
+                    budgetView.addCategory();
+                }
+            }
+            Action {
                 text: AppState.navigation.currentTabIndex === 0 ? qsTr("Edit &Operation...") : qsTr("Edit &Category...")
                 shortcut: "Ctrl+E"
                 enabled: (AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount === 1) || (AppState.navigation.currentTabIndex === 1 && AppState.navigation.currentCategoryIndex >= 0)

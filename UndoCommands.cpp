@@ -143,6 +143,36 @@ void EditCategoryCommand::redo() {
   }
 }
 
+// AddCategoryCommand implementation
+
+AddCategoryCommand::AddCategoryCommand(CategoryController* categoryController, Category* category,
+                                       QUndoCommand* parent) : QUndoCommand(parent),
+                                                               _categoryController(categoryController),
+                                                               _category(category),
+                                                               _ownsCategory(true) {
+  setText(QObject::tr("Add category \"%1\"").arg(category->name()));
+}
+
+AddCategoryCommand::~AddCategoryCommand() {
+  if (_ownsCategory) {
+    delete _category;
+  }
+}
+
+void AddCategoryCommand::undo() {
+  if (_categoryController) {
+    _categoryController->takeCategoryByName(_category->name());
+  }
+  _ownsCategory = true;
+}
+
+void AddCategoryCommand::redo() {
+  if (_categoryController) {
+    _categoryController->addCategory(_category);
+  }
+  _ownsCategory = false;
+}
+
 // AddCategoriesCommand implementation
 
 AddCategoriesCommand::AddCategoriesCommand(CategoryController* categoryController,
