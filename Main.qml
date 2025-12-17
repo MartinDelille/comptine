@@ -25,7 +25,7 @@ ApplicationWindow {
         } else if (pendingAction === "open") {
             openDialog.open();
         } else if (pendingAction === "openRecent") {
-            AppState.file.loadFromYaml(pendingRecentFile);
+            AppState.file.loadFromYamlFile(pendingRecentFile);
             pendingRecentFile = "";
         }
         pendingAction = "";
@@ -35,7 +35,7 @@ ApplicationWindow {
         if (checkUnsavedChanges("openRecent")) {
             pendingRecentFile = filePath;
         } else {
-            AppState.file.loadFromYaml(filePath);
+            AppState.file.loadFromYamlFile(filePath);
         }
     }
 
@@ -82,7 +82,7 @@ ApplicationWindow {
                 shortcut: StandardKey.Save
                 onTriggered: {
                     if (AppState.file.currentFilePath.length > 0) {
-                        AppState.file.saveToYaml(AppState.file.currentFilePath);
+                        AppState.file.saveToYamlFile(AppState.file.currentFilePath);
                     } else {
                         saveDialog.open();
                     }
@@ -240,7 +240,7 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFile
         nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         onAccepted: {
-            AppState.file.loadFromYaml(selectedFile.toString().replace("file://", ""));
+            AppState.file.loadFromYamlUrl(selectedFile);
         }
     }
 
@@ -251,9 +251,7 @@ ApplicationWindow {
         nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         currentFile: AppState.file.currentFilePath.length > 0 ? "file://" + AppState.file.currentFilePath : ""
         onAccepted: {
-            var filePath = selectedFile.toString().replace("file://", "");
-            if (AppState.file.saveToYaml(filePath)) {
-                AppState.file.currentFilePath = filePath;
+            if (AppState.file.saveToYamlUrl(selectedFile)) {
                 if (window.pendingAction !== "") {
                     window.performPendingAction();
                 }
@@ -270,7 +268,7 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFile
         nameFilters: ["CSV files (*.csv)", "All files (*)"]
         onAccepted: {
-            importDialog.filePath = selectedFile.toString().replace("file://", "");
+            importDialog.filePath = selectedFile;
             importDialog.open();
         }
     }
@@ -357,7 +355,7 @@ ApplicationWindow {
         onButtonClicked: function (button, role) {
             if (button === MessageDialog.Save) {
                 if (AppState.file.currentFilePath.length > 0) {
-                    AppState.file.saveToYaml(AppState.file.currentFilePath);
+                    AppState.file.saveToYamlFile(AppState.file.currentFilePath);
                     window.performPendingAction();
                 } else {
                     saveDialog.open();

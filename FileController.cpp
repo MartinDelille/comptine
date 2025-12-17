@@ -48,7 +48,17 @@ static std::string toStdString(const QString& s) {
   return s.toStdString();
 }
 
-bool FileController::saveToYaml(const QString& filePath) {
+bool FileController::saveToYamlUrl(const QUrl& fileUrl) {
+  const QString filePath = fileUrl.toLocalFile();
+  if (filePath.isEmpty()) {
+    qWarning() << "Invalid or unsupported QUrl passed to saveToYaml:" << fileUrl;
+    set_errorMessage(tr("Invalid or unsupported file path."));
+    return false;
+  }
+  saveToYamlFile(filePath);
+}
+
+bool FileController::saveToYamlFile(const QString& filePath) {
   // Clear any previous error
   set_errorMessage({});
 
@@ -189,10 +199,23 @@ bool FileController::saveToYaml(const QString& filePath) {
   qDebug() << "Budget data saved to:" << filePath;
   _budgetData.undoStack()->setClean();
   emit dataSaved();
+  set_currentFilePath(filePath);
   return true;
 }
 
-bool FileController::loadFromYaml(const QString& filePath) {
+bool FileController::loadFromYamlUrl(const QUrl& fileUrl) {
+  QString filePath = fileUrl.toLocalFile();
+  if (filePath.isEmpty()) {
+    qWarning() << "Invalid or unsupported QUrl passed to loadFromYamlUrl:" << fileUrl;
+    return false;
+  }
+
+  qDebug() << "QUrl passed to loadFromYamlUrl:" << fileUrl;
+  qDebug() << "Converted filePath from QUrl:" << filePath;
+  loadFromYamlFile(filePath);
+}
+
+bool FileController::loadFromYamlFile(const QString& filePath) {
   // Clear any previous error
   set_errorMessage({});
 
@@ -462,13 +485,15 @@ bool FileController::loadFromYaml(const QString& filePath) {
   return true;
 }
 
-bool FileController::importFromCsv(const QString& filePath,
+bool FileController::importFromCsv(const QUrl& fileUrl,
                                    const QString& accountName,
                                    bool useCategories) {
   // Clear any previous error
   set_errorMessage({});
 
-  qDebug() << "Importing CSV from:" << filePath;
+  QString filePath = fileUrl.toLocalFile();
+  qDebug() << "QUrl passed to importFromCsv:" << fileUrl;
+  qDebug() << "Converted filePath from QUrl:" << filePath;
   qDebug() << "  Use categories:" << useCategories;
 
   // First pass: detect delimiter from first line
@@ -747,10 +772,10 @@ void FileController::loadInitialFile(const QStringList& args) {
   if (args.size() > 1) {
     QString filePath = args.at(1);
     if (filePath.endsWith(".comptine") || filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
-      loadFromYaml(filePath);
+      loadFromYamlFile(filePath);
       return;
     } else if (filePath.endsWith(".csv")) {
-      importFromCsv(filePath);
+      importFromCsv(QUrl::fromLocalFile(filePath));
       return;
     }
   }
@@ -760,7 +785,7 @@ void FileController::loadInitialFile(const QStringList& args) {
   if (!recentFiles.isEmpty()) {
     QString lastFile = recentFiles.first();
     if (QFile::exists(lastFile)) {
-      loadFromYaml(lastFile);
+      loadFromYamlFile(lastFile);
     }
   }
 }

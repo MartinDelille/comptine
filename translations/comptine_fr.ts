@@ -181,6 +181,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Le fichier est vide : %1</translation>
     </message>
     <message>
+        <source>Invalid or unsupported file path.</source>
+        <translation>Chemin de fichier invalide ou non pris en charge.</translation>
+    </message>
+    <message>
         <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
         <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
     </message>
