@@ -26,11 +26,11 @@ class BudgetData : public QObject {
   // Models exposed to QML
   Q_PROPERTY(OperationListModel* operationModel READ operationModel CONSTANT)
   Q_PROPERTY(AccountListModel* accountModel READ accountModel CONSTANT)
-  Q_PROPERTY(QUndoStack* undoStack READ undoStack CONSTANT)
+
   Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
 
 public:
-  explicit BudgetData(QObject* parent = nullptr);
+  explicit BudgetData(QUndoStack& undoStack, QObject* parent = nullptr);
   ~BudgetData();
 
   // Version info accessors
@@ -40,7 +40,7 @@ public:
   // Model accessors
   OperationListModel* operationModel() const { return _operationModel; }
   AccountListModel* accountModel() const { return _accountModel; }
-  QUndoStack* undoStack() const { return _undoStack; }
+
   Account* currentAccount() const;
 
   // Account management
@@ -81,10 +81,10 @@ signals:
   void currentAccountChanged();  // Emitted when current account changes (for QML binding)
 
 private:
+  QUndoStack& _undoStack;
   QList<Account*> _accounts;
   OperationListModel* _operationModel;
   AccountListModel* _accountModel;
-  QUndoStack* _undoStack;
   NavigationController* _navController = nullptr;
   CategoryController* _categoryController = nullptr;
 };

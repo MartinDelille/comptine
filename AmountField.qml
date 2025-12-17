@@ -31,9 +31,9 @@ TextField {
             if (isUndo || isRedo) {
                 focus = false;
                 if (isUndo)
-                    AppState.data.undoStack.undo();
+                    AppState.undoStack.undo();
                 else
-                    AppState.data.undoStack.redo();
+                    AppState.undoStack.redo();
                 event.accepted = true;
             }
         }

@@ -22,12 +22,11 @@ class RuleController : public QObject {
   Q_PROPERTY(RuleListModel* ruleModel READ ruleModel CONSTANT)
 
 public:
-  explicit RuleController(QObject* parent = nullptr);
+  explicit RuleController(QUndoStack& undoStack, QObject* parent = nullptr);
   ~RuleController();
 
   // Setup
   void setBudgetData(BudgetData* budgetData);
-  void setUndoStack(QUndoStack* undoStack);
 
   // Rule access
   QList<CategorizationRule*> rules() const { return _rules; }
@@ -66,5 +65,5 @@ private:
   QList<CategorizationRule*> _rules;
   RuleListModel* _ruleModel = nullptr;
   BudgetData* _budgetData = nullptr;
-  QUndoStack* _undoStack = nullptr;
+  QUndoStack& _undoStack;
 };

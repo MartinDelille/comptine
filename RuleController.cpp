@@ -9,7 +9,7 @@
 #include "RuleListModel.h"
 #include "UndoCommands.h"
 
-RuleController::RuleController(QObject* parent) : QObject(parent) {
+RuleController::RuleController(QUndoStack& undoStack, QObject* parent) : QObject(parent), _undoStack(undoStack) {
   _ruleModel = new RuleListModel(this);
   _ruleModel->setRuleController(this);
 }
@@ -27,10 +27,6 @@ void RuleController::setBudgetData(BudgetData* budgetData) {
     connect(_budgetData, &BudgetData::accountCountChanged, this, &RuleController::updateUncategorizedCount);
     connect(_budgetData, &BudgetData::operationDataChanged, this, &RuleController::updateUncategorizedCount);
   }
-}
-
-void RuleController::setUndoStack(QUndoStack* undoStack) {
-  _undoStack = undoStack;
 }
 
 int RuleController::ruleCount() const {
@@ -86,12 +82,7 @@ void RuleController::addRule(const QString& category, const QString& description
   }
 
   auto* rule = new CategorizationRule(category, descriptionPrefix, this);
-
-  if (_undoStack) {
-    _undoStack->push(new AddRuleCommand(this, rule));
-  } else {
-    addRule(rule);
-  }
+  _undoStack.push(new AddRuleCommand(this, rule));
 }
 
 void RuleController::removeRule(int index) {
@@ -99,15 +90,7 @@ void RuleController::removeRule(int index) {
     return;
   }
 
-  if (_undoStack) {
-    _undoStack->push(new RemoveRuleCommand(this, index));
-  } else {
-    CategorizationRule* rule = _rules.takeAt(index);
-    delete rule;
-    _ruleModel->refresh();
-    emit ruleCountChanged();
-    emit rulesChanged();
-  }
+  _undoStack.push(new RemoveRuleCommand(this, index));
 }
 
 void RuleController::editRule(int index, const QString& category, const QString& descriptionPrefix) {
@@ -128,16 +111,9 @@ void RuleController::editRule(int index, const QString& category, const QString&
     }
   }
 
-  if (_undoStack) {
-    _undoStack->push(new EditRuleCommand(this, index,
-                                         rule->category(), category,
-                                         rule->descriptionPrefix(), descriptionPrefix));
-  } else {
-    rule->set_category(category);
-    rule->set_descriptionPrefix(descriptionPrefix);
-    _ruleModel->refresh();
-    emit rulesChanged();
-  }
+  _undoStack.push(new EditRuleCommand(this, index,
+                                      rule->category(), category,
+                                      rule->descriptionPrefix(), descriptionPrefix));
 }
 
 void RuleController::moveRule(int fromIndex, int toIndex) {
@@ -151,11 +127,7 @@ void RuleController::moveRule(int fromIndex, int toIndex) {
     return;
   }
 
-  if (_undoStack) {
-    _undoStack->push(new MoveRuleCommand(this, fromIndex, toIndex));
-  } else {
-    moveRuleDirect(fromIndex, toIndex);
-  }
+  _undoStack.push(new MoveRuleCommand(this, fromIndex, toIndex));
 }
 
 void RuleController::moveRuleDirect(int fromIndex, int toIndex) {

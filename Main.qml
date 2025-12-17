@@ -140,13 +140,13 @@ ApplicationWindow {
             Action {
                 text: qsTr("&Undo")
                 shortcut: StandardKey.Undo
-                enabled: AppState.data.undoStack.canUndo
+                enabled: AppState.undoStack.canUndo
                 onTriggered: AppState.data.undo()
             }
             Action {
                 text: qsTr("&Redo")
                 shortcut: StandardKey.Redo
-                enabled: AppState.data.undoStack.canRedo
+                enabled: AppState.undoStack.canRedo
                 onTriggered: AppState.data.redo()
             }
             MenuSeparator {}
