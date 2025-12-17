@@ -298,7 +298,7 @@ BaseDialog {
                             if (currentOperation) {
                                 // Suggest the description as prefix
                                 ruleEditDialog.isNewRule = true;
-                                ruleEditDialog.suggestedPrefix = currentOperation.description.substring(0, Math.min(20, currentOperation.description.length));
+                                ruleEditDialog.suggestedPrefix = currentOperation.description;
                                 ruleEditDialog.open();
                             }
                         }
