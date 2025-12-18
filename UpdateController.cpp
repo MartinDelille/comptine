@@ -69,10 +69,6 @@ void UpdateController::onNetworkReply(QNetworkReply* reply) {
   QString body = release["body"].toString();
   set_releaseNotes(body);
 
-  // Get the HTML URL for the release page
-  QString htmlUrl = release["html_url"].toString();
-  set_downloadUrl(htmlUrl);
-
   // Check if this version is newer
   QString current = currentVersion();
   bool isNewer = isVersionNewer(version, current);
@@ -82,9 +78,7 @@ void UpdateController::onNetworkReply(QNetworkReply* reply) {
 }
 
 void UpdateController::openDownloadPage() {
-  if (!_downloadUrl.isEmpty()) {
-    QDesktopServices::openUrl(QUrl(_downloadUrl));
-  }
+  QDesktopServices::openUrl(QUrl("https://martin.delille.org/comptine"));
 }
 
 bool UpdateController::shouldAutoCheck() const {
