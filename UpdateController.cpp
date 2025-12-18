@@ -2,7 +2,6 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrl>
@@ -11,11 +10,9 @@
 #include "UpdateController.h"
 #include "Version.h"
 
-UpdateController::UpdateController(AppSettings& appSettings, QObject* parent) :
-    QObject(parent),
-    _appSettings(appSettings),
-    _networkManager(new QNetworkAccessManager(this)) {
-  connect(_networkManager, &QNetworkAccessManager::finished,
+UpdateController::UpdateController(AppSettings& appSettings) :
+    _appSettings(appSettings) {
+  connect(&_networkManager, &QNetworkAccessManager::finished,
           this, &UpdateController::onNetworkReply);
 }
 
@@ -37,7 +34,7 @@ void UpdateController::checkForUpdates() {
   request.setHeader(QNetworkRequest::UserAgentHeader, "Comptine-UpdateChecker");
   request.setRawHeader("Accept", "application/vnd.github.v3+json");
 
-  _networkManager->get(request);
+  _networkManager.get(request);
 }
 
 void UpdateController::onNetworkReply(QNetworkReply* reply) {

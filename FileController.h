@@ -28,8 +28,7 @@ public:
                  CategoryController& categoryController,
                  NavigationController& navController,
                  RuleController& ruleController,
-                 QUndoStack& undoStack,
-                 QObject* parent = nullptr);
+                 QUndoStack& undoStack);
 
   // File operations
   Q_INVOKABLE bool loadFromYamlUrl(const QUrl& fileUrl);

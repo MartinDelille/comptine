@@ -4,8 +4,7 @@
 
 #include "OperationListModel.h"
 
-ClipboardController::ClipboardController(OperationListModel& operationModel, QObject* parent) :
-    QObject(parent),
+ClipboardController::ClipboardController(OperationListModel& operationModel) :
     _operationModel(operationModel) {
 }
 

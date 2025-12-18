@@ -2,8 +2,7 @@
 
 #include "AppSettings.h"
 
-AppSettings::AppSettings(QObject* parent) :
-    QObject(parent),
+AppSettings::AppSettings() :
     _recentFilesModel(this) {
   _language = _settings.value("language", QString()).toString();
   _theme = _settings.value("theme", QString()).toString();
