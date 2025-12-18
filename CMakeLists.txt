@@ -286,10 +286,9 @@ endif()
 # Unit tests
 enable_testing()
 find_package(Qt6 REQUIRED COMPONENTS Test)
-qt_add_executable(CsvParserTest
-  tests/CsvParserTest.cpp
-  CsvParser.h
-)
+qt_add_executable(CsvParserTest tests/CsvParserTest.cpp CsvParser.h)
+qt_add_executable(FileControllerTest tests/FileControllerTest.cpp
+                  FileController.cpp FileController.h)
 target_link_libraries(CsvParserTest PRIVATE Qt6::Core Qt6::Test)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
 

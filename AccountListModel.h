@@ -1,7 +1,7 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QAbstractListModel>
-#include <QQmlEngine>
 
 #include "Account.h"
 

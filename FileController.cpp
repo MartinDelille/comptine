@@ -7,7 +7,11 @@
 #include <QDate>
 #include <QDebug>
 #include <QFile>
+#include <QString>
 #include <QTextStream>
+#include <QUrl>
+#include <ryml.hpp>
+#include <string>
 
 #include "Account.h"
 #include "AppSettings.h"
