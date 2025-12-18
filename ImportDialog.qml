@@ -32,8 +32,10 @@ BaseDialog {
         if (AppState.navigation.currentAccountIndex >= 0) {
             existingAccountRadio.checked = true;
             accountComboBox.currentIndex = AppState.navigation.currentAccountIndex;
+            accountComboBox.forceActiveFocus();
         } else {
             newAccountRadio.checked = true;
+            newAccountField.forceActiveFocus();
         }
         // Extract filename without extension as default account name
         var fileName = filePath.substring(filePath.lastIndexOf("/") + 1);

@@ -20,7 +20,7 @@ class NavigationController : public QObject {
   PROPERTY_RW(int, budgetMonth, 0)
 
   // Category navigation
-  PROPERTY_RW(int, currentCategoryIndex, 0)
+  PROPERTY_RW(int, currentCategoryIndex, -1)
 
   // Account navigation (custom setter to update operation model)
   PROPERTY_RW_CUSTOM(int, currentAccountIndex, -1)

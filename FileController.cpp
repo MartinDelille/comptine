@@ -200,6 +200,8 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   _undoStack.setClean();
   emit dataSaved();
   set_currentFilePath(filePath);
+  _appSettings.addRecentFile(filePath);
+
   return true;
 }
 
@@ -765,6 +767,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 void FileController::clear() {
   _budgetData.clear();
   set_currentFilePath({});
+  emit navigationStateLoaded(0, 0, 0, -1, -1, -1);
 }
 
 void FileController::loadInitialFile(const QStringList& args) {
