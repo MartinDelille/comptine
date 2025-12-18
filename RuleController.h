@@ -1,8 +1,7 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QList>
-#include <QObject>
-#include <QQmlEngine>
 
 #include "Category.h"
 #include "PropertyMacros.h"

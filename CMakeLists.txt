@@ -101,15 +101,52 @@ find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools Network)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-qt_add_executable(Comptine main.cpp PropertyMacros.h UndoCommands.h
-                  UndoCommands.cpp)
+# libComptine - Core Business Logic Library
+# Shared library containing all business logic, models, and controllers.
+# Used by both the main application and unit tests to avoid code duplication.
+
+set(LIBCOMPTINE_SOURCES
+  AppSettings.cpp AppSettings.h
+  Operation.cpp Operation.h
+  Account.cpp Account.h
+  Category.cpp Category.h
+  BudgetData.cpp BudgetData.h
+  CategorizationRule.cpp CategorizationRule.h
+  OperationListModel.cpp OperationListModel.h
+  LeftoverListModel.cpp LeftoverListModel.h
+  AccountListModel.cpp AccountListModel.h
+  RuleListModel.cpp RuleListModel.h
+  CategoryController.cpp CategoryController.h
+  ClipboardController.cpp ClipboardController.h
+  NavigationController.cpp NavigationController.h
+  RuleController.cpp RuleController.h
+  FileController.cpp FileController.h
+  TranslationManager.cpp TranslationManager.h
+  UpdateController.cpp UpdateController.h
+  UndoCommands.cpp UndoCommands.h
+  CsvParser.h
+  PropertyMacros.h
+)
+
+add_library(libComptine STATIC ${LIBCOMPTINE_SOURCES})
+
+# Link Qt dependencies
+target_link_libraries(libComptine PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Network ryml::ryml)
+
+# Include generated Version.h
+target_include_directories(libComptine PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+
+qt_add_executable(Comptine main.cpp)
 
 if(MSVC)
   target_compile_options(Comptine PRIVATE /W4)
+  target_compile_options(libComptine PRIVATE /W4)
 else()
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
   target_compile_options(Comptine PRIVATE -Wall -Wextra -Werror -Wswitch-enum
                                           -Werror=implicit-fallthrough)
+  target_compile_options(libComptine PRIVATE -Wall -Wextra -Werror -Wswitch-enum
+                                             -Werror=implicit-fallthrough)
 endif()
 
 # Generate platform-specific icons from SVG at build time
@@ -235,42 +272,8 @@ qt_add_qml_module(
   Theme.qml
   UpdateDialog.qml
   SOURCES
-  Operation.h
-  Operation.cpp
-  Account.h
-  Account.cpp
-  Category.h
-  Category.cpp
-  BudgetData.h
-  BudgetData.cpp
-  CategorizationRule.h
-  CategorizationRule.cpp
-  OperationListModel.h
-  OperationListModel.cpp
-  LeftoverListModel.h
-  LeftoverListModel.cpp
-  AccountListModel.h
-  AccountListModel.cpp
-  RuleListModel.h
-  RuleListModel.cpp
-  AppSettings.h
-  AppSettings.cpp
-  AppState.h
-  AppState.cpp
-  CategoryController.h
-  CategoryController.cpp
-  ClipboardController.h
-  ClipboardController.cpp
-  NavigationController.h
-  NavigationController.cpp
-  RuleController.h
-  RuleController.cpp
-  FileController.h
-  FileController.cpp
-  TranslationManager.h
-  TranslationManager.cpp
-  UpdateController.h
-  UpdateController.cpp)
+  AppState.cpp AppState.h
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If
 # you are developing for iOS or MacOS you should consider setting an explicit,
@@ -292,14 +295,17 @@ if(UNIX AND NOT APPLE)
   set_target_properties(Comptine PROPERTIES OUTPUT_NAME comptine)
 endif()
 
-target_link_libraries(Comptine PRIVATE Qt6::Quick Qt6::Network ryml::ryml)
+target_link_libraries(Comptine PRIVATE Qt6::Quick Qt6::Network ryml::ryml libComptine)
 
 # Platform-specific file coordination for cloud storage support (Dropbox,
 # iCloud, etc.)
 if(APPLE)
+  target_sources(libComptine PRIVATE FileCoordinator.h FileCoordinator.mm)
   target_sources(Comptine PRIVATE FileCoordinator.h FileCoordinator.mm)
+  target_link_libraries(libComptine PUBLIC "-framework Foundation")
   target_link_libraries(Comptine PRIVATE "-framework Foundation")
 else()
+  target_sources(libComptine PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp)
   target_sources(Comptine PRIVATE FileCoordinator.h
                                   FileCoordinator_fallback.cpp)
 endif()
@@ -326,13 +332,27 @@ endif()
 # Unit tests
 enable_testing()
 find_package(Qt6 REQUIRED COMPONENTS Test)
-qt_add_executable(CsvParserTest tests/CsvParserTest.cpp CsvParser.h)
-target_link_libraries(CsvParserTest PRIVATE Qt6::Core Qt6::Test)
+
+# CsvParserTest - header-only library test
+qt_add_executable(CsvParserTest tests/CsvParserTest.cpp)
+target_link_libraries(CsvParserTest PRIVATE Qt6::Test libComptine)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
 
-# =============================================================================
+# FileControllerTest - integration test with all dependencies
+qt_add_executable(FileControllerTest tests/FileControllerTest.cpp)
+
+# Platform-specific FileCoordinator
+if(APPLE)
+  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator.mm)
+  target_link_libraries(FileControllerTest PRIVATE "-framework Foundation")
+else()
+  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp)
+endif()
+
+target_link_libraries(FileControllerTest PRIVATE Qt6::Test libComptine)
+add_test(NAME FileControllerTest COMMAND FileControllerTest)
+
 # CPack Installer Configuration
-# =============================================================================
 set(CPACK_PACKAGE_NAME "Comptine")
 set(CPACK_PACKAGE_VENDOR "Martin Delille")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Personal budget management application")

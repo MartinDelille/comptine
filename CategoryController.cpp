@@ -40,8 +40,10 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
   return nullptr;
 }
 
-void CategoryController::addCategory(const QString& name, double budgetLimit) {
-  _undoStack.push(new AddCategoryCommand(this, new Category(name, budgetLimit)));
+Category* CategoryController::addCategory(const QString& name, double budgetLimit) {
+  auto category = new Category(name, budgetLimit);
+  _undoStack.push(new AddCategoryCommand(this, category));
+  return category;
 }
 
 void CategoryController::addCategory(Category* category) {

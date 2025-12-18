@@ -34,7 +34,7 @@ public:
   Q_INVOKABLE QStringList categoryNames() const;
 
   // Category management
-  Q_INVOKABLE void addCategory(const QString& name, double budgetLimit);
+  Q_INVOKABLE Category* addCategory(const QString& name, double budgetLimit);
   void addCategory(Category* category);
   void removeCategory(int index);
   void clearCategories();

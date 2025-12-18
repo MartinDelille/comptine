@@ -1,6 +1,9 @@
 #pragma once
 
 #include <QObject>
+#include <QString>
+#include <QUndoStack>
+#include <QUrl>
 
 #include "PropertyMacros.h"
 

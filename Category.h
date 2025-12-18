@@ -1,9 +1,9 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QDate>
 #include <QMap>
 #include <QObject>
-#include <QQmlEngine>
 #include <QString>
 
 #include "PropertyMacros.h"
@@ -60,7 +60,7 @@ class Category : public QObject {
 
 public:
   explicit Category(QObject* parent = nullptr);
-  Category(const QString& name, double budgetLimit, QObject* parent = nullptr);
+  Category(const QString& name, double budgetLimit = 0.0, QObject* parent = nullptr);
 
   // Leftover decision management
   LeftoverDecision leftoverDecision(int year, int month) const;
