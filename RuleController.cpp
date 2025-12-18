@@ -32,7 +32,7 @@ int RuleController::uncategorizedCount() const {
   int count = 0;
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (op->category().isEmpty() && !op->isSplit()) {
+      if (op->category() == nullptr && !op->isSplit()) {
         count++;
       }
     }
@@ -67,8 +67,8 @@ void RuleController::addRule(CategorizationRule* rule) {
   emit rulesChanged();
 }
 
-void RuleController::addRule(const QString& category, const QString& descriptionPrefix) {
-  if (category.isEmpty() || descriptionPrefix.isEmpty()) {
+void RuleController::addRule(const Category* category, const QString& descriptionPrefix) {
+  if (category == nullptr || descriptionPrefix.isEmpty()) {
     return;
   }
 
@@ -84,7 +84,7 @@ void RuleController::removeRule(int index) {
   _undoStack.push(new RemoveRuleCommand(this, index));
 }
 
-void RuleController::editRule(int index, const QString& category, const QString& descriptionPrefix) {
+void RuleController::editRule(int index, const Category* category, const QString& descriptionPrefix) {
   if (index < 0 || index >= _rules.size()) {
     return;
   }
@@ -159,30 +159,29 @@ CategorizationRule* RuleController::takeRule(int index) {
   return rule;
 }
 
-QString RuleController::matchingCategory(Operation* operation) const {
+const Category* RuleController::matchingCategory(Operation* operation) const {
   if (!operation) {
-    return QString();
+    return nullptr;
   }
   return matchingCategoryForDescription(operation->description());
 }
 
-QString RuleController::matchingCategoryForDescription(const QString& description) const {
+const Category* RuleController::matchingCategoryForDescription(const QString& description) const {
   // Rules are in priority order (first match wins)
   for (const CategorizationRule* rule : _rules) {
     if (rule->matchesDescription(description)) {
       return rule->category();
     }
   }
-  return QString();
+  return nullptr;
 }
 
 int RuleController::applyRulesToOperation(Operation* operation) {
-  if (!operation || !operation->category().isEmpty() || operation->isSplit()) {
+  if (!operation || operation->category() || operation->isSplit()) {
     return 0;
   }
 
-  QString category = matchingCategory(operation);
-  if (!category.isEmpty()) {
+  if (auto category = matchingCategory(operation)) {
     operation->set_category(category);
     return 1;
   }
@@ -194,7 +193,7 @@ QList<Operation*> RuleController::uncategorizedOperations() const {
 
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (op->category().isEmpty() && !op->isSplit()) {
+      if (op->category() == nullptr && !op->isSplit()) {
         result.append(op);
       }
     }

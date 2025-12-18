@@ -4,6 +4,7 @@
 #include <QQmlEngine>
 #include <QString>
 
+#include "Category.h"
 #include "PropertyMacros.h"
 
 class Operation;
@@ -12,12 +13,13 @@ class CategorizationRule : public QObject {
   Q_OBJECT
   QML_ELEMENT
 
-  PROPERTY_RW(QString, category, QString())
+  PROPERTY_RW(const Category*, category, nullptr)
   PROPERTY_RW(QString, descriptionPrefix, QString())
 
 public:
   explicit CategorizationRule(QObject* parent = nullptr);
-  CategorizationRule(const QString& category, const QString& descriptionPrefix,
+  CategorizationRule(const Category* category,
+                     const QString& descriptionPrefix,
                      QObject* parent = nullptr);
 
   // Check if this rule matches an operation

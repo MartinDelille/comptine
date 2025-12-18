@@ -132,7 +132,7 @@ void BudgetData::clearAccounts() {
   emit accountCountChanged();
 }
 
-void BudgetData::setOperationCategory(int operationIndex, const QString& newCategory) {
+void BudgetData::setOperationCategory(int operationIndex, const Category* newCategory) {
   if (!_navController) return;
   Account* account = getAccount(_navController->currentAccountIndex());
   if (!account) return;
@@ -140,17 +140,17 @@ void BudgetData::setOperationCategory(int operationIndex, const QString& newCate
   Operation* operation = account->getOperation(operationIndex);
   if (!operation) return;
 
-  QString oldCategory = operation->category();
+  auto oldCategory = operation->category();
   if (oldCategory != newCategory) {
     _undoStack.push(new SetOperationCategoryCommand(*operation, _operationModel,
                                                     oldCategory, newCategory));
   }
 }
 
-void BudgetData::setOperationCategory(Operation* operation, const QString& newCategory) {
+void BudgetData::setOperationCategory(Operation* operation, const Category* newCategory) {
   if (!operation) return;
 
-  QString oldCategory = operation->category();
+  auto oldCategory = operation->category();
   if (oldCategory != newCategory) {
     _undoStack.push(new SetOperationCategoryCommand(*operation, _operationModel,
                                                     oldCategory, newCategory));
@@ -230,13 +230,13 @@ void BudgetData::splitOperation(int operationIndex, const QVariantList& allocati
   for (const QVariant& v : allocations) {
     QVariantMap m = v.toMap();
     CategoryAllocation alloc;
-    alloc.category = m["category"].toString();
+    alloc.category = _categoryController->getCategoryByName(m["category"].toString());
     alloc.amount = m["amount"].toDouble();
     newAllocations.append(alloc);
   }
 
   // Get current state
-  QString oldCategory = operation->category();
+  auto oldCategory = operation->category();
   QList<CategoryAllocation> oldAllocations = operation->allocationsList();
 
   // Only create command if something changed

@@ -3,9 +3,24 @@
 Operation::Operation(QObject* parent) :
     QObject(parent) {}
 
-Operation::Operation(const QDate& date, double amount, const QString& category,
-                     const QString& description, QObject* parent) :
-    QObject(parent), _date(date), _amount(amount), _category(category), _description(description) {}
+Operation::Operation(const QDate& date,
+                     double amount,
+                     const Category* category,
+                     const QString& description,
+                     QObject* parent) :
+    QObject(parent),
+    _date(date),
+    _amount(amount),
+    _category(category),
+    _description(description) {
+  auto updateCategoryName = [this] {
+    if (_category) {
+      connect(_category, &Category::nameChanged, this, &Operation::categoryChanged);
+    }
+  };
+  connect(this, &Operation::categoryChanged, this, updateCategoryName);
+  updateCategoryName();
+}
 
 QDate Operation::budgetDate() const {
   // Return explicit budget date if set, otherwise fall back to operation date
@@ -23,7 +38,7 @@ QVariantList Operation::allocations() const {
   QVariantList result;
   for (const auto& alloc : _allocations) {
     QVariantMap item;
-    item["category"] = alloc.category;
+    item["category"] = alloc.category ? alloc.category->name() : QVariant();
     item["amount"] = alloc.amount;
     result.append(item);
   }
@@ -35,7 +50,7 @@ void Operation::setAllocations(const QList<CategoryAllocation>& allocations) {
     _allocations = allocations;
     // Clear the single category when we have allocations
     if (!_allocations.isEmpty()) {
-      _category.clear();
+      _category = nullptr;
     }
     emit allocationsChanged();
     emit categoryChanged();  // categoryDisplay may have changed
@@ -54,30 +69,38 @@ bool Operation::isSplit() const {
 }
 
 QString Operation::categoryDisplay() const {
+  QSet<QString> categoryNames;
   if (_allocations.isEmpty()) {
-    return _category;
+    return _category ? _category->name() : "";
   }
 
   // Return comma-separated list of categories
-  QStringList categories;
+  QSet<const Category*> uniqueCategories;
   for (const auto& alloc : _allocations) {
-    if (!categories.contains(alloc.category)) {
-      categories.append(alloc.category);
+    if (!uniqueCategories.contains(alloc.category)) {
+      uniqueCategories.insert(alloc.category);
     }
   }
-  return categories.join(", ");
+  QStringList displayNames;
+  for (const Category* category : uniqueCategories) {
+    displayNames.append(category->name());
+  }
+  return displayNames.join(", ");
 }
 
-double Operation::amountForCategory(const QString& categoryName) const {
+double Operation::amountForCategory(const Category* category) const {
   if (_allocations.isEmpty()) {
     // Not split - return full amount if category matches
-    return (_category == categoryName) ? _amount : 0.0;
+    if (_category == category) {
+      return _amount;
+    }
+    return 0.0;
   }
 
   // Split - sum all allocations for this category
   double total = 0.0;
   for (const auto& alloc : _allocations) {
-    if (alloc.category == categoryName) {
+    if (alloc.category == category) {
       total += alloc.amount;
     }
   }

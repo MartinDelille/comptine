@@ -802,13 +802,6 @@ Importez et gérez vos données bancaires.</translation>
         <source>Add category &quot;%1&quot;</source>
         <translation>Ajouter la catégorie «&#xa0;%1&#xa0;»</translation>
     </message>
-    <message numerus="yes">
-        <source>Add %n category(ies)</source>
-        <translation>
-            <numerusform>Ajouter %n catégorie</numerusform>
-            <numerusform>Ajouter %n catégories</numerusform>
-        </translation>
-    </message>
     <message>
         <source>Edit category &quot;%1&quot;</source>
         <translation>Modifier la catégorie « %1 »</translation>

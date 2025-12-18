@@ -53,6 +53,13 @@ void CategoryController::addCategory(Category* category) {
     }
     category->setParent(this);
     _categories.append(category);
+    // Sort by category name using locale-aware collation (handles accents properly)
+    QCollator collator;
+    collator.setCaseSensitivity(Qt::CaseInsensitive);
+    std::sort(_categories.begin(), _categories.end(), [&collator](const Category* a, const Category* b) {
+      return collator.compare(a->name(), b->name()) < 0;
+    });
+
     emit categoryCountChanged();
   }
 }
@@ -87,9 +94,6 @@ QStringList CategoryController::categoryNames() const {
   for (const Category* category : _categories) {
     names.append(category->name());
   }
-  QCollator collator;
-  collator.setCaseSensitivity(Qt::CaseInsensitive);
-  std::sort(names.begin(), names.end(), collator);
   return names;
 }
 
@@ -108,7 +112,7 @@ void CategoryController::editCategory(const QString& originalName, const QString
   }
 }
 
-double CategoryController::spentInCategory(const QString& categoryName, int year, int month) const {
+double CategoryController::spentInCategory(const Category* category, int year, int month) const {
   double total = 0.0;
   for (const Account* account : _budgetData.accounts()) {
     for (const Operation* op : account->operations()) {
@@ -116,7 +120,7 @@ double CategoryController::spentInCategory(const QString& categoryName, int year
       QDate budgetDate = op->budgetDate();
       if (budgetDate.year() == year && budgetDate.month() == month) {
         // Use amountForCategory which handles both split and non-split operations
-        total += op->amountForCategory(categoryName);
+        total += op->amountForCategory(category);
       }
     }
   }
@@ -126,7 +130,7 @@ double CategoryController::spentInCategory(const QString& categoryName, int year
 QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const {
   QVariantList result;
   for (const Category* category : _categories) {
-    double total = spentInCategory(category->name(), year, month);
+    double total = spentInCategory(category, year, month);
     double budgetLimit = category->budgetLimit();
     bool isIncome = budgetLimit > 0;
 
@@ -138,17 +142,14 @@ QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const
     // - Income: total is positive, we show as positive "received"
     double displayAmount = isIncome ? total : -total;
     double displayLimit = std::abs(budgetLimit);
-
-    // Effective budget includes accumulated leftover
-    double effectiveLimit = displayLimit + accumulated;
-    double remaining = effectiveLimit - displayAmount;
+    double remaining = displayLimit - displayAmount;
 
     // Calculate percent used based on effective limit:
     // - For zero budget expense: any spending means exceeded (use infinity-like behavior)
     // - For zero budget income: no expectation yet
     double percentUsed;
-    if (effectiveLimit > 0) {
-      percentUsed = (displayAmount / effectiveLimit) * 100.0;
+    if (displayLimit > 0) {
+      percentUsed = (displayAmount / displayLimit) * 100.0;
     } else if (!isIncome && displayAmount > 0) {
       // Zero expense budget with spending = exceeded (show as 100%+)
       percentUsed = 100.0 + displayAmount;  // Will show exceeded status
@@ -164,29 +165,22 @@ QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const
     item["remaining"] = remaining;
     item["percentUsed"] = percentUsed;
     item["isIncome"] = isIncome;
-    item["accumulated"] = accumulated;        // Accumulated leftover from previous months
-    item["effectiveLimit"] = effectiveLimit;  // Budget + accumulated
+    item["accumulated"] = accumulated;    // Accumulated leftover from previous months
+    item["displayLimit"] = displayLimit;  // Budget
     result.append(item);
   }
-
-  // Sort by category name using locale-aware collation (handles accents properly)
-  QCollator collator;
-  collator.setCaseSensitivity(Qt::CaseInsensitive);
-  std::sort(result.begin(), result.end(), [&collator](const QVariant& a, const QVariant& b) {
-    return collator.compare(a.toMap()["name"].toString(), b.toMap()["name"].toString()) < 0;
-  });
 
   return result;
 }
 
-QVariantList CategoryController::operationsForCategory(const QString& categoryName, int year, int month) const {
+QVariantList CategoryController::operationsForCategory(const Category* category, int year, int month) const {
   QVariantList result;
   for (const Account* account : _budgetData.accounts()) {
     for (const Operation* op : account->operations()) {
       QDate budgetDate = op->budgetDate();
       if (budgetDate.year() == year && budgetDate.month() == month) {
         // Check if this operation contributes to this category
-        double categoryAmount = op->amountForCategory(categoryName);
+        double categoryAmount = op->amountForCategory(category);
         if (!qFuzzyIsNull(categoryAmount)) {
           QVariantMap item;
           item["date"] = op->date();
@@ -210,12 +204,11 @@ QVariantList CategoryController::operationsForCategory(const QString& categoryNa
   return result;
 }
 
-double CategoryController::leftoverForCategory(const QString& categoryName, int year, int month) const {
-  Category* category = getCategoryByName(categoryName);
+double CategoryController::leftoverForCategory(const Category* category, int year, int month) const {
   if (!category) return 0.0;
 
   double budgetLimit = category->budgetLimit();
-  double spent = spentInCategory(categoryName, year, month);
+  double spent = spentInCategory(category, year, month);
   double accumulated = category->accumulatedLeftoverBefore(year, month);
 
   // For expense categories (negative budget limit):
@@ -260,16 +253,16 @@ QVariantList CategoryController::leftoverSummary(int year, int month) const {
 
   for (const Category* category : _categories) {
     double budgetLimit = category->budgetLimit();
-    double spent = spentInCategory(category->name(), year, month);
+    double spent = spentInCategory(category, year, month);
     double accumulated = category->accumulatedLeftoverBefore(year, month);
     bool isIncome = budgetLimit > 0;
 
     // Calculate leftover
     double leftover;
     if (isIncome) {
-      leftover = spent - budgetLimit + accumulated;
+      leftover = spent - budgetLimit;
     } else {
-      leftover = -budgetLimit + spent + accumulated;
+      leftover = -budgetLimit + spent;
     }
 
     // Get existing decision for this month
@@ -286,16 +279,10 @@ QVariantList CategoryController::leftoverSummary(int year, int month) const {
     // Decision amounts
     item["saveAmount"] = decision.saveAmount;
     item["reportAmount"] = decision.reportAmount;
+    qDebug() << leftover << category->name();
 
     result.append(item);
   }
-
-  // Sort by category name
-  QCollator collator;
-  collator.setCaseSensitivity(Qt::CaseInsensitive);
-  std::sort(result.begin(), result.end(), [&collator](const QVariant& a, const QVariant& b) {
-    return collator.compare(a.toMap()["name"].toString(), b.toMap()["name"].toString()) < 0;
-  });
 
   return result;
 }

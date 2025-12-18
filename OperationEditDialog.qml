@@ -12,7 +12,7 @@ BaseDialog {
     property date originalDate: new Date()
     property date originalBudgetDate: new Date()
     property string originalDescription: ""
-    property string originalCategory: ""
+    property var originalCategory: ""
     property var originalAllocations: []
 
     // Category list for ComboBoxes - refreshed on open
@@ -114,7 +114,7 @@ BaseDialog {
         } else {
             // Single category - start with current category and full amount
             allocationModel.append({
-                category: currentCategory ?? "",
+                category: currentCategory.name ?? "",
                 amount: amount
             });
         }
@@ -169,7 +169,7 @@ BaseDialog {
                 allocationsChanged = true;
             } else if (originalAllocations.length === 0) {
                 // Was single category, check if it changed
-                if (allocations.length !== 1 || allocations[0].category !== originalCategory) {
+                if (allocations.length !== 1 || allocations[0].category !== originalCategory.name) {
                     allocationsChanged = true;
                 }
             } else {

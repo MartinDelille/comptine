@@ -149,11 +149,13 @@ bool FileController::saveToYamlFile(const QString& filePath) {
         for (const auto& alloc : op->allocationsList()) {
           ryml::NodeRef allocNode = allocsNode.append_child();
           allocNode |= ryml::MAP;
-          allocNode["category"] << toStdString(alloc.category);
+          if (alloc.category) {
+            allocNode["category"] << toStdString(alloc.category->name());
+          }
           allocNode["amount"] << toStdString(QString::number(alloc.amount, 'f', 2));
         }
-      } else {
-        opNode["category"] << toStdString(op->category());
+      } else if (op->category()) {
+        opNode["category"] << toStdString(op->category()->name());
       }
 
       // Only save budget_date if explicitly set (different from operation date)
@@ -175,8 +177,10 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     for (const CategorizationRule* rule : rulesList) {
       ryml::NodeRef ruleNode = rules.append_child();
       ruleNode |= ryml::MAP;
-      ruleNode["category"] << toStdString(rule->category());
-      ruleNode["description_prefix"] << toStdString(rule->descriptionPrefix());
+      if (rule->category()) {
+        ruleNode["category"] << toStdString(rule->category()->name());
+        ruleNode["description_prefix"] << toStdString(rule->descriptionPrefix());
+      }
     }
   }
 
@@ -372,7 +376,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
                 CategoryAllocation alloc;
                 if (allocNode.has_child("category")) {
                   auto val = allocNode["category"].val();
-                  alloc.category = QString::fromUtf8(val.str, val.len);
+                  alloc.category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
                 }
                 if (allocNode.has_child("amount")) {
                   auto val = allocNode["amount"].val();
@@ -383,7 +387,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               op->setAllocations(allocations);
             } else if (opNode.has_child("category")) {
               auto val = opNode["category"].val();
-              op->set_category(QString::fromUtf8(val.str, val.len));
+              op->set_category(_categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len)));
             }
             if (opNode.has_child("description")) {
               auto val = opNode["description"].val();
@@ -417,19 +421,19 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     if (root.has_child("rules")) {
       _ruleController.clearRules();
       for (ryml::ConstNodeRef ruleNode : root["rules"]) {
-        QString category;
+        Category* category;
         QString descriptionPrefix;
 
         if (ruleNode.has_child("category")) {
           auto val = ruleNode["category"].val();
-          category = QString::fromUtf8(val.str, val.len);
+          category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
         }
         if (ruleNode.has_child("description_prefix")) {
           auto val = ruleNode["description_prefix"].val();
           descriptionPrefix = QString::fromUtf8(val.str, val.len);
         }
 
-        if (!category.isEmpty() && !descriptionPrefix.isEmpty()) {
+        if (category && !descriptionPrefix.isEmpty()) {
           auto* rule = new CategorizationRule(category, descriptionPrefix);
           _ruleController.addRule(rule);
         }
@@ -440,9 +444,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     set_errorMessage(tr("Could not parse file: %1").arg(QString::fromUtf8(e.what())));
     return false;
   }
-
-  // Add any categories referenced in operations but missing from the category list
-  addMissingCategoriesFromOperations();
 
   // Refresh account model
   _budgetData.accountModel()->refresh();
@@ -567,20 +568,13 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     return false;
   }
 
+  // Create a macro command that composes all the sub-commands
+  QUndoCommand* macroCommand = new QUndoCommand();
+
   QList<Operation*> importedOperations;
   int skippedCount = 0;
+  QSet<Category*> newCategories;
   double totalBalance = 0.0;
-
-  // Build case-insensitive lookup for existing categories (only used if useCategories is true)
-  QMap<QString, QString> existingCategoryLookup;  // lowercase -> actual name
-  if (useCategories) {
-    for (const Category* cat : _categoryController.categories()) {
-      existingCategoryLookup.insert(cat->name().toLower(), cat->name());
-    }
-  }
-
-  // Track which new categories need to be created
-  QSet<QString> newCategoryNames;
 
   while (!in.atEnd()) {
     QString line = in.readLine();
@@ -631,15 +625,25 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     }
 
     // Determine category based on useCategories flag
-    QString category;
+    Category* category = nullptr;
     if (useCategories) {
       // Use category from CSV (last matching category column = most specific)
-      category = getField(fields, idx.category);
-
-      // Track new categories that will need to be created
-      if (!category.isEmpty() && !existingCategoryLookup.contains(category.toLower())) {
-        newCategoryNames.insert(category);
-        existingCategoryLookup.insert(category.toLower(), category);
+      QString categoryName = getField(fields, idx.category);
+      if (!categoryName.isEmpty()) {
+        category = _categoryController.getCategoryByName(categoryName);
+        if (category == nullptr) {
+          for (auto cat : newCategories) {
+            if (cat->name() == categoryName) {
+              category = cat;
+              break;
+            }
+          }
+        }
+        if (category == nullptr) {
+          category = new Category(categoryName, 0.0);
+          new AddCategoryCommand(&_categoryController, category, macroCommand);
+          newCategories.insert(category);
+        }
       }
     }
     // If useCategories is false or category is empty, leave category empty
@@ -674,51 +678,35 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   qDebug() << "  Skipped:" << skippedCount << "rows";
   qDebug() << "  Total balance delta:" << totalBalance;
   if (useCategories) {
-    qDebug() << "  New categories:" << newCategoryNames.size();
-  }
-
-  // Create new category objects (only if useCategories is true)
-  QList<Category*> newCategories;
-  if (useCategories) {
-    for (const QString& catName : newCategoryNames) {
-      Category* cat = new Category(catName, 0.0);
-      newCategories.append(cat);
-    }
+    qDebug() << "  New categories:" << newCategories.count();
   }
 
   // Add operations and categories via undo command (if any were imported)
   if (!importedOperations.isEmpty()) {
-    // Create a macro command that composes all the sub-commands
-    QUndoCommand* macroCommand = new QUndoCommand();
-
     // Add account command first (if new account)
     if (isNewAccount) {
       new AddAccountCommand(account, &_budgetData, macroCommand);
     }
 
-    // Add categories command (if any new categories)
-    if (!newCategories.isEmpty()) {
-      new AddCategoriesCommand(&_categoryController, newCategories, macroCommand);
-    }
-
     // Add operations command
-    new ImportOperationsCommand(account, _budgetData.operationModel(), importedOperations, macroCommand);
+    new ImportOperationsCommand(*account, *_budgetData.operationModel(), importedOperations, macroCommand);
 
     // Set text based on what was imported
-    if (isNewAccount && !newCategories.isEmpty()) {
+    if (isNewAccount && newCategories.count()) {
       macroCommand->setText(QObject::tr("Import %n operation(s) to new account with %1 category(ies)", "", importedOperations.size())
-                                .arg(newCategories.size()));
+                                .arg(newCategories.count()));
     } else if (isNewAccount) {
       macroCommand->setText(QObject::tr("Import %n operation(s) to new account", "", importedOperations.size()));
-    } else if (!newCategories.isEmpty()) {
+    } else if (newCategories.count()) {
       macroCommand->setText(QObject::tr("Import %n operation(s) with %1 category(ies)", "", importedOperations.size())
-                                .arg(newCategories.size()));
+                                .arg(newCategories.count()));
     } else {
       macroCommand->setText(QObject::tr("Import %n operation(s)", "", importedOperations.size()));
     }
 
     _undoStack.push(macroCommand);
   } else {
+    delete macroCommand;
     // No operations imported, clean up
     qDeleteAll(newCategories);
     if (isNewAccount) {
@@ -735,18 +723,10 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   _budgetData.accountModel()->refresh();
 
-  // Ensure all categories used in operations exist in the category list
-  addMissingCategoriesFromOperations();
-
   // Apply categorization rules to imported operations
   int rulesApplied = 0;
   for (Operation* op : importedOperations) {
     rulesApplied += _ruleController.applyRulesToOperation(op);
-  }
-  if (rulesApplied > 0) {
-    qDebug() << "  Rules applied to:" << rulesApplied << "operations";
-    // Add any categories from rules that might be new
-    addMissingCategoriesFromOperations();
   }
 
   // Select all imported operations
@@ -790,40 +770,5 @@ void FileController::loadInitialFile(const QStringList& args) {
     if (QFile::exists(lastFile)) {
       loadFromYamlFile(lastFile);
     }
-  }
-}
-
-void FileController::addMissingCategoriesFromOperations() {
-  // Build case-insensitive lookup for existing categories
-  QMap<QString, QString> existingCategoryLookup;  // lowercase -> actual name
-  for (const Category* cat : _categoryController.categories()) {
-    existingCategoryLookup.insert(cat->name().toLower(), cat->name());
-  }
-
-  // Collect all unique category names from operations that are missing
-  QSet<QString> missingCategories;
-  for (const Account* account : _budgetData.accounts()) {
-    for (const Operation* op : account->operations()) {
-      // Check single category
-      QString category = op->category();
-      if (!category.isEmpty() && !existingCategoryLookup.contains(category.toLower())) {
-        missingCategories.insert(category);
-        existingCategoryLookup.insert(category.toLower(), category);  // Prevent duplicates
-      }
-
-      // Check split allocations
-      for (const CategoryAllocation& alloc : op->allocationsList()) {
-        if (!alloc.category.isEmpty() && !existingCategoryLookup.contains(alloc.category.toLower())) {
-          missingCategories.insert(alloc.category);
-          existingCategoryLookup.insert(alloc.category.toLower(), alloc.category);
-        }
-      }
-    }
-  }
-
-  // Add missing categories
-  for (const QString& catName : missingCategories) {
-    qDebug() << "Adding missing category from operations:" << catName;
-    _categoryController.addCategory(new Category(catName, 0.0));
   }
 }

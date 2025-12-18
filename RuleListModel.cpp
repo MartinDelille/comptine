@@ -3,7 +3,8 @@
 #include "CategorizationRule.h"
 #include "RuleController.h"
 
-RuleListModel::RuleListModel(QObject* parent) : QAbstractListModel(parent) {
+RuleListModel::RuleListModel(QObject* parent) :
+    QAbstractListModel(parent) {
 }
 
 void RuleListModel::setRuleController(RuleController* controller) {
@@ -34,12 +35,14 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
 
   switch (role) {
     case CategoryRole:
-      return rule->category();
+      if (rule->category()) {
+        return rule->category()->name();
+      }
+      break;
     case DescriptionPrefixRole:
       return rule->descriptionPrefix();
-    default:
-      return QVariant();
   }
+  return QVariant();
 }
 
 QHash<int, QByteArray> RuleListModel::roleNames() const {
