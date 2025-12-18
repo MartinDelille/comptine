@@ -1,9 +1,9 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QDate>
 #include <QMap>
 #include <QObject>
-#include <QQmlEngine>
 #include <QString>
 
 #include "PropertyMacros.h"
