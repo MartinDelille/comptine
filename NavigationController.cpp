@@ -5,19 +5,14 @@
 #include "CategoryController.h"
 #include "NavigationController.h"
 
-NavigationController::NavigationController() {
+NavigationController::NavigationController(BudgetData& budgetData,
+                                           CategoryController& categoryController) :
+    _budgetData(budgetData),
+    _categoryController(categoryController) {
   // Initialize budget date to current month (will be overridden when a file is loaded)
   QDate today = QDate::currentDate();
   _budgetYear = today.year();
   _budgetMonth = today.month();
-}
-
-void NavigationController::setCategoryController(CategoryController* categoryController) {
-  _categoryController = categoryController;
-}
-
-void NavigationController::setBudgetData(BudgetData* budgetData) {
-  _budgetData = budgetData;
 }
 
 Account* NavigationController::currentAccount() const {
@@ -29,20 +24,18 @@ int NavigationController::currentAccountIndex() const {
 }
 
 void NavigationController::set_currentAccountIndex(int index) {
-  if (!_budgetData) return;
-
-  int accountCount = _budgetData->accountCount();
+  int accountCount = _budgetData.accountCount();
   if (index >= -1 && index < accountCount) {
     bool indexChanged = (index != _currentAccountIndex);
     _currentAccountIndex = index;
 
-    Account* newAccount = _budgetData->getAccount(index);
+    Account* newAccount = _budgetData.getAccount(index);
     bool accountChanged = (_currentAccount != newAccount);
     _currentAccount = newAccount;
 
     // Always update the operation model with the current account pointer
     // (the model has its own guard to avoid unnecessary resets)
-    _budgetData->operationModel()->setAccount(newAccount);
+    _budgetData.operationModel()->setAccount(newAccount);
 
     // Emit signals if either the index or the actual account pointer changed
     // (account pointer can change even with same index when loading a new file)
@@ -74,26 +67,20 @@ void NavigationController::nextMonth() {
 }
 
 void NavigationController::previousCategory() {
-  if (!_categoryController) return;
-
-  QVariantList summary = _categoryController->monthlyBudgetSummary(_budgetYear, _budgetMonth);
+  QVariantList summary = _categoryController.monthlyBudgetSummary(_budgetYear, _budgetMonth);
   if (_currentCategoryIndex > 0) {
     set_currentCategoryIndex(_currentCategoryIndex - 1);
   }
 }
 
 void NavigationController::nextCategory() {
-  if (!_categoryController) return;
-
-  QVariantList summary = _categoryController->monthlyBudgetSummary(_budgetYear, _budgetMonth);
+  QVariantList summary = _categoryController.monthlyBudgetSummary(_budgetYear, _budgetMonth);
   if (_currentCategoryIndex < summary.size() - 1) {
     set_currentCategoryIndex(_currentCategoryIndex + 1);
   }
 }
 
 void NavigationController::previousOperation(bool extendSelection) {
-  if (!_budgetData) return;
-
   Account* account = currentAccount();
   if (!account) return;
 
@@ -106,8 +93,6 @@ void NavigationController::previousOperation(bool extendSelection) {
 }
 
 void NavigationController::nextOperation(bool extendSelection) {
-  if (!_budgetData) return;
-
   Account* account = currentAccount();
   if (!account) return;
 
@@ -129,11 +114,9 @@ void NavigationController::showBudgetTab() {
 
 void NavigationController::navigateToOperation(const QString& accountName, const QDate& date,
                                                const QString& description, double amount) {
-  if (!_budgetData) return;
-
   // Find the account index
   int accountIndex = -1;
-  QList<Account*> accounts = _budgetData->accounts();
+  QList<Account*> accounts = _budgetData.accounts();
   for (int i = 0; i < accounts.size(); ++i) {
     if (accounts[i]->name() == accountName) {
       accountIndex = i;

@@ -21,10 +21,8 @@ class CategoryController : public QObject {
   Q_PROPERTY(LeftoverListModel* leftoverModel READ leftoverModel CONSTANT)
 
 public:
-  explicit CategoryController(QUndoStack& undoStack);
-
-  // Set references to other controllers
-  void setBudgetData(BudgetData* budgetData);
+  explicit CategoryController(BudgetData& budgetData,
+                              QUndoStack& undoStack);
 
   // Leftover model accessor
   LeftoverListModel* leftoverModel() { return &_leftoverModel; }
@@ -75,7 +73,7 @@ signals:
 
 private:
   QList<Category*> _categories;
-  BudgetData* _budgetData = nullptr;
+  BudgetData& _budgetData;
   QUndoStack& _undoStack;
   LeftoverListModel _leftoverModel;
 };

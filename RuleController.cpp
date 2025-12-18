@@ -9,25 +9,19 @@
 #include "RuleListModel.h"
 #include "UndoCommands.h"
 
-RuleController::RuleController(QUndoStack& undoStack) :
+RuleController::RuleController(BudgetData& budgetData,
+                               QUndoStack& undoStack) :
+    _budgetData(budgetData),
     _undoStack(undoStack) {
   _ruleModel = new RuleListModel(this);
   _ruleModel->setRuleController(this);
+  updateUncategorizedCount();
+  connect(&_budgetData, &BudgetData::accountCountChanged, this, &RuleController::updateUncategorizedCount);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, &RuleController::updateUncategorizedCount);
 }
 
 RuleController::~RuleController() {
   qDeleteAll(_rules);
-}
-
-void RuleController::setBudgetData(BudgetData* budgetData) {
-  _budgetData = budgetData;
-  updateUncategorizedCount();
-
-  // Update uncategorized count when data changes
-  if (_budgetData) {
-    connect(_budgetData, &BudgetData::accountCountChanged, this, &RuleController::updateUncategorizedCount);
-    connect(_budgetData, &BudgetData::operationDataChanged, this, &RuleController::updateUncategorizedCount);
-  }
 }
 
 int RuleController::ruleCount() const {
@@ -35,12 +29,8 @@ int RuleController::ruleCount() const {
 }
 
 int RuleController::uncategorizedCount() const {
-  if (!_budgetData) {
-    return 0;
-  }
-
   int count = 0;
-  for (Account* account : _budgetData->accounts()) {
+  for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
       if (op->category().isEmpty() && !op->isSplit()) {
         count++;
@@ -201,11 +191,8 @@ int RuleController::applyRulesToOperation(Operation* operation) {
 
 QList<Operation*> RuleController::uncategorizedOperations() const {
   QList<Operation*> result;
-  if (!_budgetData) {
-    return result;
-  }
 
-  for (Account* account : _budgetData->accounts()) {
+  for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
       if (op->category().isEmpty() && !op->isSplit()) {
         result.append(op);
