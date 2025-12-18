@@ -346,5 +346,5 @@ private slots:
   }
 };
 
-QTEST_MAIN(CsvParserTest)
+QTEST_GUILESS_MAIN(CsvParserTest)
 #include "CsvParserTest.moc"
