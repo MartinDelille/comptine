@@ -7,11 +7,12 @@
 #include <QString>
 #include <QVariantList>
 
+#include "Category.h"
 #include "PropertyMacros.h"
 
 // Represents one allocation in a split operation
 struct CategoryAllocation {
-  QString category;
+  const Category* category;
   double amount;
 
   bool operator==(const CategoryAllocation& other) const {
@@ -29,7 +30,7 @@ class Operation : public QObject {
 
   PROPERTY_RW(QDate, date, {})
   PROPERTY_RW(double, amount, 0.0)
-  PROPERTY_RW(QString, category, {})
+  PROPERTY_RW(const Category*, category, {})
   PROPERTY_RW(QString, description, {})
 
   // Budget date: returns date if not explicitly set
@@ -42,8 +43,11 @@ class Operation : public QObject {
 
 public:
   explicit Operation(QObject* parent = nullptr);
-  Operation(const QDate& date, double amount, const QString& category,
-            const QString& description, QObject* parent = nullptr);
+  Operation(const QDate& date,
+            double amount,
+            const Category* category,
+            const QString& description,
+            QObject* parent = nullptr);
 
   // Split allocations methods
   QVariantList allocations() const;
@@ -54,7 +58,7 @@ public:
   QString categoryDisplay() const;
 
   // Get amount allocated to a specific category (for budget calculations)
-  double amountForCategory(const QString& categoryName) const;
+  double amountForCategory(const Category* category) const;
 
 signals:
   void allocationsChanged();

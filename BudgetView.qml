@@ -148,8 +148,8 @@ FocusScope {
 
                 Keys.onReturnPressed: {
                     if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
-                        let category = budgetSummary[AppState.navigation.currentCategoryIndex];
-                        categoryDetailView.categoryName = category.name;
+                        let category = AppState.categories.getCategory(AppState.navigation.currentCategoryIndex);
+                        categoryDetailView.category = category;
                         categoryDetailView.year = AppState.navigation.budgetYear;
                         categoryDetailView.month = AppState.navigation.budgetMonth;
                         categoryDetailView.open();
@@ -175,7 +175,7 @@ FocusScope {
                         onClicked: {
                             AppState.navigation.currentCategoryIndex = index;
                             categoryListView.forceActiveFocus();
-                            categoryDetailView.categoryName = modelData.name;
+                            categoryDetailView.category = AppState.categories.getCategory(index);
                             categoryDetailView.year = AppState.navigation.budgetYear;
                             categoryDetailView.month = AppState.navigation.budgetMonth;
                             categoryDetailView.open();

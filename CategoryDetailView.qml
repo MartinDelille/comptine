@@ -4,21 +4,21 @@ import QtQuick.Layouts
 
 Dialog {
     id: root
-    title: categoryName
+    title: category?.name || ""
     modal: true
     anchors.centerIn: parent
     width: 600
     height: 500
     standardButtons: Dialog.Close
 
-    property string categoryName: ""
+    property var category
     property int year: 0
     property int month: 0
     property var operations: []
     property real totalAmount: 0
 
     onOpened: {
-        operations = AppState.categories.operationsForCategory(categoryName, year, month);
+        operations = AppState.categories.operationsForCategory(category, year, month);
         totalAmount = operations.reduce((sum, op) => sum + op.amount, 0);
     }
 

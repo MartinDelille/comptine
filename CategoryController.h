@@ -44,13 +44,13 @@ public:
   Q_INVOKABLE void editCategory(const QString& originalName, const QString& newName, double newBudgetLimit);
 
   // Budget calculations (aggregates across all accounts)
-  Q_INVOKABLE double spentInCategory(const QString& categoryName, int year, int month) const;
+  Q_INVOKABLE double spentInCategory(const Category* categoryName, int year, int month) const;
   Q_INVOKABLE QVariantList monthlyBudgetSummary(int year, int month) const;
-  Q_INVOKABLE QVariantList operationsForCategory(const QString& categoryName, int year, int month) const;
+  Q_INVOKABLE QVariantList operationsForCategory(const Category* category, int year, int month) const;
 
   // Leftover calculations
   // Calculate the leftover for a category in a month: budget - spent (+ accumulated from previous months)
-  Q_INVOKABLE double leftoverForCategory(const QString& categoryName, int year, int month) const;
+  Q_INVOKABLE double leftoverForCategory(const Category* category, int year, int month) const;
 
   // Get accumulated leftover from previous months (sum of all "report" decisions before this month)
   Q_INVOKABLE double accumulatedLeftover(const QString& categoryName, int year, int month) const;

@@ -2,10 +2,11 @@
 
 #include "Operation.h"
 
-CategorizationRule::CategorizationRule(QObject* parent) : QObject(parent) {
+CategorizationRule::CategorizationRule(QObject* parent) :
+    QObject(parent) {
 }
 
-CategorizationRule::CategorizationRule(const QString& category,
+CategorizationRule::CategorizationRule(const Category* category,
                                        const QString& descriptionPrefix,
                                        QObject* parent) :
     QObject(parent) {

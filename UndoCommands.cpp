@@ -103,25 +103,7 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
   }
 }
 
-void EditCategoryCommand::renameOperationsCategory(const QString& fromName, const QString& toName) {
-  if (!_budgetData || fromName == toName) return;
-
-  // Update all operations that use this category
-  for (Account* account : _budgetData->accounts()) {
-    for (Operation* op : account->operations()) {
-      if (op->category() == fromName) {
-        op->set_category(toName);
-      }
-    }
-  }
-}
-
 void EditCategoryCommand::undo() {
-  // Rename operations back to old category name
-  if (_oldName != _newName) {
-    renameOperationsCategory(_newName, _oldName);
-  }
-
   _category.set_name(_oldName);
   _category.set_budgetLimit(_oldBudgetLimit);
   if (_categoryController) {
@@ -133,11 +115,6 @@ void EditCategoryCommand::redo() {
   _category.set_name(_newName);
   _category.set_budgetLimit(_newBudgetLimit);
 
-  // Rename operations to new category name
-  if (_oldName != _newName) {
-    renameOperationsCategory(_oldName, _newName);
-  }
-
   if (_categoryController) {
     emit _categoryController->categoryCountChanged();  // Trigger UI refresh
   }
@@ -146,10 +123,11 @@ void EditCategoryCommand::redo() {
 // AddCategoryCommand implementation
 
 AddCategoryCommand::AddCategoryCommand(CategoryController* categoryController, Category* category,
-                                       QUndoCommand* parent) : QUndoCommand(parent),
-                                                               _categoryController(categoryController),
-                                                               _category(category),
-                                                               _ownsCategory(true) {
+                                       QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _categoryController(categoryController),
+    _category(category),
+    _ownsCategory(true) {
   setText(QObject::tr("Add category \"%1\"").arg(category->name()));
 }
 
@@ -173,46 +151,10 @@ void AddCategoryCommand::redo() {
   _ownsCategory = false;
 }
 
-// AddCategoriesCommand implementation
+// AddOperationCommand implementation
 
-AddCategoriesCommand::AddCategoriesCommand(CategoryController* categoryController,
-                                           const QList<Category*>& categories,
-                                           QUndoCommand* parent) :
-    QUndoCommand(parent),
-    _categoryController(categoryController),
-    _categories(categories),
-    _ownsCategories(true) {  // We own the categories until first redo
-  setText(QObject::tr("Add %n category(ies)", "", categories.size()));
-}
-
-AddCategoriesCommand::~AddCategoriesCommand() {
-  if (_ownsCategories) {
-    qDeleteAll(_categories);
-  }
-}
-
-void AddCategoriesCommand::undo() {
-  if (_categoryController) {
-    for (Category* cat : _categories) {
-      _categoryController->takeCategoryByName(cat->name());
-    }
-  }
-  _ownsCategories = true;
-}
-
-void AddCategoriesCommand::redo() {
-  if (_categoryController) {
-    for (Category* cat : _categories) {
-      _categoryController->addCategory(cat);
-    }
-  }
-  _ownsCategories = false;
-}
-
-// ImportOperationsCommand implementation
-
-ImportOperationsCommand::ImportOperationsCommand(Account* account,
-                                                 OperationListModel* operationModel,
+ImportOperationsCommand::ImportOperationsCommand(Account& account,
+                                                 OperationListModel& operationModel,
                                                  const QList<Operation*>& operations,
                                                  QUndoCommand* parent) :
     QUndoCommand(parent),
@@ -233,42 +175,37 @@ void ImportOperationsCommand::undo() {
   // Remove operations from account and detach Qt parent to prevent double-delete
   // (when AddAccountCommand deletes the account, it would also delete child operations)
   for (Operation* op : _operations) {
-    _account->removeOperation(op);
+    _account.removeOperation(op);
     op->setParent(nullptr);
   }
   _ownsOperations = true;
 
-  if (_operationModel) {
-    _operationModel->refresh();
-  }
+  _operationModel.refresh();
 }
 
 void ImportOperationsCommand::redo() {
   // Re-add operations to account
   for (Operation* op : _operations) {
-    _account->addOperation(op);
+    _account.addOperation(op);
   }
   _ownsOperations = false;
-
-  if (_operationModel) {
-    _operationModel->refresh();
-  }
+  _operationModel.refresh();
 }
 
 SetOperationCategoryCommand::SetOperationCategoryCommand(Operation& operation,
                                                          OperationListModel* operationModel,
-                                                         const QString& oldCategory,
-                                                         const QString& newCategory,
+                                                         const Category* oldCategory,
+                                                         const Category* newCategory,
                                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
     _operationModel(operationModel),
     _oldCategory(oldCategory),
     _newCategory(newCategory) {
-  if (newCategory.isEmpty()) {
-    setText(QObject::tr("Clear operation category"));
+  if (newCategory) {
+    setText(QObject::tr("Set operation category to \"%1\"").arg(newCategory->name()));
   } else {
-    setText(QObject::tr("Set operation category to \"%1\"").arg(newCategory));
+    setText(QObject::tr("Clear operation category"));
   }
 }
 
@@ -323,7 +260,7 @@ void SetOperationBudgetDateCommand::redo() {
 
 SplitOperationCommand::SplitOperationCommand(Operation& operation,
                                              OperationListModel* operationModel,
-                                             const QString& oldCategory,
+                                             const Category* oldCategory,
                                              const QList<CategoryAllocation>& oldAllocations,
                                              const QList<CategoryAllocation>& newAllocations,
                                              QUndoCommand* parent) :
@@ -336,7 +273,9 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
   if (newAllocations.size() > 1) {
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
   } else if (newAllocations.size() == 1) {
-    setText(QObject::tr("Set operation category to \"%1\"").arg(newAllocations.first().category));
+    auto category = newAllocations.first().category;
+    auto name = category ? category->name() : "";
+    setText(QObject::tr("Set operation category to \"%1\"").arg(name));
   } else {
     setText(QObject::tr("Clear operation split"));
   }
@@ -366,7 +305,7 @@ void SplitOperationCommand::redo() {
   } else if (_newAllocations.isEmpty()) {
     // Clear everything
     _operation.clearAllocations();
-    _operation.set_category(QString());
+    _operation.set_category(nullptr);
   } else {
     // Multiple categories - use allocations
     _operation.setAllocations(_newAllocations);
@@ -646,7 +585,7 @@ void RemoveRuleCommand::redo() {
 // EditRuleCommand implementation
 
 EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
-                                 const QString& oldCategory, const QString& newCategory,
+                                 const Category* oldCategory, const Category* newCategory,
                                  const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),

@@ -68,8 +68,6 @@ public:
   void redo() override;
 
 private:
-  void renameOperationsCategory(const QString& fromName, const QString& toName);
-
   Category& _category;
   BudgetData* _budgetData;
   CategoryController* _categoryController;
@@ -96,30 +94,13 @@ private:
   bool _ownsCategory;  // True when not in controller (after undo)
 };
 
-// Command for adding categories
-// Note: This command manages category lifecycle in CategoryController
-class AddCategoriesCommand : public QUndoCommand {
-public:
-  AddCategoriesCommand(CategoryController* categoryController,
-                       const QList<Category*>& categories,
-                       QUndoCommand* parent = nullptr);
-  ~AddCategoriesCommand();
-
-  void undo() override;
-  void redo() override;
-
-private:
-  CategoryController* _categoryController;
-  QList<Category*> _categories;
-  bool _ownsCategories;  // True when categories are not in CategoryController (after undo)
-};
-
-// Command for importing operations into an account
+// Command for adding operation into an account
 // Note: This command only manages operations. Use as child of a macro command
 // with AddAccountCommand and AddCategoriesCommand for full import functionality.
 class ImportOperationsCommand : public QUndoCommand {
 public:
-  ImportOperationsCommand(Account* account, OperationListModel* operationModel,
+  ImportOperationsCommand(Account& account,
+                          OperationListModel& operationModel,
                           const QList<Operation*>& operations,
                           QUndoCommand* parent = nullptr);
   ~ImportOperationsCommand();
@@ -128,8 +109,8 @@ public:
   void redo() override;
 
 private:
-  Account* _account;
-  OperationListModel* _operationModel;
+  Account& _account;
+  OperationListModel& _operationModel;
   QList<Operation*> _operations;
   bool _ownsOperations;  // True when operations are not in the account (after undo)
 };
@@ -139,8 +120,8 @@ class SetOperationCategoryCommand : public QUndoCommand {
 public:
   SetOperationCategoryCommand(Operation& operation,
                               OperationListModel* operationModel,
-                              const QString& oldCategory,
-                              const QString& newCategory,
+                              const Category* oldCategory,
+                              const Category* newCategory,
                               QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -149,8 +130,8 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  QString _oldCategory;
-  QString _newCategory;
+  const Category* _oldCategory;
+  const Category* _newCategory;
 };
 
 // Command for setting an operation's budget date
@@ -177,7 +158,7 @@ class SplitOperationCommand : public QUndoCommand {
 public:
   SplitOperationCommand(Operation& operation,
                         OperationListModel* operationModel,
-                        const QString& oldCategory,
+                        const Category* oldCategory,
                         const QList<CategoryAllocation>& oldAllocations,
                         const QList<CategoryAllocation>& newAllocations,
                         QUndoCommand* parent = nullptr);
@@ -188,7 +169,7 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  QString _oldCategory;
+  const Category* _oldCategory;
   QList<CategoryAllocation> _oldAllocations;
   QList<CategoryAllocation> _newAllocations;
 };
@@ -309,7 +290,7 @@ private:
 class EditRuleCommand : public QUndoCommand {
 public:
   EditRuleCommand(RuleController* ruleController, int index,
-                  const QString& oldCategory, const QString& newCategory,
+                  const Category* oldCategory, const Category* newCategory,
                   const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
                   QUndoCommand* parent = nullptr);
 
@@ -319,8 +300,8 @@ public:
 private:
   RuleController* _ruleController;
   int _index;
-  QString _oldCategory;
-  QString _newCategory;
+  const Category* _oldCategory;
+  const Category* _newCategory;
   QString _oldDescriptionPrefix;
   QString _newDescriptionPrefix;
 };

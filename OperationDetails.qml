@@ -168,7 +168,7 @@ Rectangle {
             Label {
                 Layout.fillWidth: true
                 visible: !root.operation?.isSplit
-                text: root.operation?.category || qsTr("Uncategorized")
+                text: root.operation?.category?.name || qsTr("Uncategorized")
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap

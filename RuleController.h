@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QQmlEngine>
 
+#include "Category.h"
 #include "PropertyMacros.h"
 #include "RuleListModel.h"
 
@@ -33,9 +34,9 @@ public:
 
   // Rule management
   void addRule(CategorizationRule* rule);
-  Q_INVOKABLE void addRule(const QString& category, const QString& descriptionPrefix);
+  Q_INVOKABLE void addRule(const Category* category, const QString& descriptionPrefix);
   Q_INVOKABLE void removeRule(int index);
-  Q_INVOKABLE void editRule(int index, const QString& category, const QString& descriptionPrefix);
+  Q_INVOKABLE void editRule(int index, const Category* category, const QString& descriptionPrefix);
   Q_INVOKABLE void moveRule(int fromIndex, int toIndex);
   void clearRules();
 
@@ -44,8 +45,8 @@ public:
   void moveRuleDirect(int fromIndex, int toIndex);
 
   // Matching operations
-  Q_INVOKABLE QString matchingCategory(Operation* operation) const;
-  Q_INVOKABLE QString matchingCategoryForDescription(const QString& description) const;
+  Q_INVOKABLE const Category* matchingCategory(Operation* operation) const;
+  Q_INVOKABLE const Category* matchingCategoryForDescription(const QString& description) const;
 
   // Apply rules to operations (used during import)
   int applyRulesToOperation(Operation* operation);

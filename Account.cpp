@@ -243,7 +243,7 @@ QString Account::selectedOperationsAsCsv() const {
                .arg(op->date().toString("yyyy-MM-dd"))
                .arg(op->description().replace("\"", "\"\""))
                .arg(op->amount(), 0, 'f', 2)
-               .arg(op->category());
+               .arg((op->category() ? op->category()->name() : ""));
   }
 
   return csv;

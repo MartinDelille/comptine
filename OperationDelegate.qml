@@ -56,12 +56,12 @@ Rectangle {
                     let allocations = root.operation.allocations;
                     for (let i = 0; i < allocations.length; i++) {
                         if (allocations[i].category) {
-                            categories.push(allocations[i].category);
+                            categories.push(allocations[i].category.name);
                         }
                     }
                     return categories.join(", ");
                 }
-                return root.operation.category || "";
+                return root.operation.category?.name || "";
             }
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft

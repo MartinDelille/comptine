@@ -61,7 +61,4 @@ private:
   NavigationController& _navController;
   RuleController& _ruleController;
   QUndoStack& _undoStack;
-
-  // Helper to add missing categories from operations
-  void addMissingCategoriesFromOperations();
 };
