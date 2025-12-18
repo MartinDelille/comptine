@@ -59,7 +59,7 @@ jobs:
 
       - name: Install librsvg (MacOS)
         if: matrix.os == 'macos-latest'
-        run: brew install librsvg yq
+        run: brew install librsvg
 
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
