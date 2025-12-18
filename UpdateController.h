@@ -19,7 +19,6 @@ class UpdateController : public QObject {
   PROPERTY_RW(bool, updateAvailable, false)
   PROPERTY_RW(QString, latestVersion, {})
   PROPERTY_RW(QString, releaseNotes, {})
-  PROPERTY_RW(QString, downloadUrl, {})
   PROPERTY_RW(QString, errorMessage, {})
 
 public:
