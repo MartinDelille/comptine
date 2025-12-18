@@ -12,14 +12,18 @@ Dialog {
     standardButtons: Dialog.Close
 
     property var category
-    property int year: 0
-    property int month: 0
+    property int year: AppState.navigation.budgetYear
+    property int month: AppState.navigation.budgetMonth
     property var operations: []
     property real totalAmount: 0
 
-    onOpened: {
+    function updateOperations() {
         operations = AppState.categories.operationsForCategory(category, year, month);
         totalAmount = operations.reduce((sum, op) => sum + op.amount, 0);
+    }
+    Component.onCompleted: {
+        yearChanged.connect(updateOperations);
+        monthChanged.connect(updateOperations);
     }
 
     ColumnLayout {

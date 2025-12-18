@@ -6,7 +6,7 @@ FocusScope {
     id: root
 
     property var budgetSummary: []
-    property bool dialogOpen: categoryEditDialog.visible || categoryDetailView.visible
+    property bool dialogOpen: categoryEditDialog.visible
 
     function editCurrentCategory() {
         if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
@@ -21,16 +21,6 @@ FocusScope {
         categoryEditDialog.originalName = "";
         categoryEditDialog.originalBudgetLimit = 0;
         categoryEditDialog.open();
-    }
-
-    // Forward focus to the category list
-    onActiveFocusChanged: {
-        if (activeFocus && budgetSummary.length > 0) {
-            if (AppState.navigation.currentCategoryIndex < 0) {
-                AppState.navigation.currentCategoryIndex = 0;
-            }
-            categoryListView.forceActiveFocus();
-        }
     }
 
     function updateBudgetSummary() {
@@ -84,9 +74,6 @@ FocusScope {
 
     CategoryEditDialog {
         id: categoryEditDialog
-        onClosed: {
-            categoryListView.forceActiveFocus();
-        }
     }
 
     CategoryDetailView {
@@ -140,8 +127,6 @@ FocusScope {
                     if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
                         let category = AppState.categories.getCategory(AppState.navigation.currentCategoryIndex);
                         categoryDetailView.category = category;
-                        categoryDetailView.year = AppState.navigation.budgetYear;
-                        categoryDetailView.month = AppState.navigation.budgetMonth;
                         categoryDetailView.open();
                     }
                 }
@@ -164,10 +149,7 @@ FocusScope {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             AppState.navigation.currentCategoryIndex = index;
-                            categoryListView.forceActiveFocus();
                             categoryDetailView.category = AppState.categories.getCategory(index);
-                            categoryDetailView.year = AppState.navigation.budgetYear;
-                            categoryDetailView.month = AppState.navigation.budgetMonth;
                             categoryDetailView.open();
                         }
                     }
