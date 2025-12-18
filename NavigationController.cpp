@@ -66,20 +66,6 @@ void NavigationController::nextMonth() {
   }
 }
 
-void NavigationController::previousCategory() {
-  QVariantList summary = _categoryController.monthlyBudgetSummary(_budgetYear, _budgetMonth);
-  if (_currentCategoryIndex > 0) {
-    set_currentCategoryIndex(_currentCategoryIndex - 1);
-  }
-}
-
-void NavigationController::nextCategory() {
-  QVariantList summary = _categoryController.monthlyBudgetSummary(_budgetYear, _budgetMonth);
-  if (_currentCategoryIndex < summary.size() - 1) {
-    set_currentCategoryIndex(_currentCategoryIndex + 1);
-  }
-}
-
 void NavigationController::previousOperation(bool extendSelection) {
   Account* account = currentAccount();
   if (!account) return;

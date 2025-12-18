@@ -39,10 +39,6 @@ public:
   Q_INVOKABLE void previousMonth();
   Q_INVOKABLE void nextMonth();
 
-  // Category navigation
-  Q_INVOKABLE void previousCategory();
-  Q_INVOKABLE void nextCategory();
-
   // Operation navigation
   Q_INVOKABLE void previousOperation(bool extendSelection = false);
   Q_INVOKABLE void nextOperation(bool extendSelection = false);

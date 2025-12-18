@@ -134,17 +134,7 @@ FocusScope {
                 clip: true
                 focus: true
                 currentIndex: AppState.navigation.currentCategoryIndex
-                keyNavigationEnabled: false
-
-                Keys.onUpPressed: {
-                    AppState.navigation.previousCategory();
-                    categoryListView.positionViewAtIndex(AppState.navigation.currentCategoryIndex, ListView.Contain);
-                }
-
-                Keys.onDownPressed: {
-                    AppState.navigation.nextCategory();
-                    categoryListView.positionViewAtIndex(AppState.navigation.currentCategoryIndex, ListView.Contain);
-                }
+                onCurrentIndexChanged: AppState.navigation.currentCategoryIndex = currentIndex
 
                 Keys.onReturnPressed: {
                     if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
