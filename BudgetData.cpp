@@ -29,8 +29,7 @@ QString BudgetData::appCommitHash() const {
   return APP_COMMIT_HASH;
 }
 
-BudgetData::BudgetData(QUndoStack& undoStack, QObject* parent) :
-    QObject(parent),
+BudgetData::BudgetData(QUndoStack& undoStack) :
     _undoStack(undoStack),
     _operationModel(new OperationListModel(this)),
     _accountModel(new AccountListModel(_accounts, this)) {

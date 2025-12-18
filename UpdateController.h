@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QDateTime>
+#include <QNetworkAccessManager>
 #include <QObject>
 #include <QString>
 
@@ -22,7 +23,7 @@ class UpdateController : public QObject {
   PROPERTY_RW(QString, errorMessage, {})
 
 public:
-  explicit UpdateController(AppSettings& appSettings, QObject* parent = nullptr);
+  explicit UpdateController(AppSettings& appSettings);
 
   // Check for updates from GitHub releases
   Q_INVOKABLE void checkForUpdates();
@@ -51,7 +52,7 @@ private:
   QList<int> parseVersion(const QString& version) const;
 
   AppSettings& _appSettings;
-  QNetworkAccessManager* _networkManager;
+  QNetworkAccessManager _networkManager;
 
   // GitHub repository information
   static constexpr const char* GITHUB_OWNER = "MartinDelille";

@@ -22,7 +22,7 @@ class RuleController : public QObject {
   Q_PROPERTY(RuleListModel* ruleModel READ ruleModel CONSTANT)
 
 public:
-  explicit RuleController(QUndoStack& undoStack, QObject* parent = nullptr);
+  explicit RuleController(QUndoStack& undoStack);
   ~RuleController();
 
   // Setup

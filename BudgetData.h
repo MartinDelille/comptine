@@ -30,7 +30,7 @@ class BudgetData : public QObject {
   Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
 
 public:
-  explicit BudgetData(QUndoStack& undoStack, QObject* parent = nullptr);
+  explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
 
   // Version info accessors

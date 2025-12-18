@@ -9,7 +9,8 @@
 #include "RuleListModel.h"
 #include "UndoCommands.h"
 
-RuleController::RuleController(QUndoStack& undoStack, QObject* parent) : QObject(parent), _undoStack(undoStack) {
+RuleController::RuleController(QUndoStack& undoStack) :
+    _undoStack(undoStack) {
   _ruleModel = new RuleListModel(this);
   _ruleModel->setRuleController(this);
 }

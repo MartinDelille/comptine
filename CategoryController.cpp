@@ -8,8 +8,8 @@
 #include "Operation.h"
 #include "UndoCommands.h"
 
-CategoryController::CategoryController(QUndoStack& undoStack, QObject* parent) :
-    QObject(parent), _undoStack(undoStack), _leftoverModel(this) {
+CategoryController::CategoryController(QUndoStack& undoStack) :
+    _undoStack(undoStack), _leftoverModel(this) {
   _leftoverModel.setCategoryController(this);
 }
 

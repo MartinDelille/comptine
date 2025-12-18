@@ -30,9 +30,7 @@ FileController::FileController(AppSettings& appSettings,
                                CategoryController& categoryController,
                                NavigationController& navController,
                                RuleController& ruleController,
-                               QUndoStack& undoStack,
-                               QObject* parent) :
-    QObject(parent),
+                               QUndoStack& undoStack) :
     _appSettings(appSettings),
     _budgetData(budgetData),
     _categoryController(categoryController),

@@ -27,7 +27,7 @@ class AppSettings : public QObject {
   Q_PROPERTY(QStringListModel* recentFilesModel READ recentFilesModel CONSTANT)
 
 public:
-  explicit AppSettings(QObject* parent = nullptr);
+  explicit AppSettings();
 
   QStringListModel* recentFilesModel();
   QStringList recentFiles() const;

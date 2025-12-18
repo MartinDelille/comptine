@@ -29,7 +29,7 @@ class NavigationController : public QObject {
   Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
 
 public:
-  explicit NavigationController(QObject* parent = nullptr);
+  explicit NavigationController();
 
   // Set references to other controllers
   void setBudgetData(BudgetData* budgetData);
