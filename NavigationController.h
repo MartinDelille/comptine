@@ -29,11 +29,8 @@ class NavigationController : public QObject {
   Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
 
 public:
-  explicit NavigationController();
-
-  // Set references to other controllers
-  void setBudgetData(BudgetData* budgetData);
-  void setCategoryController(CategoryController* categoryController);
+  explicit NavigationController(BudgetData& budgetData,
+                                CategoryController& categoryController);
 
   // Current account getter
   Account* currentAccount() const;
@@ -68,7 +65,7 @@ signals:
   void currentAccountChanged();       // Emitted when current account changes
 
 private:
-  BudgetData* _budgetData = nullptr;
-  CategoryController* _categoryController = nullptr;
+  BudgetData& _budgetData;
+  CategoryController& _categoryController;
   Account* _currentAccount = nullptr;  // Cached pointer to current account
 };

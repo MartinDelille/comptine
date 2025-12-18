@@ -8,13 +8,12 @@
 #include "Operation.h"
 #include "UndoCommands.h"
 
-CategoryController::CategoryController(QUndoStack& undoStack) :
-    _undoStack(undoStack), _leftoverModel(this) {
+CategoryController::CategoryController(BudgetData& budgetData,
+                                       QUndoStack& undoStack) :
+    _budgetData(budgetData),
+    _undoStack(undoStack),
+    _leftoverModel(this) {
   _leftoverModel.setCategoryController(this);
-}
-
-void CategoryController::setBudgetData(BudgetData* budgetData) {
-  _budgetData = budgetData;
 }
 
 int CategoryController::categoryCount() const {
@@ -103,17 +102,15 @@ void CategoryController::editCategory(const QString& originalName, const QString
 
   // Only create undo command if something changed
   if (oldName != newName || oldBudgetLimit != newBudgetLimit) {
-    _undoStack.push(new EditCategoryCommand(*category, _budgetData, this,
+    _undoStack.push(new EditCategoryCommand(*category, &_budgetData, this,
                                             oldName, newName,
                                             oldBudgetLimit, newBudgetLimit));
   }
 }
 
 double CategoryController::spentInCategory(const QString& categoryName, int year, int month) const {
-  if (!_budgetData) return 0.0;
-
   double total = 0.0;
-  for (const Account* account : _budgetData->accounts()) {
+  for (const Account* account : _budgetData.accounts()) {
     for (const Operation* op : account->operations()) {
       // Use budgetDate for budget calculations (falls back to date if not set)
       QDate budgetDate = op->budgetDate();
@@ -183,10 +180,8 @@ QVariantList CategoryController::monthlyBudgetSummary(int year, int month) const
 }
 
 QVariantList CategoryController::operationsForCategory(const QString& categoryName, int year, int month) const {
-  if (!_budgetData) return {};
-
   QVariantList result;
-  for (const Account* account : _budgetData->accounts()) {
+  for (const Account* account : _budgetData.accounts()) {
     for (const Operation* op : account->operations()) {
       QDate budgetDate = op->budgetDate();
       if (budgetDate.year() == year && budgetDate.month() == month) {
