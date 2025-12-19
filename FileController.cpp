@@ -72,8 +72,6 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
   // Get navigation state from NavigationController
   int currentTabIndex = _navController.currentTabIndex();
-  int budgetYear = _navController.budgetYear();
-  int budgetMonth = _navController.budgetMonth();
   int currentAccountIndex = _navController.currentAccountIndex();
   int currentCategoryIndex = _navController.currentCategoryIndex();
 
@@ -81,8 +79,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   ryml::NodeRef state = root["state"];
   state |= ryml::MAP;
   state["currentTab"] << currentTabIndex;
-  state["budgetYear"] << budgetYear;
-  state["budgetMonth"] << budgetMonth;
+  state["budgetDate"] << _navController.budgetDate().toString("MMMM yyyy").toStdString();
 
   // Write categories
   ryml::NodeRef categories = root["categories"];
@@ -226,6 +223,7 @@ bool FileController::loadFromYamlUrl(const QUrl& fileUrl) {
 }
 
 bool FileController::loadFromYamlFile(const QString& filePath) {
+  clear();
   // Clear any previous error
   set_errorMessage({});
 
@@ -249,10 +247,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   // Track state from file for NavigationController
   // Default to current year/month if not specified in file
-  QDate today = QDate::currentDate();
   int loadedTabIndex = 0;
-  int loadedBudgetYear = today.year();
-  int loadedBudgetMonth = today.month();
+  QDate loadedBudgetDate = QDate::currentDate();
   int loadedAccountIdx = 0;
   int loadedCategoryIdx = 0;
   Operation* currentOperation = nullptr;
@@ -268,13 +264,23 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         auto val = state["currentTab"].val();
         loadedTabIndex = QString::fromUtf8(val.str, val.len).toInt();
       }
-      if (state.has_child("budgetYear")) {
-        auto val = state["budgetYear"].val();
-        loadedBudgetYear = QString::fromUtf8(val.str, val.len).toInt();
-      }
-      if (state.has_child("budgetMonth")) {
-        auto val = state["budgetMonth"].val();
-        loadedBudgetMonth = QString::fromUtf8(val.str, val.len).toInt();
+      if (state.has_child("budgetDate")) {
+        auto val = state["budgetDate"].val();
+        loadedBudgetDate = QDate::fromString(QString::fromUtf8(val.str, val.len), "MMMM yyyy");
+      } else {
+        int loadedBudgetYear = 0;
+        int loadedBudgetMonth = 0;
+        if (state.has_child("budgetYear")) {
+          auto val = state["budgetYear"].val();
+          loadedBudgetYear = QString::fromUtf8(val.str, val.len).toInt();
+        }
+        if (state.has_child("budgetMonth")) {
+          auto val = state["budgetMonth"].val();
+          loadedBudgetMonth = QString::fromUtf8(val.str, val.len).toInt();
+        }
+        if (loadedBudgetYear > 0 && loadedBudgetMonth > 0) {
+          loadedBudgetDate = QDate(loadedBudgetYear, loadedBudgetMonth, 1);
+        }
       }
     }
 
@@ -468,10 +474,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   // Emit signal with loaded navigation state for NavigationController
   emit navigationStateLoaded(
       loadedTabIndex,
-      loadedBudgetYear,
-      loadedBudgetMonth,
+      loadedBudgetDate,
       qBound(0, loadedAccountIdx, qMax(0, _budgetData.accountCount() - 1)),
-      qBound(0, loadedCategoryIdx, qMax(0, _categoryController.categoryCount() - 1)),
+      qBound(0, loadedCategoryIdx, qMax(0, _categoryController.rowCount() - 1)),
       loadedOperationIdx);
 
   set_currentFilePath(filePath);
@@ -485,7 +490,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   emit dataLoaded();
   qDebug() << "Budget data loaded from:" << filePath;
   qDebug() << "  Accounts:" << _budgetData.accountCount();
-  qDebug() << "  Categories:" << _categoryController.categoryCount();
+  qDebug() << "  Categories:" << _categoryController.rowCount();
 
   return true;
 }
@@ -750,8 +755,8 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
 void FileController::clear() {
   _budgetData.clear();
+  _categoryController.clear();
   set_currentFilePath({});
-  emit navigationStateLoaded(0, 0, 0, -1, -1, -1);
 }
 
 void FileController::loadInitialFile(const QStringList& args) {

@@ -163,6 +163,57 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>DateLabel</name>
+    <message>
+        <source>January</source>
+        <translation>Janvier</translation>
+    </message>
+    <message>
+        <source>February</source>
+        <translation>Février</translation>
+    </message>
+    <message>
+        <source>March</source>
+        <translation>Mars</translation>
+    </message>
+    <message>
+        <source>April</source>
+        <translation>Avril</translation>
+    </message>
+    <message>
+        <source>May</source>
+        <translation>Mai</translation>
+    </message>
+    <message>
+        <source>June</source>
+        <translation>Juin</translation>
+    </message>
+    <message>
+        <source>July</source>
+        <translation>Juillet</translation>
+    </message>
+    <message>
+        <source>August</source>
+        <translation>Août</translation>
+    </message>
+    <message>
+        <source>September</source>
+        <translation>Septembre</translation>
+    </message>
+    <message>
+        <source>October</source>
+        <translation>Octobre</translation>
+    </message>
+    <message>
+        <source>November</source>
+        <translation>Novembre</translation>
+    </message>
+    <message>
+        <source>December</source>
+        <translation>Décembre</translation>
+    </message>
+</context>
+<context>
     <name>FileController</name>
     <message>
         <source>Could not open file: %1</source>
@@ -229,58 +280,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Monthly Leftover Summary</source>
         <translation>Résumé mensuel des reports</translation>
-    </message>
-    <message>
-        <source>%1 %2</source>
-        <translation>%1 %2</translation>
-    </message>
-    <message>
-        <source>January</source>
-        <translation>Janvier</translation>
-    </message>
-    <message>
-        <source>February</source>
-        <translation>Février</translation>
-    </message>
-    <message>
-        <source>March</source>
-        <translation>Mars</translation>
-    </message>
-    <message>
-        <source>April</source>
-        <translation>Avril</translation>
-    </message>
-    <message>
-        <source>May</source>
-        <translation>Mai</translation>
-    </message>
-    <message>
-        <source>June</source>
-        <translation>Juin</translation>
-    </message>
-    <message>
-        <source>July</source>
-        <translation>Juillet</translation>
-    </message>
-    <message>
-        <source>August</source>
-        <translation>Août</translation>
-    </message>
-    <message>
-        <source>September</source>
-        <translation>Septembre</translation>
-    </message>
-    <message>
-        <source>October</source>
-        <translation>Octobre</translation>
-    </message>
-    <message>
-        <source>November</source>
-        <translation>Novembre</translation>
-    </message>
-    <message>
-        <source>December</source>
-        <translation>Décembre</translation>
     </message>
     <message>
         <source>Category</source>
@@ -500,57 +499,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Update Check Failed</source>
         <translation>Échec de la vérification des mises à jour</translation>
-    </message>
-</context>
-<context>
-    <name>MonthSelector</name>
-    <message>
-        <source>January</source>
-        <translation>Janvier</translation>
-    </message>
-    <message>
-        <source>February</source>
-        <translation>Février</translation>
-    </message>
-    <message>
-        <source>March</source>
-        <translation>Mars</translation>
-    </message>
-    <message>
-        <source>April</source>
-        <translation>Avril</translation>
-    </message>
-    <message>
-        <source>May</source>
-        <translation>Mai</translation>
-    </message>
-    <message>
-        <source>June</source>
-        <translation>Juin</translation>
-    </message>
-    <message>
-        <source>July</source>
-        <translation>Juillet</translation>
-    </message>
-    <message>
-        <source>August</source>
-        <translation>Août</translation>
-    </message>
-    <message>
-        <source>September</source>
-        <translation>Septembre</translation>
-    </message>
-    <message>
-        <source>October</source>
-        <translation>Octobre</translation>
-    </message>
-    <message>
-        <source>November</source>
-        <translation>Novembre</translation>
-    </message>
-    <message>
-        <source>December</source>
-        <translation>Décembre</translation>
     </message>
 </context>
 <context>

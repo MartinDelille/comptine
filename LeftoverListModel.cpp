@@ -4,7 +4,13 @@
 
 #include "CategoryController.h"
 
-LeftoverListModel::LeftoverListModel(QObject* parent) : QAbstractListModel(parent) {}
+LeftoverListModel::LeftoverListModel(CategoryController& categories) :
+    _categories(categories) {
+  _date = QDate(_date.year(), _date.month(), 1);
+
+  connect(&_categories, &CategoryController::leftoverDataChanged, this,
+          &LeftoverListModel::onLeftoverDataChanged);
+}
 
 int LeftoverListModel::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
@@ -62,46 +68,11 @@ QHash<int, QByteArray> LeftoverListModel::roleNames() const {
   };
 }
 
-void LeftoverListModel::setCategoryController(CategoryController* controller) {
-  if (_controller == controller)
-    return;
-
-  // Disconnect from old controller
-  if (_controller) {
-    disconnect(_controller, nullptr, this, nullptr);
-  }
-
-  _controller = controller;
-
-  // Connect to new controller
-  if (_controller) {
-    connect(_controller, &CategoryController::leftoverDataChanged, this,
-            &LeftoverListModel::onLeftoverDataChanged);
-  }
-}
-
-void LeftoverListModel::setYear(int year) {
-  if (_year == year)
-    return;
-  _year = year;
-  emit yearChanged();
-}
-
-void LeftoverListModel::setMonth(int month) {
-  if (_month == month)
-    return;
-  _month = month;
-  emit monthChanged();
-}
-
 void LeftoverListModel::refresh() {
-  if (!_controller || _year == 0 || _month == 0)
-    return;
-
   beginResetModel();
 
   _items.clear();
-  QVariantList data = _controller->leftoverSummary(_year, _month);
+  QVariantList data = _categories.leftoverSummary(_date);
 
   for (const QVariant& v : data) {
     QVariantMap map = v.toMap();
@@ -143,10 +114,7 @@ bool LeftoverListModel::getIsBalanced(int row) const {
 }
 
 void LeftoverListModel::refreshTotals() {
-  if (!_controller)
-    return;
-
-  QVariantMap totals = _controller->leftoverTotals(_year, _month);
+  QVariantMap totals = _categories.leftoverTotals(_date);
   _totalToSave = totals["toSave"].toDouble();
   _totalToReport = totals["toReport"].toDouble();
   _totalFromReport = totals["fromReport"].toDouble();
@@ -155,11 +123,8 @@ void LeftoverListModel::refreshTotals() {
 }
 
 void LeftoverListModel::onLeftoverDataChanged() {
-  if (!_controller || _year == 0 || _month == 0)
-    return;
-
   // Get updated data
-  QVariantList data = _controller->leftoverSummary(_year, _month);
+  QVariantList data = _categories.leftoverSummary(_date);
 
   // Build a map of name -> updated data for fast lookup
   QHash<QString, QVariantMap> dataByName;

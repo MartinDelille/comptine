@@ -11,19 +11,28 @@ Dialog {
     height: 500
     standardButtons: Dialog.Close
 
-    property var category
-    property int year: AppState.navigation.budgetYear
-    property int month: AppState.navigation.budgetMonth
+    property var category: AppState.categories.current
     property var operations: []
     property real totalAmount: 0
 
     function updateOperations() {
-        operations = AppState.categories.operationsForCategory(category, year, month);
+        operations = AppState.categories.operationsForCategory(category, AppState.navigation.budgetDate);
         totalAmount = operations.reduce((sum, op) => sum + op.amount, 0);
     }
+
     Component.onCompleted: {
-        yearChanged.connect(updateOperations);
-        monthChanged.connect(updateOperations);
+        AppState.navigation.budgetDateChanged.connect(updateOperations);
+        updateOperations();
+    }
+    onCategoryChanged: {
+        updateOperations();
+    }
+
+    Connections {
+        target: AppState.data
+        function onOperationDataChanged() {
+            updateOperations();
+        }
     }
 
     ColumnLayout {
@@ -35,10 +44,7 @@ Dialog {
             Layout.fillWidth: true
 
             Label {
-                text: {
-                    let date = new Date(year, month - 1, 1);
-                    return date.toLocaleDateString(Qt.locale(), "MMMM yyyy");
-                }
+                text: AppState.navigation.budgetDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")
                 font.pixelSize: Theme.fontSizeLarge
                 font.bold: true
                 color: Theme.textPrimary

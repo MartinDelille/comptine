@@ -5,14 +5,13 @@ import QtQuick.Layouts
 FocusScope {
     id: root
 
-    property var budgetSummary: []
     property bool dialogOpen: categoryEditDialog.visible
 
     function editCurrentCategory() {
-        if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
-            let category = budgetSummary[AppState.navigation.currentCategoryIndex];
+        let category = AppState.categories.current;
+        if (category) {
             categoryEditDialog.originalName = category.name;
-            categoryEditDialog.originalBudgetLimit = category.signedBudgetLimit;
+            categoryEditDialog.originalBudgetLimit = category.budgetLimit;
             categoryEditDialog.open();
         }
     }
@@ -21,55 +20,6 @@ FocusScope {
         categoryEditDialog.originalName = "";
         categoryEditDialog.originalBudgetLimit = 0;
         categoryEditDialog.open();
-    }
-
-    function updateBudgetSummary() {
-        budgetSummary = AppState.categories.monthlyBudgetSummary(AppState.navigation.budgetYear, AppState.navigation.budgetMonth);
-        // Reset current index if out of bounds, or initialize to first item
-        if (AppState.navigation.currentCategoryIndex < 0 && budgetSummary.length > 0) {
-            AppState.navigation.currentCategoryIndex = 0;
-        } else if (AppState.navigation.currentCategoryIndex >= budgetSummary.length) {
-            AppState.navigation.currentCategoryIndex = budgetSummary.length > 0 ? 0 : -1;
-        }
-        // Restore scroll position to current category after model update
-        if (AppState.navigation.currentCategoryIndex >= 0) {
-            categoryListView.positionViewAtIndex(AppState.navigation.currentCategoryIndex, ListView.Contain);
-        }
-    }
-
-    Component.onCompleted: {
-        updateBudgetSummary();
-    }
-
-    Connections {
-        target: AppState.file
-        function onDataLoaded() {
-            updateBudgetSummary();
-        }
-    }
-
-    Connections {
-        target: AppState.categories
-        function onCategoryCountChanged() {
-            updateBudgetSummary();
-        }
-    }
-
-    Connections {
-        target: AppState.data
-        function onOperationDataChanged() {
-            updateBudgetSummary();
-        }
-    }
-
-    Connections {
-        target: AppState.navigation
-        function onBudgetYearChanged() {
-            updateBudgetSummary();
-        }
-        function onBudgetMonthChanged() {
-            updateBudgetSummary();
-        }
     }
 
     CategoryEditDialog {
@@ -98,8 +48,33 @@ FocusScope {
                 Layout.fillWidth: true
                 spacing: Theme.spacingNormal
 
-                MonthSelector {
+                RowLayout {
                     id: monthSelector
+
+                    Layout.fillWidth: true
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: Theme.spacingXLarge
+
+                    Button {
+                        text: "<"
+                        focusPolicy: Qt.NoFocus
+                        onClicked: AppState.navigation.previousMonth()
+                        implicitWidth: 40
+                    }
+
+                    DateLabel {
+                        date: AppState.navigation.budgetDate
+                        color: Theme.textPrimary
+                        horizontalAlignment: Text.AlignHCenter
+                        Layout.preferredWidth: 200
+                    }
+
+                    Button {
+                        text: ">"
+                        focusPolicy: Qt.NoFocus
+                        onClicked: AppState.navigation.nextMonth()
+                        implicitWidth: 40
+                    }
                 }
 
                 Item {
@@ -116,30 +91,28 @@ FocusScope {
                 id: categoryListView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                model: budgetSummary
+                model: AppState.categories
                 spacing: Theme.spacingNormal
                 clip: true
                 focus: true
                 currentIndex: AppState.navigation.currentCategoryIndex
                 onCurrentIndexChanged: AppState.navigation.currentCategoryIndex = currentIndex
 
-                Keys.onReturnPressed: {
-                    if (AppState.navigation.currentCategoryIndex >= 0 && AppState.navigation.currentCategoryIndex < budgetSummary.length) {
-                        let category = AppState.categories.getCategory(AppState.navigation.currentCategoryIndex);
-                        categoryDetailView.category = category;
-                        categoryDetailView.open();
-                    }
-                }
+                Keys.onReturnPressed: categoryDetailView.open()
 
                 delegate: Rectangle {
                     required property var modelData
                     required property int index
+                    property var _category: modelData.category
+                    property double _budgetLimit: _category?.budgetLimit || 0
+                    property bool _isIncome: _budgetLimit > 0
+                    property double _percentUsed: (modelData.amount / _budgetLimit) * 100.0
 
                     width: ListView.view.width
                     implicitHeight: contentColumn.implicitHeight + 24
                     color: delegateMouseArea.containsMouse ? Theme.surface : Theme.surfaceElevated
-                    border.color: AppState.navigation.currentCategoryIndex === index ? Theme.accent : Theme.borderLight
-                    border.width: AppState.navigation.currentCategoryIndex === index ? 2 : Theme.cardBorderWidth
+                    border.color: categoryListView.currentIndex === index ? Theme.accent : Theme.borderLight
+                    border.width: categoryListView.currentIndex === index ? 2 : Theme.cardBorderWidth
                     radius: Theme.cardRadius
 
                     MouseArea {
@@ -148,8 +121,7 @@ FocusScope {
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
-                            AppState.navigation.currentCategoryIndex = index;
-                            categoryDetailView.category = AppState.categories.getCategory(index);
+                            categoryListView.currentIndex = index;
                             categoryDetailView.open();
                         }
                     }
@@ -164,14 +136,14 @@ FocusScope {
                             Layout.fillWidth: true
 
                             Label {
-                                text: modelData.name
+                                text: _category?.name || ""
                                 font.pixelSize: Theme.fontSizeNormal
                                 font.bold: true
                                 color: Theme.textPrimary
                             }
 
                             Label {
-                                text: modelData.isIncome ? qsTr("(income)") : ""
+                                text: _isIncome ? qsTr("(income)") : ""
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.textMuted
                             }
@@ -183,9 +155,9 @@ FocusScope {
                                 focusPolicy: Qt.NoFocus
                                 opacity: hovered ? 1.0 : 0.5
                                 onClicked: {
-                                    AppState.navigation.currentCategoryIndex = index;
-                                    categoryEditDialog.originalName = modelData.name;
-                                    categoryEditDialog.originalBudgetLimit = modelData.signedBudgetLimit;
+                                    categoryListView.currentIndex = index;
+                                    categoryEditDialog.originalName = _category.name;
+                                    categoryEditDialog.originalBudgetLimit = _budgetLimit;
                                     categoryEditDialog.open();
                                 }
                             }
@@ -196,20 +168,20 @@ FocusScope {
 
                             Label {
                                 text: {
-                                    if (modelData.isIncome && modelData.percentUsed < 100)
+                                    if (_isIncome && _percentUsed < 100)
                                         return qsTr("PENDING");
-                                    if (!modelData.isIncome && modelData.percentUsed > 100)
+                                    if (!_isIncome && _percentUsed > 100)
                                         return qsTr("EXCEEDED");
                                     return "";
                                 }
                                 font.pixelSize: Theme.fontSizeSmall
                                 font.bold: true
-                                color: modelData.isIncome ? Theme.warning : Theme.negative
+                                color: _isIncome ? Theme.warning : Theme.negative
                             }
 
                             Label {
                                 text: {
-                                    let base = Theme.formatAmount(modelData.amount) + " / " + Theme.formatAmount(modelData.budgetLimit);
+                                    let base = Theme.formatAmount(Math.abs(modelData.amount)) + " / " + Theme.formatAmount(Math.abs(_budgetLimit));
                                     if (modelData.accumulated > 0) {
                                         return base + " (+" + Theme.formatAmount(modelData.accumulated) + ")";
                                     }
@@ -228,18 +200,18 @@ FocusScope {
                             radius: 4
 
                             Rectangle {
-                                width: Math.min(modelData.percentUsed / 100, 1.0) * parent.width
+                                width: Math.min(_percentUsed / 100, 1.0) * parent.width
                                 height: parent.height
                                 radius: 4
                                 color: {
-                                    if (modelData.isIncome) {
+                                    if (_isIncome) {
                                         // Income: green when complete, warning when pending
-                                        return modelData.percentUsed >= 100 ? Theme.positive : Theme.warning;
+                                        return _percentUsed >= 100 ? Theme.positive : Theme.warning;
                                     } else {
                                         // Expense: red when exceeded, warning when close
-                                        if (modelData.percentUsed > 100)
+                                        if (_percentUsed > 100)
                                             return Theme.negative;
-                                        if (modelData.percentUsed > 80)
+                                        if (_percentUsed > 80)
                                             return Theme.warning;
                                         return Theme.positive;
                                     }
@@ -248,19 +220,34 @@ FocusScope {
                         }
 
                         Label {
+                            property double _remaining: _isIncome ? (_budgetLimit - modelData.amount) : (modelData.amount - _budgetLimit)
                             text: {
-                                if (modelData.isIncome) {
-                                    return modelData.remaining > 0 ? qsTr("Expected: %1").arg(Theme.formatAmount(modelData.remaining)) : qsTr("Received: %1 extra").arg(Theme.formatAmount(-modelData.remaining));
+                                let label, value;
+                                if (_isIncome) {
+                                    if (_remaining > 0) {
+                                        label = qsTr("Expected: %1");
+                                        value = _remaining;
+                                    } else {
+                                        label = qsTr("Received: %1 extra");
+                                        value = -_remaining;
+                                    }
                                 } else {
-                                    return modelData.remaining >= 0 ? qsTr("Remaining: %1").arg(Theme.formatAmount(modelData.remaining)) : qsTr("Exceeded: %1").arg(Theme.formatAmount(-modelData.remaining));
+                                    if (_remaining >= 0) {
+                                        label = qsTr("Remaining: %1");
+                                        value = _remaining;
+                                    } else {
+                                        label = qsTr("Exceeded: %1");
+                                        value = -_remaining;
+                                    }
                                 }
+                                return label.arg(Theme.formatAmount(value));
                             }
                             font.pixelSize: Theme.fontSizeSmall
                             color: {
-                                if (modelData.isIncome) {
-                                    return modelData.remaining > 0 ? Theme.warning : Theme.positive;
+                                if (_isIncome) {
+                                    return _remaining > 0 ? Theme.warning : Theme.positive;
                                 } else {
-                                    return modelData.remaining >= 0 ? Theme.textSecondary : Theme.negative;
+                                    return _remaining >= 0 ? Theme.textSecondary : Theme.negative;
                                 }
                             }
                         }
@@ -272,7 +259,7 @@ FocusScope {
             Label {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: budgetSummary.length === 0
+                visible: AppState.categories.count === 0
                 text: qsTr("No categories defined")
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

@@ -3,14 +3,16 @@
 #include <QtQml/qqml.h>
 #include <QAbstractListModel>
 
+#include "PropertyMacros.h"
+
 class CategoryController;
 
 class LeftoverListModel : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
 
-  Q_PROPERTY(int year READ year WRITE setYear NOTIFY yearChanged)
-  Q_PROPERTY(int month READ month WRITE setMonth NOTIFY monthChanged)
+  PROPERTY_RW(QDate, date, QDate::currentDate())
+
   Q_PROPERTY(double totalToSave READ totalToSave NOTIFY totalsChanged)
   Q_PROPERTY(double totalToReport READ totalToReport NOTIFY totalsChanged)
   Q_PROPERTY(double totalFromReport READ totalFromReport NOTIFY totalsChanged)
@@ -30,21 +32,12 @@ public:
   };
   Q_ENUM(Roles)
 
-  explicit LeftoverListModel(QObject* parent = nullptr);
+  explicit LeftoverListModel(CategoryController& categories);
 
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;
-
-  // Controller management
-  void setCategoryController(CategoryController* controller);
-
-  // Year/Month properties
-  int year() const { return _year; }
-  void setYear(int year);
-  int month() const { return _month; }
-  void setMonth(int month);
 
   // Totals properties
   double totalToSave() const { return _totalToSave; }
@@ -77,9 +70,7 @@ private:
     double reportAmount = 0.0;
   };
 
-  CategoryController* _controller = nullptr;
-  int _year = 0;
-  int _month = 0;
+  CategoryController& _categories;
   QVector<LeftoverItem> _items;
 
   // Cached totals

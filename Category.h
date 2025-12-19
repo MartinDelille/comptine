@@ -70,9 +70,10 @@ public:
 
   // Calculate accumulated leftover up to (but not including) a specific month
   // This sums all "Report" decisions from previous months
-  double accumulatedLeftoverBefore(int year, int month) const;
+  double accumulatedLeftoverBefore(const QDate& date) const;
 
 signals:
+  // remove ???
   void leftoverDecisionChanged(int year, int month);
 
 private:

@@ -15,15 +15,9 @@ BaseDialog {
     property var leftoverModel: AppState.categories.leftoverModel
 
     function open() {
-        leftoverModel.year = AppState.navigation.budgetYear;
-        leftoverModel.month = AppState.navigation.budgetMonth;
+        leftoverModel.date = AppState.navigation.budgetDate;
         leftoverModel.refresh();
         visible = true;
-    }
-
-    function monthName(m) {
-        let monthNames = [qsTr("January"), qsTr("February"), qsTr("March"), qsTr("April"), qsTr("May"), qsTr("June"), qsTr("July"), qsTr("August"), qsTr("September"), qsTr("October"), qsTr("November"), qsTr("December")];
-        return monthNames[m - 1] || "";
     }
 
     ColumnLayout {
@@ -31,10 +25,8 @@ BaseDialog {
         spacing: Theme.spacingLarge
 
         // Header with month info
-        Label {
-            text: qsTr("%1 %2").arg(monthName(leftoverModel.month)).arg(leftoverModel.year)
-            font.pixelSize: Theme.fontSizeLarge
-            font.bold: true
+        DateLabel {
+            date: leftoverModel.date
             color: Theme.textPrimary
         }
 
@@ -193,7 +185,7 @@ BaseDialog {
                                 // Clamp: can allocate up to current save + remaining leftover
                                 let maxSave = delegateRoot.saveAmount + delegateRoot.remainingLeftover;
                                 let clampedValue = Math.max(0, Math.min(newValue, maxSave));
-                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, clampedValue, delegateRoot.reportAmount);
+                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.date, clampedValue, delegateRoot.reportAmount);
                             }
 
                             onEdited: newValue => applyValue(newValue)
@@ -214,7 +206,7 @@ BaseDialog {
 
                             onClicked: {
                                 let newSave = delegateRoot.saveAmount + delegateRoot.remainingLeftover;
-                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, newSave, delegateRoot.reportAmount);
+                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.date, newSave, delegateRoot.reportAmount);
                             }
 
                             ToolTip.visible: hovered
@@ -245,7 +237,7 @@ BaseDialog {
                                     // User can choose to report none (0) or carry debt forward (negative)
                                     clampedValue = Math.max(delegateRoot.leftover, Math.min(newValue, 0));
                                 }
-                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, clampedValue);
+                                AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.date, delegateRoot.saveAmount, clampedValue);
                             }
 
                             onEdited: newValue => applyValue(newValue)
@@ -269,10 +261,10 @@ BaseDialog {
                                 if (delegateRoot.leftover >= 0) {
                                     // Positive leftover: allocate remaining to report
                                     let newReport = delegateRoot.reportAmount + delegateRoot.remainingLeftover;
-                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, newReport);
+                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.date, delegateRoot.saveAmount, newReport);
                                 } else {
                                     // Negative leftover: set report to full negative amount (carry forward debt)
-                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.year, leftoverModel.month, delegateRoot.saveAmount, delegateRoot.leftover);
+                                    AppState.categories.setLeftoverAmounts(delegateRoot.name, leftoverModel.date, delegateRoot.saveAmount, delegateRoot.leftover);
                                 }
                             }
 
