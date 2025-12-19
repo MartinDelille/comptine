@@ -22,7 +22,7 @@ QVariant LeftoverListModel::data(const QModelIndex& index, int role) const {
 
   const LeftoverItem& item = _items[row];
 
-  switch (role) {
+  switch (static_cast<Roles>(role)) {
     case NameRole:
       return item.name;
     case BudgetLimitRole:

@@ -33,7 +33,7 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
     return QVariant();
   }
 
-  switch (role) {
+  switch (static_cast<Roles>(role)) {
     case CategoryRole:
       if (rule->category()) {
         return rule->category()->name();
