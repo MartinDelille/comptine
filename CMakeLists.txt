@@ -286,11 +286,45 @@ endif()
 # Unit tests
 enable_testing()
 find_package(Qt6 REQUIRED COMPONENTS Test)
+
+# CsvParserTest - header-only library test
 qt_add_executable(CsvParserTest tests/CsvParserTest.cpp CsvParser.h)
-qt_add_executable(FileControllerTest tests/FileControllerTest.cpp
-                  FileController.cpp FileController.h)
 target_link_libraries(CsvParserTest PRIVATE Qt6::Core Qt6::Test)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
+
+# FileControllerTest - integration test with all dependencies
+qt_add_executable(FileControllerTest
+  tests/FileControllerTest.cpp
+  FileController.cpp FileController.h
+  Account.cpp Account.h
+  AppSettings.cpp AppSettings.h
+  BudgetData.cpp BudgetData.h
+  Category.cpp Category.h
+  CategoryController.cpp CategoryController.h
+  NavigationController.cpp NavigationController.h
+  RuleController.cpp RuleController.h
+  Operation.cpp Operation.h
+  CategorizationRule.cpp CategorizationRule.h
+  UndoCommands.cpp UndoCommands.h
+  AccountListModel.cpp AccountListModel.h
+  OperationListModel.cpp OperationListModel.h
+  LeftoverListModel.cpp LeftoverListModel.h
+  RuleListModel.cpp RuleListModel.h
+  TranslationManager.cpp TranslationManager.h
+  CsvParser.h
+  PropertyMacros.h
+)
+
+# Platform-specific FileCoordinator
+if(APPLE)
+  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator.mm)
+  target_link_libraries(FileControllerTest PRIVATE "-framework Foundation")
+else()
+  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp)
+endif()
+
+target_link_libraries(FileControllerTest PRIVATE Qt6::Core Qt6::Gui Qt6::Qml Qt6::Test ryml::ryml)
+add_test(NAME FileControllerTest COMMAND FileControllerTest)
 
 # =============================================================================
 # CPack Installer Configuration
