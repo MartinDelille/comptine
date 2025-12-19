@@ -59,7 +59,7 @@ private:
 // 2. Emits categoryCountChanged to refresh the UI
 class EditCategoryCommand : public QUndoCommand {
 public:
-  EditCategoryCommand(Category& category, BudgetData* budgetData, CategoryController* categoryController,
+  EditCategoryCommand(Category& category, CategoryController* categoryController,
                       const QString& oldName, const QString& newName,
                       double oldBudgetLimit, double newBudgetLimit,
                       QUndoCommand* parent = nullptr);
@@ -69,7 +69,6 @@ public:
 
 private:
   Category& _category;
-  BudgetData* _budgetData;
   CategoryController* _categoryController;
   QString _oldName;
   QString _newName;

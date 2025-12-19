@@ -26,16 +26,15 @@ QVariant AccountListModel::data(const QModelIndex& index, int role) const {
   if (!account)
     return QVariant();
 
-  switch (role) {
+  switch (static_cast<Roles>(role)) {
     case NameRole:
       return account->name();
     case OperationCountRole:
       return account->operationCount();
     case AccountRole:
       return QVariant::fromValue(account);
-    default:
-      return QVariant();
   }
+  return QVariant();
 }
 
 QHash<int, QByteArray> AccountListModel::roleNames() const {

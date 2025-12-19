@@ -56,6 +56,7 @@ bool FileController::saveToYamlUrl(const QUrl& fileUrl) {
     return false;
   }
   saveToYamlFile(filePath);
+  return true;
 }
 
 bool FileController::saveToYamlFile(const QString& filePath) {
@@ -219,6 +220,7 @@ bool FileController::loadFromYamlUrl(const QUrl& fileUrl) {
   qDebug() << "QUrl passed to loadFromYamlUrl:" << fileUrl;
   qDebug() << "Converted filePath from QUrl:" << filePath;
   loadFromYamlFile(filePath);
+  return true;
 }
 
 bool FileController::loadFromYamlFile(const QString& filePath) {
@@ -358,7 +360,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
         // Note: balance field is ignored - balance is calculated from operations
         if (acc.has_child("operations")) {
-          int opIdx = 0;
           for (ryml::ConstNodeRef opNode : acc["operations"]) {
             auto op = new Operation(account);
             if (opNode.has_child("date")) {
@@ -409,7 +410,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               }
             }
             account->appendOperation(op);  // Preserve file order
-            opIdx++;
           }
         }
         _budgetData.addAccount(account);
@@ -421,7 +421,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     if (root.has_child("rules")) {
       _ruleController.clearRules();
       for (ryml::ConstNodeRef ruleNode : root["rules"]) {
-        Category* category;
+        Category* category = nullptr;
         QString descriptionPrefix;
 
         if (ruleNode.has_child("category")) {
@@ -721,13 +721,12 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     _navController.set_currentAccountIndex(accountIndex);
   }
 
-  _budgetData.accountModel()->refresh();
-
   // Apply categorization rules to imported operations
-  int rulesApplied = 0;
   for (Operation* op : importedOperations) {
-    rulesApplied += _ruleController.applyRulesToOperation(op);
+    _ruleController.applyRulesToOperation(op);
   }
+
+  _budgetData.accountModel()->refresh();
 
   // Select all imported operations
   if (!importedOperations.isEmpty()) {

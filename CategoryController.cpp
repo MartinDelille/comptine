@@ -106,7 +106,7 @@ void CategoryController::editCategory(const QString& originalName, const QString
 
   // Only create undo command if something changed
   if (oldName != newName || oldBudgetLimit != newBudgetLimit) {
-    _undoStack.push(new EditCategoryCommand(*category, &_budgetData, this,
+    _undoStack.push(new EditCategoryCommand(*category, this,
                                             oldName, newName,
                                             oldBudgetLimit, newBudgetLimit));
   }

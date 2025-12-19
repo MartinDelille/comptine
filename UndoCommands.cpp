@@ -79,7 +79,6 @@ void RenameAccountCommand::redo() {
 }
 
 EditCategoryCommand::EditCategoryCommand(Category& category,
-                                         BudgetData* budgetData,
                                          CategoryController* categoryController,
                                          const QString& oldName,
                                          const QString& newName,
@@ -88,7 +87,6 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
-    _budgetData(budgetData),
     _categoryController(categoryController),
     _oldName(oldName),
     _newName(newName),

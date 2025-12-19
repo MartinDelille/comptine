@@ -17,30 +17,28 @@ QVariant OperationListModel::data(const QModelIndex& index, int role) const {
   if (row < 0 || row >= _account->operationCount())
     return QVariant();
 
-  Operation* op = _account->getOperation(row);
-  if (!op)
-    return QVariant();
-
-  switch (role) {
-    case DateRole:
-      return op->date();
-    case AmountRole:
-      return op->amount();
-    case DescriptionRole:
-      return op->description();
-    case CategoryRole:
-      if (op->category()) {
-        return op->category()->name();
-      }
-    case BalanceRole:
-      return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
-    case SelectedRole:
-      return _account->isSelectedAt(row);
-    case OperationRole:
-      return QVariant::fromValue(op);
-    default:
-      return QVariant();
+  if (auto op = _account->getOperation(row)) {
+    switch (static_cast<Roles>(role)) {
+      case DateRole:
+        return op->date();
+      case AmountRole:
+        return op->amount();
+      case DescriptionRole:
+        return op->description();
+      case CategoryRole:
+        if (op->category()) {
+          return op->category()->name();
+        }
+        break;
+      case BalanceRole:
+        return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
+      case SelectedRole:
+        return _account->isSelectedAt(row);
+      case OperationRole:
+        return QVariant::fromValue(op);
+    }
   }
+  return QVariant();
 }
 
 bool OperationListModel::setData(const QModelIndex& index, const QVariant& value,
