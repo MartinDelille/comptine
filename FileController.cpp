@@ -59,7 +59,7 @@ bool FileController::saveToYamlUrl(const QUrl& fileUrl) {
     set_errorMessage(tr("Invalid or unsupported file path."));
     return false;
   }
-  saveToYamlFile(filePath);
+  return saveToYamlFile(filePath);
 }
 
 bool FileController::saveToYamlFile(const QString& filePath) {
@@ -216,7 +216,7 @@ bool FileController::loadFromYamlUrl(const QUrl& fileUrl) {
 
   qDebug() << "QUrl passed to loadFromYamlUrl:" << fileUrl;
   qDebug() << "Converted filePath from QUrl:" << filePath;
-  loadFromYamlFile(filePath);
+  return loadFromYamlFile(filePath);
 }
 
 bool FileController::loadFromYamlFile(const QString& filePath) {
