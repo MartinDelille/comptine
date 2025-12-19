@@ -1,7 +1,7 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QObject>
-#include <QQmlEngine>
 #include <QString>
 
 #include "PropertyMacros.h"

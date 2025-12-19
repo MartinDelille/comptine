@@ -1,8 +1,7 @@
 #pragma once
 
+#include <QtQml/qqml.h>
 #include <QList>
-#include <QObject>
-#include <QQmlEngine>
 
 #include "PropertyMacros.h"
 #include "RuleListModel.h"

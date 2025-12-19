@@ -2,7 +2,6 @@
 
 #include <QList>
 #include <QObject>
-#include <QQmlEngine>
 #include <QSet>
 #include <QString>
 
