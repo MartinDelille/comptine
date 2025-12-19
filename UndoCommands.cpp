@@ -79,7 +79,6 @@ void RenameAccountCommand::redo() {
 }
 
 EditCategoryCommand::EditCategoryCommand(Category& category,
-                                         CategoryController* categoryController,
                                          const QString& oldName,
                                          const QString& newName,
                                          double oldBudgetLimit,
@@ -87,7 +86,6 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
-    _categoryController(categoryController),
     _oldName(oldName),
     _newName(newName),
     _oldBudgetLimit(oldBudgetLimit),
@@ -104,18 +102,11 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
 void EditCategoryCommand::undo() {
   _category.set_name(_oldName);
   _category.set_budgetLimit(_oldBudgetLimit);
-  if (_categoryController) {
-    emit _categoryController->categoryCountChanged();  // Trigger UI refresh
-  }
 }
 
 void EditCategoryCommand::redo() {
   _category.set_name(_newName);
   _category.set_budgetLimit(_newBudgetLimit);
-
-  if (_categoryController) {
-    emit _categoryController->categoryCountChanged();  // Trigger UI refresh
-  }
 }
 
 // AddCategoryCommand implementation
@@ -418,15 +409,14 @@ void SetOperationDescriptionCommand::redo() {
 
 SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
                                                        CategoryController* categoryController,
-                                                       int year, int month,
+                                                       const QDate& date,
                                                        const LeftoverDecision& oldDecision,
                                                        const LeftoverDecision& newDecision,
                                                        QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
     _categoryController(categoryController),
-    _year(year),
-    _month(month),
+    _date(date),
     _oldDecision(oldDecision),
     _newDecision(newDecision) {
   QString actionStr;
@@ -446,9 +436,9 @@ SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
 
 void SetLeftoverDecisionCommand::undo() {
   if (_oldDecision.isEmpty()) {
-    _category.clearLeftoverDecision(_year, _month);
+    _category.clearLeftoverDecision(_date.year(), _date.month());
   } else {
-    _category.setLeftoverDecision(_year, _month, _oldDecision);
+    _category.setLeftoverDecision(_date.year(), _date.month(), _oldDecision);
   }
   if (_categoryController) {
     emit _categoryController->leftoverDataChanged();
@@ -457,9 +447,9 @@ void SetLeftoverDecisionCommand::undo() {
 
 void SetLeftoverDecisionCommand::redo() {
   if (_newDecision.isEmpty()) {
-    _category.clearLeftoverDecision(_year, _month);
+    _category.clearLeftoverDecision(_date.year(), _date.month());
   } else {
-    _category.setLeftoverDecision(_year, _month, _newDecision);
+    _category.setLeftoverDecision(_date.year(), _date.month(), _newDecision);
   }
   if (_categoryController) {
     emit _categoryController->leftoverDataChanged();
@@ -477,7 +467,7 @@ bool SetLeftoverDecisionCommand::mergeWith(const QUndoCommand* other) {
     return false;
 
   // Only merge if same category, year, month
-  if (&cmd->_category != &_category || cmd->_year != _year || cmd->_month != _month)
+  if (&cmd->_category != &_category || cmd->_date != _date)
     return false;
 
   // Keep our old decision (for undo), take their new decision (for redo)

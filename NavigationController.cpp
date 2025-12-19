@@ -5,14 +5,9 @@
 #include "CategoryController.h"
 #include "NavigationController.h"
 
-NavigationController::NavigationController(BudgetData& budgetData,
-                                           CategoryController& categoryController) :
-    _budgetData(budgetData),
-    _categoryController(categoryController) {
-  // Initialize budget date to current month (will be overridden when a file is loaded)
-  QDate today = QDate::currentDate();
-  _budgetYear = today.year();
-  _budgetMonth = today.month();
+NavigationController::NavigationController(BudgetData& budgetData) :
+    _budgetDate(QDate::currentDate()),
+    _budgetData(budgetData) {
 }
 
 Account* NavigationController::currentAccount() const {
@@ -49,21 +44,13 @@ void NavigationController::set_currentAccountIndex(int index) {
 }
 
 void NavigationController::previousMonth() {
-  if (_budgetMonth == 1) {
-    set_budgetMonth(12);
-    set_budgetYear(_budgetYear - 1);
-  } else {
-    set_budgetMonth(_budgetMonth - 1);
-  }
+  QDate date = _budgetDate.addMonths(-1);
+  set_budgetDate(QDate(date.year(), date.month(), 1));
 }
 
 void NavigationController::nextMonth() {
-  if (_budgetMonth == 12) {
-    set_budgetMonth(1);
-    set_budgetYear(_budgetYear + 1);
-  } else {
-    set_budgetMonth(_budgetMonth + 1);
-  }
+  QDate date = _budgetDate.addMonths(1);
+  set_budgetDate(QDate(date.year(), date.month(), 1));
 }
 
 void NavigationController::previousOperation(bool extendSelection) {
@@ -137,18 +124,10 @@ void NavigationController::navigateToOperation(const QString& accountName, const
   }
 }
 
-void NavigationController::onNavigationStateLoaded(int tabIndex, int budgetYear, int budgetMonth,
+void NavigationController::onNavigationStateLoaded(int tabIndex, const QDate& budgetDate,
                                                    int accountIndex, int categoryIndex, int operationIndex) {
   set_currentTabIndex(tabIndex);
-
-  // Validate budget year/month - default to current date if invalid (0 means not set)
-  if (budgetYear <= 0 || budgetMonth <= 0 || budgetMonth > 12) {
-    QDate today = QDate::currentDate();
-    budgetYear = today.year();
-    budgetMonth = today.month();
-  }
-  set_budgetYear(budgetYear);
-  set_budgetMonth(budgetMonth);
+  set_budgetDate(budgetDate);
 
   set_currentAccountIndex(accountIndex);
   set_currentCategoryIndex(categoryIndex);

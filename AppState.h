@@ -47,9 +47,9 @@ private:
   QUndoStack _undoStack;
   AppSettings _settings;
   BudgetData _data;
+  NavigationController _navigation;
   CategoryController _categories;
   RuleController _rules;
-  NavigationController _navigation;
   ClipboardController _clipboard;
   FileController _file;
   UpdateController _update;

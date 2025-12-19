@@ -248,9 +248,6 @@ void BudgetData::splitOperation(int operationIndex, const QVariantList& allocati
 
 void BudgetData::clear() {
   clearAccounts();
-  if (_categoryController) {
-    _categoryController->clearCategories();
-  }
   _undoStack.clear();
   _undoStack.setClean();
 }

@@ -54,7 +54,7 @@ signals:
   void dataSaved();
 
   // Navigation state signals for file load/save coordination
-  void navigationStateLoaded(int tabIndex, int budgetYear, int budgetMonth,
+  void navigationStateLoaded(int tabIndex, const QDate& budgetDate,
                              int accountIndex, int categoryIndex, int operationIndex);
 
 private:

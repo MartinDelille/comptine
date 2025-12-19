@@ -59,7 +59,7 @@ private:
 // 2. Emits categoryCountChanged to refresh the UI
 class EditCategoryCommand : public QUndoCommand {
 public:
-  EditCategoryCommand(Category& category, CategoryController* categoryController,
+  EditCategoryCommand(Category& category,
                       const QString& oldName, const QString& newName,
                       double oldBudgetLimit, double newBudgetLimit,
                       QUndoCommand* parent = nullptr);
@@ -69,7 +69,6 @@ public:
 
 private:
   Category& _category;
-  CategoryController* _categoryController;
   QString _oldName;
   QString _newName;
   double _oldBudgetLimit;
@@ -233,7 +232,7 @@ class SetLeftoverDecisionCommand : public QUndoCommand {
 public:
   SetLeftoverDecisionCommand(Category& category,
                              CategoryController* categoryController,
-                             int year, int month,
+                             const QDate& date,
                              const LeftoverDecision& oldDecision,
                              const LeftoverDecision& newDecision,
                              QUndoCommand* parent = nullptr);
@@ -246,8 +245,7 @@ public:
 private:
   Category& _category;
   CategoryController* _categoryController;
-  int _year;
-  int _month;
+  QDate _date;
   LeftoverDecision _oldDecision;
   LeftoverDecision _newDecision;
 };

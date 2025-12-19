@@ -260,7 +260,7 @@ qt_add_qml_module(
   DateSpinBox.qml
   ImportDialog.qml
   LeftoverDialog.qml
-  MonthSelector.qml
+  DateLabel.qml
   OperationDelegate.qml
   OperationDetails.qml
   OperationEditDialog.qml

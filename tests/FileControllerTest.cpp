@@ -17,6 +17,8 @@
 #include "../Operation.h"
 #include "../RuleController.h"
 
+Q_DECLARE_METATYPE(QDate)
+
 class FileControllerTest : public QObject {
   Q_OBJECT
 
@@ -32,8 +34,8 @@ private slots:
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
     appSettings = new AppSettings();
-    categoryController = new CategoryController(*budgetData, *undoStack);
-    navController = new NavigationController(*budgetData, *categoryController);
+    navController = new NavigationController(*budgetData);
+    categoryController = new CategoryController(*budgetData, *navController, *undoStack);
     ruleController = new RuleController(*budgetData, *undoStack);
 
     // Wire up cross-references
@@ -64,7 +66,7 @@ private slots:
   void testClear() {
     // First just check we can access things
     QCOMPARE(budgetData->accountCount(), 0);
-    QCOMPARE(categoryController->categoryCount(), 0);
+    QCOMPARE(categoryController->rowCount(), 0);
 
     // Try adding an account
     Account* account = new Account("Test Account");
@@ -75,7 +77,7 @@ private slots:
     fileController->clear();
 
     QCOMPARE(budgetData->accountCount(), 0);
-    QCOMPARE(categoryController->categoryCount(), 0);
+    QCOMPARE(categoryController->rowCount(), 0);
     QCOMPARE(fileController->currentFilePath(), QString());
   }
 
@@ -107,7 +109,7 @@ private slots:
     QVERIFY(fileController->loadFromYamlFile(filePath));
 
     QCOMPARE(budgetData->accountCount(), 0);
-    QCOMPARE(categoryController->categoryCount(), 0);
+    QCOMPARE(categoryController->rowCount(), 0);
   }
 
   void testSaveToYamlUrl() {
@@ -158,7 +160,7 @@ private slots:
 
     // Verify data was restored
     QCOMPARE(budgetData->accountCount(), 1);
-    QCOMPARE(categoryController->categoryCount(), 1);
+    QCOMPARE(categoryController->rowCount(), 1);
 
     Account* loadedAccount = budgetData->getAccount(0);
     QCOMPARE(loadedAccount->name(), QString("Checking Account"));
@@ -318,7 +320,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify categories
-    QCOMPARE(categoryController->categoryCount(), 3);
+    QCOMPARE(categoryController->rowCount(), 3);
     Category* food = categoryController->getCategoryByName("Food");
     QVERIFY(food != nullptr);
     QCOMPARE(food->budgetLimit(), 500.0);
@@ -415,8 +417,7 @@ private slots:
 
     // Set navigation state
     navController->set_currentTabIndex(1);  // Budget view
-    navController->set_budgetYear(2024);
-    navController->set_budgetMonth(12);
+    navController->set_budgetDate(QDate(2024, 12, 1));
     navController->set_currentAccountIndex(1);   // Account 2
     navController->set_currentCategoryIndex(1);  // Cat 2
     account2->set_currentOperation(op);
@@ -427,8 +428,7 @@ private slots:
 
     // Reset navigation state
     navController->set_currentTabIndex(0);
-    navController->set_budgetYear(2025);
-    navController->set_budgetMonth(1);
+    navController->set_budgetDate(QDate(2025, 1, 1));
     navController->set_currentAccountIndex(0);
     navController->set_currentCategoryIndex(0);
 
@@ -438,12 +438,11 @@ private slots:
 
     QCOMPARE(navSpy.count(), 1);
     QList<QVariant> args = navSpy.takeFirst();
-    QCOMPARE(args[0].toInt(), 1);     // tabIndex
-    QCOMPARE(args[1].toInt(), 2024);  // budgetYear
-    QCOMPARE(args[2].toInt(), 12);    // budgetMonth
-    QCOMPARE(args[3].toInt(), 1);     // accountIndex
-    QCOMPARE(args[4].toInt(), 1);     // categoryIndex
-    QCOMPARE(args[5].toInt(), 0);     // operationIndex
+    QCOMPARE(args[0].toInt(), 1);                    // tabIndex
+    QCOMPARE(args[1].toDate(), QDate(2024, 12, 1));  // budgetDate
+    QCOMPARE(args[2].toInt(), 1);                    // accountIndex
+    QCOMPARE(args[3].toInt(), 1);                    // categoryIndex
+    QCOMPARE(args[4].toInt(), 0);                    // operationIndex
   }
 
   // Error Handling
@@ -553,7 +552,7 @@ private slots:
     QCOMPARE(account->operations().size(), 2);
 
     // Verify categories were created
-    QCOMPARE(categoryController->categoryCount(), 2);
+    QCOMPARE(categoryController->rowCount(), 2);
     QVERIFY(categoryController->getCategoryByName("Food") != nullptr);
     QVERIFY(categoryController->getCategoryByName("Transport") != nullptr);
   }
@@ -577,7 +576,7 @@ private slots:
     QCOMPARE(op->category(), nullptr);  // Empty category
 
     // No categories should be created
-    QCOMPARE(categoryController->categoryCount(), 0);
+    QCOMPARE(categoryController->rowCount(), 0);
   }
 
   void testImportAppliesCategorizationRules() {

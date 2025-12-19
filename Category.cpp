@@ -28,12 +28,12 @@ QMap<YearMonth, LeftoverDecision> Category::allLeftoverDecisions() const {
   return _leftoverDecisions;
 }
 
-double Category::accumulatedLeftoverBefore(int year, int month) const {
+double Category::accumulatedLeftoverBefore(const QDate& date) const {
   double total = 0.0;
   for (auto it = _leftoverDecisions.constBegin(); it != _leftoverDecisions.constEnd(); ++it) {
     const YearMonth& ym = it.key();
     // Only count decisions before the specified month
-    if (ym.year < year || (ym.year == year && ym.month < month)) {
+    if (ym.year < date.year() || (ym.year == date.year() && ym.month < date.month())) {
       // Only reported amounts carry forward
       total += it.value().reportAmount;
     }

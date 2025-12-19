@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDate>
 #include <QObject>
 
 #include "PropertyMacros.h"
@@ -15,9 +16,7 @@ class NavigationController : public QObject {
   // Tab navigation
   PROPERTY_RW(int, currentTabIndex, 0)
 
-  // Budget month/year navigation
-  PROPERTY_RW(int, budgetYear, 0)
-  PROPERTY_RW(int, budgetMonth, 0)
+  PROPERTY_RW(QDate, budgetDate, QDate::currentDate())
 
   // Category navigation
   PROPERTY_RW(int, currentCategoryIndex, -1)
@@ -29,8 +28,7 @@ class NavigationController : public QObject {
   Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
 
 public:
-  explicit NavigationController(BudgetData& budgetData,
-                                CategoryController& categoryController);
+  explicit NavigationController(BudgetData& budgetData);
 
   // Current account getter
   Account* currentAccount() const;
@@ -53,7 +51,7 @@ public:
 
 public slots:
   // Called when FileController loads navigation state from a file
-  void onNavigationStateLoaded(int tabIndex, int budgetYear, int budgetMonth,
+  void onNavigationStateLoaded(int tabIndex, const QDate& budgetDate,
                                int accountIndex, int categoryIndex, int operationIndex);
 
 signals:
@@ -62,6 +60,5 @@ signals:
 
 private:
   BudgetData& _budgetData;
-  CategoryController& _categoryController;
   Account* _currentAccount = nullptr;  // Cached pointer to current account
 };
