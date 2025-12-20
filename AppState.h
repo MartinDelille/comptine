@@ -12,11 +12,15 @@
 #include "NavigationController.h"
 #include "RuleController.h"
 #include "UpdateController.h"
+#include "Version.h"
 
 class AppState : public QObject {
   Q_OBJECT
   QML_ELEMENT
   QML_SINGLETON
+
+  PROPERTY_CONSTANT(QString, appVersion, APP_VERSION_FULL)
+  PROPERTY_CONSTANT(QString, appCommitHash, APP_COMMIT_HASH)
 
   Q_PROPERTY(AppSettings* settings READ settings CONSTANT)
   Q_PROPERTY(BudgetData* data READ data CONSTANT)

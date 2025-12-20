@@ -7,7 +7,6 @@
 #include "NavigationController.h"
 #include "OperationListModel.h"
 #include "UndoCommands.h"
-#include "Version.h"
 
 void BudgetData::setNavigationController(NavigationController* navController) {
   _navController = navController;
@@ -19,14 +18,6 @@ void BudgetData::setNavigationController(NavigationController* navController) {
 
 void BudgetData::setCategoryController(CategoryController* categoryController) {
   _categoryController = categoryController;
-}
-
-QString BudgetData::appVersion() const {
-  return APP_VERSION_FULL;
-}
-
-QString BudgetData::appCommitHash() const {
-  return APP_COMMIT_HASH;
 }
 
 BudgetData::BudgetData(QUndoStack& undoStack) :

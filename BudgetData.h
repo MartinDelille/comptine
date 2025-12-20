@@ -17,9 +17,6 @@ class NavigationController;
 class BudgetData : public QObject {
   Q_OBJECT
 
-  Q_PROPERTY(QString appVersion READ appVersion CONSTANT)
-  Q_PROPERTY(QString appCommitHash READ appCommitHash CONSTANT)
-
   // Read-only computed properties (macro-generated, implemented in .cpp)
   PROPERTY_RO(int, accountCount)
 
@@ -32,10 +29,6 @@ class BudgetData : public QObject {
 public:
   explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
-
-  // Version info accessors
-  QString appVersion() const;
-  QString appCommitHash() const;
 
   // Model accessors
   OperationListModel* operationModel() const { return _operationModel; }

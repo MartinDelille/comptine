@@ -11,7 +11,7 @@ BaseDialog {
         spacing: 8
 
         Label {
-            text: qsTr("Comptine %1").arg(AppState.data.appVersion)
+            text: qsTr("Comptine %1").arg(AppState.appVersion)
             font.bold: true
             font.pointSize: 14
         }
@@ -21,7 +21,7 @@ BaseDialog {
         }
 
         Label {
-            text: qsTr("Commit: %1").arg(AppState.data.appCommitHash)
+            text: qsTr("Commit: %1").arg(AppState.appCommitHash)
             font.pointSize: 10
             opacity: 0.7
         }
