@@ -38,7 +38,7 @@ BaseDialog {
     }
 
     onAccepted: {
-        let category = categoryCombo.currentText;
+        let category = AppState.categories.getCategoryByName(categoryCombo.currentText);
         let prefix = descriptionPrefixField.text.trim();
 
         if (isNewRule) {
