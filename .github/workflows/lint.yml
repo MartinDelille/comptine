@@ -96,15 +96,10 @@ jobs:
             exit 1
           fi
 
-      - name: Check merge conflict markers
-        run: |
-          INCLUDES="--include=*.cpp --include=*.h --include=*.qml"
-          INCLUDES="$INCLUDES --include=*.yml --include=*.yaml --include=*.md"
-          EXCLUDES="--exclude=lint.yml --exclude-dir=.venv"
-          if grep -rn '<<<<<<< \|=======$\|>>>>>>> ' $INCLUDES $EXCLUDES .; then
-            echo "Error: Found merge conflict markers"
-            exit 1
-          fi
+      - name: Merge Conflict finder
+        uses: olivernybroe/action-conflict-finder@v4.0
+        with:
+          exclude_dir: ".venv"
 
       - name: Check line endings (LF only)
         run: |
