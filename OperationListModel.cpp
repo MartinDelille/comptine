@@ -26,10 +26,7 @@ QVariant OperationListModel::data(const QModelIndex& index, int role) const {
       case DescriptionRole:
         return op->description();
       case CategoryRole:
-        if (op->category()) {
-          return op->category()->name();
-        }
-        break;
+        return QVariant::fromValue(op->category());
       case BalanceRole:
         return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
       case SelectedRole:

@@ -14,14 +14,15 @@ BaseDialog {
 
     // Override commitAndAccept to apply category instead of closing
     function commitAndAccept() {
-        if (currentOperation && categoryCombo.currentText.length > 0) {
-            applyCategoryAndNext(categoryCombo.currentText);
+        let category = AppState.categories.getCategoryByName(categoryCombo.currentText);
+        if (currentOperation && category) {
+            applyCategoryAndNext(category);
         }
     }
 
     // Applies a category to the current operation and loads the next
     function applyCategoryAndNext(category) {
-        if (currentOperation && category && category.length > 0) {
+        if (currentOperation && category) {
             AppState.data.setOperationCategory(currentOperation, category);
             loadNextOperation();
         }
@@ -43,12 +44,12 @@ BaseDialog {
         for (let i = 0; i < allUncategorized.length; i++) {
             let op = allUncategorized[i];
             // Check if already categorized (by Apply) or skipped
-            if (op.category.length === 0 && !op.isSplit && !isSkipped(op)) {
+            if (op.category === null && !op.isSplit && !isSkipped(op)) {
                 currentOperation = op;
                 currentIndex = i + 1;
                 // Try to find a matching rule for suggestion
                 let matchingCategory = AppState.rules.matchingCategoryForDescription(currentOperation.description);
-                if (matchingCategory.length > 0) {
+                if (matchingCategory) {
                     let catIndex = findCategoryIndex(matchingCategory);
                     if (catIndex >= 0) {
                         categoryCombo.currentIndex = catIndex;
@@ -270,8 +271,9 @@ BaseDialog {
                         text: qsTr("Apply")
                         enabled: categoryCombo.currentIndex >= 0
                         onClicked: {
-                            if (currentOperation && categoryCombo.currentText.length > 0) {
-                                applyCategoryAndNext(categoryCombo.currentText);
+                            let category = AppState.categories.getCategoryByName(categoryCombo.currentText);
+                            if (currentOperation && category) {
+                                applyCategoryAndNext(category);
                             }
                         }
                     }
