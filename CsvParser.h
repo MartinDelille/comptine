@@ -107,7 +107,7 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
     QString h = normalizeHeader(headerFields[i]);
 
     // Date column (first match wins)
-    if (indices.date < 0 && (h == "date" || h == "date de comptabilisation")) {
+    if (indices.date < 0 && (h == "date" || h == "date de comptabilisation" || "date comptable")) {
       indices.date = i;
     }
     // Budget date column (first match wins)
@@ -131,7 +131,7 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
       indices.credit = i;
     }
     // Single amount column (first match wins)
-    else if (indices.amount < 0 && (h == "montant" || h == "amount")) {
+    else if (indices.amount < 0 && (h == "montant" || h == "amount" || h == "debit/credit/montant")) {
       indices.amount = i;
     }
   }

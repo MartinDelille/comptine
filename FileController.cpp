@@ -589,6 +589,9 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     // Parse date (required)
     QDate date = QDate::fromString(getField(fields, idx.date), "dd/MM/yyyy");
     if (!date.isValid()) {
+      date = QDate::fromString(getField(fields, idx.date), "yyyy-MM-dd");
+    }
+    if (!date.isValid()) {
       qDebug() << "Skipping row with invalid date:" << getField(fields, idx.date);
       skippedCount++;
       continue;
