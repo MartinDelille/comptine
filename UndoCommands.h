@@ -113,6 +113,23 @@ private:
   bool _ownsOperations;  // True when operations are not in the account (after undo)
 };
 
+// Command for adding an operation
+class AddOperationCommand : public QUndoCommand {
+public:
+  AddOperationCommand(Operation* operation,
+                      Account& account,
+                      OperationListModel& operationModel,
+                      QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation* _operation;
+  Account& _account;
+  OperationListModel& _operationModel;
+};
+
 // Command for setting an operation's category
 class SetOperationCategoryCommand : public QUndoCommand {
 public:

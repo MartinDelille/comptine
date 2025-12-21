@@ -397,6 +397,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Rétablir</translation>
     </message>
     <message>
+        <source>Add New Operation...</source>
+        <translation>Ajouter une nouvelle opération...</translation>
+    </message>
+    <message>
         <source>Edit &amp;Operation...</source>
         <translation>Modifier l&apos;&amp;opération...</translation>
     </message>
@@ -797,6 +801,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Set operation category to &quot;%1&quot;</source>
         <translation>Définir la catégorie de l&apos;opération à « %1 »</translation>
+    </message>
+    <message>
+        <source>Add operation: &quot;%0&quot;</source>
+        <translation>Ajouter l&apos;opération «&#xa0;%0&#xa0;»</translation>
     </message>
     <message>
         <source>Set operation budget date to %1</source>

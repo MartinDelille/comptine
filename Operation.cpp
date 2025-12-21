@@ -7,12 +7,14 @@ Operation::Operation(const QDate& date,
                      double amount,
                      const Category* category,
                      const QString& description,
+                     const QList<CategoryAllocation>& allocations,
                      QObject* parent) :
     QObject(parent),
     _date(date),
     _amount(amount),
     _category(category),
-    _description(description) {
+    _description(description),
+    _allocations(allocations) {
   auto updateCategoryName = [this] {
     if (_category) {
       connect(_category, &Category::nameChanged, this, &Operation::categoryChanged);

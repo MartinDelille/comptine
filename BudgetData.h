@@ -48,6 +48,7 @@ public:
   void clearAccounts();
 
   // Operation editing
+  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& description, const QVariantList& allocations);
   Q_INVOKABLE void setOperationCategory(Operation* operation, const Category* newCategory);
   Q_INVOKABLE void setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate);
   Q_INVOKABLE void setOperationAmount(Operation* operation, double newAmount);

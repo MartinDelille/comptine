@@ -167,11 +167,14 @@ ApplicationWindow {
             }
             MenuSeparator {}
             Action {
-                text: qsTr("Add New Category...")
+                text: AppState.navigation.currentTabIndex === 0 ? qsTr("Add New Operation...") : qsTr("Add New Category...")
                 shortcut: "Ctrl+Shift+N"
-                enabled: AppState.navigation.currentTabIndex === 1
                 onTriggered: {
-                    budgetView.addCategory();
+                    if (AppState.navigation.currentTabIndex === 0) {
+                        operationView.addOperation();
+                    } else {
+                        budgetView.addCategory();
+                    }
                 }
             }
             Action {

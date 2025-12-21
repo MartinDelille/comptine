@@ -12,12 +12,15 @@ FocusScope {
         }
     }
 
+    function addOperation() {
+        operationEditDialog.initialize(null);
+    }
+
     function editCurrentOperation() {
         if (operationList.currentIndex >= 0) {
             let op = AppState.data.operationModel.operationAt(operationList.currentIndex);
             if (op) {
                 operationEditDialog.initialize(op);
-                operationEditDialog.open();
             }
         }
     }
