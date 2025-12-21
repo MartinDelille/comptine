@@ -6,19 +6,17 @@ FocusScope {
     id: root
     objectName: "OperationView"
 
-    // Forward focus to the operation list
     onActiveFocusChanged: {
         if (activeFocus) {
             operationList.forceActiveFocus();
         }
     }
 
-    // Function to edit the current operation from menu action
     function editCurrentOperation() {
         if (operationList.currentIndex >= 0) {
             let op = AppState.data.operationModel.operationAt(operationList.currentIndex);
             if (op) {
-                operationEditDialog.initialize(operationList.currentIndex, op.amount, op.date, op.budgetDate, op.description, op.isSplit ? op.allocations : [], op.category ?? "");
+                operationEditDialog.initialize(op);
                 operationEditDialog.open();
             }
         }
@@ -128,9 +126,8 @@ FocusScope {
                 Layout.maximumWidth: 400
                 Layout.fillHeight: true
                 currentIndex: operationList.currentIndex
-                onEditRequested: (operationIndex, amount, operationDate, budgetDate, description, allocations, currentCategory) => {
-                    operationEditDialog.initialize(operationIndex, amount, operationDate, budgetDate, description, allocations, currentCategory);
-                    operationEditDialog.open();
+                onEditRequested: operation => {
+                    operationEditDialog.initialize(operation);
                 }
             }
         }

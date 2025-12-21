@@ -8,7 +8,7 @@ Rectangle {
     required property int currentIndex
 
     // Signal to request opening edit dialog (handled by parent)
-    signal editRequested(int operationIndex, double amount, date operationDate, date budgetDate, string description, var allocations, string currentCategory)
+    signal editRequested(var operation)
 
     // Get operation and balance from the model using helper methods
     readonly property var operation: currentIndex >= 0 ? AppState.data.operationModel.operationAt(currentIndex) : null
@@ -53,7 +53,7 @@ Rectangle {
                 ToolTip.text: qsTr("Edit operation...")
                 onClicked: {
                     if (root.operation) {
-                        root.editRequested(root.currentIndex, root.operation.amount, root.operation.date, root.operation.budgetDate, root.operation.description, root.operation.isSplit ? root.operation.allocations : [], root.operation.category ?? "");
+                        root.editRequested(root.operation);
                     }
                 }
             }

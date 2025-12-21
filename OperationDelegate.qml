@@ -55,8 +55,8 @@ Rectangle {
                     let categories = [];
                     let allocations = root.operation.allocations;
                     for (let i = 0; i < allocations.length; i++) {
-                        if (allocations[i].category) {
-                            categories.push(allocations[i].category.name);
+                        if (allocations[i].category !== "") {
+                            categories.push(allocations[i].category);
                         }
                     }
                     return categories.join(", ");
