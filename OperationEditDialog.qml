@@ -5,7 +5,7 @@ import QtQuick.Layouts
 BaseDialog {
     id: root
 
-    property int operationIndex: -1
+    property var _operation: null
 
     // Original values (for tracking changes)
     property double originalAmount: 0
@@ -78,46 +78,51 @@ BaseDialog {
         id: allocationModel
     }
 
-    function initialize(opIndex, amount, date, budgetDate, description, allocations, currentCategory) {
-        operationIndex = opIndex;
-        originalAmount = amount;
-        editedAmount = amount;
-        originalDate = date;
-        originalBudgetDate = budgetDate;
-        originalDescription = description;
-        originalCategory = currentCategory;
-        originalAllocations = allocations ? allocations.slice() : [];
+    function initialize(operation) {
+        _operation = operation;
+        if (operation) {
+            originalAmount = operation.amount;
+            editedAmount = operation.amount;
+            originalDate = operation.date;
+            originalBudgetDate = operation.budgetDate;
+            originalDescription = operation.description;
+            originalCategory = operation.category;
+            if (operation.allocation) {
+                originalAllocations = operation.allocations ? allocations.slice() : [];
+            }
 
-        // Set description field
-        descriptionField.text = description;
+            // Set description field
+            descriptionField.text = operation.description;
 
-        // Set date spinboxes
-        dateDay.value = date.getDate();
-        dateMonth.currentIndex = date.getMonth();
-        dateYear.value = date.getFullYear();
+            // Set date spinboxes
+            dateDay.value = operation.date.getDate();
+            dateMonth.currentIndex = operation.date.getMonth();
+            dateYear.value = operation.date.getFullYear();
 
-        // Set budget date spinboxes
-        budgetDateDay.value = budgetDate.getDate();
-        budgetDateMonth.currentIndex = budgetDate.getMonth();
-        budgetDateYear.value = budgetDate.getFullYear();
+            // Set budget date spinboxes
+            budgetDateDay.value = operation.budgetDate.getDate();
+            budgetDateMonth.currentIndex = operation.budgetDate.getMonth();
+            budgetDateYear.value = operation.budgetDate.getFullYear();
 
-        // Initialize allocations
-        allocationModel.clear();
-        if (allocations && allocations.length > 0) {
-            // Existing split - load allocations
-            for (let i = 0; i < allocations.length; i++) {
+            // Initialize allocations
+            allocationModel.clear();
+            if (operation.allocations && operation.allocations.length > 0) {
+                // Existing split - load allocations
+                for (let i = 0; i < allocations.length; i++) {
+                    allocationModel.append({
+                        category: operation.allocations[i].category,
+                        amount: operation.allocations[i].amount
+                    });
+                }
+            } else {
+                // Single category - start with current category and full amount
                 allocationModel.append({
-                    category: allocations[i].category,
-                    amount: allocations[i].amount
+                    category: operation.category.name ?? "",
+                    amount: operation.amount
                 });
             }
-        } else {
-            // Single category - start with current category and full amount
-            allocationModel.append({
-                category: currentCategory.name ?? "",
-                amount: amount
-            });
         }
+        open();
     }
 
     function addAllocation() {
@@ -137,18 +142,18 @@ BaseDialog {
         // Apply description change if different
         let newDescription = descriptionField.text.trim();
         if (newDescription !== originalDescription) {
-            AppState.data.setOperationDescription(operationIndex, newDescription);
+            AppState.data.setOperationDescription(_operation, newDescription);
         }
 
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
-            AppState.data.setOperationAmount(operationIndex, editedAmount);
+            AppState.data.setOperationAmount(_operation, editedAmount);
         }
 
         // Apply budget date change if different
         let newBudgetDate = new Date(budgetDateYear.value, budgetDateMonth.currentIndex, budgetDateDay.value);
         if (newBudgetDate.getTime() !== originalBudgetDate.getTime()) {
-            AppState.data.setOperationBudgetDate(operationIndex, newBudgetDate);
+            AppState.data.setOperationBudgetDate(_operation, newBudgetDate);
         }
 
         // Build allocations array and call splitOperation
@@ -182,14 +187,14 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                AppState.data.splitOperation(operationIndex, allocations);
+                AppState.data.splitOperation(_operation, allocations);
             }
         }
 
         // Apply date change LAST (since it sorts and changes the operation's index)
         let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
         if (newDate.getTime() !== originalDate.getTime()) {
-            AppState.data.setOperationDate(operationIndex, newDate);
+            AppState.data.setOperationDate(_operation, newDate);
         }
     }
 

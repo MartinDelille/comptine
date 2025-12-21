@@ -123,21 +123,6 @@ void BudgetData::clearAccounts() {
   emit accountCountChanged();
 }
 
-void BudgetData::setOperationCategory(int operationIndex, const Category* newCategory) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
-  if (!operation) return;
-
-  auto oldCategory = operation->category();
-  if (oldCategory != newCategory) {
-    _undoStack.push(new SetOperationCategoryCommand(*operation, _operationModel,
-                                                    oldCategory, newCategory));
-  }
-}
-
 void BudgetData::setOperationCategory(Operation* operation, const Category* newCategory) {
   if (!operation) return;
 
@@ -148,12 +133,7 @@ void BudgetData::setOperationCategory(Operation* operation, const Category* newC
   }
 }
 
-void BudgetData::setOperationBudgetDate(int operationIndex, const QDate& newBudgetDate) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
+void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate) {
   if (!operation) return;
 
   QDate oldBudgetDate = operation->budgetDate();
@@ -163,12 +143,7 @@ void BudgetData::setOperationBudgetDate(int operationIndex, const QDate& newBudg
   }
 }
 
-void BudgetData::setOperationAmount(int operationIndex, double newAmount) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
+void BudgetData::setOperationAmount(Operation* operation, double newAmount) {
   if (!operation) return;
 
   double oldAmount = operation->amount();
@@ -178,12 +153,7 @@ void BudgetData::setOperationAmount(int operationIndex, double newAmount) {
   }
 }
 
-void BudgetData::setOperationDate(int operationIndex, const QDate& newDate) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
+void BudgetData::setOperationDate(Operation* operation, const QDate& newDate) {
   if (!operation) return;
 
   QDate oldDate = operation->date();
@@ -193,12 +163,7 @@ void BudgetData::setOperationDate(int operationIndex, const QDate& newDate) {
   }
 }
 
-void BudgetData::setOperationDescription(int operationIndex, const QString& newDescription) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
+void BudgetData::setOperationDescription(Operation* operation, const QString& newDescription) {
   if (!operation) return;
 
   QString oldDescription = operation->description();
@@ -208,12 +173,7 @@ void BudgetData::setOperationDescription(int operationIndex, const QString& newD
   }
 }
 
-void BudgetData::splitOperation(int operationIndex, const QVariantList& allocations) {
-  if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
-  if (!account) return;
-
-  Operation* operation = account->getOperation(operationIndex);
+void BudgetData::splitOperation(Operation* operation, const QVariantList& allocations) {
   if (!operation) return;
 
   // Convert QVariantList to QList<CategoryAllocation>
