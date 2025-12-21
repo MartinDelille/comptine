@@ -47,6 +47,7 @@ public:
             double amount,
             const Category* category,
             const QString& description,
+            const QList<CategoryAllocation>& allocations,
             QObject* parent = nullptr);
 
   // Split allocations methods

@@ -181,6 +181,30 @@ void ImportOperationsCommand::redo() {
   _operationModel.refresh();
 }
 
+AddOperationCommand::AddOperationCommand(Operation* operation,
+                                         Account& account,
+                                         OperationListModel& operationModel,
+                                         QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _account(account),
+    _operationModel(operationModel) {
+  setText(QObject::tr("Add operation: \"%0\"").arg(_operation->description()));
+}
+
+void AddOperationCommand::undo() {
+  _account.removeOperation(_operation);
+  _operation->setParent(nullptr);
+  _operationModel.refresh();
+}
+
+void AddOperationCommand::redo() {
+  _account.addOperation(_operation);
+  _operationModel.refresh();
+  _operationModel.selectByPointer(_operation);
+  emit _operationModel.operationDataChanged();
+}
+
 SetOperationCategoryCommand::SetOperationCategoryCommand(Operation& operation,
                                                          OperationListModel* operationModel,
                                                          const Category* oldCategory,

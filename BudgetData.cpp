@@ -123,6 +123,32 @@ void BudgetData::clearAccounts() {
   emit accountCountChanged();
 }
 
+void BudgetData::addOperation(const QDate& date, double amount, const QString& description, const QVariantList& allocations) {
+  if (!_operationModel) return;
+  if (!_navController) return;
+  Account* account = getAccount(_navController->currentAccountIndex());
+  if (!account) return;
+
+  Category* category = nullptr;
+  QList<CategoryAllocation> allocationList;
+  if (allocations.size() == 1) {
+    QVariantMap m = allocations.first().toMap();
+    category = _categoryController->getCategoryByName(m["category"].toString());
+  } else {
+    for (auto alloc : allocations) {
+      QVariantMap m = alloc.toMap();
+      allocationList.append(CategoryAllocation{
+          _categoryController->getCategoryByName(m["category"].toString()),
+          m["amount"].toDouble(),
+
+      });
+    }
+  }
+
+  auto operation = new Operation(date, amount, category, description, allocationList);
+  _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
+}
+
 void BudgetData::setOperationCategory(Operation* operation, const Category* newCategory) {
   if (!operation) return;
 
