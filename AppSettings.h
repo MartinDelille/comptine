@@ -11,6 +11,11 @@
 class AppSettings : public QObject {
   Q_OBJECT
 
+  PROPERTY_RW_CUSTOM(int, windowX, 200)
+  PROPERTY_RW_CUSTOM(int, windowY, 200)
+  PROPERTY_RW_CUSTOM(int, windowWidth, 1200)
+  PROPERTY_RW_CUSTOM(int, windowHeight, 800)
+
   // Language: empty string = system default, "en" = English, "fr" = French
   PROPERTY_RW_CUSTOM(QString, language, QString())
 
