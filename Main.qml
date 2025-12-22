@@ -5,8 +5,10 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     id: window
-    width: 1200
-    height: 800
+    x: AppState.settings.windowX
+    y: AppState.settings.windowY
+    width: AppState.settings.windowWidth
+    height: AppState.settings.windowHeight
     visible: true
     title: AppState.file.currentFilePath.length > 0 ? "Comptine - " + AppState.file.currentFilePath.split('/').pop() : "Comptine"
     color: Theme.background
@@ -16,6 +18,13 @@ ApplicationWindow {
     property string pendingAction: ""  // "quit", "new", or "open"
     property string pendingRecentFile: ""  // File path to open from recent files
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
+
+    Component.onDestruction: {
+        AppState.settings.windowX = x;
+        AppState.settings.windowY = y;
+        AppState.settings.windowWidth = width;
+        AppState.settings.windowHeight = height;
+    }
 
     function performPendingAction() {
         if (pendingAction === "quit") {

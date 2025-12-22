@@ -4,12 +4,68 @@
 
 AppSettings::AppSettings() :
     _recentFilesModel(this) {
+  _windowX = _settings.value("window/x", 200).toInt();
+  _windowY = _settings.value("window/y", 200).toInt();
+  _windowWidth = _settings.value("window/width", 1200).toInt();
+  _windowHeight = _settings.value("window/height", 800).toInt();
   _language = _settings.value("language", QString()).toString();
   _theme = _settings.value("theme", QString()).toString();
   _checkForUpdates = _settings.value("checkForUpdates", true).toBool();
   _lastUpdateCheck = _settings.value("lastUpdateCheck", QDateTime()).toDateTime();
   _recentFilesModel.setStringList(
       _settings.value("recentFiles", QStringList()).toStringList());
+}
+
+int AppSettings::windowX() const {
+  return _windowX;
+}
+
+void AppSettings::set_windowX(int value) {
+  if (_windowX != value) {
+    _windowX = value;
+    _settings.setValue("window/x", value);
+    _settings.sync();
+    emit windowXChanged();
+  }
+}
+
+int AppSettings::windowY() const {
+  return _windowY;
+}
+
+void AppSettings::set_windowY(int value) {
+  if (_windowY != value) {
+    _windowY = value;
+    _settings.setValue("window/y", value);
+    _settings.sync();
+    emit windowYChanged();
+  }
+}
+
+int AppSettings::windowWidth() const {
+  return _windowWidth;
+}
+
+void AppSettings::set_windowWidth(int value) {
+  if (_windowWidth != value) {
+    _windowWidth = value;
+    _settings.setValue("window/width", value);
+    _settings.sync();
+    emit windowWidthChanged();
+  }
+}
+
+int AppSettings::windowHeight() const {
+  return _windowHeight;
+}
+
+void AppSettings::set_windowHeight(int value) {
+  if (_windowHeight != value) {
+    _windowHeight = value;
+    _settings.setValue("window/height", value);
+    _settings.sync();
+    emit windowHeightChanged();
+  }
 }
 
 QString AppSettings::language() const {
