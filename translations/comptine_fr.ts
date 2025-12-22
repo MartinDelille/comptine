@@ -666,10 +666,6 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Toutes les allocations doivent avoir une catégorie</translation>
     </message>
     <message>
-        <source>Each category can only be used once</source>
-        <translation>Chaque catégorie ne peut être utilisée qu&apos;une seule fois</translation>
-    </message>
-    <message>
         <source>At least one allocation is required</source>
         <translation>Au moins une allocation est requise</translation>
     </message>
