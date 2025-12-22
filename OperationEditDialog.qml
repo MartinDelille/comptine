@@ -43,17 +43,7 @@ BaseDialog {
         }
         return true;
     }
-    readonly property bool hasDuplicateCategories: {
-        let seen = new Set();
-        for (let i = 0; i < allocationModel.count; i++) {
-            let cat = allocationModel.get(i).category;
-            if (cat !== "" && seen.has(cat))
-                return true;
-            seen.add(cat);
-        }
-        return false;
-    }
-    readonly property bool allocationsValid: Math.abs(remainingAmount) < 0.01 && allocationModel.count > 0 && allCategoriesSelected && !hasDuplicateCategories
+    readonly property bool allocationsValid: Math.abs(remainingAmount) < 0.01 && allocationModel.count > 0 && allCategoriesSelected
     readonly property bool dateValid: dateDay.value >= 1 && dateDay.value <= 31
     readonly property bool budgetDateValid: budgetDateDay.value >= 1 && budgetDateDay.value <= 31
     readonly property bool isValid: allocationsValid && dateValid && budgetDateValid
@@ -465,8 +455,6 @@ BaseDialog {
                     return qsTr("Allocations must equal the total amount");
                 if (!root.allCategoriesSelected)
                     return qsTr("All allocations must have a category");
-                if (root.hasDuplicateCategories)
-                    return qsTr("Each category can only be used once");
                 return qsTr("At least one allocation is required");
             }
             color: Theme.warning
