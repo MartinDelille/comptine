@@ -514,6 +514,29 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     return false;
   }
 
+  QByteArray firstBytes = file.peek(1024);
+  QStringConverter::Encoding encoding = QStringConverter::Utf8;  // Default
+
+  if (firstBytes.startsWith("\xEF\xBB\xBF")) {
+    encoding = QStringConverter::Utf8;  // UTF-8 BOM
+  } else if (firstBytes.startsWith("\xFF\xFE")) {
+    encoding = QStringConverter::Utf16LE;  // UTF-16 LE BOM
+  } else if (firstBytes.startsWith("\xFE\xFF")) {
+    encoding = QStringConverter::Utf16BE;  // UTF-16 BE BOM
+  } else {
+    // No BOM detected; could prompt user or use default
+
+    // Try to decode as UTF-8
+    QString utf8Text = QString::fromUtf8(firstBytes);
+    if (utf8Text.contains(QChar::ReplacementCharacter)) {
+      // Invalid UTF-8 sequence detected, likely Latin1
+      encoding = QStringConverter::Latin1;
+      // ...read file as Latin1...
+    } else {
+      encoding = QStringConverter::Utf8;
+    }
+  }
+
   QTextStream firstPass(&file);
   QString headerLine = firstPass.readLine();
   file.close();
@@ -533,9 +556,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   }
 
   QTextStream in(&file);
-  if (delimiter == ';') {
-    in.setEncoding(QStringConverter::Latin1);
-  }
+  in.setEncoding(encoding);
   headerLine = in.readLine();
   qDebug() << "Header (decoded):" << headerLine;
 

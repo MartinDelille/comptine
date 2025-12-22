@@ -530,6 +530,71 @@ private slots:
 
   // CSV Import Integration
 
+  void testFileImport1() {
+    QVERIFY(fileController->importFromCsv(QUrl("file::/tests/import1.csv"), "Bank Account", true));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 1);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Bank Account"));
+    QCOMPARE(account->operations().size(), 2);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 11, 27));
+    QCOMPARE(operation->amount(), -35.0);
+    QCOMPARE(operation->description(), QString("LE PETIT BISTROT"));
+    QCOMPARE(operation->category()->name(), QString("Restaurant"));
+    operation = account->operations().at(1);
+    QCOMPARE(operation->date(), QDate(2025, 11, 18));
+    QCOMPARE(operation->amount(), -85.0);
+    QCOMPARE(operation->description(), QString("EDF"));
+    QCOMPARE(operation->category()->name(), QString("Energie eau, gaz, electricite, fioul"));
+
+    // Verify categories were created
+    QCOMPARE(categoryController->rowCount(), 2);
+    QVERIFY(categoryController->getCategoryByName("Restaurant") != nullptr);
+    QVERIFY(categoryController->getCategoryByName("Energie eau, gaz, electricite, fioul") != nullptr);
+  }
+
+  void testFileImport2() {
+    QVERIFY(fileController->importFromCsv(QUrl("file::/tests/import2.csv"), "Bank Account", true));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 1);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Bank Account"));
+    QCOMPARE(account->operations().size(), 1);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 6, 5));
+    QCOMPARE(operation->amount(), -44.99);
+    QCOMPARE(operation->description(), QString("PRLV DE Free Telecom"));
+    QCOMPARE(operation->category(), nullptr);
+
+    // Verify no categories were created
+    QCOMPARE(categoryController->rowCount(), 0);
+  }
+
+  void testFileMoney() {
+    QVERIFY(fileController->importFromCsv(QUrl("file::/tests/money.csv"), "Bank Account", true));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 1);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Bank Account"));
+    QCOMPARE(account->operations().size(), 1);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 6, 5));
+    QCOMPARE(operation->amount(), -44.99);
+    QCOMPARE(operation->description(), QString("PRLV DE Free Telecom"));
+    QCOMPARE(operation->category()->name(), "Téléphone : Internet");
+
+    // Verify no categories were created
+    QCOMPARE(categoryController->rowCount(), 1);
+    QVERIFY(categoryController->getCategoryByName("Téléphone : Internet") != nullptr);
+  }
+
   void testImportFromCsvWithCategories() {
     // Create a test CSV file
     QString csvPath = tempDir->filePath("import.csv");
