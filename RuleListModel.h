@@ -12,7 +12,7 @@ class RuleListModel : public QAbstractListModel {
 public:
   enum Roles {
     CategoryRole = Qt::UserRole + 1,
-    DescriptionPrefixRole,
+    LabelPrefixRole,
   };
 
   explicit RuleListModel(QObject* parent = nullptr);

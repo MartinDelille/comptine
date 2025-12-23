@@ -40,7 +40,7 @@ Rectangle {
 
         Label {
             Layout.fillWidth: true
-            text: root.operation?.description ?? ""
+            text: root.operation?.label ?? ""
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeNormal

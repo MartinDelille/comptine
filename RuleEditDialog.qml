@@ -11,7 +11,7 @@ BaseDialog {
     property bool isNewRule: true
     property int ruleIndex: -1
     property string originalCategory: ""
-    property string originalDescriptionPrefix: ""
+    property string originalLabelPrefix: ""
 
     // For use when creating rule from CategorizeDialog
     property string suggestedPrefix: ""
@@ -32,7 +32,7 @@ BaseDialog {
             // Find and select the category
             let catIndex = categoryModel.findCategoryIndex(originalCategory);
             categoryCombo.currentIndex = catIndex;
-            descriptionPrefixField.text = originalDescriptionPrefix;
+            descriptionPrefixField.text = originalLabelPrefix;
         }
         descriptionPrefixField.forceActiveFocus();
     }
@@ -67,7 +67,7 @@ BaseDialog {
         spacing: Theme.spacingNormal
 
         Label {
-            text: qsTr("Description Prefix")
+            text: qsTr("Label Prefix")
             font.pixelSize: Theme.fontSizeNormal
             color: Theme.textPrimary
         }

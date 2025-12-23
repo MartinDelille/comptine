@@ -48,7 +48,7 @@ BaseDialog {
                 currentOperation = op;
                 currentIndex = i + 1;
                 // Try to find a matching rule for suggestion
-                let matchingCategory = AppState.rules.matchingCategoryForDescription(currentOperation.description);
+                let matchingCategory = AppState.rules.matchingCategoryForLabel(currentOperation.label);
                 if (matchingCategory) {
                     let catIndex = findCategoryIndex(matchingCategory);
                     if (catIndex >= 0) {
@@ -100,7 +100,7 @@ BaseDialog {
         onAccepted: {
             // After creating a rule, apply it to current operation and move to next
             if (currentOperation) {
-                let matchingCategory = AppState.rules.matchingCategoryForDescription(currentOperation.description);
+                let matchingCategory = AppState.rules.matchingCategoryForLabel(currentOperation.label);
                 if (matchingCategory.length > 0) {
                     applyCategoryAndNext(matchingCategory);
                 } else {
@@ -186,10 +186,9 @@ BaseDialog {
                     }
                 }
 
-                // Description
                 Label {
                     Layout.fillWidth: true
-                    text: currentOperation ? currentOperation.description : ""
+                    text: currentOperation ? currentOperation.label : ""
                     font.pixelSize: Theme.fontSizeNormal
                     font.bold: true
                     color: Theme.textPrimary
@@ -298,9 +297,9 @@ BaseDialog {
                         text: qsTr("Create Rule...")
                         onClicked: {
                             if (currentOperation) {
-                                // Suggest the description as prefix
+                                // Suggest the label as prefix
                                 ruleEditDialog.isNewRule = true;
-                                ruleEditDialog.suggestedPrefix = currentOperation.description;
+                                ruleEditDialog.suggestedPrefix = currentOperation.label;
                                 ruleEditDialog.open();
                             }
                         }

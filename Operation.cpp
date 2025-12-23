@@ -6,14 +6,14 @@ Operation::Operation(QObject* parent) :
 Operation::Operation(const QDate& date,
                      double amount,
                      const Category* category,
-                     const QString& description,
+                     const QString& label,
                      const QList<CategoryAllocation>& allocations,
                      QObject* parent) :
     QObject(parent),
     _date(date),
     _amount(amount),
     _category(category),
-    _description(description),
+    _label(label),
     _allocations(allocations) {
   auto updateCategoryName = [this] {
     if (_category) {

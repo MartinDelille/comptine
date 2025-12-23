@@ -18,7 +18,7 @@ BaseDialog {
         anchors.fill: parent
         spacing: Theme.spacingNormal
 
-        // Header with description and Add button
+        // Header with label and Add button
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.spacingNormal
@@ -63,7 +63,7 @@ BaseDialog {
                     id: ruleDelegate
                     required property int index
                     required property string category
-                    required property string descriptionPrefix
+                    required property string labelPrefix
 
                     width: ListView.view.width
                     height: contentRow.implicitHeight + Theme.spacingNormal * 2
@@ -81,7 +81,7 @@ BaseDialog {
                             ruleEditDialog.isNewRule = false;
                             ruleEditDialog.ruleIndex = index;
                             ruleEditDialog.originalCategory = category;
-                            ruleEditDialog.originalDescriptionPrefix = descriptionPrefix;
+                            ruleEditDialog.originalLabelPrefix = labelPrefix;
                             ruleEditDialog.open();
                         }
                     }
@@ -107,7 +107,7 @@ BaseDialog {
                             spacing: 2
 
                             Label {
-                                text: qsTr("Prefix: \"%1\"").arg(descriptionPrefix)
+                                text: qsTr("Prefix: \"%1\"").arg(labelPrefix)
                                 font.pixelSize: Theme.fontSizeNormal
                                 color: Theme.textPrimary
                                 elide: Text.ElideRight
@@ -155,7 +155,7 @@ BaseDialog {
                                 ruleEditDialog.isNewRule = false;
                                 ruleEditDialog.ruleIndex = index;
                                 ruleEditDialog.originalCategory = category;
-                                ruleEditDialog.originalDescriptionPrefix = descriptionPrefix;
+                                ruleEditDialog.originallabelPrefix = labelPrefix;
                                 ruleEditDialog.open();
                             }
                             ToolTip.visible: hovered

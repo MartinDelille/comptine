@@ -60,7 +60,7 @@ inline QStringList parseCsvLine(const QString& line, QChar delimiter) {
 // Structure to hold detected CSV column indices
 struct CsvFieldIndices {
   int date = -1;
-  int description = -1;
+  int label = -1;
   int category = -1;  // Last matching category column (most specific)
   int budgetDate = -1;
   int debit = -1;
@@ -68,7 +68,7 @@ struct CsvFieldIndices {
   int amount = -1;
 
   bool isValid() const {
-    return date >= 0 && description >= 0 && (debit >= 0 || credit >= 0 || amount >= 0);
+    return date >= 0 && label >= 0 && (debit >= 0 || credit >= 0 || amount >= 0);
   }
 };
 
@@ -114,9 +114,9 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
     else if (indices.budgetDate < 0 && QStringList{ "date budget", "budget date" }.contains(h)) {
       indices.budgetDate = i;
     }
-    // Description column (first match wins)
-    else if (indices.description < 0 && QStringList{ "libelle simplifie", "libelle", "description", "label", "operation", "tiers" }.contains(h)) {
-      indices.description = i;
+    // Label column (first match wins)
+    else if (indices.label < 0 && QStringList{ "libelle simplifie", "libelle", "description", "label", "operation", "tiers" }.contains(h)) {
+      indices.label = i;
     }
     // Category column (last match wins - keep updating)
     else if (QStringList{ "sous categorie ce", "sous categorie", "sub-category", "subcategory", "categorie ce", "categorie", "category" }.contains(h)) {

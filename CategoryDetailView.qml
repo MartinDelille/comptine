@@ -92,7 +92,7 @@ Dialog {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        AppState.navigation.navigateToOperation(modelData.accountName, modelData.date, modelData.description, modelData.totalAmount);
+                        AppState.navigation.navigateToOperation(modelData.accountName, modelData.date, modelData.label, modelData.totalAmount);
                         root.close();
                     }
                 }
@@ -111,9 +111,8 @@ Dialog {
                         Layout.preferredWidth: 50
                     }
 
-                    // Description
                     Label {
-                        text: modelData.description
+                        text: modelData.label
                         font.pixelSize: Theme.fontSizeNormal
                         color: Theme.textPrimary
                         elide: Text.ElideRight

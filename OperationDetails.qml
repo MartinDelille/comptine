@@ -141,7 +141,7 @@ Rectangle {
             }
 
             Label {
-                text: qsTr("Description:")
+                text: qsTr("Label:")
                 font.pixelSize: Theme.fontSizeSmall
                 font.bold: true
                 color: Theme.textSecondary
@@ -150,7 +150,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: root.operation?.description ?? ""
+                text: root.operation?.label ?? ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap

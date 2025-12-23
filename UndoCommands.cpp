@@ -189,7 +189,7 @@ AddOperationCommand::AddOperationCommand(Operation* operation,
     _operation(operation),
     _account(account),
     _operationModel(operationModel) {
-  setText(QObject::tr("Add operation: \"%0\"").arg(_operation->description()));
+  setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
 }
 
 void AddOperationCommand::undo() {
@@ -398,21 +398,21 @@ void SetOperationDateCommand::redo() {
   }
 }
 
-SetOperationDescriptionCommand::SetOperationDescriptionCommand(Operation& operation,
-                                                               OperationListModel* operationModel,
-                                                               const QString& oldDescription,
-                                                               const QString& newDescription,
-                                                               QUndoCommand* parent) :
+SetOperationLabelCommand::SetOperationLabelCommand(Operation& operation,
+                                                   OperationListModel* operationModel,
+                                                   const QString& oldLabel,
+                                                   const QString& newLabel,
+                                                   QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
     _operationModel(operationModel),
-    _oldDescription(oldDescription),
-    _newDescription(newDescription) {
-  setText(QObject::tr("Set operation description"));
+    _oldLabel(oldLabel),
+    _newLabel(newLabel) {
+  setText(QObject::tr("Set operation label"));
 }
 
-void SetOperationDescriptionCommand::undo() {
-  _operation.set_description(_oldDescription);
+void SetOperationLabelCommand::undo() {
+  _operation.set_label(_oldLabel);
   if (_operationModel) {
     _operationModel->refresh();
     _operationModel->selectByPointer(&_operation);
@@ -420,8 +420,8 @@ void SetOperationDescriptionCommand::undo() {
   }
 }
 
-void SetOperationDescriptionCommand::redo() {
-  _operation.set_description(_newDescription);
+void SetOperationLabelCommand::redo() {
+  _operation.set_label(_newLabel);
   if (_operationModel) {
     _operationModel->refresh();
     _operationModel->selectByPointer(&_operation);
@@ -523,7 +523,7 @@ AddRuleCommand::AddRuleCommand(RuleController* ruleController, CategorizationRul
     _ruleController(ruleController),
     _rule(rule),
     _ownsRule(true) {
-  setText(QObject::tr("Add rule for \"%1\"").arg(rule->descriptionPrefix()));
+  setText(QObject::tr("Add rule for \"%1\"").arg(rule->labelPrefix()));
 }
 
 AddRuleCommand::~AddRuleCommand() {
@@ -561,7 +561,7 @@ RemoveRuleCommand::RemoveRuleCommand(RuleController* ruleController, int index,
     _ownsRule(false) {
   if (ruleController && index >= 0 && index < ruleController->rules().size()) {
     _rule = ruleController->rules().at(index);
-    setText(QObject::tr("Remove rule for \"%1\"").arg(_rule->descriptionPrefix()));
+    setText(QObject::tr("Remove rule for \"%1\"").arg(_rule->labelPrefix()));
   }
 }
 
@@ -598,16 +598,16 @@ void RemoveRuleCommand::redo() {
 
 EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
                                  const Category* oldCategory, const Category* newCategory,
-                                 const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
+                                 const QString& oldLabelPrefix, const QString& newLabelPrefix,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
     _index(index),
     _oldCategory(oldCategory),
     _newCategory(newCategory),
-    _oldDescriptionPrefix(oldDescriptionPrefix),
-    _newDescriptionPrefix(newDescriptionPrefix) {
-  setText(QObject::tr("Edit rule for \"%1\"").arg(newDescriptionPrefix));
+    _oldLabelPrefix(oldLabelPrefix),
+    _newLabelPrefix(newLabelPrefix) {
+  setText(QObject::tr("Edit rule for \"%1\"").arg(newLabelPrefix));
 }
 
 void EditRuleCommand::undo() {
@@ -615,7 +615,7 @@ void EditRuleCommand::undo() {
     CategorizationRule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_oldCategory);
-      rule->set_descriptionPrefix(_oldDescriptionPrefix);
+      rule->set_labelPrefix(_oldLabelPrefix);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();
     }
@@ -627,7 +627,7 @@ void EditRuleCommand::redo() {
     CategorizationRule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_newCategory);
-      rule->set_descriptionPrefix(_newDescriptionPrefix);
+      rule->set_labelPrefix(_newLabelPrefix);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();
     }

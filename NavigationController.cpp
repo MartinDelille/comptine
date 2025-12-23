@@ -86,7 +86,7 @@ void NavigationController::showBudgetTab() {
 }
 
 void NavigationController::navigateToOperation(const QString& accountName, const QDate& date,
-                                               const QString& description, double amount) {
+                                               const QString& label, double amount) {
   // Find the account index
   int accountIndex = -1;
   QList<Account*> accounts = _budgetData.accounts();
@@ -109,7 +109,7 @@ void NavigationController::navigateToOperation(const QString& accountName, const
   const QList<Operation*>& ops = account->operations();
   for (int i = 0; i < ops.size(); ++i) {
     Operation* op = ops[i];
-    if (op->date() == date && op->description() == description && qFuzzyCompare(op->amount(), amount)) {
+    if (op->date() == date && op->label() == label && qFuzzyCompare(op->amount(), amount)) {
       // Set this operation as the current operation and select it
       account->set_currentOperation(op);
       account->select(op, false);

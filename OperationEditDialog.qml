@@ -11,7 +11,7 @@ BaseDialog {
     property double originalAmount: 0
     property date originalDate: new Date()
     property date originalBudgetDate: new Date()
-    property string originalDescription: ""
+    property string originalLabel: ""
     property var originalCategory: ""
     property var originalAllocations: []
 
@@ -75,17 +75,16 @@ BaseDialog {
         originalAmount = editedAmount = operation?.amount || 0;
         originalDate = operation?.date || new Date();
         originalBudgetDate = operation?.budgetDate || new Date();
-        descriptionField.text = originalDescription = operation?.description || "";
-        if (originalDescription === "") {
-            descriptionField.forceActiveFocus();
+        console.log("label", operation, operation.description, operation?.label);
+        labelField.text = originalLabel = operation?.label || "";
+        if (originalLabel === "") {
+            labelField.forceActiveFocus();
         }
 
         originalCategory = operation?.category || null;
         if (operation?.allocation) {
             originalAllocations = operation.allocations ? allocations.slice() : [];
         }
-
-        // Set description field
 
         // Set date spinboxes
         dateDay.value = originalDate.getDate();
@@ -131,7 +130,7 @@ BaseDialog {
     onAccepted: {
         let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
         let newBudgetDate = new Date(budgetDateYear.value, budgetDateMonth.currentIndex, budgetDateDay.value);
-        let newDescription = descriptionField.text.trim();
+        let newLabel = labelField.text.trim();
 
         // Build allocations array and call splitOperation
         let allocations = [];
@@ -146,13 +145,13 @@ BaseDialog {
         }
 
         if (_operation === null) {
-            AppState.data.addOperation(newDate, editedAmount, newDescription, allocations);
+            AppState.data.addOperation(newDate, editedAmount, newLabel, allocations);
             return;
         }
 
-        // Apply description change if different
-        if (newDescription !== originalDescription) {
-            AppState.data.setOperationDescription(_operation, newDescription);
+        // Apply label change if different
+        if (newLabel !== originalLabel) {
+            AppState.data.setOperationLabel(_operation, newLabel);
         }
 
         // Apply amount change if different
@@ -199,22 +198,22 @@ BaseDialog {
         anchors.fill: parent
         spacing: Theme.spacingLarge
 
-        // Description section
+        // Label section
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.spacingNormal
 
             Label {
-                text: qsTr("Description:")
+                text: qsTr("Label:")
                 font.bold: true
                 color: Theme.textSecondary
                 Layout.preferredWidth: 100
             }
 
             TextField {
-                id: descriptionField
+                id: labelField
                 Layout.fillWidth: true
-                placeholderText: qsTr("Enter description")
+                placeholderText: qsTr("Enter label")
             }
         }
 

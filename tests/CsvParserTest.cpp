@@ -97,17 +97,17 @@ private slots:
   }
 
   void parseCsvLine_QuotedFieldWithComma() {
-    QString line = "date,\"description, with comma\",amount";
+    QString line = "date,\"label, with comma\",amount";
     QStringList fields = parseCsvLine(line, ',');
     QCOMPARE(fields.size(), 3);
-    QCOMPARE(fields[1], QString("description, with comma"));
+    QCOMPARE(fields[1], QString("label, with comma"));
   }
 
   void parseCsvLine_EscapedQuote() {
-    QString line = "date,\"description with \"\"quotes\"\"\",amount";
+    QString line = "date,\"label with \"\"quotes\"\"\",amount";
     QStringList fields = parseCsvLine(line, ',');
     QCOMPARE(fields.size(), 3);
-    QCOMPARE(fields[1], QString("description with \"quotes\""));
+    QCOMPARE(fields[1], QString("label with \"quotes\""));
   }
 
   void parseCsvLine_EmptyFields() {
@@ -131,7 +131,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(fields);
 
     QCOMPARE(idx.date, 0);
-    QCOMPARE(idx.description, 1);
+    QCOMPARE(idx.label, 1);
     QCOMPARE(idx.category, 7);  // Last match: "Sous categorie"
     QCOMPARE(idx.debit, 8);
     QCOMPARE(idx.credit, 9);
@@ -150,7 +150,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(fields);
 
     QCOMPARE(idx.date, 0);
-    QCOMPARE(idx.description, 1);
+    QCOMPARE(idx.label, 1);
     QCOMPARE(idx.category, 7);  // Last match: "Sous catégorie CE"
     QCOMPARE(idx.debit, 8);
     QCOMPARE(idx.credit, 9);
@@ -171,7 +171,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(fields);
 
     QCOMPARE(idx.date, 0);
-    QCOMPARE(idx.description, 1);
+    QCOMPARE(idx.label, 1);
     QCOMPARE(idx.category, 17);  // Last match: "Catégorie" at index 17
     QCOMPARE(idx.debit, 8);
     QCOMPARE(idx.credit, 9);
@@ -197,17 +197,17 @@ private slots:
     QCOMPARE(fields[15], QString("Date budget"));
   }
 
-  void parseHeader_OperationAsDescription() {
-    // Header from Budget - Cash.csv uses "Opération" as description column
+  void parseHeader_OperationAsLabel() {
+    // Header from Budget - Cash.csv uses "Opération" as label column
     QString header = "Date,Montant,Opération,Catégorie,Solde,\"618,93 €\",Date budget,Compte";
     QStringList fields = parseCsvLine(header, ',');
     CsvFieldIndices idx = parseHeader(fields);
 
     QCOMPARE(idx.date, 0);
-    QCOMPARE(idx.description, 2);  // "Opération" maps to description
-    QCOMPARE(idx.amount, 1);       // "Montant"
-    QCOMPARE(idx.category, 3);     // "Catégorie"
-    QCOMPARE(idx.budgetDate, 6);   // "Date budget"
+    QCOMPARE(idx.label, 2);       // "Opération" maps to label
+    QCOMPARE(idx.amount, 1);      // "Montant"
+    QCOMPARE(idx.category, 3);    // "Catégorie"
+    QCOMPARE(idx.budgetDate, 6);  // "Date budget"
     QVERIFY(idx.isValid());
   }
 
@@ -267,7 +267,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(parseCsvLine(header, ';'));
 
     QCOMPARE(getField(fields, idx.date), QString("28/11/2025"));
-    QCOMPARE(getField(fields, idx.description), QString("CARREFOUR MARKET"));
+    QCOMPARE(getField(fields, idx.label), QString("CARREFOUR MARKET"));
     // Last match is "Sous categorie" at index 7, which maps to "Hyper/supermarche"
     QCOMPARE(getField(fields, idx.category), QString("Hyper/supermarche"));
     QCOMPARE(parseAmount(getField(fields, idx.debit)), -52.30);
@@ -293,7 +293,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(parseCsvLine(header, ','));
 
     QCOMPARE(getField(fields, idx.date), QString("26/11/2022"));
-    QCOMPARE(getField(fields, idx.description), QString("M NICK LARSONO"));
+    QCOMPARE(getField(fields, idx.label), QString("M NICK LARSONO"));
     // Last match is "Catégorie" at index 17, which maps to "Virement interne"
     QCOMPARE(getField(fields, idx.category), QString("Virement interne"));
 
@@ -339,7 +339,7 @@ private slots:
     CsvFieldIndices idx = parseHeader(headerFields);
 
     QCOMPARE(getField(fields, idx.date), QString("13/05/2020"));
-    QCOMPARE(getField(fields, idx.description), QString("Panier producteur"));
+    QCOMPARE(getField(fields, idx.label), QString("Panier producteur"));
     QCOMPARE(getField(fields, idx.category), QString("Courses du quotidien"));
     QCOMPARE(parseAmount(getField(fields, idx.amount)), -15.00);
     QCOMPARE(getField(fields, idx.budgetDate), QString("13/05/2020"));
