@@ -54,8 +54,8 @@ void RuleController::addRule(CategorizationRule* rule) {
 
   // Check for duplicate prefix (case-insensitive)
   for (const CategorizationRule* existing : _rules) {
-    if (existing->descriptionPrefix().compare(rule->descriptionPrefix(), Qt::CaseInsensitive) == 0) {
-      qWarning() << "Rule with prefix already exists:" << rule->descriptionPrefix();
+    if (existing->labelPrefix().compare(rule->labelPrefix(), Qt::CaseInsensitive) == 0) {
+      qWarning() << "Rule with prefix already exists:" << rule->labelPrefix();
       return;
     }
   }
@@ -67,12 +67,12 @@ void RuleController::addRule(CategorizationRule* rule) {
   emit rulesChanged();
 }
 
-void RuleController::addRule(const Category* category, const QString& descriptionPrefix) {
-  if (category == nullptr || descriptionPrefix.isEmpty()) {
+void RuleController::addRule(const Category* category, const QString& labelPrefix) {
+  if (category == nullptr || labelPrefix.isEmpty()) {
     return;
   }
 
-  auto* rule = new CategorizationRule(category, descriptionPrefix, this);
+  auto* rule = new CategorizationRule(category, labelPrefix, this);
   _undoStack.push(new AddRuleCommand(this, rule));
 }
 
@@ -84,27 +84,27 @@ void RuleController::removeRule(int index) {
   _undoStack.push(new RemoveRuleCommand(this, index));
 }
 
-void RuleController::editRule(int index, const Category* category, const QString& descriptionPrefix) {
+void RuleController::editRule(int index, const Category* category, const QString& labelPrefix) {
   if (index < 0 || index >= _rules.size()) {
     return;
   }
 
   CategorizationRule* rule = _rules[index];
-  if (rule->category() == category && rule->descriptionPrefix() == descriptionPrefix) {
+  if (rule->category() == category && rule->labelPrefix() == labelPrefix) {
     return;  // No change
   }
 
   // Check for duplicate prefix (case-insensitive), excluding the rule being edited
   for (int i = 0; i < _rules.size(); i++) {
-    if (i != index && _rules[i]->descriptionPrefix().compare(descriptionPrefix, Qt::CaseInsensitive) == 0) {
-      qWarning() << "Rule with prefix already exists:" << descriptionPrefix;
+    if (i != index && _rules[i]->labelPrefix().compare(labelPrefix, Qt::CaseInsensitive) == 0) {
+      qWarning() << "Rule with prefix already exists:" << labelPrefix;
       return;
     }
   }
 
   _undoStack.push(new EditRuleCommand(this, index,
                                       rule->category(), category,
-                                      rule->descriptionPrefix(), descriptionPrefix));
+                                      rule->labelPrefix(), labelPrefix));
 }
 
 void RuleController::moveRule(int fromIndex, int toIndex) {
@@ -163,13 +163,13 @@ const Category* RuleController::matchingCategory(Operation* operation) const {
   if (!operation) {
     return nullptr;
   }
-  return matchingCategoryForDescription(operation->description());
+  return matchingCategoryForLabel(operation->label());
 }
 
-const Category* RuleController::matchingCategoryForDescription(const QString& description) const {
+const Category* RuleController::matchingCategoryForLabel(const QString& label) const {
   // Rules are in priority order (first match wins)
   for (const CategorizationRule* rule : _rules) {
-    if (rule->matchesDescription(description)) {
+    if (rule->matchesLabel(label)) {
       return rule->category();
     }
   }

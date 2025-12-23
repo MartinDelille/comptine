@@ -115,9 +115,9 @@ void Account::sortOperations() {
   }
 }
 
-bool Account::hasOperation(const QDate& date, double amount, const QString& description) const {
+bool Account::hasOperation(const QDate& date, double amount, const QString& label) const {
   for (Operation* op : _operations) {
-    if (op->date() == date && op->amount() == amount && op->description() == description) {
+    if (op->date() == date && op->amount() == amount && op->label() == label) {
       return true;
     }
   }
@@ -236,12 +236,12 @@ QString Account::selectedOperationsAsCsv() const {
   }
 
   QString csv;
-  csv += "Date,Description,Amount,Category\n";
+  csv += "Date,Label,Amount,Category\n";
 
   for (Operation* op : sortedSelected) {
     csv += QString("%1,\"%2\",%3,%4\n")
                .arg(op->date().toString("yyyy-MM-dd"))
-               .arg(op->description().replace("\"", "\"\""))
+               .arg(op->label().replace("\"", "\"\""))
                .arg(op->amount(), 0, 'f', 2)
                .arg((op->category() ? op->category()->name() : ""));
   }

@@ -225,14 +225,14 @@ private:
   QDate _newDate;
 };
 
-// Command for setting an operation's description
-class SetOperationDescriptionCommand : public QUndoCommand {
+// Command for setting an operation's label
+class SetOperationLabelCommand : public QUndoCommand {
 public:
-  SetOperationDescriptionCommand(Operation& operation,
-                                 OperationListModel* operationModel,
-                                 const QString& oldDescription,
-                                 const QString& newDescription,
-                                 QUndoCommand* parent = nullptr);
+  SetOperationLabelCommand(Operation& operation,
+                           OperationListModel* operationModel,
+                           const QString& oldLabel,
+                           const QString& newLabel,
+                           QUndoCommand* parent = nullptr);
 
   void undo() override;
   void redo() override;
@@ -240,8 +240,8 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  QString _oldDescription;
-  QString _newDescription;
+  QString _oldLabel;
+  QString _newLabel;
 };
 
 // Command for setting a category's leftover decision
@@ -305,7 +305,7 @@ class EditRuleCommand : public QUndoCommand {
 public:
   EditRuleCommand(RuleController* ruleController, int index,
                   const Category* oldCategory, const Category* newCategory,
-                  const QString& oldDescriptionPrefix, const QString& newDescriptionPrefix,
+                  const QString& oldLabelPrefix, const QString& newLabelPrefix,
                   QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -316,8 +316,8 @@ private:
   int _index;
   const Category* _oldCategory;
   const Category* _newCategory;
-  QString _oldDescriptionPrefix;
-  QString _newDescriptionPrefix;
+  QString _oldLabelPrefix;
+  QString _newLabelPrefix;
 };
 
 // Command for moving a categorization rule (reordering priority)

@@ -48,12 +48,12 @@ public:
   void clearAccounts();
 
   // Operation editing
-  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& description, const QVariantList& allocations);
+  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QVariantList& allocations);
   Q_INVOKABLE void setOperationCategory(Operation* operation, const Category* newCategory);
   Q_INVOKABLE void setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate);
   Q_INVOKABLE void setOperationAmount(Operation* operation, double newAmount);
   Q_INVOKABLE void setOperationDate(Operation* operation, const QDate& newDate);
-  Q_INVOKABLE void setOperationDescription(Operation* operation, const QString& newDescription);
+  Q_INVOKABLE void setOperationLabel(Operation* operation, const QString& newLabel);
   Q_INVOKABLE void splitOperation(Operation* operation, const QVariantList& allocations);
 
   // Clear all data (called by FileController)

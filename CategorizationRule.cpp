@@ -7,24 +7,24 @@ CategorizationRule::CategorizationRule(QObject* parent) :
 }
 
 CategorizationRule::CategorizationRule(const Category* category,
-                                       const QString& descriptionPrefix,
+                                       const QString& labelPrefix,
                                        QObject* parent) :
     QObject(parent) {
   _category = category;
-  _descriptionPrefix = descriptionPrefix;
+  _labelPrefix = labelPrefix;
 }
 
 bool CategorizationRule::matches(Operation* operation) const {
   if (!operation) {
     return false;
   }
-  return matchesDescription(operation->description());
+  return matchesLabel(operation->label());
 }
 
-bool CategorizationRule::matchesDescription(const QString& description) const {
-  if (_descriptionPrefix.isEmpty()) {
+bool CategorizationRule::matchesLabel(const QString& label) const {
+  if (_labelPrefix.isEmpty()) {
     return false;
   }
   // Case-insensitive prefix match
-  return description.startsWith(_descriptionPrefix, Qt::CaseInsensitive);
+  return label.startsWith(_labelPrefix, Qt::CaseInsensitive);
 }

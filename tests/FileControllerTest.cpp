@@ -144,7 +144,7 @@ private slots:
     Operation* op = new Operation(account);
     op->set_date(QDate(2025, 1, 15));
     op->set_amount(-50.0);
-    op->set_description("Grocery Store");
+    op->set_label("Grocery Store");
     op->set_category(new Category("Food"));
     account->appendOperation(op);
 
@@ -169,7 +169,7 @@ private slots:
     Operation* loadedOp = loadedAccount->operations()[0];
     QCOMPARE(loadedOp->date(), QDate(2025, 1, 15));
     QCOMPARE(loadedOp->amount(), -50.0);
-    QCOMPARE(loadedOp->description(), QString("Grocery Store"));
+    QCOMPARE(loadedOp->label(), QString("Grocery Store"));
     QCOMPARE(loadedOp->category()->name(), QString("Food"));
   }
 
@@ -184,13 +184,13 @@ private slots:
     Operation* op1 = new Operation(checking);
     op1->set_date(QDate(2025, 1, 10));
     op1->set_amount(-100.0);
-    op1->set_description("Purchase 1");
+    op1->set_label("Purchase 1");
     checking->appendOperation(op1);
 
     Operation* op2 = new Operation(savings);
     op2->set_date(QDate(2025, 1, 20));
     op2->set_amount(500.0);
-    op2->set_description("Deposit");
+    op2->set_label("Deposit");
     savings->appendOperation(op2);
 
     // Save and reload
@@ -217,7 +217,7 @@ private slots:
     Operation* op = new Operation(account);
     op->set_date(QDate(2025, 2, 1));
     op->set_amount(-150.0);
-    op->set_description("Mixed Purchase");
+    op->set_label("Mixed Purchase");
 
     auto food = new Category("Food", 200.0);
     auto transport = new Category("Transport", 100.0);
@@ -259,7 +259,7 @@ private slots:
     Operation* op = new Operation(account);
     op->set_date(QDate(2025, 1, 31));
     op->set_amount(-75.0);
-    op->set_description("Late Month Purchase");
+    op->set_label("Late Month Purchase");
     op->set_category(new Category("Shopping"));
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
     account->appendOperation(op);
@@ -288,7 +288,7 @@ private slots:
     Operation* op = new Operation(account);
     op->set_date(QDate(2025, 3, 15));
     op->set_amount(-30.0);
-    op->set_description("Normal Purchase");
+    op->set_label("Normal Purchase");
     op->set_category(food);
     // budgetDate defaults to date, so it should not be saved
     account->appendOperation(op);
@@ -394,7 +394,7 @@ private slots:
     QList<CategorizationRule*> rules = ruleController->rules();
     QCOMPARE(rules.size(), 2);
     QCOMPARE(rules[0]->category()->name(), QString("Groceries"));
-    QCOMPARE(rules[0]->descriptionPrefix(), QString("SUPERMARKET"));
+    QCOMPARE(rules[0]->labelPrefix(), QString("SUPERMARKET"));
   }
 
   // Save/Load Navigation State
@@ -409,7 +409,7 @@ private slots:
     Operation* op = new Operation(account2);
     op->set_date(QDate(2025, 3, 10));
     op->set_amount(-25.0);
-    op->set_description("Test Op");
+    op->set_label("Test Op");
     account2->appendOperation(op);
 
     categoryController->addCategory("Cat 1", 100.0);
@@ -542,12 +542,12 @@ private slots:
     auto operation = account->operations().at(0);
     QCOMPARE(operation->date(), QDate(2025, 11, 27));
     QCOMPARE(operation->amount(), -35.0);
-    QCOMPARE(operation->description(), QString("LE PETIT BISTROT"));
+    QCOMPARE(operation->label(), QString("LE PETIT BISTROT"));
     QCOMPARE(operation->category()->name(), QString("Restaurant"));
     operation = account->operations().at(1);
     QCOMPARE(operation->date(), QDate(2025, 11, 18));
     QCOMPARE(operation->amount(), -85.0);
-    QCOMPARE(operation->description(), QString("EDF"));
+    QCOMPARE(operation->label(), QString("EDF"));
     QCOMPARE(operation->category()->name(), QString("Energie eau, gaz, electricite, fioul"));
 
     // Verify categories were created
@@ -568,7 +568,7 @@ private slots:
     auto operation = account->operations().at(0);
     QCOMPARE(operation->date(), QDate(2025, 6, 5));
     QCOMPARE(operation->amount(), -44.99);
-    QCOMPARE(operation->description(), QString("PRLV DE Free Telecom"));
+    QCOMPARE(operation->label(), QString("PRLV DE Free Telecom"));
     QCOMPARE(operation->category(), nullptr);
 
     // Verify no categories were created
@@ -587,7 +587,7 @@ private slots:
     auto operation = account->operations().at(0);
     QCOMPARE(operation->date(), QDate(2025, 6, 5));
     QCOMPARE(operation->amount(), -44.99);
-    QCOMPARE(operation->description(), QString("PRLV DE Free Telecom"));
+    QCOMPARE(operation->label(), QString("PRLV DE Free Telecom"));
     QCOMPARE(operation->category()->name(), "Téléphone : Internet");
 
     // Verify no categories were created

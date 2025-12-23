@@ -189,7 +189,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
           QVariantMap item;
           item["date"] = op->date();
           item["budgetDate"] = op->budgetDate();
-          item["description"] = op->description();
+          item["label"] = op->label();
           item["amount"] = categoryAmount;     // Show only the amount for this category
           item["totalAmount"] = op->amount();  // Total operation amount
           item["isSplit"] = op->isSplit();

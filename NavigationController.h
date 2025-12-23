@@ -47,7 +47,7 @@ public:
 
   // Cross-navigation (switch account and select operation)
   Q_INVOKABLE void navigateToOperation(const QString& accountName, const QDate& date,
-                                       const QString& description, double amount);
+                                       const QString& label, double amount);
 
 public slots:
   // Called when FileController loads navigation state from a file

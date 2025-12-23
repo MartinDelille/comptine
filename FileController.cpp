@@ -141,7 +141,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       opNode |= ryml::MAP;
       opNode["date"] << toStdString(op->date().toString("yyyy-MM-dd"));
       opNode["amount"] << toStdString(QString::number(op->amount(), 'f', 2));
-      opNode["description"] << toStdString(op->description());
+      opNode["label"] << toStdString(op->label());
 
       // Handle split operations vs single category
       if (op->isSplit()) {
@@ -180,7 +180,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       ruleNode |= ryml::MAP;
       if (rule->category()) {
         ruleNode["category"] << toStdString(rule->category()->name());
-        ruleNode["description_prefix"] << toStdString(rule->descriptionPrefix());
+        ruleNode["label_prefix"] << toStdString(rule->labelPrefix());
       }
     }
   }
@@ -398,9 +398,12 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               auto val = opNode["category"].val();
               op->set_category(_categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len)));
             }
-            if (opNode.has_child("description")) {
+            if (opNode.has_child("label")) {
+              auto val = opNode["label"].val();
+              op->set_label(QString::fromUtf8(val.str, val.len));
+            } else if (opNode.has_child("description")) {
               auto val = opNode["description"].val();
-              op->set_description(QString::fromUtf8(val.str, val.len));
+              op->set_label(QString::fromUtf8(val.str, val.len));
             }
             if (opNode.has_child("budget_date")) {
               auto val = opNode["budget_date"].val();
@@ -430,19 +433,19 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
       _ruleController.clearRules();
       for (ryml::ConstNodeRef ruleNode : root["rules"]) {
         Category* category = nullptr;
-        QString descriptionPrefix;
+        QString labelPrefix;
 
         if (ruleNode.has_child("category")) {
           auto val = ruleNode["category"].val();
           category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
         }
-        if (ruleNode.has_child("description_prefix")) {
-          auto val = ruleNode["description_prefix"].val();
-          descriptionPrefix = QString::fromUtf8(val.str, val.len);
+        if (ruleNode.has_child("label_prefix")) {
+          auto val = ruleNode["label_prefix"].val();
+          labelPrefix = QString::fromUtf8(val.str, val.len);
         }
 
-        if (category && !descriptionPrefix.isEmpty()) {
-          auto* rule = new CategorizationRule(category, descriptionPrefix);
+        if (category && !labelPrefix.isEmpty()) {
+          auto* rule = new CategorizationRule(category, labelPrefix);
           _ruleController.addRule(rule);
         }
       }
@@ -578,7 +581,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   qDebug() << "Detected columns:";
   qDebug() << "  date:" << idx.date;
   qDebug() << "  budgetDate:" << idx.budgetDate;
-  qDebug() << "  description:" << idx.description;
+  qDebug() << "  label:" << idx.label;
   qDebug() << "  category:" << idx.category;
   qDebug() << "  debit:" << idx.debit;
   qDebug() << "  credit:" << idx.credit;
@@ -586,13 +589,13 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Validate required columns
   if (!idx.isValid()) {
-    qDebug() << "Invalid CSV format: missing required columns (date, description, and debit/credit/amount)";
+    qDebug() << "Invalid CSV format: missing required columns (date, label, and debit/credit/amount)";
     qDebug() << "Available headers:";
     for (int i = 0; i < headerFields.size(); i++) {
       qDebug() << "  [" << i << "]" << headerFields[i];
     }
     file.close();
-    set_errorMessage(tr("Invalid CSV format: missing required columns (date, description, and debit/credit/amount)"));
+    set_errorMessage(tr("Invalid CSV format: missing required columns (date, label, and debit/credit/amount)"));
     return false;
   }
 
@@ -642,16 +645,16 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
       }
     }
 
-    // Parse description (required)
-    QString description = getField(fields, idx.description);
-    if (description.isEmpty()) {
-      qDebug() << "Skipping row with empty description";
+    // Parse label (required)
+    QString label = getField(fields, idx.label);
+    if (label.isEmpty()) {
+      qDebug() << "Skipping row with empty label";
       skippedCount++;
       continue;
     }
 
     // Skip duplicate operations
-    if (account->hasOperation(date, amount, description)) {
+    if (account->hasOperation(date, amount, label)) {
       continue;
     }
 
@@ -683,7 +686,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     Operation* operation = new Operation(account);
     operation->set_date(date);
     operation->set_amount(amount);
-    operation->set_description(description);
+    operation->set_label(label);
     operation->set_category(category);
 
     // Parse budget date (optional - falls back to date if not set)

@@ -236,8 +236,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Chemin de fichier invalide ou non pris en charge.</translation>
     </message>
     <message>
-        <source>Invalid CSV format: missing required columns (date, description, and debit/credit/amount)</source>
-        <translation>Format CSV invalide : colonnes requises manquantes (date, description et débit/crédit/montant)</translation>
+        <source>Invalid CSV format: missing required columns (date, label, and debit/credit/amount)</source>
+        <translation>Format CSV invalide : colonnes requises manquantes (date, libellé et débit/crédit/montant)</translation>
     </message>
 </context>
 <context>
@@ -555,8 +555,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Non catégorisé</translation>
     </message>
     <message>
-        <source>Description:</source>
-        <translation>Description :</translation>
+        <source>Label:</source>
+        <translation>Libellé :</translation>
     </message>
     <message>
         <source>Balance:</source>
@@ -578,12 +578,12 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Montant :</translation>
     </message>
     <message>
-        <source>Description:</source>
-        <translation>Description :</translation>
+        <source>Label:</source>
+        <translation>Libellé :</translation>
     </message>
     <message>
-        <source>Enter description</source>
-        <translation>Entrez une description</translation>
+        <source>Enter label</source>
+        <translation>Entrez un libellé</translation>
     </message>
     <message>
         <source>Date:</source>
@@ -823,8 +823,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Définir la date de l&apos;opération à %1</translation>
     </message>
     <message>
-        <source>Set operation description</source>
-        <translation>Définir la description de l&apos;opération</translation>
+        <source>Set operation label</source>
+        <translation>Définir le libellé de l&apos;opération</translation>
     </message>
     <message>
         <source>save %1 and report %2</source>
@@ -874,8 +874,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Modifier la règle</translation>
     </message>
     <message>
-        <source>Description Prefix</source>
-        <translation>Préfixe de description</translation>
+        <source>Label Prefix</source>
+        <translation>Préfixe de libellé</translation>
     </message>
     <message>
         <source>Operations starting with this text will match</source>
