@@ -535,6 +535,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Date budget :</translation>
     </message>
     <message>
+        <source>Details:</source>
+        <translation>Détails :</translation>
+    </message>
+    <message>
         <source>Select an operation to view details</source>
         <translation>Sélectionnez une opération pour voir les détails</translation>
     </message>
@@ -584,6 +588,14 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Enter label</source>
         <translation>Entrez un libellé</translation>
+    </message>
+    <message>
+        <source>Details:</source>
+        <translation>Détails :</translation>
+    </message>
+    <message>
+        <source>Enter details</source>
+        <translation>Entrez les détails</translation>
     </message>
     <message>
         <source>Date:</source>
@@ -825,6 +837,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Set operation label</source>
         <translation>Définir le libellé de l&apos;opération</translation>
+    </message>
+    <message>
+        <source>Set operation details</source>
+        <translation>Définir les détails de l&apos;opération</translation>
     </message>
     <message>
         <source>save %1 and report %2</source>

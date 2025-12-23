@@ -26,8 +26,7 @@ accounts:
     operations:
       - date: 2025-10-08
         amount: -45.00
-        label: Supermarche Carrefour
-        details: Carte du 06/10/2025
+        description: Supermarche Carrefour
         allocations:
           - category: Alimentation
             amount: -40.00
@@ -35,24 +34,24 @@ accounts:
             amount: -5.00
       - date: 2025-10-07
         amount: -9.99
-        label: Abonnement Libération
+        description: Abonnement Libération
         category: Loisirs
       - date: 2025-10-06
         amount: -85.00
-        label: Electricite EDF
+        description: Electricite EDF
         category: Logement
       - date: 2025-10-03
         amount: 25.00
-        label: Remboursement mutuelle
+        description: Remboursement mutuelle
         category: Sante
       - date: 2025-09-29
         amount: 2500.00
-        label: Salaire Octobre
+        description: Salaire Octobre
         category: Revenus
         current: true
   - name: Livret A
     operations:
       - date: 2025-09-15
         amount: 100.00
-        label: Virement mensuel epargne
+        description: Virement mensuel epargne
         category: Epargne

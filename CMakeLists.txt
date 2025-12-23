@@ -349,6 +349,7 @@ qt_add_resources(
   tests/import2.csv
   tests/money.csv
   tests/example.comptine
+  tests/old.comptine
 )
 
 

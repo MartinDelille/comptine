@@ -157,6 +157,22 @@ Rectangle {
             }
 
             Label {
+                text: qsTr("Details:")
+                font.pixelSize: Theme.fontSizeSmall
+                font.bold: true
+                color: Theme.textSecondary
+                Layout.topMargin: Theme.spacingSmall
+            }
+
+            Label {
+                Layout.fillWidth: true
+                text: root.operation?.details ?? ""
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textPrimary
+                wrapMode: Text.WordWrap
+            }
+
+            Label {
                 text: qsTr("Category:")
                 font.pixelSize: Theme.fontSizeSmall
                 font.bold: true

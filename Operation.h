@@ -32,6 +32,7 @@ class Operation : public QObject {
   PROPERTY_RW(double, amount, 0.0)
   PROPERTY_RW(const Category*, category, {})
   PROPERTY_RW(QString, label, {})
+  PROPERTY_RW(QString, details, {})
 
   // Budget date: returns date if not explicitly set
   PROPERTY_RW_CUSTOM(QDate, budgetDate, {})
@@ -47,6 +48,7 @@ public:
             double amount,
             const Category* category,
             const QString& label,
+            const QString& details,
             const QList<CategoryAllocation>& allocations,
             QObject* parent = nullptr);
 

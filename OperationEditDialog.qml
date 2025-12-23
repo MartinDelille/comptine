@@ -12,7 +12,8 @@ BaseDialog {
     property date originalDate: new Date()
     property date originalBudgetDate: new Date()
     property string originalLabel: ""
-    property var originalCategory: ""
+    property string originalDetails: ""
+    property var originalCategory: null
     property var originalAllocations: []
 
     // Category list for ComboBoxes - refreshed on open
@@ -80,6 +81,7 @@ BaseDialog {
         if (originalLabel === "") {
             labelField.forceActiveFocus();
         }
+        detailsField.text = originalDetails = operation?.details || "";
 
         originalCategory = operation?.category || null;
         if (operation?.allocation) {
@@ -131,6 +133,7 @@ BaseDialog {
         let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
         let newBudgetDate = new Date(budgetDateYear.value, budgetDateMonth.currentIndex, budgetDateDay.value);
         let newLabel = labelField.text.trim();
+        let newDetails = detailsField.text.trim();
 
         // Build allocations array and call splitOperation
         let allocations = [];
@@ -145,13 +148,16 @@ BaseDialog {
         }
 
         if (_operation === null) {
-            AppState.data.addOperation(newDate, editedAmount, newLabel, allocations);
+            AppState.data.addOperation(newDate, editedAmount, newLabel, newDetails, allocations);
             return;
         }
 
-        // Apply label change if different
         if (newLabel !== originalLabel) {
             AppState.data.setOperationLabel(_operation, newLabel);
+        }
+
+        if (newDetails !== originalDetails) {
+            AppState.data.setOperationDetails(_operation, newDetails);
         }
 
         // Apply amount change if different
@@ -214,6 +220,25 @@ BaseDialog {
                 id: labelField
                 Layout.fillWidth: true
                 placeholderText: qsTr("Enter label")
+            }
+        }
+
+        // Details section
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingNormal
+
+            Label {
+                text: qsTr("Details:")
+                font.bold: true
+                color: Theme.textSecondary
+                Layout.preferredWidth: 100
+            }
+
+            TextField {
+                id: detailsField
+                Layout.fillWidth: true
+                placeholderText: qsTr("Enter details")
             }
         }
 
