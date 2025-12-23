@@ -244,6 +244,25 @@ private:
   QString _newLabel;
 };
 
+// Command for setting an operation's details
+class SetOperationDetailsCommand : public QUndoCommand {
+public:
+  SetOperationDetailsCommand(Operation& operation,
+                             OperationListModel* operationModel,
+                             const QString& oldDetails,
+                             const QString& newDetails,
+                             QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation& _operation;
+  OperationListModel* _operationModel;
+  QString _oldDetails;
+  QString _newDetails;
+};
+
 // Command for setting a category's leftover decision
 class SetLeftoverDecisionCommand : public QUndoCommand {
 public:

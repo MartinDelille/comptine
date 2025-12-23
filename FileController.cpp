@@ -405,6 +405,10 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               auto val = opNode["description"].val();
               op->set_label(QString::fromUtf8(val.str, val.len));
             }
+            if (opNode.has_child("details")) {
+              auto val = opNode["details"].val();
+              op->set_details(QString::fromUtf8(val.str, val.len));
+            }
             if (opNode.has_child("budget_date")) {
               auto val = opNode["budget_date"].val();
               op->set_budgetDate(QDate::fromString(QString::fromUtf8(val.str, val.len), "yyyy-MM-dd"));
@@ -582,6 +586,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   qDebug() << "  date:" << idx.date;
   qDebug() << "  budgetDate:" << idx.budgetDate;
   qDebug() << "  label:" << idx.label;
+  qDebug() << "  details:" << idx.details;
   qDebug() << "  category:" << idx.category;
   qDebug() << "  debit:" << idx.debit;
   qDebug() << "  credit:" << idx.credit;
@@ -658,6 +663,9 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
       continue;
     }
 
+    // Parse details
+    QString details = getField(fields, idx.details);
+
     // Determine category based on useCategories flag
     Category* category = nullptr;
     if (useCategories) {
@@ -687,6 +695,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     operation->set_date(date);
     operation->set_amount(amount);
     operation->set_label(label);
+    operation->set_details(details);
     operation->set_category(category);
 
     // Parse budget date (optional - falls back to date if not set)

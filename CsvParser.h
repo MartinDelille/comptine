@@ -61,6 +61,7 @@ inline QStringList parseCsvLine(const QString& line, QChar delimiter) {
 struct CsvFieldIndices {
   int date = -1;
   int label = -1;
+  int details = -1;
   int category = -1;  // Last matching category column (most specific)
   int budgetDate = -1;
   int debit = -1;
@@ -117,6 +118,10 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
     // Label column (first match wins)
     else if (indices.label < 0 && QStringList{ "libelle simplifie", "libelle", "description", "label", "operation", "tiers" }.contains(h)) {
       indices.label = i;
+    }
+    // Details column (first match wins)
+    else if (indices.details < 0 && QStringList{ "libelle operation", "notes" }.contains(h)) {
+      indices.details = i;
     }
     // Category column (last match wins - keep updating)
     else if (QStringList{ "sous categorie ce", "sous categorie", "sub-category", "subcategory", "categorie ce", "categorie", "category" }.contains(h)) {

@@ -429,6 +429,37 @@ void SetOperationLabelCommand::redo() {
   }
 }
 
+SetOperationDetailsCommand::SetOperationDetailsCommand(Operation& operation,
+                                                       OperationListModel* operationModel,
+                                                       const QString& oldDetails,
+                                                       const QString& newDetails,
+                                                       QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _operationModel(operationModel),
+    _oldDetails(oldDetails),
+    _newDetails(newDetails) {
+  setText(QObject::tr("Set operation details"));
+}
+
+void SetOperationDetailsCommand::undo() {
+  _operation.set_details(_oldDetails);
+  if (_operationModel) {
+    _operationModel->refresh();
+    _operationModel->selectByPointer(&_operation);
+    emit _operationModel->operationDataChanged();
+  }
+}
+
+void SetOperationDetailsCommand::redo() {
+  _operation.set_details(_newDetails);
+  if (_operationModel) {
+    _operationModel->refresh();
+    _operationModel->selectByPointer(&_operation);
+    emit _operationModel->operationDataChanged();
+  }
+}
+
 // SetLeftoverDecisionCommand implementation
 
 SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,

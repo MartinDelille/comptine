@@ -541,6 +541,43 @@ private slots:
     QCOMPARE(operation->date(), QDate(2025, 10, 8));
     QCOMPARE(operation->amount(), -45.0);
     QCOMPARE(operation->label(), "Supermarche Carrefour");
+    QCOMPARE(operation->details(), "Carte du 06/10/2025");
+    QCOMPARE(operation->category(), nullptr);
+    QCOMPARE(operation->allocations().count(), 2);
+
+    auto allocation = operation->allocations().at(0).toMap();
+    QCOMPARE(allocation["category"], "Alimentation");
+    QCOMPARE(allocation["amount"].toDouble(), -40.0);
+    allocation = operation->allocations().at(1).toMap();
+    QCOMPARE(allocation["category"], "Loisirs");
+    QCOMPARE(allocation["amount"].toDouble(), -5.0);
+
+    operation = account->operations().at(1);
+    QCOMPARE(operation->date(), QDate(2025, 10, 7));
+    QCOMPARE(operation->amount(), -9.99);
+    QCOMPARE(operation->label(), QString("Abonnement Libération"));
+    QCOMPARE(operation->category()->name(), QString("Loisirs"));
+
+    // Verify categories were created
+    QCOMPARE(categoryController->rowCount(), 8);
+    QVERIFY(categoryController->getCategoryByName("Alimentation") != nullptr);
+    QVERIFY(categoryController->getCategoryByName("Loisirs") != nullptr);
+  }
+
+  void testFileOld() {
+    QVERIFY(fileController->loadFromYamlUrl(QUrl("file::/tests/old.comptine")));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 2);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Compte Courant"));
+    QCOMPARE(account->operations().size(), 5);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 10, 8));
+    QCOMPARE(operation->amount(), -45.0);
+    QCOMPARE(operation->label(), "Supermarche Carrefour");
+    QCOMPARE(operation->details(), "");
     QCOMPARE(operation->category(), nullptr);
     QCOMPARE(operation->allocations().count(), 2);
 
@@ -578,6 +615,7 @@ private slots:
     QCOMPARE(operation->date(), QDate(2025, 11, 27));
     QCOMPARE(operation->amount(), -35.0);
     QCOMPARE(operation->label(), QString("LE PETIT BISTROT"));
+    QCOMPARE(operation->details(), QString("CB LE PETIT BISTRO FACT 251125"));
     QCOMPARE(operation->category()->name(), QString("Restaurant"));
     operation = account->operations().at(1);
     QCOMPARE(operation->date(), QDate(2025, 11, 18));
@@ -623,6 +661,7 @@ private slots:
     QCOMPARE(operation->date(), QDate(2025, 6, 5));
     QCOMPARE(operation->amount(), -44.99);
     QCOMPARE(operation->label(), QString("PRLV DE Free Telecom"));
+    QCOMPARE(operation->details(), QString("PRLV Free Telecom Free HautDebit 1387145500"));
     QCOMPARE(operation->category()->name(), "Téléphone : Internet");
 
     // Verify no categories were created

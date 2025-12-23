@@ -123,7 +123,7 @@ void BudgetData::clearAccounts() {
   emit accountCountChanged();
 }
 
-void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QVariantList& allocations) {
+void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QVariantList& allocations) {
   if (!_operationModel) return;
   if (!_navController) return;
   Account* account = getAccount(_navController->currentAccountIndex());
@@ -145,7 +145,7 @@ void BudgetData::addOperation(const QDate& date, double amount, const QString& l
     }
   }
 
-  auto operation = new Operation(date, amount, category, label, allocationList);
+  auto operation = new Operation(date, amount, category, label, details, allocationList);
   _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
 }
 
@@ -196,6 +196,16 @@ void BudgetData::setOperationLabel(Operation* operation, const QString& newLabel
   if (oldLabel != newLabel) {
     _undoStack.push(new SetOperationLabelCommand(*operation, _operationModel,
                                                  oldLabel, newLabel));
+  }
+}
+
+void BudgetData::setOperationDetails(Operation* operation, const QString& newDetails) {
+  if (!operation) return;
+
+  QString oldDetails = operation->details();
+  if (oldDetails != newDetails) {
+    _undoStack.push(new SetOperationDetailsCommand(*operation, _operationModel,
+                                                   oldDetails, newDetails));
   }
 }
 
