@@ -345,11 +345,12 @@ qt_add_resources(
   FileControllerTest
   FileControllerTestResources
   FILES
+  tests/example.comptine
+  tests/old.comptine
   tests/import1.csv
   tests/import2.csv
   tests/money.csv
-  tests/example.comptine
-  tests/old.comptine
+  tests/money2.csv
 )
 
 

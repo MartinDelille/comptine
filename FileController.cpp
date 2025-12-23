@@ -538,48 +538,33 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     if (utf8Text.contains(QChar::ReplacementCharacter)) {
       // Invalid UTF-8 sequence detected, likely Latin1
       encoding = QStringConverter::Latin1;
-      // ...read file as Latin1...
     } else {
       encoding = QStringConverter::Utf8;
     }
   }
 
-  QTextStream firstPass(&file);
-  QString headerLine = firstPass.readLine();
-  file.close();
-
-  qDebug() << "Header (raw):" << headerLine;
-
-  // Auto-detect delimiter: if header contains semicolons, use semicolon; otherwise use comma
-  QChar delimiter = headerLine.contains(';') ? ';' : ',';
-  qDebug() << "Detected delimiter:" << delimiter;
-
-  // Semicolon-separated files from French banks typically use Latin1
-  // Re-open and re-read with correct encoding
-  if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    qDebug() << "Failed to reopen file:" << file.errorString();
-    set_errorMessage(tr("Could not open file: %1").arg(file.errorString()));
-    return false;
-  }
+  QStringList headerFields;
+  QChar delimiter = ';';
 
   QTextStream in(&file);
   in.setEncoding(encoding);
-  headerLine = in.readLine();
-  qDebug() << "Header (decoded):" << headerLine;
+  CsvFieldIndices idx;
 
-  // Create or get account
-  QString name = accountName.isEmpty() ? "Imported Account" : accountName;
-  Account* account = _budgetData.getAccountByName(name);
-  bool isNewAccount = false;
-  if (!account) {
-    // New account - will be added to BudgetData via AddAccountCommand when undo stack is pushed
-    account = new Account(name);
-    isNewAccount = true;
+  while (!in.atEnd() && !idx.isValid()) {
+    QString headerLine = in.readLine();
+    qDebug() << "Header (decoded):" << headerLine;
+
+    // Parse header to detect column indices
+    delimiter = ';';
+    headerFields = parseCsvLine(headerLine, delimiter);
+    idx = parseHeader(headerFields);
+
+    if (!idx.isValid()) {
+      delimiter = ',';
+      headerFields = parseCsvLine(headerLine, delimiter);
+      idx = parseHeader(headerFields);
+    }
   }
-
-  // Parse header to detect column indices
-  QStringList headerFields = parseCsvLine(headerLine, delimiter);
-  CsvFieldIndices idx = parseHeader(headerFields);
 
   // Log detected columns
   qDebug() << "Detected columns:";
@@ -592,7 +577,6 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   qDebug() << "  credit:" << idx.credit;
   qDebug() << "  amount:" << idx.amount;
 
-  // Validate required columns
   if (!idx.isValid()) {
     qDebug() << "Invalid CSV format: missing required columns (date, label, and debit/credit/amount)";
     qDebug() << "Available headers:";
@@ -602,6 +586,16 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     file.close();
     set_errorMessage(tr("Invalid CSV format: missing required columns (date, label, and debit/credit/amount)"));
     return false;
+  }
+
+  // Create or get account
+  QString name = accountName.isEmpty() ? "Imported Account" : accountName;
+  Account* account = _budgetData.getAccountByName(name);
+  bool isNewAccount = false;
+  if (!account) {
+    // New account - will be added to BudgetData via AddAccountCommand when undo stack is pushed
+    account = new Account(name);
+    isNewAccount = true;
   }
 
   // Create a macro command that composes all the sub-commands
