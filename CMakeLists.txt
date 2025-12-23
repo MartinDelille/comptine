@@ -339,26 +339,18 @@ target_link_libraries(CsvParserTest PRIVATE Qt6::Test libComptine)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
 
 # FileControllerTest - integration test with all dependencies
-qt_add_executable(FileControllerTest tests/FileControllerTest.cpp)
+qt_add_executable(FileControllerTest tests/FileControllerTest.cpp FileCoordinator.h FileCoordinator_fallback.cpp)
 
 qt_add_resources(
   FileControllerTest
   FileControllerTestResources
-    # PREFIX
-  # "/csv"
   FILES
   tests/import1.csv
   tests/import2.csv
   tests/money.csv
+  tests/example.comptine
 )
 
-# Platform-specific FileCoordinator
-if(APPLE)
-  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator.mm)
-  target_link_libraries(FileControllerTest PRIVATE "-framework Foundation")
-else()
-  target_sources(FileControllerTest PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp)
-endif()
 
 target_link_libraries(FileControllerTest PRIVATE Qt6::Test libComptine)
 add_test(NAME FileControllerTest COMMAND FileControllerTest)

@@ -528,6 +528,41 @@ private slots:
     QCOMPARE(spy.count(), 1);
   }
 
+  void testFileExample() {
+    QVERIFY(fileController->loadFromYamlUrl(QUrl("file::/tests/example.comptine")));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 2);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Compte Courant"));
+    QCOMPARE(account->operations().size(), 5);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 10, 8));
+    QCOMPARE(operation->amount(), -45.0);
+    QCOMPARE(operation->label(), "Supermarche Carrefour");
+    QCOMPARE(operation->category(), nullptr);
+    QCOMPARE(operation->allocations().count(), 2);
+
+    auto allocation = operation->allocations().at(0).toMap();
+    QCOMPARE(allocation["category"], "Alimentation");
+    QCOMPARE(allocation["amount"].toDouble(), -40.0);
+    allocation = operation->allocations().at(1).toMap();
+    QCOMPARE(allocation["category"], "Loisirs");
+    QCOMPARE(allocation["amount"].toDouble(), -5.0);
+
+    operation = account->operations().at(1);
+    QCOMPARE(operation->date(), QDate(2025, 10, 7));
+    QCOMPARE(operation->amount(), -9.99);
+    QCOMPARE(operation->label(), QString("Abonnement Libération"));
+    QCOMPARE(operation->category()->name(), QString("Loisirs"));
+
+    // Verify categories were created
+    QCOMPARE(categoryController->rowCount(), 8);
+    QVERIFY(categoryController->getCategoryByName("Alimentation") != nullptr);
+    QVERIFY(categoryController->getCategoryByName("Loisirs") != nullptr);
+  }
+
   // CSV Import Integration
 
   void testFileImport1() {
