@@ -669,6 +669,27 @@ private slots:
     QVERIFY(categoryController->getCategoryByName("Téléphone : Internet") != nullptr);
   }
 
+  void testFileMoney2() {
+    QVERIFY(fileController->importFromCsv(QUrl("file::/tests/money2.csv"), "Bank Account", true));
+
+    // Verify import
+    QCOMPARE(budgetData->accountCount(), 1);
+    Account* account = budgetData->getAccount(0);
+    QCOMPARE(account->name(), QString("Bank Account"));
+    QCOMPARE(account->operations().size(), 3);
+
+    auto operation = account->operations().at(0);
+    QCOMPARE(operation->date(), QDate(2025, 6, 24));
+    QCOMPARE(operation->amount(), -24.5);
+    QCOMPARE(operation->label(), "VIREMENT SEPA PAR INTERNET");
+    QCOMPARE(operation->details(), "");
+    QCOMPARE(operation->category()->name(), "Factures : Ameublement");
+
+    // Verify no categories were created
+    QCOMPARE(categoryController->rowCount(), 3);
+    QVERIFY(categoryController->getCategoryByName("Factures : Ameublement") != nullptr);
+  }
+
   void testImportFromCsvWithCategories() {
     // Create a test CSV file
     QString csvPath = tempDir->filePath("import.csv");
