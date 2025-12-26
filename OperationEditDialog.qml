@@ -13,7 +13,6 @@ BaseDialog {
     property date originalBudgetDate: new Date()
     property string originalLabel: ""
     property string originalDetails: ""
-    property var originalCategory: null
     property var originalAllocations: []
 
     // Category list for ComboBoxes - refreshed on open
@@ -83,7 +82,6 @@ BaseDialog {
         }
         detailsField.text = originalDetails = operation?.details || "";
 
-        originalCategory = operation?.category || null;
         if (operation?.allocation) {
             originalAllocations = operation.allocations ? allocations.slice() : [];
         }
@@ -175,11 +173,6 @@ BaseDialog {
             let allocationsChanged = false;
             if (originalAllocations.length !== allocations.length) {
                 allocationsChanged = true;
-            } else if (originalAllocations.length === 0) {
-                // Was single category, check if it changed
-                if (allocations.length !== 1 || allocations[0].category !== originalCategory.name) {
-                    allocationsChanged = true;
-                }
             } else {
                 // Compare allocations
                 for (let i = 0; i < allocations.length; i++) {
@@ -190,7 +183,7 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                AppState.data.splitOperation(_operation, allocations);
+                AppState.data.setOperationAllocations(_operation, allocations);
             }
         }
 

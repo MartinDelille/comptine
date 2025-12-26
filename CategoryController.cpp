@@ -192,7 +192,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
           item["label"] = op->label();
           item["amount"] = categoryAmount;     // Show only the amount for this category
           item["totalAmount"] = op->amount();  // Total operation amount
-          item["isSplit"] = op->isSplit();
+          item["isCategorized"] = op->isCategorized();
           item["accountName"] = account->name();
           result.append(item);
         }

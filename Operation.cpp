@@ -5,7 +5,6 @@ Operation::Operation(QObject* parent) :
 
 Operation::Operation(const QDate& date,
                      double amount,
-                     const Category* category,
                      const QString& label,
                      const QString& details,
                      const QList<CategoryAllocation>& allocations,
@@ -13,17 +12,9 @@ Operation::Operation(const QDate& date,
     QObject(parent),
     _date(date),
     _amount(amount),
-    _category(category),
     _label(label),
     _details(details),
     _allocations(allocations) {
-  auto updateCategoryName = [this] {
-    if (_category) {
-      connect(_category, &Category::nameChanged, this, &Operation::categoryChanged);
-    }
-  };
-  connect(this, &Operation::categoryChanged, this, updateCategoryName);
-  updateCategoryName();
 }
 
 QDate Operation::budgetDate() const {
@@ -52,12 +43,7 @@ QVariantList Operation::allocations() const {
 void Operation::setAllocations(const QList<CategoryAllocation>& allocations) {
   if (_allocations != allocations) {
     _allocations = allocations;
-    // Clear the single category when we have allocations
-    if (!_allocations.isEmpty()) {
-      _category = nullptr;
-    }
     emit allocationsChanged();
-    emit categoryChanged();  // categoryDisplay may have changed
   }
 }
 
@@ -68,15 +54,16 @@ void Operation::clearAllocations() {
   }
 }
 
-bool Operation::isSplit() const {
-  return !_allocations.isEmpty();
+bool Operation::isCategorized() const {
+  double totalAmount = 0.0;
+  for (auto allocation : _allocations) {
+    totalAmount += allocation.amount;
+  }
+  return totalAmount == _amount;
 }
 
 QString Operation::categoryDisplay() const {
   QSet<QString> categoryNames;
-  if (_allocations.isEmpty()) {
-    return _category ? _category->name() : "";
-  }
 
   // Return comma-separated list of categories
   QSet<const Category*> uniqueCategories;
@@ -93,14 +80,6 @@ QString Operation::categoryDisplay() const {
 }
 
 double Operation::amountForCategory(const Category* category) const {
-  if (_allocations.isEmpty()) {
-    // Not split - return full amount if category matches
-    if (_category == category) {
-      return _amount;
-    }
-    return 0.0;
-  }
-
   // Split - sum all allocations for this category
   double total = 0.0;
   for (const auto& alloc : _allocations) {

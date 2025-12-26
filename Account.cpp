@@ -239,11 +239,11 @@ QString Account::selectedOperationsAsCsv() const {
   csv += "Date,Label,Amount,Category\n";
 
   for (Operation* op : sortedSelected) {
-    csv += QString("%1,\"%2\",%3,%4\n")
+    csv += QString("%0,\"%1\",%2,%3\n")
                .arg(op->date().toString("yyyy-MM-dd"))
                .arg(op->label().replace("\"", "\"\""))
                .arg(op->amount(), 0, 'f', 2)
-               .arg((op->category() ? op->category()->name() : ""));
+               .arg((op->categoryDisplay()));
   }
 
   return csv;
