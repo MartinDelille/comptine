@@ -145,7 +145,7 @@ private slots:
     op->set_date(QDate(2025, 1, 15));
     op->set_amount(-50.0);
     op->set_label("Grocery Store");
-    op->set_category(new Category("Food"));
+    op->setAllocations({ CategoryAllocation(new Category("Food"), -50) });
     account->appendOperation(op);
 
     categoryController->addCategory("Food", 200.0);
@@ -170,7 +170,10 @@ private slots:
     QCOMPARE(loadedOp->date(), QDate(2025, 1, 15));
     QCOMPARE(loadedOp->amount(), -50.0);
     QCOMPARE(loadedOp->label(), QString("Grocery Store"));
-    QCOMPARE(loadedOp->category()->name(), QString("Food"));
+    QCOMPARE(loadedOp->allocations().count(), 1);
+    auto alloc = loadedOp->allocationsList().at(0);
+    QCOMPARE(alloc.category->name(), QString("Food"));
+    QCOMPARE(alloc.amount, -50.0);
   }
 
   void testSaveAndLoadWithMultipleAccounts() {
@@ -240,7 +243,7 @@ private slots:
     // Verify split operation
     Account* loadedAccount = budgetData->getAccount(0);
     Operation* loadedOp = loadedAccount->operations()[0];
-    QVERIFY(loadedOp->isSplit());
+    QVERIFY(loadedOp->isCategorized());
 
     QList<CategoryAllocation> loadedAllocs = loadedOp->allocationsList();
     QCOMPARE(loadedAllocs.size(), 2);
@@ -260,7 +263,7 @@ private slots:
     op->set_date(QDate(2025, 1, 31));
     op->set_amount(-75.0);
     op->set_label("Late Month Purchase");
-    op->set_category(new Category("Shopping"));
+    op->setAllocations({ CategoryAllocation(new Category("Shopping"), -75.0) });
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
     account->appendOperation(op);
 
@@ -289,7 +292,7 @@ private slots:
     op->set_date(QDate(2025, 3, 15));
     op->set_amount(-30.0);
     op->set_label("Normal Purchase");
-    op->set_category(food);
+    op->setAllocations({ CategoryAllocation(food, -30.0) });
     // budgetDate defaults to date, so it should not be saved
     account->appendOperation(op);
 
@@ -542,7 +545,6 @@ private slots:
     QCOMPARE(operation->amount(), -45.0);
     QCOMPARE(operation->label(), "Supermarche Carrefour");
     QCOMPARE(operation->details(), "Carte du 06/10/2025");
-    QCOMPARE(operation->category(), nullptr);
     QCOMPARE(operation->allocations().count(), 2);
 
     auto allocation = operation->allocations().at(0).toMap();
@@ -556,7 +558,10 @@ private slots:
     QCOMPARE(operation->date(), QDate(2025, 10, 7));
     QCOMPARE(operation->amount(), -9.99);
     QCOMPARE(operation->label(), QString("Abonnement Libération"));
-    QCOMPARE(operation->category()->name(), QString("Loisirs"));
+    QCOMPARE(operation->allocationsList().count(), 1);
+    auto alloc = operation->allocationsList().at(0);
+    QCOMPARE(alloc.category->name(), QString("Loisirs"));
+    QCOMPARE(alloc.amount, -9.99);
 
     // Verify categories were created
     QCOMPARE(categoryController->rowCount(), 8);
@@ -566,6 +571,13 @@ private slots:
 
   void testFileOld() {
     QVERIFY(fileController->loadFromYamlUrl(QUrl("file::/tests/old.comptine")));
+
+    // Verify categories were created
+    QCOMPARE(categoryController->rowCount(), 8);
+    auto alimentation = categoryController->getCategoryByName("Alimentation");
+    QVERIFY(alimentation != nullptr);
+    auto loisirs = categoryController->getCategoryByName("Loisirs");
+    QVERIFY(loisirs != nullptr);
 
     // Verify import
     QCOMPARE(budgetData->accountCount(), 2);
@@ -578,26 +590,24 @@ private slots:
     QCOMPARE(operation->amount(), -45.0);
     QCOMPARE(operation->label(), "Supermarche Carrefour");
     QCOMPARE(operation->details(), "");
-    QCOMPARE(operation->category(), nullptr);
     QCOMPARE(operation->allocations().count(), 2);
 
-    auto allocation = operation->allocations().at(0).toMap();
-    QCOMPARE(allocation["category"], "Alimentation");
-    QCOMPARE(allocation["amount"].toDouble(), -40.0);
-    allocation = operation->allocations().at(1).toMap();
-    QCOMPARE(allocation["category"], "Loisirs");
-    QCOMPARE(allocation["amount"].toDouble(), -5.0);
+    auto allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, alimentation);
+    QCOMPARE(allocation.amount, -40.0);
+    allocation = operation->allocationsList().at(1);
+    QCOMPARE(allocation.category, loisirs);
+    QCOMPARE(allocation.amount, -5.0);
 
     operation = account->operations().at(1);
     QCOMPARE(operation->date(), QDate(2025, 10, 7));
     QCOMPARE(operation->amount(), -9.99);
     QCOMPARE(operation->label(), QString("Abonnement Libération"));
-    QCOMPARE(operation->category()->name(), QString("Loisirs"));
+    QCOMPARE(operation->allocations().count(), 1);
 
-    // Verify categories were created
-    QCOMPARE(categoryController->rowCount(), 8);
-    QVERIFY(categoryController->getCategoryByName("Alimentation") != nullptr);
-    QVERIFY(categoryController->getCategoryByName("Loisirs") != nullptr);
+    allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, loisirs);
+    QCOMPARE(allocation.amount, -9.99);
   }
 
   // CSV Import Integration
@@ -606,6 +616,12 @@ private slots:
     QVERIFY(fileController->importFromCsv(QUrl("file::/tests/import1.csv"), "Bank Account", true));
 
     // Verify import
+    QCOMPARE(categoryController->rowCount(), 2);
+    auto restaurant = categoryController->getCategoryByName("Restaurant");
+    QVERIFY(restaurant != nullptr);
+    auto energie = categoryController->getCategoryByName("Energie eau, gaz, electricite, fioul");
+    QVERIFY(energie != nullptr);
+
     QCOMPARE(budgetData->accountCount(), 1);
     Account* account = budgetData->getAccount(0);
     QCOMPARE(account->name(), QString("Bank Account"));
@@ -616,23 +632,27 @@ private slots:
     QCOMPARE(operation->amount(), -35.0);
     QCOMPARE(operation->label(), QString("LE PETIT BISTROT"));
     QCOMPARE(operation->details(), QString("CB LE PETIT BISTRO FACT 251125"));
-    QCOMPARE(operation->category()->name(), QString("Restaurant"));
+    QCOMPARE(operation->allocationsList().count(), 1);
+    auto allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, restaurant);
+    QCOMPARE(allocation.amount, -35.0);
+
     operation = account->operations().at(1);
     QCOMPARE(operation->date(), QDate(2025, 11, 18));
     QCOMPARE(operation->amount(), -85.0);
     QCOMPARE(operation->label(), QString("EDF"));
-    QCOMPARE(operation->category()->name(), QString("Energie eau, gaz, electricite, fioul"));
-
-    // Verify categories were created
-    QCOMPARE(categoryController->rowCount(), 2);
-    QVERIFY(categoryController->getCategoryByName("Restaurant") != nullptr);
-    QVERIFY(categoryController->getCategoryByName("Energie eau, gaz, electricite, fioul") != nullptr);
+    QCOMPARE(operation->allocationsList().count(), 1);
+    allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, energie);
+    QCOMPARE(allocation.amount, -85.0);
   }
 
   void testFileImport2() {
     QVERIFY(fileController->importFromCsv(QUrl("file::/tests/import2.csv"), "Bank Account", true));
 
     // Verify import
+    QCOMPARE(categoryController->rowCount(), 0);
+
     QCOMPARE(budgetData->accountCount(), 1);
     Account* account = budgetData->getAccount(0);
     QCOMPARE(account->name(), QString("Bank Account"));
@@ -642,16 +662,17 @@ private slots:
     QCOMPARE(operation->date(), QDate(2025, 6, 5));
     QCOMPARE(operation->amount(), -44.99);
     QCOMPARE(operation->label(), QString("PRLV DE Free Telecom"));
-    QCOMPARE(operation->category(), nullptr);
-
-    // Verify no categories were created
-    QCOMPARE(categoryController->rowCount(), 0);
+    QCOMPARE(operation->allocationsList().count(), 0);
   }
 
   void testFileMoney() {
     QVERIFY(fileController->importFromCsv(QUrl("file::/tests/money.csv"), "Bank Account", true));
 
     // Verify import
+    QCOMPARE(categoryController->rowCount(), 1);
+    auto telephone = categoryController->getCategoryByName("Téléphone : Internet");
+    QVERIFY(telephone != nullptr);
+
     QCOMPARE(budgetData->accountCount(), 1);
     Account* account = budgetData->getAccount(0);
     QCOMPARE(account->name(), QString("Bank Account"));
@@ -662,17 +683,20 @@ private slots:
     QCOMPARE(operation->amount(), -44.99);
     QCOMPARE(operation->label(), QString("PRLV DE Free Telecom"));
     QCOMPARE(operation->details(), QString("PRLV Free Telecom Free HautDebit 1387145500"));
-    QCOMPARE(operation->category()->name(), "Téléphone : Internet");
-
-    // Verify no categories were created
-    QCOMPARE(categoryController->rowCount(), 1);
-    QVERIFY(categoryController->getCategoryByName("Téléphone : Internet") != nullptr);
+    // QCOMPARE(operation->category()->name(), "Téléphone : Internet");
+    QCOMPARE(operation->allocationsList().count(), 1);
+    auto allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, telephone);
+    QCOMPARE(allocation.amount, -44.99);
   }
 
   void testFileMoney2() {
     QVERIFY(fileController->importFromCsv(QUrl("file::/tests/money2.csv"), "Bank Account", true));
 
-    // Verify import
+    QCOMPARE(categoryController->rowCount(), 3);
+    auto ameublement = categoryController->getCategoryByName("Factures : Ameublement");
+    QVERIFY(ameublement != nullptr);
+
     QCOMPARE(budgetData->accountCount(), 1);
     Account* account = budgetData->getAccount(0);
     QCOMPARE(account->name(), QString("Bank Account"));
@@ -683,11 +707,10 @@ private slots:
     QCOMPARE(operation->amount(), -24.5);
     QCOMPARE(operation->label(), "VIREMENT SEPA PAR INTERNET");
     QCOMPARE(operation->details(), "");
-    QCOMPARE(operation->category()->name(), "Factures : Ameublement");
-
-    // Verify no categories were created
-    QCOMPARE(categoryController->rowCount(), 3);
-    QVERIFY(categoryController->getCategoryByName("Factures : Ameublement") != nullptr);
+    QCOMPARE(operation->allocationsList().count(), 1);
+    auto allocation = operation->allocationsList().at(0);
+    QCOMPARE(allocation.category, ameublement);
+    QCOMPARE(allocation.amount, -24.5);
   }
 
   void testImportFromCsvWithCategories() {
@@ -733,7 +756,7 @@ private slots:
     // Verify operation was imported but category was ignored
     Account* account = budgetData->getAccount(0);
     Operation* op = account->operations()[0];
-    QCOMPARE(op->category(), nullptr);  // Empty category
+    QCOMPARE(op->allocationsList().count(), 0);  // Empty category
 
     // No categories should be created
     QCOMPARE(categoryController->rowCount(), 0);
@@ -760,8 +783,11 @@ private slots:
     // Rule should have been applied
     Operation* op = budgetData->getAccount(0)->operations()[0];
     QVERIFY(op);
-    QVERIFY(op->category());
-    QCOMPARE(op->category()->name(), QString("Groceries"));
+    QCOMPARE(op->label(), "SUPERMARKET PURCHASE");
+    QCOMPARE(op->allocationsList().size(), 1);
+    auto alloc = op->allocationsList().at(0);
+    QCOMPARE(alloc.category, groceries);
+    QCOMPARE(alloc.amount, -45.0);
   }
 
 private:

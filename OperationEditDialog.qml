@@ -190,7 +190,7 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                AppState.data.splitOperation(_operation, allocations);
+                AppState.data.setOperationAllocations(_operation, allocations);
             }
         }
 

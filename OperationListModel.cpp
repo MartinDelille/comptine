@@ -25,8 +25,6 @@ QVariant OperationListModel::data(const QModelIndex& index, int role) const {
         return op->amount();
       case LabelRole:
         return op->label();
-      case CategoryRole:
-        return QVariant::fromValue(op->category());
       case BalanceRole:
         return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
       case SelectedRole:
@@ -60,7 +58,6 @@ QHash<int, QByteArray> OperationListModel::roleNames() const {
     { DateRole, "date" },
     { AmountRole, "amount" },
     { LabelRole, "label" },
-    { CategoryRole, "category" },
     { BalanceRole, "balance" },
     { SelectedRole, "selected" },
     { OperationRole, "operation" }

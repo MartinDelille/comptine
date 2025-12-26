@@ -129,34 +129,18 @@ void BudgetData::addOperation(const QDate& date, double amount, const QString& l
   Account* account = getAccount(_navController->currentAccountIndex());
   if (!account) return;
 
-  Category* category = nullptr;
   QList<CategoryAllocation> allocationList;
-  if (allocations.size() == 1) {
-    QVariantMap m = allocations.first().toMap();
-    category = _categoryController->getCategoryByName(m["category"].toString());
-  } else {
-    for (auto alloc : allocations) {
-      QVariantMap m = alloc.toMap();
-      allocationList.append(CategoryAllocation{
-          _categoryController->getCategoryByName(m["category"].toString()),
-          m["amount"].toDouble(),
+  for (auto alloc : allocations) {
+    QVariantMap m = alloc.toMap();
+    allocationList.append(CategoryAllocation{
+        _categoryController->getCategoryByName(m["category"].toString()),
+        m["amount"].toDouble(),
 
-      });
-    }
+    });
   }
 
-  auto operation = new Operation(date, amount, category, label, details, allocationList);
+  auto operation = new Operation(date, amount, label, details, allocationList);
   _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
-}
-
-void BudgetData::setOperationCategory(Operation* operation, const Category* newCategory) {
-  if (!operation) return;
-
-  auto oldCategory = operation->category();
-  if (oldCategory != newCategory) {
-    _undoStack.push(new SetOperationCategoryCommand(*operation, _operationModel,
-                                                    oldCategory, newCategory));
-  }
 }
 
 void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate) {
@@ -209,27 +193,26 @@ void BudgetData::setOperationDetails(Operation* operation, const QString& newDet
   }
 }
 
-void BudgetData::splitOperation(Operation* operation, const QVariantList& allocations) {
+void BudgetData::setOperationAllocations(Operation* operation, const QVariantList& allocations) {
   if (!operation) return;
 
   // Convert QVariantList to QList<CategoryAllocation>
   QList<CategoryAllocation> newAllocations;
   for (const QVariant& v : allocations) {
     QVariantMap m = v.toMap();
-    CategoryAllocation alloc;
-    alloc.category = _categoryController->getCategoryByName(m["category"].toString());
-    alloc.amount = m["amount"].toDouble();
+    CategoryAllocation alloc(
+        _categoryController->getCategoryByName(m["category"].toString()),
+        m["amount"].toDouble());
     newAllocations.append(alloc);
   }
 
   // Get current state
-  auto oldCategory = operation->category();
   QList<CategoryAllocation> oldAllocations = operation->allocationsList();
 
   // Only create command if something changed
-  if (newAllocations != oldAllocations || (newAllocations.size() == 1 && newAllocations.first().category != oldCategory)) {
+  if (newAllocations != oldAllocations) {
     _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
-                                              oldCategory, oldAllocations, newAllocations));
+                                              oldAllocations, newAllocations));
   }
 }
 
