@@ -130,25 +130,6 @@ private:
   OperationListModel& _operationModel;
 };
 
-// Command for setting an operation's category
-class SetOperationCategoryCommand : public QUndoCommand {
-public:
-  SetOperationCategoryCommand(Operation& operation,
-                              OperationListModel* operationModel,
-                              const Category* oldCategory,
-                              const Category* newCategory,
-                              QUndoCommand* parent = nullptr);
-
-  void undo() override;
-  void redo() override;
-
-private:
-  Operation& _operation;
-  OperationListModel* _operationModel;
-  const Category* _oldCategory;
-  const Category* _newCategory;
-};
-
 // Command for setting an operation's budget date
 class SetOperationBudgetDateCommand : public QUndoCommand {
 public:
@@ -173,7 +154,6 @@ class SplitOperationCommand : public QUndoCommand {
 public:
   SplitOperationCommand(Operation& operation,
                         OperationListModel* operationModel,
-                        const Category* oldCategory,
                         const QList<CategoryAllocation>& oldAllocations,
                         const QList<CategoryAllocation>& newAllocations,
                         QUndoCommand* parent = nullptr);
@@ -184,7 +164,6 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  const Category* _oldCategory;
   QList<CategoryAllocation> _oldAllocations;
   QList<CategoryAllocation> _newAllocations;
 };

@@ -19,7 +19,6 @@ public:
     DateRole = Qt::UserRole + 1,
     AmountRole,
     LabelRole,
-    CategoryRole,
     BalanceRole,
     SelectedRole,
     OperationRole

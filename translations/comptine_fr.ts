@@ -539,6 +539,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Détails :</translation>
     </message>
     <message>
+        <source>Allocations:</source>
+        <translation>Allocations :</translation>
+    </message>
+    <message>
         <source>Select an operation to view details</source>
         <translation>Sélectionnez une opération pour voir les détails</translation>
     </message>
@@ -551,20 +555,12 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Montant :</translation>
     </message>
     <message>
-        <source>Category:</source>
-        <translation>Catégorie :</translation>
-    </message>
-    <message>
         <source>Uncategorized</source>
         <translation>Non catégorisé</translation>
     </message>
     <message>
         <source>Label:</source>
         <translation>Libellé :</translation>
-    </message>
-    <message>
-        <source>Balance:</source>
-        <translation>Solde :</translation>
     </message>
     <message>
         <source>Edit operation...</source>
@@ -801,10 +797,6 @@ Importez et gérez vos données bancaires.</translation>
             <numerusform>Importer %n opération avec %1 catégorie(s)</numerusform>
             <numerusform>Importer %n opérations avec %1 catégorie(s)</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Clear operation category</source>
-        <translation>Effacer la catégorie de l&apos;opération</translation>
     </message>
     <message>
         <source>Set operation category to &quot;%1&quot;</source>

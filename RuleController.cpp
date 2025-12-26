@@ -32,7 +32,11 @@ int RuleController::uncategorizedCount() const {
   int count = 0;
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (op->category() == nullptr && !op->isSplit()) {
+      double allocationTotal = 0.0;
+      for (auto allocation : op->allocationsList()) {
+        allocationTotal += allocation.amount;
+      }
+      if (allocationTotal < op->amount()) {
         count++;
       }
     }
@@ -177,12 +181,12 @@ const Category* RuleController::matchingCategoryForLabel(const QString& label) c
 }
 
 int RuleController::applyRulesToOperation(Operation* operation) {
-  if (!operation || operation->category() || operation->isSplit()) {
+  if (!operation || operation->isCategorized()) {
     return 0;
   }
 
   if (auto category = matchingCategory(operation)) {
-    operation->set_category(category);
+    operation->setAllocations({ CategoryAllocation(category, operation->amount()) });
     return 1;
   }
   return 0;
@@ -193,7 +197,7 @@ QList<Operation*> RuleController::uncategorizedOperations() const {
 
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (op->category() == nullptr && !op->isSplit()) {
+      if (!op->isCategorized()) {
         result.append(op);
       }
     }
