@@ -14,6 +14,7 @@ BaseDialog {
     property string originalLabel: ""
     property string originalDetails: ""
     property var originalAllocations: []
+    property var _unaffectedCategoryComboBox: null
 
     // Category list for ComboBoxes - refreshed on open
     property var categoryList: []
@@ -69,13 +70,14 @@ BaseDialog {
     }
 
     function initialize(operation) {
+        _unaffectedCategoryComboBox = null;
+
         _operation = operation;
         allocationModel.clear();
 
         originalAmount = editedAmount = operation?.amount || 0;
         originalDate = operation?.date || new Date();
         originalBudgetDate = operation?.budgetDate || new Date();
-        console.log("label", operation, operation.description, operation?.label);
         labelField.text = originalLabel = operation?.label || "";
         if (originalLabel === "") {
             labelField.forceActiveFocus();
@@ -97,7 +99,6 @@ BaseDialog {
         budgetDateYear.value = originalBudgetDate.getFullYear();
 
         if (operation?.allocations && operation.allocations.length > 0) {
-            // Existing split - load allocations
             for (let i = 0; i < operation.allocations.length; i++) {
                 allocationModel.append({
                     category: operation.allocations[i].category,
@@ -105,7 +106,6 @@ BaseDialog {
                 });
             }
         } else {
-            // Single category - start with current category and full amount
             allocationModel.append({
                 category: operation?.category?.name ?? "",
                 amount: operation?.amount || 0
@@ -126,6 +126,13 @@ BaseDialog {
             allocationModel.remove(index);
         }
     }
+
+    function focusUnaffectedComboBox() {
+        if (_unaffectedCategoryComboBox && labelField.text && amountField.value) {
+            _unaffectedCategoryComboBox.forceActiveFocus();
+        }
+    }
+    on_UnaffectedCategoryComboBoxChanged: Qt.callLater(focusUnaffectedComboBox)
 
     onAccepted: {
         let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
@@ -417,6 +424,11 @@ BaseDialog {
                     displayText: currentIndex === 0 ? qsTr("Select category...") : currentText
                     onActivated: idx => {
                         allocationModel.setProperty(index, "category", idx === 0 ? "" : root.categoryList[idx]);
+                    }
+                    Component.onCompleted: {
+                        if (category === "") {
+                            _unaffectedCategoryComboBox = categoryCombo;
+                        }
                     }
                 }
 
