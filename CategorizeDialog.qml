@@ -23,7 +23,12 @@ BaseDialog {
     // Applies a category to the current operation and loads the next
     function applyCategoryAndNext(category) {
         if (currentOperation && category) {
-            AppState.data.setOperationCategory(currentOperation, category);
+            AppState.data.setOperationAllocations(currentOperation, [
+                {
+                    category: category.name,
+                    amount: currentOperation.amount
+                }
+            ]);
             loadNextOperation();
         }
     }
@@ -44,7 +49,7 @@ BaseDialog {
         for (let i = 0; i < allUncategorized.length; i++) {
             let op = allUncategorized[i];
             // Check if already categorized (by Apply) or skipped
-            if (op.category === null && !op.isSplit && !isSkipped(op)) {
+            if (!op.isCategorized && !isSkipped(op)) {
                 currentOperation = op;
                 currentIndex = i + 1;
                 // Try to find a matching rule for suggestion
