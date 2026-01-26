@@ -13,8 +13,9 @@ BaseDialog {
     property string originalCategory: ""
     property string originalLabelPrefix: ""
 
-    // For use when creating rule from CategorizeDialog
+    // For use when creating rule from OperationEditDialog
     property string suggestedPrefix: ""
+    property string suggestedCategory: ""
 
     // Category list - refreshed on open
     property var categoryList: []
@@ -28,6 +29,12 @@ BaseDialog {
         if (isNewRule) {
             categoryCombo.currentIndex = -1;
             descriptionPrefixField.text = suggestedPrefix;
+            if (suggestedCategory.length > 0) {
+                let catIndex = categoryModel.findCategoryIndex(suggestedCategory);
+                if (catIndex >= 0) {
+                    categoryCombo.currentIndex = catIndex;
+                }
+            }
         } else {
             // Find and select the category
             let catIndex = categoryModel.findCategoryIndex(originalCategory);

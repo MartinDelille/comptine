@@ -35,19 +35,9 @@ BaseDialog {
         return sum;
     }
     readonly property double remainingAmount: editedAmount - allocatedAmount
-    readonly property bool allCategoriesSelected: {
-        if (allocationModel.count === 0)
-            return false;
-        for (let i = 0; i < allocationModel.count; i++) {
-            if (allocationModel.get(i).category === "")
-                return false;
-        }
-        return true;
-    }
-    readonly property bool allocationsValid: Math.abs(remainingAmount) < 0.01 && allocationModel.count > 0 && allCategoriesSelected
     readonly property bool dateValid: dateDay.value >= 1 && dateDay.value <= 31
     readonly property bool budgetDateValid: budgetDateDay.value >= 1 && budgetDateDay.value <= 31
-    readonly property bool isValid: allocationsValid && dateValid && budgetDateValid
+    readonly property bool isValid: dateValid && budgetDateValid
 
     // Use BaseDialog's canSubmit for Enter key validation
     canSubmit: isValid
@@ -67,6 +57,10 @@ BaseDialog {
 
     ListModel {
         id: allocationModel
+    }
+
+    RuleEditDialog {
+        id: ruleEditDialog
     }
 
     function initialize(operation) {
@@ -134,13 +128,13 @@ BaseDialog {
     }
     on_UnaffectedCategoryComboBoxChanged: Qt.callLater(focusUnaffectedComboBox)
 
-    onAccepted: {
+    function applyChanges() {
         let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
         let newBudgetDate = new Date(budgetDateYear.value, budgetDateMonth.currentIndex, budgetDateDay.value);
         let newLabel = labelField.text.trim();
         let newDetails = detailsField.text.trim();
 
-        // Build allocations array and call splitOperation
+        // Build allocations array
         let allocations = [];
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
@@ -198,6 +192,28 @@ BaseDialog {
         if (newDate.getTime() !== originalDate.getTime()) {
             AppState.data.setOperationDate(_operation, newDate);
         }
+    }
+
+    // Navigate to previous uncategorized operation
+    function goToPreviousUncategorized() {
+        let prevOp = AppState.rules.previousUncategorizedOperation(_operation);
+        if (prevOp) {
+            applyChanges();
+            initialize(prevOp);
+        }
+    }
+
+    // Navigate to next uncategorized operation
+    function goToNextUncategorized() {
+        let nextOp = AppState.rules.nextUncategorizedOperation(_operation);
+        if (nextOp) {
+            applyChanges();
+            initialize(nextOp);
+        }
+    }
+
+    onAccepted: {
+        applyChanges();
     }
 
     ColumnLayout {
@@ -359,6 +375,29 @@ BaseDialog {
             color: Theme.border
         }
 
+        // Navigation buttons for uncategorized operations
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingNormal
+            visible: _operation !== null
+
+            Button {
+                text: qsTr("Previous Uncategorized")
+                enabled: _operation && AppState.rules.previousUncategorizedOperation(_operation) !== null
+                onClicked: root.goToPreviousUncategorized()
+            }
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: qsTr("Next Uncategorized")
+                enabled: _operation && AppState.rules.nextUncategorizedOperation(_operation) !== null
+                onClicked: root.goToNextUncategorized()
+            }
+        }
+
         // Category allocations header
         RowLayout {
             Layout.fillWidth: true
@@ -475,20 +514,21 @@ BaseDialog {
             onClicked: root.addAllocation()
         }
 
-        // Validation message (always takes space to prevent dialog resize)
-        Label {
-            Layout.fillWidth: true
-            opacity: !root.isValid && allocationModel.count > 0 ? 1.0 : 0.0
-            text: {
-                if (Math.abs(root.remainingAmount) >= 0.01)
-                    return qsTr("Allocations must equal the total amount");
-                if (!root.allCategoriesSelected)
-                    return qsTr("All allocations must have a category");
-                return qsTr("At least one allocation is required");
+        // Create rule button
+        Button {
+            Layout.alignment: Qt.AlignLeft
+            text: qsTr("Create Rule...")
+            visible: _operation !== null
+            onClicked: {
+                if (_operation) {
+                    ruleEditDialog.isNewRule = true;
+                    ruleEditDialog.suggestedPrefix = _operation.label;
+                    if (_operation.allocations && _operation.allocations.length > 0) {
+                        ruleEditDialog.suggestedCategory = _operation.allocations[0].category;
+                    }
+                    ruleEditDialog.open();
+                }
             }
-            color: Theme.warning
-            font.pixelSize: Theme.fontSizeSmall
-            horizontalAlignment: Text.AlignHCenter
         }
     }
 }

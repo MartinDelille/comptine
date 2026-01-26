@@ -254,7 +254,6 @@ qt_add_qml_module(
   BalanceHeader.qml
   BaseDialog.qml
   BudgetView.qml
-  CategorizeDialog.qml
   CategoryDetailView.qml
   CategoryEditDialog.qml
   DateSpinBox.qml
