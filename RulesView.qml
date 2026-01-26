@@ -197,16 +197,6 @@ BaseDialog {
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary
             }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Label {
-                text: qsTr("%1 uncategorized operation(s)").arg(AppState.rules.uncategorizedCount)
-                font.pixelSize: Theme.fontSizeSmall
-                color: AppState.rules.uncategorizedCount > 0 ? Theme.warning : Theme.textSecondary
-            }
         }
     }
 }

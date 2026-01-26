@@ -75,53 +75,6 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
-    <name>CategorizeDialog</name>
-    <message>
-        <source>Categorize Operations</source>
-        <translation>Catégoriser les opérations</translation>
-    </message>
-    <message>
-        <source>Operation %1 of %2</source>
-        <translation>Opération %1 sur %2</translation>
-    </message>
-    <message>
-        <source>No uncategorized operations</source>
-        <translation>Aucune opération non catégorisée</translation>
-    </message>
-    <message>
-        <source>Ref: %1</source>
-        <translation>Réf : %1</translation>
-    </message>
-    <message>
-        <source>Account: %1</source>
-        <translation>Compte : %1</translation>
-    </message>
-    <message>
-        <source>All operations are categorized!</source>
-        <translation>Toutes les opérations sont catégorisées !</translation>
-    </message>
-    <message>
-        <source>Assign Category</source>
-        <translation>Assigner une catégorie</translation>
-    </message>
-    <message>
-        <source>Apply</source>
-        <translation>Appliquer</translation>
-    </message>
-    <message>
-        <source>Or create a rule to auto-categorize similar operations:</source>
-        <translation>Ou créer une règle pour catégoriser automatiquement les opérations similaires :</translation>
-    </message>
-    <message>
-        <source>Create Rule...</source>
-        <translation>Créer une règle...</translation>
-    </message>
-    <message>
-        <source>Skip</source>
-        <translation>Passer</translation>
-    </message>
-</context>
-<context>
     <name>CategoryDetailView</name>
     <message>
         <source>Total: %1</source>
@@ -409,10 +362,6 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Modifier la &amp;catégorie...</translation>
     </message>
     <message>
-        <source>&amp;Categorize...</source>
-        <translation>&amp;Catégoriser...</translation>
-    </message>
-    <message>
         <source>Categorization &amp;Rules...</source>
         <translation>&amp;Règles de catégorisation...</translation>
     </message>
@@ -650,6 +599,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Date budget :</translation>
     </message>
     <message>
+        <source>Previous Uncategorized</source>
+        <translation>Précédente non catégorisée</translation>
+    </message>
+    <message>
+        <source>Next Uncategorized</source>
+        <translation>Suivante non catégorisée</translation>
+    </message>
+    <message>
         <source>Categories:</source>
         <translation>Catégories :</translation>
     </message>
@@ -666,16 +623,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>+ Ajouter une catégorie</translation>
     </message>
     <message>
-        <source>Allocations must equal the total amount</source>
-        <translation>Les allocations doivent être égales au montant total</translation>
-    </message>
-    <message>
-        <source>All allocations must have a category</source>
-        <translation>Toutes les allocations doivent avoir une catégorie</translation>
-    </message>
-    <message>
-        <source>At least one allocation is required</source>
-        <translation>Au moins une allocation est requise</translation>
+        <source>Create Rule...</source>
+        <translation>Créer une règle...</translation>
     </message>
     <message>
         <source>Balance to remaining amount</source>
@@ -945,10 +894,6 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
     <message>
         <source>%1 rule(s)</source>
         <translation>%1 règle(s)</translation>
-    </message>
-    <message>
-        <source>%1 uncategorized operation(s)</source>
-        <translation>%1 opération(s) non catégorisée(s)</translation>
     </message>
 </context>
 <context>
