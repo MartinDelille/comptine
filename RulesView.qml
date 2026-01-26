@@ -155,7 +155,7 @@ BaseDialog {
                                 ruleEditDialog.isNewRule = false;
                                 ruleEditDialog.ruleIndex = index;
                                 ruleEditDialog.originalCategory = category;
-                                ruleEditDialog.originallabelPrefix = labelPrefix;
+                                ruleEditDialog.originalLabelPrefix = labelPrefix;
                                 ruleEditDialog.open();
                             }
                             ToolTip.visible: hovered
