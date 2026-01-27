@@ -42,34 +42,6 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Report...</translation>
     </message>
     <message>
-        <source>EXCEEDED</source>
-        <translation>DÉPASSÉ</translation>
-    </message>
-    <message>
-        <source>Remaining: %1</source>
-        <translation>Reste : %1</translation>
-    </message>
-    <message>
-        <source>Exceeded: %1</source>
-        <translation>Dépassement : %1</translation>
-    </message>
-    <message>
-        <source>(income)</source>
-        <translation>(revenu)</translation>
-    </message>
-    <message>
-        <source>PENDING</source>
-        <translation>EN ATTENTE</translation>
-    </message>
-    <message>
-        <source>Expected: %1</source>
-        <translation>Attendu : %1</translation>
-    </message>
-    <message>
-        <source>Received: %1 extra</source>
-        <translation>Reçu : %1 en plus</translation>
-    </message>
-    <message>
         <source>No categories defined</source>
         <translation>Aucune catégorie définie</translation>
     </message>
@@ -452,6 +424,37 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Update Check Failed</source>
         <translation>Échec de la vérification des mises à jour</translation>
+    </message>
+</context>
+<context>
+    <name>MonthCategoryItem</name>
+    <message>
+        <source>EXCEEDED</source>
+        <translation>DÉPASSÉ</translation>
+    </message>
+    <message>
+        <source>Remaining: %1</source>
+        <translation>Reste : %1</translation>
+    </message>
+    <message>
+        <source>Exceeded: %1</source>
+        <translation>Dépassement : %1</translation>
+    </message>
+    <message>
+        <source>(income)</source>
+        <translation>(revenu)</translation>
+    </message>
+    <message>
+        <source>PENDING</source>
+        <translation>EN ATTENTE</translation>
+    </message>
+    <message>
+        <source>Expected: %1</source>
+        <translation>Attendu : %1</translation>
+    </message>
+    <message>
+        <source>Received: %1 extra</source>
+        <translation>Reçu : %1 en plus</translation>
     </message>
 </context>
 <context>

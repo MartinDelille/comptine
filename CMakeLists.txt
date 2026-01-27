@@ -260,6 +260,7 @@ qt_add_qml_module(
   ImportDialog.qml
   LeftoverDialog.qml
   DateLabel.qml
+  MonthCategoryItem.qml
   OperationDelegate.qml
   OperationDetails.qml
   OperationEditDialog.qml
