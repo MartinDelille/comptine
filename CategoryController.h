@@ -9,7 +9,6 @@
 #include <QVariant>
 
 #include "Category.h"
-#include "LeftoverListModel.h"
 #include "NavigationController.h"
 #include "PropertyMacros.h"
 
@@ -20,7 +19,10 @@ class CategoryController : public QAbstractListModel {
   Q_OBJECT
 
   Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
-  Q_PROPERTY(LeftoverListModel* leftoverModel READ leftoverModel CONSTANT)
+  Q_PROPERTY(double totalToSave READ totalToSave NOTIFY leftoverDataChanged)
+  Q_PROPERTY(double totalToReport READ totalToReport NOTIFY leftoverDataChanged)
+  Q_PROPERTY(double totalFromReport READ totalFromReport NOTIFY leftoverDataChanged)
+  Q_PROPERTY(double netReport READ netReport NOTIFY leftoverDataChanged)
   PROPERTY_RO(Category*, current)
 
 public:
@@ -28,6 +30,9 @@ public:
     CategoryRole = Qt::UserRole + 1,
     AmountRole,
     AccumulatedRole,
+    LeftoverRole,
+    SaveAmountRole,
+    ReportAmountRole,
   };
   Q_ENUM(Roles)
 
@@ -40,8 +45,11 @@ public:
   QVariant data(const QModelIndex& index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;
 
-  // Leftover model accessor
-  LeftoverListModel* leftoverModel() { return &_leftoverModel; }
+  // Leftover totals accessors
+  double totalToSave() const;
+  double totalToReport() const;
+  double totalFromReport() const;
+  double netReport() const;
 
   // Category accessors
   QList<Category*> categories() const;
@@ -95,5 +103,4 @@ private:
   BudgetData& _budgetData;
   const NavigationController& _navigation;
   QUndoStack& _undoStack;
-  LeftoverListModel _leftoverModel;
 };

@@ -17,11 +17,11 @@ CategoryController::CategoryController(BudgetData& budgetData,
                                        QUndoStack& undoStack) :
     _budgetData(budgetData),
     _navigation(navigation),
-    _undoStack(undoStack),
-    _leftoverModel(*this) {
+    _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
+  connect(this, &CategoryController::leftoverDataChanged, this, &CategoryController::refresh);
 }
 
 Category* CategoryController::current() const {
@@ -49,6 +49,16 @@ QVariant CategoryController::data(const QModelIndex& index, int role) const {
         return spentInCategory(category, _navigation.budgetDate());
       case AccumulatedRole:
         return category->accumulatedLeftoverBefore(_navigation.budgetDate());
+      case LeftoverRole:
+        return leftoverForCategory(category, _navigation.budgetDate());
+      case SaveAmountRole: {
+        LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        return decision.saveAmount;
+      }
+      case ReportAmountRole: {
+        LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        return decision.reportAmount;
+      }
     }
   }
   return QVariant();
@@ -59,7 +69,45 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
     { CategoryRole, "category" },
     { AmountRole, "amount" },
     { AccumulatedRole, "accumulated" },
+    { LeftoverRole, "leftover" },
+    { SaveAmountRole, "saveAmount" },
+    { ReportAmountRole, "reportAmount" },
   };
+}
+
+double CategoryController::totalToSave() const {
+  double total = 0.0;
+  for (const Category* category : _categories) {
+    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    total += decision.saveAmount;
+  }
+  return total;
+}
+
+double CategoryController::totalToReport() const {
+  double total = 0.0;
+  for (const Category* category : _categories) {
+    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    if (decision.reportAmount > 0) {
+      total += decision.reportAmount;
+    }
+  }
+  return total;
+}
+
+double CategoryController::totalFromReport() const {
+  double total = 0.0;
+  for (const Category* category : _categories) {
+    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    if (decision.reportAmount < 0) {
+      total += -decision.reportAmount;
+    }
+  }
+  return total;
+}
+
+double CategoryController::netReport() const {
+  return totalToReport() - totalFromReport();
 }
 
 QList<Category*> CategoryController::categories() const {

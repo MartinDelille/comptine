@@ -38,8 +38,20 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>BudgetView</name>
     <message>
-        <source>Leftover...</source>
-        <translation>Report...</translation>
+        <source>To Save:</source>
+        <translation>Vers l&apos;épargne :</translation>
+    </message>
+    <message>
+        <source>To Leftover:</source>
+        <translation>Vers le report :</translation>
+    </message>
+    <message>
+        <source>From Leftover:</source>
+        <translation>Du report :</translation>
+    </message>
+    <message>
+        <source>Net:</source>
+        <translation>Net :</translation>
     </message>
     <message>
         <source>No categories defined</source>
@@ -198,73 +210,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Use categories from CSV</source>
         <translation>Utiliser les catégories du CSV</translation>
-    </message>
-</context>
-<context>
-    <name>LeftoverDialog</name>
-    <message>
-        <source>Monthly Leftover Summary</source>
-        <translation>Résumé mensuel des reports</translation>
-    </message>
-    <message>
-        <source>Category</source>
-        <translation>Catégorie</translation>
-    </message>
-    <message>
-        <source>Leftover</source>
-        <translation>Report</translation>
-    </message>
-    <message>
-        <source>Budget: %1</source>
-        <translation>Budget : %1</translation>
-    </message>
-    <message>
-        <source>Spent: %1</source>
-        <translation>Dépensé : %1</translation>
-    </message>
-    <message>
-        <source>Carried: +%1</source>
-        <translation>Reporté : +%1</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Épargner</translation>
-    </message>
-    <message>
-        <source>Report</source>
-        <translation>Reporter</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Save</source>
-        <translation>Allouer le reste à l&apos;épargne</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Report</source>
-        <translation>Allouer le reste au report</translation>
-    </message>
-    <message>
-        <source>Carry forward deficit</source>
-        <translation>Reporter le déficit</translation>
-    </message>
-    <message>
-        <source>Monthly Summary</source>
-        <translation>Résumé mensuel</translation>
-    </message>
-    <message>
-        <source>To Savings:</source>
-        <translation>Vers l&apos;épargne :</translation>
-    </message>
-    <message>
-        <source>To Leftover Account:</source>
-        <translation>Vers le compte report :</translation>
-    </message>
-    <message>
-        <source>From Leftover Account:</source>
-        <translation>Du compte report :</translation>
-    </message>
-    <message>
-        <source>Net Leftover Transfer:</source>
-        <translation>Transfert net du report :</translation>
     </message>
 </context>
 <context>
@@ -455,6 +400,26 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Received: %1 extra</source>
         <translation>Reçu : %1 en plus</translation>
+    </message>
+    <message>
+        <source>Save:</source>
+        <translation>Épargner :</translation>
+    </message>
+    <message>
+        <source>Report:</source>
+        <translation>Reporter :</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Save</source>
+        <translation>Allouer le reste à l&apos;épargne</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Report</source>
+        <translation>Allouer le reste au report</translation>
+    </message>
+    <message>
+        <source>Carry forward deficit</source>
+        <translation>Reporter le déficit</translation>
     </message>
 </context>
 <context>
