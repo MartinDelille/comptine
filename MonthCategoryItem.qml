@@ -14,12 +14,21 @@ Rectangle {
     property bool isIncome: budgetLimit > 0
     property double percentUsed: (modelData.amount / budgetLimit) * 100.0
 
+    // Leftover data from model
+    property double leftover: modelData.leftover || 0
+    property double saveAmount: modelData.saveAmount || 0
+    property double reportAmount: modelData.reportAmount || 0
+
+    // Computed: remaining leftover after allocations
+    readonly property double remainingLeftover: leftover - saveAmount - reportAmount
+    readonly property bool isBalanced: Math.abs(remainingLeftover) < 0.01
+
     signal clicked
     signal editClicked
 
     implicitHeight: contentColumn.implicitHeight + 24
     color: delegateMouseArea.containsMouse ? Theme.surface : Theme.surfaceElevated
-    border.color: isCurrentItem ? Theme.accent : Theme.borderLight
+    border.color: isBalanced ? Theme.positive : (isCurrentItem ? Theme.accent : Theme.borderLight)
     border.width: isCurrentItem ? 2 : Theme.cardBorderWidth
     radius: Theme.cardRadius
 
@@ -64,6 +73,128 @@ Rectangle {
 
             Item {
                 Layout.fillWidth: true
+            }
+
+            // Leftover display and allocation fields (inline)
+            Label {
+                text: Theme.formatAmount(root.remainingLeftover)
+                font.pixelSize: Theme.fontSizeSmall
+                font.bold: true
+                color: root.remainingLeftover >= 0 ? Theme.positive : Theme.negative
+                visible: root.leftover !== 0
+            }
+
+            // Save amount field
+            RowLayout {
+                spacing: 2
+                visible: root.leftover > 0 || root.saveAmount > 0
+
+                Label {
+                    text: qsTr("Save:")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.textSecondary
+                }
+
+                AmountField {
+                    id: saveField
+                    Layout.preferredWidth: 70
+                    value: root.saveAmount
+                    enabled: root.remainingLeftover > 0 || root.saveAmount > 0
+
+                    function applyValue(newValue) {
+                        let maxSave = root.saveAmount + root.remainingLeftover;
+                        let clampedValue = Math.max(0, Math.min(newValue, maxSave));
+                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, clampedValue, root.reportAmount);
+                    }
+
+                    onEdited: newValue => applyValue(newValue)
+                    onLiveEdited: newValue => applyValue(newValue)
+                }
+
+                ToolButton {
+                    text: "⬆"
+                    font.pixelSize: Theme.fontSizeSmall
+                    enabled: root.remainingLeftover > 0
+                    opacity: enabled ? 1.0 : 0.3
+                    Layout.preferredWidth: 20
+                    Layout.preferredHeight: 20
+                    padding: 0
+                    focusPolicy: Qt.NoFocus
+
+                    onClicked: {
+                        let newSave = root.saveAmount + root.remainingLeftover;
+                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newSave, root.reportAmount);
+                    }
+
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("Allocate remaining to Save")
+                    ToolTip.delay: 500
+                }
+            }
+
+            // Report amount field
+            RowLayout {
+                spacing: 2
+                visible: root.leftover !== 0 || root.reportAmount !== 0
+
+                Label {
+                    text: qsTr("Report:")
+                    font.pixelSize: Theme.fontSizeSmall
+                    color: Theme.textSecondary
+                }
+
+                AmountField {
+                    id: reportField
+                    Layout.preferredWidth: 70
+                    value: root.reportAmount
+                    enabled: root.remainingLeftover !== 0 || root.reportAmount !== 0
+
+                    function applyValue(newValue) {
+                        let clampedValue;
+                        if (root.leftover >= 0) {
+                            let maxReport = root.reportAmount + root.remainingLeftover;
+                            clampedValue = Math.max(0, Math.min(newValue, maxReport));
+                        } else {
+                            clampedValue = Math.max(root.leftover, Math.min(newValue, 0));
+                        }
+                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, clampedValue);
+                    }
+
+                    onEdited: newValue => applyValue(newValue)
+                    onLiveEdited: newValue => applyValue(newValue)
+                }
+
+                ToolButton {
+                    text: "⬆"
+                    font.pixelSize: Theme.fontSizeSmall
+                    enabled: root.remainingLeftover > 0 || (root.leftover < 0 && root.reportAmount > root.leftover)
+                    opacity: enabled ? 1.0 : 0.3
+                    Layout.preferredWidth: 20
+                    Layout.preferredHeight: 20
+                    padding: 0
+                    focusPolicy: Qt.NoFocus
+
+                    onClicked: {
+                        if (root.leftover >= 0) {
+                            let newReport = root.reportAmount + root.remainingLeftover;
+                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newReport);
+                        } else {
+                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, root.leftover);
+                        }
+                    }
+
+                    ToolTip.visible: hovered
+                    ToolTip.text: root.leftover >= 0 ? qsTr("Allocate remaining to Report") : qsTr("Carry forward deficit")
+                    ToolTip.delay: 500
+                }
+            }
+
+            // Balanced indicator
+            Label {
+                text: root.isBalanced ? "✓" : ""
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.positive
+                visible: root.leftover !== 0
             }
 
             Label {

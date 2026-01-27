@@ -30,10 +30,6 @@ FocusScope {
         id: categoryDetailView
     }
 
-    LeftoverDialog {
-        id: leftoverDialog
-    }
-
     Rectangle {
         anchors.fill: parent
         color: Theme.background
@@ -43,17 +39,14 @@ FocusScope {
             anchors.margins: Theme.spacingXLarge
             spacing: Theme.spacingXLarge
 
-            // Month navigation
+            // Month navigation and summary
             RowLayout {
                 Layout.fillWidth: true
                 spacing: Theme.spacingNormal
 
+                // Month selector
                 RowLayout {
-                    id: monthSelector
-
-                    Layout.fillWidth: true
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: Theme.spacingXLarge
+                    spacing: Theme.spacingNormal
 
                     Button {
                         text: "<"
@@ -66,7 +59,7 @@ FocusScope {
                         date: AppState.navigation.budgetDate
                         color: Theme.textPrimary
                         horizontalAlignment: Text.AlignHCenter
-                        Layout.preferredWidth: 200
+                        Layout.preferredWidth: 150
                     }
 
                     Button {
@@ -81,9 +74,74 @@ FocusScope {
                     Layout.fillWidth: true
                 }
 
-                Button {
-                    text: qsTr("Leftover...")
-                    onClicked: leftoverDialog.open()
+                // Leftover summary (inline)
+                RowLayout {
+                    spacing: Theme.spacingLarge
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+
+                        Label {
+                            text: qsTr("To Save:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            text: Theme.formatAmount(AppState.categories.totalToSave)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.positive
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+
+                        Label {
+                            text: qsTr("To Leftover:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            text: Theme.formatAmount(AppState.categories.totalToReport)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.accent
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+                        visible: AppState.categories.totalFromReport > 0
+
+                        Label {
+                            text: qsTr("From Leftover:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            text: Theme.formatAmount(AppState.categories.totalFromReport)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.warning
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+
+                        Label {
+                            text: qsTr("Net:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            text: Theme.formatAmount(AppState.categories.netReport)
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: Theme.amountColor(AppState.categories.netReport)
+                        }
+                    }
                 }
             }
 
