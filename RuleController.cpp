@@ -15,9 +15,6 @@ RuleController::RuleController(BudgetData& budgetData,
     _undoStack(undoStack) {
   _ruleModel = new RuleListModel(this);
   _ruleModel->setRuleController(this);
-  updateUncategorizedCount();
-  connect(&_budgetData, &BudgetData::accountCountChanged, this, &RuleController::updateUncategorizedCount);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &RuleController::updateUncategorizedCount);
 }
 
 RuleController::~RuleController() {
@@ -26,18 +23,6 @@ RuleController::~RuleController() {
 
 int RuleController::ruleCount() const {
   return _rules.size();
-}
-
-int RuleController::uncategorizedCount() const {
-  int count = 0;
-  for (Account* account : _budgetData.accounts()) {
-    for (Operation* op : account->operations()) {
-      if (op->category() == nullptr && !op->isSplit()) {
-        count++;
-      }
-    }
-  }
-  return count;
 }
 
 CategorizationRule* RuleController::getRule(int index) const {
@@ -177,35 +162,48 @@ const Category* RuleController::matchingCategoryForLabel(const QString& label) c
 }
 
 int RuleController::applyRulesToOperation(Operation* operation) {
-  if (!operation || operation->category() || operation->isSplit()) {
+  if (!operation || operation->isCategorized()) {
     return 0;
   }
 
   if (auto category = matchingCategory(operation)) {
-    operation->set_category(category);
+    operation->setAllocations({ CategoryAllocation(category, operation->amount()) });
     return 1;
   }
   return 0;
 }
 
-QList<Operation*> RuleController::uncategorizedOperations() const {
-  QList<Operation*> result;
-
+Operation* RuleController::nextUncategorizedOperation(Operation* current) const {
+  bool foundCurrent = current == nullptr;
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (op->category() == nullptr && !op->isSplit()) {
-        result.append(op);
+      if (op == current) {
+        foundCurrent = true;
+        continue;
+      }
+      if (foundCurrent && !op->isCategorized()) {
+        return op;
       }
     }
   }
-  return result;
+  return nullptr;
 }
 
-Operation* RuleController::nextUncategorizedOperation() const {
-  QList<Operation*> ops = uncategorizedOperations();
-  return ops.isEmpty() ? nullptr : ops.first();
-}
+Operation* RuleController::previousUncategorizedOperation(Operation* current) const {
+  if (!current) {
+    return nullptr;
+  }
 
-void RuleController::updateUncategorizedCount() {
-  emit uncategorizedCountChanged();
+  Operation* previousUncategorized = nullptr;
+  for (Account* account : _budgetData.accounts()) {
+    for (Operation* op : account->operations()) {
+      if (op == current) {
+        return previousUncategorized;
+      }
+      if (!op->isCategorized()) {
+        previousUncategorized = op;
+      }
+    }
+  }
+  return nullptr;
 }

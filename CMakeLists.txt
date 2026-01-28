@@ -113,7 +113,6 @@ set(LIBCOMPTINE_SOURCES
   BudgetData.cpp BudgetData.h
   CategorizationRule.cpp CategorizationRule.h
   OperationListModel.cpp OperationListModel.h
-  LeftoverListModel.cpp LeftoverListModel.h
   AccountListModel.cpp AccountListModel.h
   RuleListModel.cpp RuleListModel.h
   CategoryController.cpp CategoryController.h
@@ -254,13 +253,12 @@ qt_add_qml_module(
   BalanceHeader.qml
   BaseDialog.qml
   BudgetView.qml
-  CategorizeDialog.qml
   CategoryDetailView.qml
   CategoryEditDialog.qml
   DateSpinBox.qml
   ImportDialog.qml
-  LeftoverDialog.qml
   DateLabel.qml
+  MonthCategoryItem.qml
   OperationDelegate.qml
   OperationDetails.qml
   OperationEditDialog.qml

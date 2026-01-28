@@ -155,7 +155,7 @@ BaseDialog {
                                 ruleEditDialog.isNewRule = false;
                                 ruleEditDialog.ruleIndex = index;
                                 ruleEditDialog.originalCategory = category;
-                                ruleEditDialog.originallabelPrefix = labelPrefix;
+                                ruleEditDialog.originalLabelPrefix = labelPrefix;
                                 ruleEditDialog.open();
                             }
                             ToolTip.visible: hovered
@@ -196,16 +196,6 @@ BaseDialog {
                 text: qsTr("%1 rule(s)").arg(AppState.rules.ruleCount)
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary
-            }
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Label {
-                text: qsTr("%1 uncategorized operation(s)").arg(AppState.rules.uncategorizedCount)
-                font.pixelSize: Theme.fontSizeSmall
-                color: AppState.rules.uncategorizedCount > 0 ? Theme.warning : Theme.textSecondary
             }
         }
     }

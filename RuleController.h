@@ -17,7 +17,6 @@ class RuleController : public QObject {
   QML_ELEMENT
 
   PROPERTY_RO(int, ruleCount)
-  PROPERTY_RO(int, uncategorizedCount)
 
   Q_PROPERTY(RuleListModel* ruleModel READ ruleModel CONSTANT)
 
@@ -50,16 +49,14 @@ public:
   // Apply rules to operations (used during import)
   int applyRulesToOperation(Operation* operation);
 
-  // Get uncategorized operations for the Categorize dialog
-  Q_INVOKABLE QList<Operation*> uncategorizedOperations() const;
-  Q_INVOKABLE Operation* nextUncategorizedOperation() const;
+  // Navigation between uncategorized operations (for OperationEditDialog)
+  Q_INVOKABLE Operation* nextUncategorizedOperation(Operation* current) const;
+  Q_INVOKABLE Operation* previousUncategorizedOperation(Operation* current) const;
 
 signals:
   void rulesChanged();
 
 private:
-  void updateUncategorizedCount();
-
   QList<CategorizationRule*> _rules;
   RuleListModel* _ruleModel = nullptr;
   BudgetData& _budgetData;

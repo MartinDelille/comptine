@@ -38,87 +38,24 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>BudgetView</name>
     <message>
-        <source>Leftover...</source>
-        <translation>Report...</translation>
+        <source>To Save:</source>
+        <translation>Vers l&apos;épargne :</translation>
     </message>
     <message>
-        <source>EXCEEDED</source>
-        <translation>DÉPASSÉ</translation>
+        <source>To Leftover:</source>
+        <translation>Vers le report :</translation>
     </message>
     <message>
-        <source>Remaining: %1</source>
-        <translation>Reste : %1</translation>
+        <source>From Leftover:</source>
+        <translation>Du report :</translation>
     </message>
     <message>
-        <source>Exceeded: %1</source>
-        <translation>Dépassement : %1</translation>
-    </message>
-    <message>
-        <source>(income)</source>
-        <translation>(revenu)</translation>
-    </message>
-    <message>
-        <source>PENDING</source>
-        <translation>EN ATTENTE</translation>
-    </message>
-    <message>
-        <source>Expected: %1</source>
-        <translation>Attendu : %1</translation>
-    </message>
-    <message>
-        <source>Received: %1 extra</source>
-        <translation>Reçu : %1 en plus</translation>
+        <source>Net:</source>
+        <translation>Net :</translation>
     </message>
     <message>
         <source>No categories defined</source>
         <translation>Aucune catégorie définie</translation>
-    </message>
-</context>
-<context>
-    <name>CategorizeDialog</name>
-    <message>
-        <source>Categorize Operations</source>
-        <translation>Catégoriser les opérations</translation>
-    </message>
-    <message>
-        <source>Operation %1 of %2</source>
-        <translation>Opération %1 sur %2</translation>
-    </message>
-    <message>
-        <source>No uncategorized operations</source>
-        <translation>Aucune opération non catégorisée</translation>
-    </message>
-    <message>
-        <source>Ref: %1</source>
-        <translation>Réf : %1</translation>
-    </message>
-    <message>
-        <source>Account: %1</source>
-        <translation>Compte : %1</translation>
-    </message>
-    <message>
-        <source>All operations are categorized!</source>
-        <translation>Toutes les opérations sont catégorisées !</translation>
-    </message>
-    <message>
-        <source>Assign Category</source>
-        <translation>Assigner une catégorie</translation>
-    </message>
-    <message>
-        <source>Apply</source>
-        <translation>Appliquer</translation>
-    </message>
-    <message>
-        <source>Or create a rule to auto-categorize similar operations:</source>
-        <translation>Ou créer une règle pour catégoriser automatiquement les opérations similaires :</translation>
-    </message>
-    <message>
-        <source>Create Rule...</source>
-        <translation>Créer une règle...</translation>
-    </message>
-    <message>
-        <source>Skip</source>
-        <translation>Passer</translation>
     </message>
 </context>
 <context>
@@ -276,73 +213,6 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
-    <name>LeftoverDialog</name>
-    <message>
-        <source>Monthly Leftover Summary</source>
-        <translation>Résumé mensuel des reports</translation>
-    </message>
-    <message>
-        <source>Category</source>
-        <translation>Catégorie</translation>
-    </message>
-    <message>
-        <source>Leftover</source>
-        <translation>Report</translation>
-    </message>
-    <message>
-        <source>Budget: %1</source>
-        <translation>Budget : %1</translation>
-    </message>
-    <message>
-        <source>Spent: %1</source>
-        <translation>Dépensé : %1</translation>
-    </message>
-    <message>
-        <source>Carried: +%1</source>
-        <translation>Reporté : +%1</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation>Épargner</translation>
-    </message>
-    <message>
-        <source>Report</source>
-        <translation>Reporter</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Save</source>
-        <translation>Allouer le reste à l&apos;épargne</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Report</source>
-        <translation>Allouer le reste au report</translation>
-    </message>
-    <message>
-        <source>Carry forward deficit</source>
-        <translation>Reporter le déficit</translation>
-    </message>
-    <message>
-        <source>Monthly Summary</source>
-        <translation>Résumé mensuel</translation>
-    </message>
-    <message>
-        <source>To Savings:</source>
-        <translation>Vers l&apos;épargne :</translation>
-    </message>
-    <message>
-        <source>To Leftover Account:</source>
-        <translation>Vers le compte report :</translation>
-    </message>
-    <message>
-        <source>From Leftover Account:</source>
-        <translation>Du compte report :</translation>
-    </message>
-    <message>
-        <source>Net Leftover Transfer:</source>
-        <translation>Transfert net du report :</translation>
-    </message>
-</context>
-<context>
     <name>Main</name>
     <message>
         <source>Add New Category...</source>
@@ -407,10 +277,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Edit &amp;Category...</source>
         <translation>Modifier la &amp;catégorie...</translation>
-    </message>
-    <message>
-        <source>&amp;Categorize...</source>
-        <translation>&amp;Catégoriser...</translation>
     </message>
     <message>
         <source>Categorization &amp;Rules...</source>
@@ -506,6 +372,57 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>MonthCategoryItem</name>
+    <message>
+        <source>EXCEEDED</source>
+        <translation>DÉPASSÉ</translation>
+    </message>
+    <message>
+        <source>Remaining: %1</source>
+        <translation>Reste : %1</translation>
+    </message>
+    <message>
+        <source>Exceeded: %1</source>
+        <translation>Dépassement : %1</translation>
+    </message>
+    <message>
+        <source>(income)</source>
+        <translation>(revenu)</translation>
+    </message>
+    <message>
+        <source>PENDING</source>
+        <translation>EN ATTENTE</translation>
+    </message>
+    <message>
+        <source>Expected: %1</source>
+        <translation>Attendu : %1</translation>
+    </message>
+    <message>
+        <source>Received: %1 extra</source>
+        <translation>Reçu : %1 en plus</translation>
+    </message>
+    <message>
+        <source>Save:</source>
+        <translation>Épargner :</translation>
+    </message>
+    <message>
+        <source>Report:</source>
+        <translation>Reporter :</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Save</source>
+        <translation>Allouer le reste à l&apos;épargne</translation>
+    </message>
+    <message>
+        <source>Allocate remaining to Report</source>
+        <translation>Allouer le reste au report</translation>
+    </message>
+    <message>
+        <source>Carry forward deficit</source>
+        <translation>Reporter le déficit</translation>
+    </message>
+</context>
+<context>
     <name>OperationDetails</name>
     <message>
         <source>Operation Details</source>
@@ -539,6 +456,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Détails :</translation>
     </message>
     <message>
+        <source>Allocations:</source>
+        <translation>Allocations :</translation>
+    </message>
+    <message>
         <source>Select an operation to view details</source>
         <translation>Sélectionnez une opération pour voir les détails</translation>
     </message>
@@ -551,20 +472,12 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Montant :</translation>
     </message>
     <message>
-        <source>Category:</source>
-        <translation>Catégorie :</translation>
-    </message>
-    <message>
         <source>Uncategorized</source>
         <translation>Non catégorisé</translation>
     </message>
     <message>
         <source>Label:</source>
         <translation>Libellé :</translation>
-    </message>
-    <message>
-        <source>Balance:</source>
-        <translation>Solde :</translation>
     </message>
     <message>
         <source>Edit operation...</source>
@@ -654,6 +567,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Date budget :</translation>
     </message>
     <message>
+        <source>Previous Uncategorized</source>
+        <translation>Précédente non catégorisée</translation>
+    </message>
+    <message>
+        <source>Next Uncategorized</source>
+        <translation>Suivante non catégorisée</translation>
+    </message>
+    <message>
         <source>Categories:</source>
         <translation>Catégories :</translation>
     </message>
@@ -670,16 +591,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>+ Ajouter une catégorie</translation>
     </message>
     <message>
-        <source>Allocations must equal the total amount</source>
-        <translation>Les allocations doivent être égales au montant total</translation>
-    </message>
-    <message>
-        <source>All allocations must have a category</source>
-        <translation>Toutes les allocations doivent avoir une catégorie</translation>
-    </message>
-    <message>
-        <source>At least one allocation is required</source>
-        <translation>Au moins une allocation est requise</translation>
+        <source>Create Rule...</source>
+        <translation>Créer une règle...</translation>
     </message>
     <message>
         <source>Balance to remaining amount</source>
@@ -801,10 +714,6 @@ Importez et gérez vos données bancaires.</translation>
             <numerusform>Importer %n opération avec %1 catégorie(s)</numerusform>
             <numerusform>Importer %n opérations avec %1 catégorie(s)</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>Clear operation category</source>
-        <translation>Effacer la catégorie de l&apos;opération</translation>
     </message>
     <message>
         <source>Set operation category to &quot;%1&quot;</source>
@@ -953,10 +862,6 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
     <message>
         <source>%1 rule(s)</source>
         <translation>%1 règle(s)</translation>
-    </message>
-    <message>
-        <source>%1 uncategorized operation(s)</source>
-        <translation>%1 opération(s) non catégorisée(s)</translation>
     </message>
 </context>
 <context>

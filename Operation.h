@@ -15,6 +15,9 @@ struct CategoryAllocation {
   const Category* category;
   double amount;
 
+  CategoryAllocation(const Category* c, double a) :
+      category(c), amount(a) {
+  }
   bool operator==(const CategoryAllocation& other) const {
     // qFuzzyCompare doesn't work well with zero values, use threshold comparison
     constexpr double epsilon = 0.0001;
@@ -30,7 +33,6 @@ class Operation : public QObject {
 
   PROPERTY_RW(QDate, date, {})
   PROPERTY_RW(double, amount, 0.0)
-  PROPERTY_RW(const Category*, category, {})
   PROPERTY_RW(QString, label, {})
   PROPERTY_RW(QString, details, {})
 
@@ -39,14 +41,13 @@ class Operation : public QObject {
 
   // Split allocations support
   Q_PROPERTY(QVariantList allocations READ allocations NOTIFY allocationsChanged)
-  Q_PROPERTY(bool isSplit READ isSplit NOTIFY allocationsChanged)
+  Q_PROPERTY(bool isCategorized READ isCategorized NOTIFY allocationsChanged)
   Q_PROPERTY(QString categoryDisplay READ categoryDisplay NOTIFY allocationsChanged)
 
 public:
   explicit Operation(QObject* parent = nullptr);
   Operation(const QDate& date,
             double amount,
-            const Category* category,
             const QString& label,
             const QString& details,
             const QList<CategoryAllocation>& allocations,
@@ -57,7 +58,7 @@ public:
   QList<CategoryAllocation> allocationsList() const { return _allocations; }
   void setAllocations(const QList<CategoryAllocation>& allocations);
   void clearAllocations();
-  bool isSplit() const;
+  bool isCategorized() const;
   QString categoryDisplay() const;
 
   // Get amount allocated to a specific category (for budget calculations)

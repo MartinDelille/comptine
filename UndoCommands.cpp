@@ -205,41 +205,6 @@ void AddOperationCommand::redo() {
   emit _operationModel.operationDataChanged();
 }
 
-SetOperationCategoryCommand::SetOperationCategoryCommand(Operation& operation,
-                                                         OperationListModel* operationModel,
-                                                         const Category* oldCategory,
-                                                         const Category* newCategory,
-                                                         QUndoCommand* parent) :
-    QUndoCommand(parent),
-    _operation(operation),
-    _operationModel(operationModel),
-    _oldCategory(oldCategory),
-    _newCategory(newCategory) {
-  if (newCategory) {
-    setText(QObject::tr("Set operation category to \"%1\"").arg(newCategory->name()));
-  } else {
-    setText(QObject::tr("Clear operation category"));
-  }
-}
-
-void SetOperationCategoryCommand::undo() {
-  _operation.set_category(_oldCategory);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
-}
-
-void SetOperationCategoryCommand::redo() {
-  _operation.set_category(_newCategory);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
-}
-
 SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operation,
                                                              OperationListModel* operationModel,
                                                              const QDate& oldBudgetDate,
@@ -273,14 +238,12 @@ void SetOperationBudgetDateCommand::redo() {
 
 SplitOperationCommand::SplitOperationCommand(Operation& operation,
                                              OperationListModel* operationModel,
-                                             const Category* oldCategory,
                                              const QList<CategoryAllocation>& oldAllocations,
                                              const QList<CategoryAllocation>& newAllocations,
                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
     _operationModel(operationModel),
-    _oldCategory(oldCategory),
     _oldAllocations(oldAllocations),
     _newAllocations(newAllocations) {
   if (newAllocations.size() > 1) {
@@ -295,14 +258,7 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
 }
 
 void SplitOperationCommand::undo() {
-  if (_oldAllocations.isEmpty()) {
-    // Was a single category, restore it
-    _operation.clearAllocations();
-    _operation.set_category(_oldCategory);
-  } else {
-    // Was already split, restore old allocations
-    _operation.setAllocations(_oldAllocations);
-  }
+  _operation.setAllocations(_oldAllocations);
   if (_operationModel) {
     _operationModel->refresh();
     _operationModel->selectByPointer(&_operation);
@@ -311,18 +267,7 @@ void SplitOperationCommand::undo() {
 }
 
 void SplitOperationCommand::redo() {
-  if (_newAllocations.size() == 1) {
-    // Single category - use regular category field
-    _operation.clearAllocations();
-    _operation.set_category(_newAllocations.first().category);
-  } else if (_newAllocations.isEmpty()) {
-    // Clear everything
-    _operation.clearAllocations();
-    _operation.set_category(nullptr);
-  } else {
-    // Multiple categories - use allocations
-    _operation.setAllocations(_newAllocations);
-  }
+  _operation.setAllocations(_newAllocations);
   if (_operationModel) {
     _operationModel->refresh();
     _operationModel->selectByPointer(&_operation);
