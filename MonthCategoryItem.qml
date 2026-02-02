@@ -99,12 +99,11 @@ Rectangle {
                     id: saveField
                     Layout.preferredWidth: 70
                     value: root.saveAmount
-                    enabled: root.remainingLeftover > 0 || root.saveAmount > 0
 
                     function applyValue(newValue) {
                         let maxSave = root.saveAmount + root.remainingLeftover;
                         let clampedValue = Math.max(0, Math.min(newValue, maxSave));
-                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, clampedValue, root.reportAmount);
+                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newValue, root.reportAmount);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -114,7 +113,7 @@ Rectangle {
                 ToolButton {
                     text: "⬆"
                     font.pixelSize: Theme.fontSizeSmall
-                    enabled: root.remainingLeftover > 0
+                    enabled: !root.isBalanced
                     opacity: enabled ? 1.0 : 0.3
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
@@ -147,7 +146,6 @@ Rectangle {
                     id: reportField
                     Layout.preferredWidth: 70
                     value: root.reportAmount
-                    enabled: root.remainingLeftover !== 0 || root.reportAmount !== 0
 
                     function applyValue(newValue) {
                         let clampedValue;
@@ -157,7 +155,7 @@ Rectangle {
                         } else {
                             clampedValue = Math.max(root.leftover, Math.min(newValue, 0));
                         }
-                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, clampedValue);
+                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -167,7 +165,7 @@ Rectangle {
                 ToolButton {
                     text: "⬆"
                     font.pixelSize: Theme.fontSizeSmall
-                    enabled: root.remainingLeftover > 0 || (root.leftover < 0 && root.reportAmount > root.leftover)
+                    enabled: !root.isBalanced
                     opacity: enabled ? 1.0 : 0.3
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
