@@ -29,7 +29,7 @@ BaseDialog {
             AppState.categories.addCategory(categoryNameField.text, newBudgetLimit);
         } else {
             // Editing an existing category
-            AppState.categories.editCategory(originalName, categoryNameField.text, newBudgetLimit);
+            AppState.categories.editCategory(originalName, categoryNameField.text, newBudgetLimit, AppState.navigation.budgetDate);
         }
     }
 

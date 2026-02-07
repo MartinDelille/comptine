@@ -45,6 +45,7 @@
 
 - **Monthly Budget**: View budget summary by month
 - **Category Tracking**: Track spending by category with budget limits
+- **Per-Month Budget Limits**: Budget limits can vary by month; changing a category's budget limit records the old limit in the month history so past months retain their original limits
 - **Month Navigation**: Navigate between months to view historical data
 - **Accumulated Leftover Display**: Budget display shows carried-over amounts (e.g., "€150 / €200 (+€50)")
 

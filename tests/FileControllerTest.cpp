@@ -16,6 +16,7 @@
 #include "../NavigationController.h"
 #include "../Operation.h"
 #include "../RuleController.h"
+#include "../UndoCommands.h"
 
 Q_DECLARE_METATYPE(QDate)
 
@@ -376,6 +377,221 @@ private slots:
     LeftoverDecision decision = cat->leftoverDecision(2025, 1);
     QCOMPARE(decision.saveAmount, 50.0);
     QCOMPARE(decision.reportAmount, 0.0);
+  }
+
+  // Save/Load with Month History and Budget Limit Overrides
+
+  void testSaveAndLoadMonthHistoryWithBudgetLimit() {
+    Category* cat = new Category("Groceries", -300.0);
+    categoryController->addCategory(cat);
+
+    // Record that budget was 250 until June (old limit stored in history)
+    cat->setBudgetLimitForMonth(2025, 6, -250.0);
+
+    // Also set leftover decision for June
+    cat->setLeftoverDecision(2025, 6, { 30.0, 20.0 });
+
+    // Save and reload
+    QString filePath = tempDir->filePath("month_history_budget.comptine");
+    fileController->saveToYamlFile(filePath);
+    fileController->clear();
+    fileController->loadFromYamlFile(filePath);
+
+    // Verify
+    Category* loaded = categoryController->getCategoryByName("Groceries");
+    QVERIFY(loaded != nullptr);
+    QCOMPARE(loaded->budgetLimit(), -300.0);
+
+    // Verify month record has both leftover data and budget limit
+    MonthRecord record = loaded->monthRecord(2025, 6);
+    QCOMPARE(record.saveAmount, 30.0);
+    QCOMPARE(record.reportAmount, 20.0);
+    QVERIFY(record.budgetLimit.has_value());
+    QCOMPARE(record.budgetLimit.value(), -250.0);
+
+    // Verify budgetLimitForMonth lookup works after reload
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
+  }
+
+  void testSaveAndLoadMonthHistoryBudgetLimitOnly() {
+    Category* cat = new Category("Transport", -150.0);
+    categoryController->addCategory(cat);
+
+    // Only budget limit in history, no leftover data
+    cat->setBudgetLimitForMonth(2025, 3, -100.0);
+
+    QString filePath = tempDir->filePath("budget_limit_only.comptine");
+    fileController->saveToYamlFile(filePath);
+    fileController->clear();
+    fileController->loadFromYamlFile(filePath);
+
+    Category* loaded = categoryController->getCategoryByName("Transport");
+    QVERIFY(loaded != nullptr);
+
+    MonthRecord record = loaded->monthRecord(2025, 3);
+    QCOMPARE(record.saveAmount, 0.0);
+    QCOMPARE(record.reportAmount, 0.0);
+    QVERIFY(record.budgetLimit.has_value());
+    QCOMPARE(record.budgetLimit.value(), -100.0);
+  }
+
+  void testSaveAndLoadMultipleBudgetLimitChanges() {
+    Category* cat = new Category("Food", -400.0);
+    categoryController->addCategory(cat);
+
+    // Multiple historical budget limit changes
+    cat->setBudgetLimitForMonth(2025, 3, -200.0);  // Was 200 until March
+    cat->setBudgetLimitForMonth(2025, 6, -300.0);  // Was 300 until June
+    // Current is 400
+
+    QString filePath = tempDir->filePath("multi_budget_limit.comptine");
+    fileController->saveToYamlFile(filePath);
+    fileController->clear();
+    fileController->loadFromYamlFile(filePath);
+
+    Category* loaded = categoryController->getCategoryByName("Food");
+    QVERIFY(loaded != nullptr);
+    QCOMPARE(loaded->budgetLimit(), -400.0);
+
+    // Verify the forward-scan lookup works correctly
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 1, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 4, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -400.0);
+  }
+
+  void testLoadLegacyLeftoverDecisionsKey() {
+    // Old files use "leftover_decisions" key — verify it still loads correctly
+    QString filePath = tempDir->filePath("legacy_key.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    QTextStream out(&file);
+    out << "categories:\n";
+    out << "  - name: Shopping\n";
+    out << "    budget_limit: -200.00\n";
+    out << "    leftover_decisions:\n";
+    out << "      - year: 2025\n";
+    out << "        month: 1\n";
+    out << "        save_amount: 40.00\n";
+    out << "        report_amount: 15.00\n";
+    out << "accounts: []\n";
+    file.close();
+
+    fileController->loadFromYamlFile(filePath);
+    Category* cat = categoryController->getCategoryByName("Shopping");
+    QVERIFY(cat != nullptr);
+
+    LeftoverDecision decision = cat->leftoverDecision(2025, 1);
+    QCOMPARE(decision.saveAmount, 40.0);
+    QCOMPARE(decision.reportAmount, 15.0);
+  }
+
+  void testSaveUsesMonthHistoryKey() {
+    // Verify that saving uses the new "month_history" key
+    Category* cat = new Category("Test", -100.0);
+    categoryController->addCategory(cat);
+    cat->setLeftoverDecision(2025, 1, { 10.0, 5.0 });
+
+    QString filePath = tempDir->filePath("key_check.comptine");
+    fileController->saveToYamlFile(filePath);
+
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    QString content = file.readAll();
+    file.close();
+
+    QVERIFY(content.contains("month_history"));
+    QVERIFY(!content.contains("leftover_decisions"));
+  }
+
+  // EditCategoryCommand undo/redo with budget limit history
+
+  void testEditCategoryCommandUndoRedo() {
+    Category* cat = new Category("Food", -250.0);
+    categoryController->addCategory(cat);
+
+    QDate budgetDate(2025, 6, 1);  // Changing budget while viewing June
+
+    // Push edit command: change limit from 250 to 300
+    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
+                                            -250.0, -300.0, budgetDate));
+
+    // After redo: current limit should be 300
+    // Old limit (250) is stored at May (month before June), so:
+    // May and before show 250, June and after show 300
+    QCOMPARE(cat->budgetLimit(), -300.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
+
+    // Undo: should restore to 250, and clear the May history entry
+    undoStack->undo();
+    QCOMPARE(cat->budgetLimit(), -250.0);
+    MonthRecord record = cat->monthRecord(2025, 5);
+    QVERIFY(!record.budgetLimit.has_value());
+
+    // All months should now return 250
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -250.0);
+
+    // Redo again
+    undoStack->redo();
+    QCOMPARE(cat->budgetLimit(), -300.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
+  }
+
+  void testEditCategoryCommandPreservesExistingHistory() {
+    Category* cat = new Category("Food", -250.0);
+    categoryController->addCategory(cat);
+
+    // Pre-existing budget limit in history for May (e.g., from a previous change)
+    cat->setBudgetLimitForMonth(2025, 5, -200.0);
+
+    QDate budgetDate(2025, 6, 1);
+
+    // Change limit from 250 to 300 while viewing June
+    // The old limit (250) will be recorded at May (month before June),
+    // overwriting the pre-existing 200
+    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
+                                            -250.0, -300.0, budgetDate));
+
+    // May history should now have the OLD limit (250), not the pre-existing 200
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
+    // June should show new limit
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
+    QCOMPARE(cat->budgetLimit(), -300.0);
+
+    // Undo: should restore to 250, and restore the pre-existing 200 in May history
+    undoStack->undo();
+    QCOMPARE(cat->budgetLimit(), -250.0);
+    MonthRecord record = cat->monthRecord(2025, 5);
+    QVERIFY(record.budgetLimit.has_value());
+    QCOMPARE(record.budgetLimit.value(), -200.0);
+  }
+
+  void testEditCategoryNameOnlyNoHistoryChange() {
+    Category* cat = new Category("Food", -250.0);
+    categoryController->addCategory(cat);
+
+    QDate budgetDate(2025, 6, 1);
+
+    // Only rename, don't change budget limit
+    undoStack->push(new EditCategoryCommand(*cat, "Food", "Groceries",
+                                            -250.0, -250.0, budgetDate));
+
+    // Name should change, but no history entry should be created
+    QCOMPARE(cat->name(), QString("Groceries"));
+    QCOMPARE(cat->budgetLimit(), -250.0);
+    QVERIFY(cat->allMonthHistory().isEmpty());
+
+    undoStack->undo();
+    QCOMPARE(cat->name(), QString("Food"));
   }
 
   // Save/Load with Categorization Rules

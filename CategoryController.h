@@ -33,6 +33,7 @@ public:
     LeftoverRole,
     SaveAmountRole,
     ReportAmountRole,
+    BudgetLimitRole,
   };
   Q_ENUM(Roles)
 
@@ -65,7 +66,7 @@ public:
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
 
   // Category editing (undoable)
-  Q_INVOKABLE void editCategory(const QString& originalName, const QString& newName, double newBudgetLimit);
+  Q_INVOKABLE void editCategory(const QString& originalName, const QString& newName, double newBudgetLimit, const QDate& budgetDate);
 
   // Budget calculations (aggregates across all accounts)
   Q_INVOKABLE double spentInCategory(const Category* categoryName, const QDate& budgetDate) const;
@@ -97,6 +98,7 @@ public slots:
 signals:
   void countChanged();
   void leftoverDataChanged();
+  void monthHistoryChanged();
 
 private:
   QList<Category*> _categories;

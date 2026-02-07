@@ -22,6 +22,7 @@ CategoryController::CategoryController(BudgetData& budgetData,
   connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
   connect(this, &CategoryController::leftoverDataChanged, this, &CategoryController::refresh);
+  connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
 
 Category* CategoryController::current() const {
@@ -52,13 +53,15 @@ QVariant CategoryController::data(const QModelIndex& index, int role) const {
       case LeftoverRole:
         return leftoverForCategory(category, _navigation.budgetDate());
       case SaveAmountRole: {
-        LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
-        return decision.saveAmount;
+        MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        return record.saveAmount;
       }
       case ReportAmountRole: {
-        LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
-        return decision.reportAmount;
+        MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        return record.reportAmount;
       }
+      case BudgetLimitRole:
+        return category->budgetLimitForMonth(_navigation.budgetDate());
     }
   }
   return QVariant();
@@ -72,14 +75,15 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
     { LeftoverRole, "leftover" },
     { SaveAmountRole, "saveAmount" },
     { ReportAmountRole, "reportAmount" },
+    { BudgetLimitRole, "effectiveBudgetLimit" },
   };
 }
 
 double CategoryController::totalToSave() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
-    total += decision.saveAmount;
+    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    total += record.saveAmount;
   }
   return total;
 }
@@ -87,9 +91,9 @@ double CategoryController::totalToSave() const {
 double CategoryController::totalToReport() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
-    if (decision.reportAmount > 0) {
-      total += decision.reportAmount;
+    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    if (record.reportAmount > 0) {
+      total += record.reportAmount;
     }
   }
   return total;
@@ -98,9 +102,9 @@ double CategoryController::totalToReport() const {
 double CategoryController::totalFromReport() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    LeftoverDecision decision = category->leftoverDecision(_navigation.budgetDate().year(), _navigation.budgetDate().month());
-    if (decision.reportAmount < 0) {
-      total += -decision.reportAmount;
+    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    if (record.reportAmount < 0) {
+      total += -record.reportAmount;
     }
   }
   return total;
@@ -146,6 +150,12 @@ void CategoryController::addCategory(Category* category) {
     return;
   }
   category->setParent(this);
+
+  // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
+  connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
+  connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
+  connect(category, &Category::nameChanged, this, &CategoryController::refresh);
+
   QCollator collator;
   collator.setCaseSensitivity(Qt::CaseInsensitive);
   int insertRow = 0;
@@ -198,7 +208,7 @@ QStringList CategoryController::categoryNames() const {
   return names;
 }
 
-void CategoryController::editCategory(const QString& originalName, const QString& newName, double newBudgetLimit) {
+void CategoryController::editCategory(const QString& originalName, const QString& newName, double newBudgetLimit, const QDate& budgetDate) {
   Category* category = getCategoryByName(originalName);
   if (!category) return;
 
@@ -209,7 +219,8 @@ void CategoryController::editCategory(const QString& originalName, const QString
   if (oldName != newName || oldBudgetLimit != newBudgetLimit) {
     _undoStack.push(new EditCategoryCommand(*category,
                                             oldName, newName,
-                                            oldBudgetLimit, newBudgetLimit));
+                                            oldBudgetLimit, newBudgetLimit,
+                                            budgetDate));
   }
 }
 
@@ -259,7 +270,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
 double CategoryController::leftoverForCategory(const Category* category, const QDate& date) const {
   if (!category) return 0.0;
 
-  double budgetLimit = category->budgetLimit();
+  double budgetLimit = category->budgetLimitForMonth(date);
   double spent = spentInCategory(category, date);
   double accumulated = category->accumulatedLeftoverBefore(date);
 
@@ -294,7 +305,7 @@ QVariantMap CategoryController::leftoverDecision(const QString& categoryName, co
 
   if (!category) return result;
 
-  LeftoverDecision decision = category->leftoverDecision(date.year(), date.month());
+  LeftoverDecision decision = category->monthRecord(date.year(), date.month());
   result["saveAmount"] = decision.saveAmount;
   result["reportAmount"] = decision.reportAmount;
   return result;
@@ -304,7 +315,7 @@ QVariantList CategoryController::leftoverSummary(const QDate& date) const {
   QVariantList result;
 
   for (const Category* category : _categories) {
-    double budgetLimit = category->budgetLimit();
+    double budgetLimit = category->budgetLimitForMonth(date);
     double spent = spentInCategory(category, date);
     double accumulated = category->accumulatedLeftoverBefore(date);
     bool isIncome = budgetLimit > 0;
@@ -318,7 +329,7 @@ QVariantList CategoryController::leftoverSummary(const QDate& date) const {
     }
 
     // Get existing decision for this month
-    LeftoverDecision decision = category->leftoverDecision(date.year(), date.month());
+    MonthRecord record = category->monthRecord(date.year(), date.month());
 
     QVariantMap item;
     item["name"] = category->name();
@@ -329,8 +340,8 @@ QVariantList CategoryController::leftoverSummary(const QDate& date) const {
     item["isIncome"] = isIncome;
 
     // Decision amounts
-    item["saveAmount"] = decision.saveAmount;
-    item["reportAmount"] = decision.reportAmount;
+    item["saveAmount"] = record.saveAmount;
+    item["reportAmount"] = record.reportAmount;
 
     result.append(item);
   }
@@ -344,12 +355,12 @@ QVariantMap CategoryController::leftoverTotals(const QDate& date) const {
   double totalFromReport = 0.0;  // Negative leftovers drawn from accumulated
 
   for (const Category* category : _categories) {
-    LeftoverDecision decision = category->leftoverDecision(date.year(), date.month());
-    totalToSave += decision.saveAmount;
-    if (decision.reportAmount > 0) {
-      totalToReport += decision.reportAmount;
-    } else if (decision.reportAmount < 0) {
-      totalFromReport += -decision.reportAmount;  // Track as positive "from" amount
+    MonthRecord record = category->monthRecord(date.year(), date.month());
+    totalToSave += record.saveAmount;
+    if (record.reportAmount > 0) {
+      totalToReport += record.reportAmount;
+    } else if (record.reportAmount < 0) {
+      totalFromReport += -record.reportAmount;  // Track as positive "from" amount
     }
   }
 
@@ -367,12 +378,14 @@ void CategoryController::setLeftoverAmounts(const QString& categoryName,
   Category* category = getCategoryByName(categoryName);
   if (!category) return;
 
-  LeftoverDecision oldDecision = category->leftoverDecision(date.year(), date.month());
-  LeftoverDecision newDecision{ saveAmount, reportAmount };
+  MonthRecord oldRecord = category->monthRecord(date.year(), date.month());
+  MonthRecord newRecord = oldRecord;  // Preserve budgetLimit if set
+  newRecord.saveAmount = saveAmount;
+  newRecord.reportAmount = reportAmount;
 
   // Only create undo command if something changed
-  if (!qFuzzyCompare(oldDecision.saveAmount, newDecision.saveAmount) || !qFuzzyCompare(oldDecision.reportAmount, newDecision.reportAmount)) {
-    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, oldDecision, newDecision));
+  if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount) || !qFuzzyCompare(oldRecord.reportAmount, newRecord.reportAmount)) {
+    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, oldRecord, newRecord));
   }
 }
 

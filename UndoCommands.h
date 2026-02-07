@@ -5,7 +5,9 @@
 #include <QString>
 #include <QUndoCommand>
 
-#include "Category.h"   // For LeftoverDecision
+#include <optional>
+
+#include "Category.h"   // For MonthRecord
 #include "Operation.h"  // For CategoryAllocation
 
 class Account;
@@ -54,14 +56,15 @@ private:
 };
 
 // Command for editing a category (name and/or budget limit)
-// Note: This command still needs BudgetData because it:
-// 1. Iterates over all accounts to rename operations when category name changes
-// 2. Emits categoryCountChanged to refresh the UI
+// When the budget limit changes, the old limit is recorded in month_history
+// for the month BEFORE the budget month (the last month the old limit was effective).
+// This way, the budget month and all months after it show the new limit.
 class EditCategoryCommand : public QUndoCommand {
 public:
   EditCategoryCommand(Category& category,
                       const QString& oldName, const QString& newName,
                       double oldBudgetLimit, double newBudgetLimit,
+                      const QDate& budgetDate,
                       QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -73,6 +76,9 @@ private:
   QString _newName;
   double _oldBudgetLimit;
   double _newBudgetLimit;
+  QDate _budgetDate;                                  // The budget month when the change was made
+  QDate _historyDate;                                 // The month before budgetDate (where old limit is stored)
+  std::optional<double> _previousHistoryBudgetLimit;  // What was in month_history before (to restore on undo)
 };
 
 // Command for adding a single category

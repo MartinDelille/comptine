@@ -336,6 +336,11 @@ qt_add_executable(CsvParserTest tests/CsvParserTest.cpp)
 target_link_libraries(CsvParserTest PRIVATE Qt6::Test libComptine)
 add_test(NAME CsvParserTest COMMAND CsvParserTest)
 
+# CategoryTest - unit tests for Category class
+qt_add_executable(CategoryTest tests/CategoryTest.cpp)
+target_link_libraries(CategoryTest PRIVATE Qt6::Test libComptine)
+add_test(NAME CategoryTest COMMAND CategoryTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest tests/FileControllerTest.cpp FileCoordinator.h FileCoordinator_fallback.cpp)
 
