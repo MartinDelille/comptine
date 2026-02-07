@@ -95,24 +95,27 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       cat["current"] << "true";
     }
 
-    // Write leftover decisions
-    QMap<YearMonth, LeftoverDecision> decisions = category->allLeftoverDecisions();
-    if (!decisions.isEmpty()) {
-      ryml::NodeRef leftoverNode = cat["leftover_decisions"];
-      leftoverNode |= ryml::SEQ;
-      for (auto it = decisions.constBegin(); it != decisions.constEnd(); ++it) {
+    // Write month history (leftover decisions + budget limit overrides)
+    QMap<YearMonth, MonthRecord> history = category->allMonthHistory();
+    if (!history.isEmpty()) {
+      ryml::NodeRef historyNode = cat["month_history"];
+      historyNode |= ryml::SEQ;
+      for (auto it = history.constBegin(); it != history.constEnd(); ++it) {
         const YearMonth& ym = it.key();
-        const LeftoverDecision& decision = it.value();
-        if (!decision.isEmpty()) {
-          ryml::NodeRef decisionNode = leftoverNode.append_child();
-          decisionNode |= ryml::MAP;
-          decisionNode["year"] << ym.year;
-          decisionNode["month"] << ym.month;
-          if (decision.saveAmount != 0.0) {
-            decisionNode["save_amount"] << toStdString(QString::number(decision.saveAmount, 'f', 2));
+        const MonthRecord& record = it.value();
+        if (!record.isEmpty()) {
+          ryml::NodeRef recordNode = historyNode.append_child();
+          recordNode |= ryml::MAP;
+          recordNode["year"] << ym.year;
+          recordNode["month"] << ym.month;
+          if (record.budgetLimit.has_value()) {
+            recordNode["budget_limit"] << toStdString(QString::number(record.budgetLimit.value(), 'f', 2));
           }
-          if (decision.reportAmount != 0.0) {
-            decisionNode["report_amount"] << toStdString(QString::number(decision.reportAmount, 'f', 2));
+          if (record.saveAmount != 0.0) {
+            recordNode["save_amount"] << toStdString(QString::number(record.saveAmount, 'f', 2));
+          }
+          if (record.reportAmount != 0.0) {
+            recordNode["report_amount"] << toStdString(QString::number(record.reportAmount, 'f', 2));
           }
         }
       }
@@ -300,46 +303,57 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           }
         }
 
-        // Load leftover decisions
-        if (cat.has_child("leftover_decisions")) {
-          for (ryml::ConstNodeRef decisionNode : cat["leftover_decisions"]) {
+        // Load month history (new format) or leftover decisions (legacy format)
+        auto loadMonthEntries = [&](ryml::ConstNodeRef entriesNode) {
+          for (ryml::ConstNodeRef entryNode : entriesNode) {
             int year = 0, month = 0;
-            LeftoverDecision decision;
+            MonthRecord record;
 
-            if (decisionNode.has_child("year")) {
-              auto val = decisionNode["year"].val();
+            if (entryNode.has_child("year")) {
+              auto val = entryNode["year"].val();
               year = QString::fromUtf8(val.str, val.len).toInt();
             }
-            if (decisionNode.has_child("month")) {
-              auto val = decisionNode["month"].val();
+            if (entryNode.has_child("month")) {
+              auto val = entryNode["month"].val();
               month = QString::fromUtf8(val.str, val.len).toInt();
             }
-            // New format: separate save_amount and report_amount
-            if (decisionNode.has_child("save_amount")) {
-              auto val = decisionNode["save_amount"].val();
-              decision.saveAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            // Budget limit override (new in month_history format)
+            if (entryNode.has_child("budget_limit")) {
+              auto val = entryNode["budget_limit"].val();
+              record.budgetLimit = QString::fromUtf8(val.str, val.len).toDouble();
             }
-            if (decisionNode.has_child("report_amount")) {
-              auto val = decisionNode["report_amount"].val();
-              decision.reportAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            // New format: separate save_amount and report_amount
+            if (entryNode.has_child("save_amount")) {
+              auto val = entryNode["save_amount"].val();
+              record.saveAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            }
+            if (entryNode.has_child("report_amount")) {
+              auto val = entryNode["report_amount"].val();
+              record.reportAmount = QString::fromUtf8(val.str, val.len).toDouble();
             }
             // Legacy format: action + amount
-            if (decisionNode.has_child("action") && decisionNode.has_child("amount")) {
-              auto actionVal = decisionNode["action"].val();
+            if (entryNode.has_child("action") && entryNode.has_child("amount")) {
+              auto actionVal = entryNode["action"].val();
               QString actionStr = QString::fromUtf8(actionVal.str, actionVal.len).toLower();
-              auto amountVal = decisionNode["amount"].val();
+              auto amountVal = entryNode["amount"].val();
               double amount = QString::fromUtf8(amountVal.str, amountVal.len).toDouble();
               if (actionStr == "save") {
-                decision.saveAmount = amount;
+                record.saveAmount = amount;
               } else if (actionStr == "report") {
-                decision.reportAmount = amount;
+                record.reportAmount = amount;
               }
             }
 
-            if (year > 0 && month > 0 && !decision.isEmpty()) {
-              category->setLeftoverDecision(year, month, decision);
+            if (year > 0 && month > 0 && !record.isEmpty()) {
+              category->setMonthRecord(year, month, record);
             }
           }
+        };
+
+        if (cat.has_child("month_history")) {
+          loadMonthEntries(cat["month_history"]);
+        } else if (cat.has_child("leftover_decisions")) {
+          loadMonthEntries(cat["leftover_decisions"]);
         }
 
         _categoryController.addCategory(category);

@@ -10,7 +10,7 @@ Rectangle {
     required property bool isCurrentItem
 
     property var category: modelData.category
-    property double budgetLimit: category?.budgetLimit || 0
+    property double budgetLimit: modelData.effectiveBudgetLimit || 0
     property bool isIncome: budgetLimit > 0
     property double percentUsed: (modelData.amount / budgetLimit) * 100.0
 

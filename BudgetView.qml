@@ -11,7 +11,7 @@ FocusScope {
         let category = AppState.categories.current;
         if (category) {
             categoryEditDialog.originalName = category.name;
-            categoryEditDialog.originalBudgetLimit = category.budgetLimit;
+            categoryEditDialog.originalBudgetLimit = category.budgetLimitForMonth(AppState.navigation.budgetDate);
             categoryEditDialog.open();
         }
     }

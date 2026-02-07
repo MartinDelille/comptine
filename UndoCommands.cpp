@@ -83,13 +83,20 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
                                          const QString& newName,
                                          double oldBudgetLimit,
                                          double newBudgetLimit,
+                                         const QDate& budgetDate,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
     _oldName(oldName),
     _newName(newName),
     _oldBudgetLimit(oldBudgetLimit),
-    _newBudgetLimit(newBudgetLimit) {
+    _newBudgetLimit(newBudgetLimit),
+    _budgetDate(budgetDate),
+    _historyDate(budgetDate.addMonths(-1)) {
+  // Save the existing month_history budget limit for the previous month (to restore on undo)
+  MonthRecord existingRecord = category.monthRecord(_historyDate.year(), _historyDate.month());
+  _previousHistoryBudgetLimit = existingRecord.budgetLimit;
+
   if (oldName != newName && oldBudgetLimit != newBudgetLimit) {
     setText(QObject::tr("Edit category \"%1\"").arg(newName));
   } else if (oldName != newName) {
@@ -101,12 +108,30 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
 
 void EditCategoryCommand::undo() {
   _category.set_name(_oldName);
-  _category.set_budgetLimit(_oldBudgetLimit);
+
+  // If the budget limit changed, restore month_history and category budgetLimit
+  if (_oldBudgetLimit != _newBudgetLimit) {
+    // Restore the previous month_history entry for the month before budgetDate
+    if (_previousHistoryBudgetLimit.has_value()) {
+      _category.setBudgetLimitForMonth(_historyDate.year(), _historyDate.month(), _previousHistoryBudgetLimit.value());
+    } else {
+      _category.clearBudgetLimitForMonth(_historyDate.year(), _historyDate.month());
+    }
+    // Restore the old category budget limit
+    _category.set_budgetLimit(_oldBudgetLimit);
+  }
 }
 
 void EditCategoryCommand::redo() {
   _category.set_name(_newName);
-  _category.set_budgetLimit(_newBudgetLimit);
+
+  // If the budget limit changed, record the old limit in month_history for the month before budgetDate
+  if (_oldBudgetLimit != _newBudgetLimit) {
+    // Record the old budget limit as the effective limit for the month before budgetDate and earlier
+    _category.setBudgetLimitForMonth(_historyDate.year(), _historyDate.month(), _oldBudgetLimit);
+    // Set the new category budget limit (effective for budgetDate and after)
+    _category.set_budgetLimit(_newBudgetLimit);
+  }
 }
 
 // AddCategoryCommand implementation
