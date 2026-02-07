@@ -253,6 +253,7 @@ qt_add_qml_module(
   BalanceHeader.qml
   BaseDialog.qml
   BudgetView.qml
+  BudgetProgress.qml
   CategoryDetailView.qml
   CategoryEditDialog.qml
   DateSpinBox.qml

@@ -10,7 +10,8 @@ Rectangle {
     required property bool isCurrentItem
 
     property var category: modelData.category
-    property double budgetLimit: modelData.effectiveBudgetLimit || 0
+    property double amount: modelData.amount || 0
+    property double budgetLimit: modelData.budgetLimit || 0
     property bool isIncome: budgetLimit > 0
     property double percentUsed: (modelData.amount / budgetLimit) * 100.0
 
@@ -18,6 +19,7 @@ Rectangle {
     property double leftover: modelData.leftover || 0
     property double saveAmount: modelData.saveAmount || 0
     property double reportAmount: modelData.reportAmount || 0
+    property double accumulated: modelData.accumulated || 0
 
     // Computed: remaining leftover after allocations
     readonly property double remainingLeftover: leftover - saveAmount - reportAmount
@@ -87,7 +89,6 @@ Rectangle {
             // Save amount field
             RowLayout {
                 spacing: 2
-                visible: root.leftover > 0 || root.saveAmount > 0
 
                 Label {
                     text: qsTr("Save:")
@@ -134,7 +135,6 @@ Rectangle {
             // Report amount field
             RowLayout {
                 spacing: 2
-                visible: root.leftover !== 0 || root.reportAmount !== 0
 
                 Label {
                     text: qsTr("Report:")
@@ -197,10 +197,13 @@ Rectangle {
 
             Label {
                 text: {
-                    if (root.isIncome && root.percentUsed < 100)
-                        return qsTr("PENDING");
-                    if (!root.isIncome && root.percentUsed > 100)
+                    if (root.isIncome) {
+                        if (root.amount > root.budgetLimit) {
+                            return qsTr("PENDING");
+                        }
+                    } else if (root.amount < root.budgetLimit) {
                         return qsTr("EXCEEDED");
+                    }
                     return "";
                 }
                 font.pixelSize: Theme.fontSizeSmall
@@ -210,9 +213,9 @@ Rectangle {
 
             Label {
                 text: {
-                    let base = Theme.formatAmount(Math.abs(root.modelData.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit));
-                    if (root.modelData.accumulated > 0) {
-                        return base + " (+" + Theme.formatAmount(root.modelData.accumulated) + ")";
+                    let base = Theme.formatAmount(Math.abs(root.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit));
+                    if (root.accumulated > 0) {
+                        return base + " (+" + Theme.formatAmount(root.accumulated) + ")";
                     }
                     return base;
                 }
@@ -221,26 +224,36 @@ Rectangle {
             }
         }
 
-        // Custom progress bar using rectangles
         Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: 16
             color: Theme.progressBackground
             radius: 4
 
-            Rectangle {
-                width: Math.min(root.percentUsed / 100, 1.0) * parent.width
-                height: parent.height
-                radius: 4
+            BudgetProgress {
+                value: root.amount + (root.reportAmount + root.saveAmount) * (root.isIncome ? 1 : -1)
+                total: root.budgetLimit
+                color: "#ff8080"
+            }
+
+            BudgetProgress {
+                value: root.amount + root.reportAmount * (root.isIncome ? 1 : -1)
+                total: root.budgetLimit
+                color: Theme.accent
+            }
+
+            BudgetProgress {
+                value: root.amount
+                total: root.budgetLimit
                 color: {
                     if (root.isIncome) {
                         // Income: green when complete, warning when pending
-                        return root.percentUsed >= 100 ? Theme.positive : Theme.warning;
+                        return root.amount > root.budgetLimit ? Theme.positive : Theme.warning;
                     } else {
                         // Expense: red when exceeded, warning when close
-                        if (root.percentUsed > 100)
+                        if (root.amount < root.budgetLimit)
                             return Theme.negative;
-                        if (root.percentUsed > 80)
+                        if (root.amount < 0.8 * root.budgetLimit)
                             return Theme.warning;
                         return Theme.positive;
                     }
@@ -249,7 +262,7 @@ Rectangle {
         }
 
         Label {
-            property double remaining: root.isIncome ? (root.budgetLimit - root.modelData.amount) : (root.modelData.amount - root.budgetLimit)
+            property double remaining: root.isIncome ? (root.budgetLimit - root.amount) : (root.amount - root.budgetLimit)
             text: {
                 let label, value;
                 if (root.isIncome) {
