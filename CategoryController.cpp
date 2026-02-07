@@ -19,8 +19,10 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _navigation(navigation),
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::leftoverDataChanged);
   connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
+  connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::leftoverDataChanged);
   connect(this, &CategoryController::leftoverDataChanged, this, &CategoryController::refresh);
   connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
@@ -75,7 +77,7 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
     { LeftoverRole, "leftover" },
     { SaveAmountRole, "saveAmount" },
     { ReportAmountRole, "reportAmount" },
-    { BudgetLimitRole, "effectiveBudgetLimit" },
+    { BudgetLimitRole, "budgetLimit" },
   };
 }
 
@@ -272,22 +274,21 @@ double CategoryController::leftoverForCategory(const Category* category, const Q
 
   double budgetLimit = category->budgetLimitForMonth(date);
   double spent = spentInCategory(category, date);
-  double accumulated = category->accumulatedLeftoverBefore(date);
 
   // For expense categories (negative budget limit):
-  // leftover = |budgetLimit| - |spent| + accumulated
+  // leftover = |budgetLimit| - |spent|
   // For income categories (positive budget limit):
-  // leftover = received - expected + accumulated (extra income can be saved)
+  // leftover = received - expected
 
   bool isIncome = budgetLimit > 0;
   if (isIncome) {
     // Income: positive spent means income received
-    // leftover = actual income - expected income + accumulated
-    return spent - budgetLimit + accumulated;
+    // leftover = actual income - expected income
+    return spent - budgetLimit;
   } else {
     // Expense: negative spent means money spent
-    // leftover = budget - spent + accumulated = -budgetLimit - (-spent) + accumulated
-    return -budgetLimit + spent + accumulated;
+    // leftover = budget - spent = -budgetLimit - (-spent)
+    return -budgetLimit + spent;
   }
 }
 

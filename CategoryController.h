@@ -73,7 +73,7 @@ public:
   Q_INVOKABLE QVariantList operationsForCategory(const Category* category, const QDate& date) const;
 
   // Leftover calculations
-  // Calculate the leftover for a category in a month: budget - spent (+ accumulated from previous months)
+  // Calculate the leftover for a category in a month: budget - spent
   Q_INVOKABLE double leftoverForCategory(const Category* category, const QDate& date) const;
 
   // Get accumulated leftover from previous months (sum of all "report" decisions before this month)
