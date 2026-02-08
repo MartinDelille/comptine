@@ -36,6 +36,21 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>BaseDialog</name>
+    <message>
+        <source>Ok</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <source></source>
+        <translation></translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation>Annuler</translation>
+    </message>
+</context>
+<context>
     <name>BudgetView</name>
     <message>
         <source>To Save:</source>
@@ -606,22 +621,6 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>OperationView</name>
     <message>
-        <source>Rename Account</source>
-        <translation>Renommer le compte</translation>
-    </message>
-    <message>
-        <source>Account name:</source>
-        <translation>Nom du compte :</translation>
-    </message>
-    <message>
-        <source>Enter account name</source>
-        <translation>Entrez le nom du compte</translation>
-    </message>
-    <message>
-        <source>No account</source>
-        <translation>Aucun compte</translation>
-    </message>
-    <message>
         <source>Rename</source>
         <translation>Renommer</translation>
     </message>
@@ -786,6 +785,21 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>clear</source>
         <translation>effacer</translation>
+    </message>
+</context>
+<context>
+    <name>RenameAccountDialog</name>
+    <message>
+        <source>Rename Account</source>
+        <translation>Renommer le compte</translation>
+    </message>
+    <message>
+        <source>Account name:</source>
+        <translation>Nom du compte :</translation>
+    </message>
+    <message>
+        <source>Enter account name</source>
+        <translation>Entrez le nom du compte</translation>
     </message>
 </context>
 <context>

@@ -6,7 +6,6 @@ BaseDialog {
     id: root
     title: isNewRule ? qsTr("Add Rule") : qsTr("Edit Rule")
     width: 450
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     property bool isNewRule: true
     property int ruleIndex: -1
@@ -20,7 +19,7 @@ BaseDialog {
     // Category list - refreshed on open
     property var categoryList: []
 
-    canSubmit: categoryCombo.currentText.length > 0 && descriptionPrefixField.text.length > 0
+    okEnabled: categoryCombo.currentText.length > 0 && descriptionPrefixField.text.length > 0
 
     onOpened: {
         // Refresh category list when dialog opens

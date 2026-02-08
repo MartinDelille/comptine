@@ -21,7 +21,6 @@ BaseDialog {
 
     title: qsTr("Edit Operation")
     width: Math.min(500, parent.width - 40)
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     // Current edited amount (from AmountField)
     property double editedAmount: originalAmount
@@ -37,22 +36,12 @@ BaseDialog {
     readonly property double remainingAmount: editedAmount - allocatedAmount
     readonly property bool dateValid: dateDay.value >= 1 && dateDay.value <= 31
     readonly property bool budgetDateValid: budgetDateDay.value >= 1 && budgetDateDay.value <= 31
-    readonly property bool isValid: dateValid && budgetDateValid
 
-    // Use BaseDialog's canSubmit for Enter key validation
-    canSubmit: isValid
+    okEnabled: labelField.text.trim() !== "" && amountField.value != 0 && dateValid && budgetDateValid
 
-    // Disable OK button when invalid
     onOpened: {
         // Refresh category list when dialog opens
         root.categoryList = [""].concat(AppState.categories.categoryNames());
-
-        let okButton = footer.standardButton(Dialog.Ok);
-        if (okButton) {
-            okButton.enabled = Qt.binding(function () {
-                return root.isValid;
-            });
-        }
     }
 
     ListModel {

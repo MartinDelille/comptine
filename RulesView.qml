@@ -7,7 +7,7 @@ BaseDialog {
     title: qsTr("Categorization Rules")
     width: 600
     height: 500
-    standardButtons: Dialog.Close
+    rejectButtonText: ""
 
     RuleEditDialog {
         id: ruleEditDialog

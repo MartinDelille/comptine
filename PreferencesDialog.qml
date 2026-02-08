@@ -5,7 +5,6 @@ import QtQuick.Layouts
 BaseDialog {
     id: preferencesDialog
     title: qsTr("Preferences")
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     property string originalLanguage: ""
     property string originalTheme: ""

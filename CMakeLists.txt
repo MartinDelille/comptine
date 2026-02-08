@@ -266,6 +266,7 @@ qt_add_qml_module(
   OperationList.qml
   OperationView.qml
   PreferencesDialog.qml
+  RenameAccountDialog.qml
   RuleEditDialog.qml
   RulesView.qml
   Theme.qml

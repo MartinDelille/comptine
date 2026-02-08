@@ -6,10 +6,10 @@ BaseDialog {
     id: root
     title: qsTr("Edit Category")
     width: 400
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     property string originalName: ""
     property real originalBudgetLimit: 0  // Signed: positive = income, negative = expense
+    okEnabled: categoryNameField.text.trim().length > 0
 
     onOpened: {
         categoryNameField.text = originalName;
