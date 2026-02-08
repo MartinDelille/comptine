@@ -541,54 +541,6 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Date :</translation>
     </message>
     <message>
-        <source>January</source>
-        <translation>Janvier</translation>
-    </message>
-    <message>
-        <source>February</source>
-        <translation>Février</translation>
-    </message>
-    <message>
-        <source>March</source>
-        <translation>Mars</translation>
-    </message>
-    <message>
-        <source>April</source>
-        <translation>Avril</translation>
-    </message>
-    <message>
-        <source>May</source>
-        <translation>Mai</translation>
-    </message>
-    <message>
-        <source>June</source>
-        <translation>Juin</translation>
-    </message>
-    <message>
-        <source>July</source>
-        <translation>Juillet</translation>
-    </message>
-    <message>
-        <source>August</source>
-        <translation>Août</translation>
-    </message>
-    <message>
-        <source>September</source>
-        <translation>Septembre</translation>
-    </message>
-    <message>
-        <source>October</source>
-        <translation>Octobre</translation>
-    </message>
-    <message>
-        <source>November</source>
-        <translation>Novembre</translation>
-    </message>
-    <message>
-        <source>December</source>
-        <translation>Décembre</translation>
-    </message>
-    <message>
         <source>Budget Date:</source>
         <translation>Date budget :</translation>
     </message>

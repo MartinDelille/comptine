@@ -258,7 +258,7 @@ qt_add_qml_module(
   CategoryDetailView.qml
   CategoryEditDialog.qml
   CreateCounterPartDialog.qml
-  DateSpinBox.qml
+  DateInput.qml
   ImportDialog.qml
   DateLabel.qml
   MonthCategoryItem.qml
