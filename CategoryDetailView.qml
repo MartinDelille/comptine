@@ -2,14 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-Dialog {
+BaseDialog {
     id: root
     title: category?.name || ""
-    modal: true
-    anchors.centerIn: parent
     width: 600
     height: 500
-    standardButtons: Dialog.Close
+    rejectButtonText: ""
 
     property var category: AppState.categories.current
     property var operations: []

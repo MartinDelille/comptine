@@ -5,7 +5,7 @@ import QtQuick.Layouts
 BaseDialog {
     id: updateDialog
     title: qsTr("Update Available")
-    standardButtons: Dialog.Close
+    rejectButtonText: ""
     width: 400
 
     ColumnLayout {

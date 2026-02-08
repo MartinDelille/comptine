@@ -5,7 +5,6 @@ import QtQuick.Layouts
 BaseDialog {
     id: importDialog
     title: qsTr("Import CSV")
-    standardButtons: Dialog.Ok | Dialog.Cancel
 
     property string filePath: ""
 
@@ -17,15 +16,7 @@ BaseDialog {
             return false;
         return AppState.data.getAccountByName(newAccountName) !== null;
     }
-    readonly property bool isValid: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
-
-    // Use BaseDialog's canSubmit for Enter key validation
-    canSubmit: isValid
-
-    // Disable OK button when invalid
-    onIsValidChanged: {
-        standardButton(Dialog.Ok).enabled = isValid;
-    }
+    okEnabled: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
 
     onOpened: {
         // Default to existing account if one is selected, otherwise new account
@@ -42,8 +33,6 @@ BaseDialog {
         var baseName = fileName.substring(0, fileName.lastIndexOf("."));
         newAccountField.text = baseName || "";
         useCategoriesCheckBox.checked = false;
-        // Update OK button state
-        standardButton(Dialog.Ok).enabled = isValid;
     }
 
     onAccepted: {

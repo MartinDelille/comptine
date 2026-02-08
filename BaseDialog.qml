@@ -8,6 +8,11 @@ import QtQuick.Controls
 Dialog {
     id: root
 
+    property string acceptButtonText: qsTr("Ok")
+    property string discardButtonText: qsTr("")
+    property string rejectButtonText: qsTr("Cancel")
+    property alias okEnabled: acceptButton.enabled
+
     modal: true
     parent: Overlay.overlay
     anchors.centerIn: parent
@@ -28,7 +33,33 @@ Dialog {
     // Submit on Enter key (only if canSubmit is true)
     Shortcut {
         sequence: "Return"
-        enabled: root.visible && root.canSubmit
+        enabled: root.visible && root.okEnabled && root.canSubmit
         onActivated: root.commitAndAccept()
+    }
+
+    footer: DialogButtonBox {
+        spacing: 10
+
+        Button {
+            id: acceptButton
+
+            focus: true
+            text: acceptButtonText
+            DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+        }
+
+        Button {
+            id: discardButton
+            text: discardButtonText
+            visible: text.length > 0
+            DialogButtonBox.buttonRole: DialogButtonBox.DestructiveRole
+        }
+
+        Button {
+            id: rejectButton
+            text: rejectButtonText
+            visible: text.length > 0
+            DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
+        }
     }
 }

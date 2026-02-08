@@ -5,7 +5,7 @@ import QtQuick.Layouts
 BaseDialog {
     id: aboutDialog
     title: qsTr("About Comptine")
-    standardButtons: Dialog.Ok
+    rejectButtonText: ""
 
     ColumnLayout {
         spacing: 8

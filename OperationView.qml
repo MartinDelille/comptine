@@ -25,6 +25,10 @@ FocusScope {
         }
     }
 
+    RenameAccountDialog {
+        id: renameDialog
+    }
+
     OperationEditDialog {
         id: operationEditDialog
         onClosed: operationList.forceActiveFocus()
@@ -33,46 +37,6 @@ FocusScope {
     ColumnLayout {
         anchors.fill: parent
         spacing: Theme.spacingNormal
-
-        Dialog {
-            id: renameDialog
-            title: qsTr("Rename Account")
-            standardButtons: Dialog.Ok | Dialog.Cancel
-            modal: true
-            anchors.centerIn: parent
-
-            property string originalName: ""
-
-            onOpened: {
-                originalName = AppState.data.currentAccount?.name ?? "";
-                renameField.text = originalName;
-                renameField.selectAll();
-                renameField.forceActiveFocus();
-            }
-
-            onAccepted: {
-                if (renameField.text.trim() !== "") {
-                    AppState.data.renameCurrentAccount(renameField.text.trim());
-                }
-            }
-
-            ColumnLayout {
-                spacing: Theme.spacingNormal
-
-                Label {
-                    text: qsTr("Account name:")
-                }
-
-                TextField {
-                    id: renameField
-                    Layout.preferredWidth: 250
-                    placeholderText: qsTr("Enter account name")
-                    onAccepted: renameDialog.accept()
-                    onActiveFocusChanged: if (activeFocus)
-                        selectAll()
-                }
-            }
-        }
 
         RowLayout {
             Layout.fillWidth: true
