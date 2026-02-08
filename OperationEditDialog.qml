@@ -34,10 +34,8 @@ BaseDialog {
         return sum;
     }
     readonly property double remainingAmount: editedAmount - allocatedAmount
-    readonly property bool dateValid: dateDay.value >= 1 && dateDay.value <= 31
-    readonly property bool budgetDateValid: budgetDateDay.value >= 1 && budgetDateDay.value <= 31
 
-    okEnabled: labelField.text.trim() !== "" && amountField.value != 0 && dateValid && budgetDateValid
+    okEnabled: labelField.text.trim() !== "" && amountField.value != 0
 
     onOpened: {
         // Refresh category list when dialog opens
@@ -83,15 +81,8 @@ BaseDialog {
             originalAllocations = operation.allocations ? allocations.slice() : [];
         }
 
-        // Set date spinboxes
-        dateDay.value = originalDate.getDate();
-        dateMonth.currentIndex = originalDate.getMonth();
-        dateYear.value = originalDate.getFullYear();
-
-        // Set budget date spinboxes
-        budgetDateDay.value = originalBudgetDate.getDate();
-        budgetDateMonth.currentIndex = originalBudgetDate.getMonth();
-        budgetDateYear.value = originalBudgetDate.getFullYear();
+        dateInput.selectedDate = originalDate;
+        budgetDateInput.selectedDate = originalBudgetDate;
 
         if (operation?.allocations && operation.allocations.length > 0) {
             for (let i = 0; i < operation.allocations.length; i++) {
@@ -130,8 +121,6 @@ BaseDialog {
     on_UnaffectedCategoryComboBoxChanged: Qt.callLater(focusUnaffectedComboBox)
 
     function applyChanges() {
-        let newDate = new Date(dateYear.value, dateMonth.currentIndex, dateDay.value);
-        let newBudgetDate = new Date(budgetDateYear.value, budgetDateMonth.currentIndex, budgetDateDay.value);
         let newLabel = labelField.text.trim();
         let newDetails = detailsField.text.trim();
 
@@ -148,7 +137,7 @@ BaseDialog {
         }
 
         if (_operation === null) {
-            AppState.data.addOperation(newDate, editedAmount, newLabel, newDetails, allocations);
+            AppState.data.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
             return;
         }
 
@@ -166,8 +155,8 @@ BaseDialog {
         }
 
         // Apply budget date change if different
-        if (newBudgetDate.getTime() !== originalBudgetDate.getTime()) {
-            AppState.data.setOperationBudgetDate(_operation, newBudgetDate);
+        if (budgetDateInput.selectedDate.getTime() !== originalBudgetDate.getTime()) {
+            AppState.data.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
         }
 
         if (allocations.length > 0) {
@@ -190,8 +179,8 @@ BaseDialog {
         }
 
         // Apply date change LAST (since it sorts and changes the operation's index)
-        if (newDate.getTime() !== originalDate.getTime()) {
-            AppState.data.setOperationDate(_operation, newDate);
+        if (dateInput.selectedDate.getTime() !== originalDate.getTime()) {
+            AppState.data.setOperationDate(_operation, dateInput.selectedDate);
         }
     }
 
@@ -306,29 +295,8 @@ BaseDialog {
                 Layout.preferredWidth: 100
             }
 
-            DateSpinBox {
-                id: dateDay
-                from: 1
-                to: 31
-                value: 1
-                Layout.preferredWidth: 80
-            }
-
-            ComboBox {
-                id: dateMonth
-                model: [qsTr("January"), qsTr("February"), qsTr("March"), qsTr("April"), qsTr("May"), qsTr("June"), qsTr("July"), qsTr("August"), qsTr("September"), qsTr("October"), qsTr("November"), qsTr("December")]
-                Layout.fillWidth: true
-            }
-
-            DateSpinBox {
-                id: dateYear
-                from: 2000
-                to: 2100
-                value: 2024
-                Layout.preferredWidth: 100
-                textFromValue: function (value) {
-                    return value.toString();
-                }
+            DateInput {
+                id: dateInput
             }
         }
 
@@ -344,29 +312,8 @@ BaseDialog {
                 Layout.preferredWidth: 100
             }
 
-            DateSpinBox {
-                id: budgetDateDay
-                from: 1
-                to: 31
-                value: 1
-                Layout.preferredWidth: 80
-            }
-
-            ComboBox {
-                id: budgetDateMonth
-                model: [qsTr("January"), qsTr("February"), qsTr("March"), qsTr("April"), qsTr("May"), qsTr("June"), qsTr("July"), qsTr("August"), qsTr("September"), qsTr("October"), qsTr("November"), qsTr("December")]
-                Layout.fillWidth: true
-            }
-
-            DateSpinBox {
-                id: budgetDateYear
-                from: 2000
-                to: 2100
-                value: 2024
-                Layout.preferredWidth: 100
-                textFromValue: function (value) {
-                    return value.toString();
-                }
+            DateInput {
+                id: budgetDateInput
             }
         }
 
