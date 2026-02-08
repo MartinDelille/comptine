@@ -17,11 +17,10 @@ FocusScope {
     }
 
     function editCurrentOperation() {
-        if (operationList.currentIndex >= 0) {
-            let op = AppState.data.operationModel.operationAt(operationList.currentIndex);
-            if (op) {
-                operationEditDialog.initialize(op);
-            }
+        let operation = AppState.data.operationModel.operationAt(operationList.currentIndex);
+
+        if (operation) {
+            operationEditDialog.initialize(operation);
         }
     }
 
@@ -42,23 +41,11 @@ FocusScope {
             Layout.fillWidth: true
             spacing: Theme.spacingNormal
 
-            ComboBox {
-                id: accountSelector
+            AccountComboBox {
                 Layout.preferredWidth: 200
-                model: AppState.data.accountModel
-                textRole: "name"
                 currentIndex: AppState.navigation.currentAccountIndex
-                enabled: AppState.data.accountCount > 0
-                displayText: AppState.data.currentAccount?.name ?? qsTr("No account")
                 onActivated: function (index) {
                     AppState.navigation.currentAccountIndex = index;
-                }
-                delegate: ItemDelegate {
-                    required property int index
-                    required property string name
-                    width: accountSelector.width
-                    text: name
-                    highlighted: accountSelector.highlightedIndex === index
                 }
             }
 

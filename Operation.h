@@ -10,6 +10,8 @@
 #include "Category.h"
 #include "PropertyMacros.h"
 
+class Account;
+
 // Represents one allocation in a split operation
 struct CategoryAllocation {
   const Category* category;
@@ -31,6 +33,7 @@ class Operation : public QObject {
   Q_OBJECT
   QML_ELEMENT
 
+  PROPERTY_CONSTANT(Account*, account, nullptr)
   PROPERTY_RW(QDate, date, {})
   PROPERTY_RW(double, amount, 0.0)
   PROPERTY_RW(QString, label, {})
@@ -45,13 +48,12 @@ class Operation : public QObject {
   Q_PROPERTY(QString categoryDisplay READ categoryDisplay NOTIFY allocationsChanged)
 
 public:
-  explicit Operation(QObject* parent = nullptr);
-  Operation(const QDate& date,
-            double amount,
-            const QString& label,
-            const QString& details,
-            const QList<CategoryAllocation>& allocations,
-            QObject* parent = nullptr);
+  Operation(Account* account = nullptr,
+            const QDate& date = {},
+            double amount = 0.0,
+            const QString& label = {},
+            const QString& details = {},
+            const QList<CategoryAllocation>& allocations = {});
 
   // Split allocations methods
   QVariantList allocations() const;

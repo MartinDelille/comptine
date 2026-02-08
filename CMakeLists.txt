@@ -249,6 +249,7 @@ qt_add_qml_module(
   QML_FILES
   Main.qml
   AboutDialog.qml
+  AccountComboBox.qml
   AmountField.qml
   BalanceHeader.qml
   BaseDialog.qml
@@ -256,6 +257,7 @@ qt_add_qml_module(
   BudgetProgress.qml
   CategoryDetailView.qml
   CategoryEditDialog.qml
+  CreateCounterPartDialog.qml
   DateSpinBox.qml
   ImportDialog.qml
   DateLabel.qml

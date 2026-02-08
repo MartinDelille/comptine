@@ -43,6 +43,7 @@ public:
   bool hasOperation(const QDate& date, double amount, const QString& label) const;
 
   Q_INVOKABLE Operation* getOperation(int index) const;
+  Q_INVOKABLE int operationIndex(Operation* operation) const;
 
   // Selection management (Excel-like behavior)
   // Uses currentOperation as anchor for range selection

@@ -1,15 +1,14 @@
 #include "Operation.h"
+#include "Account.h"
 
-Operation::Operation(QObject* parent) :
-    QObject(parent) {}
-
-Operation::Operation(const QDate& date,
+Operation::Operation(Account* account,
+                     const QDate& date,
                      double amount,
                      const QString& label,
                      const QString& details,
-                     const QList<CategoryAllocation>& allocations,
-                     QObject* parent) :
-    QObject(parent),
+                     const QList<CategoryAllocation>& allocations) :
+    QObject(account),
+    _account(account),
     _date(date),
     _amount(amount),
     _label(label),

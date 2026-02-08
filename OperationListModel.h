@@ -21,7 +21,7 @@ public:
     LabelRole,
     BalanceRole,
     SelectedRole,
-    OperationRole
+    OperationRole,
   };
   Q_ENUM(Roles)
 

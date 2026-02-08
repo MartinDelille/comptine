@@ -14,6 +14,16 @@ Account* NavigationController::currentAccount() const {
   return _currentAccount;
 }
 
+void NavigationController::set_currentAccount(Account* account) {
+  if (account) {
+    int index = _budgetData.accountIndex(account);
+    if (index != _currentAccountIndex) {
+      _currentAccount = account;
+      set_currentAccountIndex(index);
+    }
+  }
+}
+
 int NavigationController::currentAccountIndex() const {
   return _currentAccountIndex;
 }
@@ -24,7 +34,7 @@ void NavigationController::set_currentAccountIndex(int index) {
     bool indexChanged = (index != _currentAccountIndex);
     _currentAccountIndex = index;
 
-    Account* newAccount = _budgetData.getAccount(index);
+    Account* newAccount = _budgetData.accountAt(index);
     bool accountChanged = (_currentAccount != newAccount);
     _currentAccount = newAccount;
 
@@ -85,17 +95,8 @@ void NavigationController::showBudgetTab() {
   set_currentTabIndex(1);
 }
 
-void NavigationController::navigateToOperation(const QString& accountName, const QDate& date,
-                                               const QString& label, double amount) {
-  // Find the account index
-  int accountIndex = -1;
-  QList<Account*> accounts = _budgetData.accounts();
-  for (int i = 0; i < accounts.size(); ++i) {
-    if (accounts[i]->name() == accountName) {
-      accountIndex = i;
-      break;
-    }
-  }
+void NavigationController::navigateToOperation(Operation* operation) {
+  int accountIndex = _budgetData.accountIndex(operation->account());
 
   if (accountIndex < 0) {
     return;
@@ -105,23 +106,16 @@ void NavigationController::navigateToOperation(const QString& accountName, const
   set_currentAccountIndex(accountIndex);
 
   // Find the operation in the account
-  Account* account = accounts[accountIndex];
-  const QList<Operation*>& ops = account->operations();
-  for (int i = 0; i < ops.size(); ++i) {
-    Operation* op = ops[i];
-    if (op->date() == date && op->label() == label && qFuzzyCompare(op->amount(), amount)) {
-      // Set this operation as the current operation and select it
-      account->set_currentOperation(op);
-      account->select(op, false);
+  Account* account = operation->account();
+  account->set_currentOperation(operation);
+  account->select(operation, false);
+  int operationIndex = account->operationIndex(operation);
 
-      // Emit signal so OperationList can focus the operation
-      emit operationSelected(i);
+  // Emit signal so OperationList can focus the operation
+  emit operationSelected(operationIndex);
 
-      // Switch to Operations tab
-      set_currentTabIndex(0);
-      return;
-    }
-  }
+  // Switch to Operations tab
+  set_currentTabIndex(0);
 }
 
 void NavigationController::onNavigationStateLoaded(int tabIndex, const QDate& budgetDate,

@@ -25,13 +25,10 @@ class NavigationController : public QObject {
   PROPERTY_RW_CUSTOM(int, currentAccountIndex, -1)
 
   // Current account (computed from currentAccountIndex)
-  Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
+  PROPERTY_RW_CUSTOM(Account*, currentAccount, nullptr)
 
 public:
   explicit NavigationController(BudgetData& budgetData);
-
-  // Current account getter
-  Account* currentAccount() const;
 
   // Month navigation
   Q_INVOKABLE void previousMonth();
@@ -46,8 +43,7 @@ public:
   Q_INVOKABLE void showBudgetTab();
 
   // Cross-navigation (switch account and select operation)
-  Q_INVOKABLE void navigateToOperation(const QString& accountName, const QDate& date,
-                                       const QString& label, double amount);
+  Q_INVOKABLE void navigateToOperation(Operation* operation);
 
 public slots:
   // Called when FileController loads navigation state from a file
@@ -56,9 +52,7 @@ public slots:
 
 signals:
   void operationSelected(int index);  // Emitted when an operation is selected via navigateToOperation()
-  void currentAccountChanged();       // Emitted when current account changes
 
 private:
   BudgetData& _budgetData;
-  Account* _currentAccount = nullptr;  // Cached pointer to current account
 };

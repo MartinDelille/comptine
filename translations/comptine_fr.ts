@@ -115,6 +115,17 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>CreateCounterPartDialog</name>
+    <message>
+        <source>Create Counter Part</source>
+        <translation>Créer une opération inverse</translation>
+    </message>
+    <message>
+        <source>Account:</source>
+        <translation>Compte:</translation>
+    </message>
+</context>
+<context>
     <name>DateLabel</name>
     <message>
         <source>January</source>
@@ -608,6 +619,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Create Rule...</source>
         <translation>Créer une règle...</translation>
+    </message>
+    <message>
+        <source>Create counter part...</source>
+        <translation>Créer un opération inverse...</translation>
     </message>
     <message>
         <source>Balance to remaining amount</source>

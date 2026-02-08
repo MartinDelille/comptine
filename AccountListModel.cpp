@@ -50,3 +50,9 @@ void AccountListModel::refresh() {
   endResetModel();
   emit countChanged();
 }
+
+Account* AccountListModel::accountAt(int index) const {
+  if (index < 0 || index >= _accounts.size())
+    return nullptr;
+  return _accounts.at(index);
+}

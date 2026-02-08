@@ -14,7 +14,7 @@ BaseDialog {
     readonly property bool newAccountNameExists: {
         if (!newAccountRadio.checked || newAccountName === "")
             return false;
-        return AppState.data.getAccountByName(newAccountName) !== null;
+        return AppState.data.accountByName(newAccountName) !== null;
     }
     okEnabled: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
 
@@ -41,7 +41,7 @@ BaseDialog {
             accountName = newAccountName;
         } else {
             // Existing account
-            var account = AppState.data.getAccount(accountComboBox.currentIndex);
+            var account = AppState.data.accountAt(accountComboBox.currentIndex);
             accountName = account ? account.name : "";
         }
 
@@ -68,20 +68,13 @@ BaseDialog {
             enabled: AppState.data.accountCount > 0
         }
 
-        ComboBox {
+        AccountComboBox {
             id: accountComboBox
             Layout.fillWidth: true
             Layout.leftMargin: Theme.spacingXLarge
             enabled: existingAccountRadio.checked
             model: AppState.data.accountModel
             textRole: "name"
-            delegate: ItemDelegate {
-                required property int index
-                required property string name
-                width: accountComboBox.width
-                text: name
-                highlighted: accountComboBox.highlightedIndex === index
-            }
         }
 
         RadioButton {

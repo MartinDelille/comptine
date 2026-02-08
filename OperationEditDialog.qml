@@ -52,6 +52,18 @@ BaseDialog {
         id: ruleEditDialog
     }
 
+    CreateCounterPartDialog {
+        id: counterPartDialog
+        operation: _operation
+        onCreateCounterPart: function (account) {
+            let newOperation = AppState.data.createCounterPart(operation, account);
+            // AppState.navigation.currentAccount = account;
+            AppState.navigation.currentOperation = newOperation;
+            AppState.navigation.navigateToOperation(newOperation);
+            initialize(newOperation);
+        }
+    }
+
     function initialize(operation) {
         _unaffectedCategoryComboBox = null;
 
@@ -503,20 +515,27 @@ BaseDialog {
             onClicked: root.addAllocation()
         }
 
-        // Create rule button
-        Button {
-            Layout.alignment: Qt.AlignLeft
-            text: qsTr("Create Rule...")
-            visible: _operation !== null
-            onClicked: {
-                if (_operation) {
-                    ruleEditDialog.isNewRule = true;
-                    ruleEditDialog.suggestedPrefix = _operation.label;
-                    if (_operation.allocations && _operation.allocations.length > 0) {
-                        ruleEditDialog.suggestedCategory = _operation.allocations[0].category;
+        RowLayout {
+            Layout.fillWidth: true
+
+            // Create rule button
+            Button {
+                text: qsTr("Create Rule...")
+                visible: _operation !== null
+                onClicked: {
+                    if (_operation) {
+                        ruleEditDialog.isNewRule = true;
+                        ruleEditDialog.suggestedPrefix = _operation.label;
+                        if (_operation.allocations && _operation.allocations.length > 0) {
+                            ruleEditDialog.suggestedCategory = _operation.allocations[0].category;
+                        }
+                        ruleEditDialog.open();
                     }
-                    ruleEditDialog.open();
                 }
+            }
+            Button {
+                text: qsTr("Create counter part...")
+                onClicked: counterPartDialog.open()
             }
         }
     }

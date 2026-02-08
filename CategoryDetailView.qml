@@ -90,7 +90,8 @@ BaseDialog {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        AppState.navigation.navigateToOperation(modelData.accountName, modelData.date, modelData.label, modelData.totalAmount);
+                        let operation = modelData.operation;
+                        AppState.navigation.navigateToOperation(operation);
                         root.close();
                     }
                 }
