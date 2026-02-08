@@ -60,7 +60,7 @@ QHash<int, QByteArray> OperationListModel::roleNames() const {
     { LabelRole, "label" },
     { BalanceRole, "balance" },
     { SelectedRole, "selected" },
-    { OperationRole, "operation" }
+    { OperationRole, "operation" },
   };
 }
 

@@ -248,6 +248,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
         double categoryAmount = op->amountForCategory(category);
         if (!qFuzzyIsNull(categoryAmount)) {
           QVariantMap item;
+          item["operation"] = QVariant::fromValue(op);
           item["date"] = op->date();
           item["budgetDate"] = op->budgetDate();
           item["label"] = op->label();

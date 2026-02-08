@@ -163,7 +163,7 @@ private slots:
     QCOMPARE(budgetData->accountCount(), 1);
     QCOMPARE(categoryController->rowCount(), 1);
 
-    Account* loadedAccount = budgetData->getAccount(0);
+    Account* loadedAccount = budgetData->accountAt(0);
     QCOMPARE(loadedAccount->name(), QString("Checking Account"));
     QCOMPARE(loadedAccount->operations().size(), 1);
 
@@ -205,10 +205,10 @@ private slots:
 
     // Verify
     QCOMPARE(budgetData->accountCount(), 2);
-    QCOMPARE(budgetData->getAccount(0)->name(), QString("Checking"));
-    QCOMPARE(budgetData->getAccount(1)->name(), QString("Savings"));
-    QCOMPARE(budgetData->getAccount(0)->operations().size(), 1);
-    QCOMPARE(budgetData->getAccount(1)->operations().size(), 1);
+    QCOMPARE(budgetData->accountAt(0)->name(), QString("Checking"));
+    QCOMPARE(budgetData->accountAt(1)->name(), QString("Savings"));
+    QCOMPARE(budgetData->accountAt(0)->operations().size(), 1);
+    QCOMPARE(budgetData->accountAt(1)->operations().size(), 1);
   }
 
   // Save/Load with Split Operations
@@ -242,7 +242,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify split operation
-    Account* loadedAccount = budgetData->getAccount(0);
+    Account* loadedAccount = budgetData->accountAt(0);
     Operation* loadedOp = loadedAccount->operations()[0];
     QVERIFY(loadedOp->isCategorized());
 
@@ -277,7 +277,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify budget date is preserved
-    Operation* loadedOp = budgetData->getAccount(0)->operations()[0];
+    Operation* loadedOp = budgetData->accountAt(0)->operations()[0];
     QCOMPARE(loadedOp->date(), QDate(2025, 1, 31));
     QCOMPARE(loadedOp->budgetDate(), QDate(2025, 2, 1));
   }
@@ -752,7 +752,7 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->accountCount(), 2);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
 
@@ -797,7 +797,7 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->accountCount(), 2);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
 
@@ -839,7 +839,7 @@ private slots:
     QVERIFY(energie != nullptr);
 
     QCOMPARE(budgetData->accountCount(), 1);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
 
@@ -870,7 +870,7 @@ private slots:
     QCOMPARE(categoryController->rowCount(), 0);
 
     QCOMPARE(budgetData->accountCount(), 1);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
 
@@ -890,7 +890,7 @@ private slots:
     QVERIFY(telephone != nullptr);
 
     QCOMPARE(budgetData->accountCount(), 1);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
 
@@ -914,7 +914,7 @@ private slots:
     QVERIFY(ameublement != nullptr);
 
     QCOMPARE(budgetData->accountCount(), 1);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 3);
 
@@ -946,7 +946,7 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->accountCount(), 1);
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
 
@@ -970,7 +970,7 @@ private slots:
     QVERIFY(fileController->importFromCsv(csvUrl, "Cash", false));
 
     // Verify operation was imported but category was ignored
-    Account* account = budgetData->getAccount(0);
+    Account* account = budgetData->accountAt(0);
     Operation* op = account->operations()[0];
     QCOMPARE(op->allocationsList().count(), 0);  // Empty category
 
@@ -997,7 +997,7 @@ private slots:
     fileController->importFromCsv(csvUrl, "Account");
 
     // Rule should have been applied
-    Operation* op = budgetData->getAccount(0)->operations()[0];
+    Operation* op = budgetData->accountAt(0)->operations()[0];
     QVERIFY(op);
     QCOMPARE(op->label(), "SUPERMARKET PURCHASE");
     QCOMPARE(op->allocationsList().size(), 1);

@@ -40,7 +40,7 @@ QList<Account*> BudgetData::accounts() const {
   return _accounts;
 }
 
-Account* BudgetData::getAccount(int index) const {
+Account* BudgetData::accountAt(int index) const {
   if (index >= 0 && index < _accounts.size()) {
     return _accounts[index];
   }
@@ -49,12 +49,12 @@ Account* BudgetData::getAccount(int index) const {
 
 Account* BudgetData::currentAccount() const {
   if (_navController) {
-    return getAccount(_navController->currentAccountIndex());
+    return accountAt(_navController->currentAccountIndex());
   }
   return nullptr;
 }
 
-Account* BudgetData::getAccountByName(const QString& name) const {
+Account* BudgetData::accountByName(const QString& name) const {
   for (Account* account : _accounts) {
     if (account->name() == name) {
       return account;
@@ -63,9 +63,13 @@ Account* BudgetData::getAccountByName(const QString& name) const {
   return nullptr;
 }
 
+int BudgetData::accountIndex(Account* account) const {
+  return _accounts.indexOf(account);
+}
+
 void BudgetData::renameCurrentAccount(const QString& newName) {
   if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
+  Account* account = accountAt(_navController->currentAccountIndex());
   if (account && !newName.isEmpty() && account->name() != newName) {
     _undoStack.push(new RenameAccountCommand(*account, _accountModel,
                                              account->name(), newName));
@@ -126,7 +130,7 @@ void BudgetData::clearAccounts() {
 void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QVariantList& allocations) {
   if (!_operationModel) return;
   if (!_navController) return;
-  Account* account = getAccount(_navController->currentAccountIndex());
+  Account* account = accountAt(_navController->currentAccountIndex());
   if (!account) return;
 
   QList<CategoryAllocation> allocationList;
@@ -139,7 +143,7 @@ void BudgetData::addOperation(const QDate& date, double amount, const QString& l
     });
   }
 
-  auto operation = new Operation(date, amount, label, details, allocationList);
+  auto operation = new Operation(account, date, amount, label, details, allocationList);
   _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
 }
 
@@ -214,6 +218,21 @@ void BudgetData::setOperationAllocations(Operation* operation, const QVariantLis
     _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
                                               oldAllocations, newAllocations));
   }
+}
+
+Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAccount) {
+  if (!operation || !targetAccount) return nullptr;
+
+  QList<CategoryAllocation> newAllocations;
+  for (const CategoryAllocation& allocation : operation->allocationsList()) {
+    newAllocations.append(CategoryAllocation(allocation.category, -allocation.amount));
+  }
+
+  auto newOperation = new Operation(targetAccount, operation->date(), -operation->amount(),
+                                    operation->label(), operation->details(), newAllocations);
+
+  _undoStack.push(new AddOperationCommand(newOperation, *targetAccount, *_operationModel));
+  return newOperation;
 }
 
 void BudgetData::clear() {

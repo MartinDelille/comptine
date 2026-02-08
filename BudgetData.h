@@ -38,8 +38,9 @@ public:
 
   // Account management
   QList<Account*> accounts() const;
-  Q_INVOKABLE Account* getAccount(int index) const;
-  Q_INVOKABLE Account* getAccountByName(const QString& name) const;
+  Q_INVOKABLE Account* accountAt(int index) const;
+  Q_INVOKABLE Account* accountByName(const QString& name) const;
+  Q_INVOKABLE int accountIndex(Account* account) const;
   Q_INVOKABLE void renameCurrentAccount(const QString& newName);
   void addAccount(Account* account);
   void removeAccount(int index);
@@ -55,6 +56,7 @@ public:
   Q_INVOKABLE void setOperationLabel(Operation* operation, const QString& newLabel);
   Q_INVOKABLE void setOperationDetails(Operation* operation, const QString& newDetails);
   Q_INVOKABLE void setOperationAllocations(Operation* operation, const QVariantList& allocations);
+  Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount);
 
   // Clear all data (called by FileController)
   void clear();

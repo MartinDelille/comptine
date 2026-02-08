@@ -29,6 +29,8 @@ public:
   // Refresh the model view
   void refresh();
 
+  Q_INVOKABLE Account* accountAt(int index) const;
+
 signals:
   void countChanged();
 

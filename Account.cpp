@@ -15,6 +15,11 @@ void Account::set_currentOperationIndex(int index) {
   set_currentOperation(getOperation(index));
 }
 
+int Account::operationIndex(Operation* operation) const {
+  if (!operation) return -1;
+  return _operations.indexOf(operation);
+}
+
 int Account::operationCount() const {
   return _operations.size();
 }

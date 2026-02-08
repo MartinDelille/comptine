@@ -478,7 +478,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   if (currentOperation) {
     QList<Account*> accs = _budgetData.accounts();
     int boundedAccountIdx = qBound(0, loadedAccountIdx, accs.size() - 1);
-    Account* account = _budgetData.getAccount(boundedAccountIdx);
+    Account* account = _budgetData.accountAt(boundedAccountIdx);
     if (account) {
       QList<Operation*> ops = account->operations();
       int idx = ops.indexOf(currentOperation);
@@ -600,7 +600,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Create or get account
   QString name = accountName.isEmpty() ? "Imported Account" : accountName;
-  Account* account = _budgetData.getAccountByName(name);
+  Account* account = _budgetData.accountByName(name);
   bool isNewAccount = false;
   if (!account) {
     // New account - will be added to BudgetData via AddAccountCommand when undo stack is pushed
