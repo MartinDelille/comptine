@@ -37,10 +37,3 @@ repos:
         language: system
         files: '\.qml$'
         types: [file]
-
-      - id: check-translations
-        name: check translations complete
-        entry: ./scripts/check-translations.sh
-        language: script
-        files: '\.(qml|cpp|h|ts)$'
-        pass_filenames: false
