@@ -531,20 +531,20 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     return false;
   }
 
-  QByteArray firstBytes = file.peek(1024);
+  QByteArray bytes = file.readAll();
   QStringConverter::Encoding encoding = QStringConverter::Utf8;  // Default
 
-  if (firstBytes.startsWith("\xEF\xBB\xBF")) {
+  if (bytes.startsWith("\xEF\xBB\xBF")) {
     encoding = QStringConverter::Utf8;  // UTF-8 BOM
-  } else if (firstBytes.startsWith("\xFF\xFE")) {
+  } else if (bytes.startsWith("\xFF\xFE")) {
     encoding = QStringConverter::Utf16LE;  // UTF-16 LE BOM
-  } else if (firstBytes.startsWith("\xFE\xFF")) {
+  } else if (bytes.startsWith("\xFE\xFF")) {
     encoding = QStringConverter::Utf16BE;  // UTF-16 BE BOM
   } else {
     // No BOM detected; could prompt user or use default
 
     // Try to decode as UTF-8
-    QString utf8Text = QString::fromUtf8(firstBytes);
+    QString utf8Text = QString::fromUtf8(bytes);
     if (utf8Text.contains(QChar::ReplacementCharacter)) {
       // Invalid UTF-8 sequence detected, likely Latin1
       encoding = QStringConverter::Latin1;
@@ -556,7 +556,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   QStringList headerFields;
   QChar delimiter = ';';
 
-  QTextStream in(&file);
+  QTextStream in(bytes);
   in.setEncoding(encoding);
   CsvFieldIndices idx;
 
