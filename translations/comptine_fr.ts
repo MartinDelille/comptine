@@ -305,6 +305,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Modifier la &amp;catégorie...</translation>
     </message>
     <message>
+        <source>Delete Operation</source>
+        <translation>Supprimer une opération</translation>
+    </message>
+    <message>
         <source>Categorization &amp;Rules...</source>
         <translation>&amp;Règles de catégorisation...</translation>
     </message>
@@ -351,6 +355,18 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Import CSV File</source>
         <translation>Importer un fichier CSV</translation>
+    </message>
+    <message>
+        <source>Delete Operations</source>
+        <translation>Supprimer des Opérations</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to delete the selected operations?</source>
+        <translation>Êtes-vous sur de vouloir supprimer les opérations sélectionnées ?</translation>
+    </message>
+    <message>
+        <source>Delete</source>
+        <translation>Supprimer</translation>
     </message>
     <message>
         <source>Unsaved Changes</source>

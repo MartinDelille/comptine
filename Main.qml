@@ -189,6 +189,12 @@ ApplicationWindow {
                     }
                 }
             }
+            Action {
+                text: qsTr("Delete Operation")
+                shortcut: "Ctrl+Backspace"
+                enabled: AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount > 0
+                onTriggered: deleteSelectedOperationsDialog.open()
+            }
             MenuSeparator {}
             Action {
                 text: qsTr("Categorization &Rules...")
@@ -300,6 +306,16 @@ ApplicationWindow {
     PreferencesDialog {
         id: preferencesDialog
         anchors.centerIn: parent
+    }
+
+    BaseDialog {
+        id: deleteSelectedOperationsDialog
+        title: qsTr("Delete Operations")
+        Label {
+            text: qsTr("Are you sure you want to delete the selected operations?")
+        }
+        acceptButtonText: qsTr("Delete")
+        onAccepted: AppState.data.deleteSelectedOperations()
     }
 
     RulesView {
