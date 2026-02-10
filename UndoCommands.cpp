@@ -230,6 +230,30 @@ void AddOperationCommand::redo() {
   emit _operationModel.operationDataChanged();
 }
 
+DeleteOperationCommand::DeleteOperationCommand(Operation* operation,
+                                               Account& account,
+                                               OperationListModel& operationModel,
+                                               QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _operation(operation),
+    _account(account),
+    _operationModel(operationModel) {
+  setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
+}
+
+void DeleteOperationCommand::undo() {
+  _account.addOperation(_operation);
+  _operationModel.refresh();
+  _operationModel.selectByPointer(_operation);
+  emit _operationModel.operationDataChanged();
+}
+
+void DeleteOperationCommand::redo() {
+  _account.removeOperation(_operation);
+  _operation->setParent(nullptr);
+  _operationModel.refresh();
+}
+
 SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operation,
                                                              OperationListModel* operationModel,
                                                              const QDate& oldBudgetDate,

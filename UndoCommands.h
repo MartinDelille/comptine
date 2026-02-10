@@ -136,6 +136,23 @@ private:
   OperationListModel& _operationModel;
 };
 
+// Command for deleting an operation
+class DeleteOperationCommand : public QUndoCommand {
+public:
+  DeleteOperationCommand(Operation* operation,
+                         Account& account,
+                         OperationListModel& operationModel,
+                         QUndoCommand* parent = nullptr);
+
+  void undo() override;
+  void redo() override;
+
+private:
+  Operation* _operation;
+  Account& _account;
+  OperationListModel& _operationModel;
+};
+
 // Command for setting an operation's budget date
 class SetOperationBudgetDateCommand : public QUndoCommand {
 public:

@@ -235,6 +235,20 @@ Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAc
   return newOperation;
 }
 
+void BudgetData::deleteSelectedOperations() {
+  if (!_operationModel) return;
+  if (!_navController) return;
+  Account* account = accountAt(_navController->currentAccountIndex());
+  if (!account) return;
+
+  QUndoCommand* macroCommand = new QUndoCommand();
+
+  for (Operation* op : account->selectedOperations()) {
+    new DeleteOperationCommand(op, *account, *_operationModel, macroCommand);
+  }
+  _undoStack.push(macroCommand);
+}
+
 void BudgetData::clear() {
   clearAccounts();
   _undoStack.clear();
