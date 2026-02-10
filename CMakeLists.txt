@@ -7,6 +7,8 @@ set(APP_VERSION "${DEFAULT_VERSION}")
 set(APP_VERSION_SUFFIX "")
 set(APP_COMMIT_HASH "")
 
+add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
+
 find_package(Git QUIET)
 if(GIT_FOUND)
   # Get the nearest tag
