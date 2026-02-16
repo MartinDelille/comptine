@@ -58,6 +58,7 @@ public:
   Q_INVOKABLE void setOperationAllocations(Operation* operation, const QVariantList& allocations);
   Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount);
   Q_INVOKABLE void deleteSelectedOperations();
+  Q_INVOKABLE void deleteCategory(Category* category);
 
   // Clear all data (called by FileController)
   void clear();

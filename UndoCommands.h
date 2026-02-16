@@ -98,6 +98,23 @@ private:
   bool _ownsCategory;  // True when not in controller (after undo)
 };
 
+class DeleteCategoryCommand : public QUndoCommand {
+public:
+  DeleteCategoryCommand(
+      CategoryController* categoryController,
+      Category* category,
+      QUndoCommand* parent = nullptr);
+  ~DeleteCategoryCommand();
+
+  void undo() override;
+  void redo() override;
+
+private:
+  CategoryController* _categoryController;
+  Category* _category;
+  bool _ownsCategory;  // True when not in controller (after undo)
+};
+
 // Command for adding operation into an account
 // Note: This command only manages operations. Use as child of a macro command
 // with AddAccountCommand and AddCategoriesCommand for full import functionality.
@@ -177,7 +194,6 @@ class SplitOperationCommand : public QUndoCommand {
 public:
   SplitOperationCommand(Operation& operation,
                         OperationListModel* operationModel,
-                        const QList<CategoryAllocation>& oldAllocations,
                         const QList<CategoryAllocation>& newAllocations,
                         QUndoCommand* parent = nullptr);
 
@@ -187,8 +203,7 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  QList<CategoryAllocation> _oldAllocations;
-  QList<CategoryAllocation> _newAllocations;
+  QList<CategoryAllocation> _oldAllocations, _newAllocations;
 };
 
 // Command for setting an operation's amount

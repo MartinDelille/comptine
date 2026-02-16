@@ -210,13 +210,10 @@ void BudgetData::setOperationAllocations(Operation* operation, const QVariantLis
     newAllocations.append(alloc);
   }
 
-  // Get current state
-  QList<CategoryAllocation> oldAllocations = operation->allocationsList();
-
   // Only create command if something changed
-  if (newAllocations != oldAllocations) {
+  if (newAllocations != operation->allocationsList()) {
     _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
-                                              oldAllocations, newAllocations));
+                                              newAllocations));
   }
 }
 
@@ -246,6 +243,34 @@ void BudgetData::deleteSelectedOperations() {
   for (Operation* op : account->selectedOperations()) {
     new DeleteOperationCommand(op, *account, *_operationModel, macroCommand);
   }
+  _undoStack.push(macroCommand);
+}
+
+void BudgetData::deleteCategory(Category* category) {
+  if (!category || !_categoryController) return;
+  if (!_operationModel) return;
+
+  QUndoCommand* macroCommand = new QUndoCommand();
+
+  // Update all operations that reference this category to remove it from their allocations
+  for (Account* account : _accounts) {
+    for (Operation* op : account->operations()) {
+      // Create a new allocations list without the deleted category
+      QList<CategoryAllocation> newAllocations;
+      for (const CategoryAllocation& alloc : op->allocationsList()) {
+        if (alloc.category != category) {
+          newAllocations.append(alloc);
+        }
+      }
+      // Only create a command if the allocations actually changed
+      if (newAllocations.size() != op->allocationsList().size()) {
+        new SplitOperationCommand(*op, _operationModel,
+                                  newAllocations, macroCommand);
+      }
+    }
+  }
+
+  _undoStack.push(new DeleteCategoryCommand(_categoryController, category));
   _undoStack.push(macroCommand);
 }
 
