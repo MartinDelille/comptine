@@ -309,6 +309,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Supprimer une opération</translation>
     </message>
     <message>
+        <source>Delete Category</source>
+        <translation>Supprimer une catégorie</translation>
+    </message>
+    <message>
         <source>Categorization &amp;Rules...</source>
         <translation>&amp;Règles de catégorisation...</translation>
     </message>
@@ -704,6 +708,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Add operation: &quot;%0&quot;</source>
         <translation>Ajouter l&apos;opération «&#xa0;%0&#xa0;»</translation>
+    </message>
+    <message>
+        <source>Delete category &quot;%0&quot;</source>
+        <translation>Supprimer la catégorie &quot;%0%</translation>
     </message>
     <message>
         <source>Set operation budget date to %1</source>

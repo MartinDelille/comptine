@@ -190,10 +190,16 @@ ApplicationWindow {
                 }
             }
             Action {
-                text: qsTr("Delete Operation")
+                text: AppState.navigation.currentTabIndex === 0 ? qsTr("Delete Operation") : qsTr("Delete Category")
                 shortcut: "Ctrl+Backspace"
-                enabled: AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount > 0
-                onTriggered: deleteSelectedOperationsDialog.open()
+                enabled: (AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount > 0) || (AppState.navigation.currentTabIndex === 1 && AppState.navigation.currentCategoryIndex >= 0)
+                onTriggered: {
+                    if (AppState.navigation.currentTabIndex === 0) {
+                        deleteSelectedOperationsDialog.open();
+                    } else {
+                        deleteCurrentCagegoryDialog.open();
+                    }
+                }
             }
             MenuSeparator {}
             Action {
@@ -316,6 +322,17 @@ ApplicationWindow {
         }
         acceptButtonText: qsTr("Delete")
         onAccepted: AppState.data.deleteSelectedOperations()
+    }
+
+    BaseDialog {
+        id: deleteCurrentCagegoryDialog
+        title: qsTr("Delete Category")
+        Label {
+            property string _categoryName: AppState.categories.current ? AppState.categories.current.name : ""
+            text: qsTr(`Are you sure you want to delete ${_categoryName} ?`)
+        }
+        acceptButtonText: qsTr("Delete")
+        onAccepted: AppState.data.deleteCategory(AppState.categories.current)
     }
 
     RulesView {

@@ -165,6 +165,39 @@ void AddCategoryCommand::redo() {
   _ownsCategory = false;
 }
 
+// DeleteCategoryCommand implementation
+
+DeleteCategoryCommand::DeleteCategoryCommand(
+    CategoryController* categoryController,
+    Category* category,
+    QUndoCommand* parent) :
+    QUndoCommand(parent),
+    _categoryController(categoryController),
+    _category(category),
+    _ownsCategory(true) {
+  setText(QObject::tr("Delete category \"%0\"").arg(category->name()));
+}
+
+DeleteCategoryCommand::~DeleteCategoryCommand() {
+  if (_ownsCategory) {
+    delete _category;
+  }
+}
+
+void DeleteCategoryCommand::undo() {
+  if (_categoryController) {
+    _categoryController->addCategory(_category);
+  }
+  _ownsCategory = false;
+}
+
+void DeleteCategoryCommand::redo() {
+  if (_categoryController) {
+    _categoryController->takeCategoryByName(_category->name());
+  }
+  _ownsCategory = true;
+}
+
 // AddOperationCommand implementation
 
 ImportOperationsCommand::ImportOperationsCommand(Account& account,
@@ -287,13 +320,12 @@ void SetOperationBudgetDateCommand::redo() {
 
 SplitOperationCommand::SplitOperationCommand(Operation& operation,
                                              OperationListModel* operationModel,
-                                             const QList<CategoryAllocation>& oldAllocations,
                                              const QList<CategoryAllocation>& newAllocations,
                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
     _operationModel(operationModel),
-    _oldAllocations(oldAllocations),
+    _oldAllocations(operation.allocationsList()),
     _newAllocations(newAllocations) {
   if (newAllocations.size() > 1) {
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
