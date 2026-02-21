@@ -167,7 +167,7 @@ int RuleController::applyRulesToOperation(Operation* operation) {
   }
 
   if (auto category = matchingCategory(operation)) {
-    operation->setAllocations({ CategoryAllocation(category, operation->amount()) });
+    operation->setAllocations({ new Allocation(category, operation->amount()) });
     return 1;
   }
   return 0;

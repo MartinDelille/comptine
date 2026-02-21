@@ -133,14 +133,11 @@ void BudgetData::addOperation(const QDate& date, double amount, const QString& l
   Account* account = accountAt(_navController->currentAccountIndex());
   if (!account) return;
 
-  QList<CategoryAllocation> allocationList;
+  QList<Allocation*> allocationList;
   for (auto alloc : allocations) {
     QVariantMap m = alloc.toMap();
-    allocationList.append(CategoryAllocation{
-        _categoryController->getCategoryByName(m["category"].toString()),
-        m["amount"].toDouble(),
-
-    });
+    allocationList.append(new Allocation(_categoryController->getCategoryByName(m["category"].toString()),
+                                         m["amount"].toDouble()));
   }
 
   auto operation = new Operation(account, date, amount, label, details, allocationList);
@@ -200,29 +197,30 @@ void BudgetData::setOperationDetails(Operation* operation, const QString& newDet
 void BudgetData::setOperationAllocations(Operation* operation, const QVariantList& allocations) {
   if (!operation) return;
 
-  // Convert QVariantList to QList<CategoryAllocation>
-  QList<CategoryAllocation> newAllocations;
+  // Convert QVariantList to QList<Allocation>
+  QList<Allocation*> newAllocations;
   for (const QVariant& v : allocations) {
     QVariantMap m = v.toMap();
-    CategoryAllocation alloc(
+    newAllocations.append(new Allocation(
         _categoryController->getCategoryByName(m["category"].toString()),
-        m["amount"].toDouble());
-    newAllocations.append(alloc);
+        m["amount"].toDouble()));
   }
 
   // Only create command if something changed
-  if (newAllocations != operation->allocationsList()) {
+  if (!operation->sameAllocations(newAllocations)) {
     _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
                                               newAllocations));
+  } else {
+    qDeleteAll(newAllocations);
   }
 }
 
 Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAccount) {
   if (!operation || !targetAccount) return nullptr;
 
-  QList<CategoryAllocation> newAllocations;
-  for (const CategoryAllocation& allocation : operation->allocationsList()) {
-    newAllocations.append(CategoryAllocation(allocation.category, -allocation.amount));
+  QList<Allocation*> newAllocations;
+  for (auto allocation : operation->allocations()) {
+    newAllocations.append(new Allocation(allocation->category(), -allocation->amount()));
   }
 
   auto newOperation = new Operation(targetAccount, operation->date(), -operation->amount(),
@@ -256,14 +254,14 @@ void BudgetData::deleteCategory(Category* category) {
   for (Account* account : _accounts) {
     for (Operation* op : account->operations()) {
       // Create a new allocations list without the deleted category
-      QList<CategoryAllocation> newAllocations;
-      for (const CategoryAllocation& alloc : op->allocationsList()) {
-        if (alloc.category != category) {
-          newAllocations.append(alloc);
+      QList<Allocation*> newAllocations;
+      for (auto alloc : op->allocations()) {
+        if (alloc->category() != category) {
+          newAllocations.append(new Allocation(alloc->category(), alloc->amount()));
         }
       }
       // Only create a command if the allocations actually changed
-      if (newAllocations.size() != op->allocationsList().size()) {
+      if (newAllocations.size() != op->allocations().size()) {
         new SplitOperationCommand(*op, _operationModel,
                                   newAllocations, macroCommand);
       }

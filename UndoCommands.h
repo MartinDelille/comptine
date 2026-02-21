@@ -8,7 +8,7 @@
 #include <optional>
 
 #include "Category.h"   // For MonthRecord
-#include "Operation.h"  // For CategoryAllocation
+#include "Operation.h"  // For Allocation
 
 class Account;
 class AccountListModel;
@@ -194,7 +194,7 @@ class SplitOperationCommand : public QUndoCommand {
 public:
   SplitOperationCommand(Operation& operation,
                         OperationListModel* operationModel,
-                        const QList<CategoryAllocation>& newAllocations,
+                        const QList<Allocation*>& newAllocations,
                         QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -203,7 +203,7 @@ public:
 private:
   Operation& _operation;
   OperationListModel* _operationModel;
-  QList<CategoryAllocation> _oldAllocations, _newAllocations;
+  QList<Allocation*> _oldAllocations, _newAllocations;
 };
 
 // Command for setting an operation's amount

@@ -187,12 +187,7 @@ Rectangle {
                 spacing: Theme.spacingSmall
 
                 Repeater {
-                    model: operation?.allocations.length ? operation.allocations : [
-                        {
-                            category: qsTr("Uncategorized"),
-                            amount: operation ? operation.amount : 0
-                        }
-                    ]
+                    model: operation?.allocations
 
                     RowLayout {
                         Layout.fillWidth: true
@@ -202,7 +197,7 @@ Rectangle {
 
                         Label {
                             Layout.fillWidth: true
-                            text: modelData.category || qsTr("Uncategorized")
+                            text: modelData.category ? modelData.category.name : qsTr("Uncategorized")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textPrimary
                             elide: Text.ElideRight
@@ -214,6 +209,29 @@ Rectangle {
                             font.bold: true
                             color: Theme.amountColor(modelData.amount)
                         }
+                    }
+                }
+
+                // Fallback when no allocations exist
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.spacingSmall
+                    visible: !operation?.allocations.length
+
+                    Label {
+                        Layout.fillWidth: true
+                        text: qsTr("Uncategorized")
+                        font.pixelSize: Theme.fontSizeSmall
+                        color: Theme.textSecondary
+                        font.italic: true
+                        elide: Text.ElideRight
+                    }
+
+                    Label {
+                        text: Theme.formatAmount(operation?.amount ?? 0)
+                        font.pixelSize: Theme.fontSizeSmall
+                        font.bold: true
+                        color: Theme.amountColor(operation?.amount ?? 0)
                     }
                 }
             }

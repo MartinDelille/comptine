@@ -77,8 +77,13 @@ BaseDialog {
         }
         detailsField.text = originalDetails = operation?.details || "";
 
-        if (operation?.allocation) {
-            originalAllocations = operation.allocations ? allocations.slice() : [];
+        if (operation?.allocations && operation.allocations.length > 0) {
+            for (let i = 0; i < operation.allocations.length; i++) {
+                originalAllocations.push({
+                    category: operation.allocations[i].category ? operation.allocations[i].category.name : "",
+                    amount: operation.allocations[i].amount
+                });
+            }
         }
 
         dateInput.selectedDate = originalDate;
@@ -87,7 +92,7 @@ BaseDialog {
         if (operation?.allocations && operation.allocations.length > 0) {
             for (let i = 0; i < operation.allocations.length; i++) {
                 allocationModel.append({
-                    category: operation.allocations[i].category,
+                    category: operation.allocations[i].category ? operation.allocations[i].category.name : "",
                     amount: operation.allocations[i].amount
                 });
             }
@@ -474,7 +479,7 @@ BaseDialog {
                         ruleEditDialog.isNewRule = true;
                         ruleEditDialog.suggestedPrefix = _operation.label;
                         if (_operation.allocations && _operation.allocations.length > 0) {
-                            ruleEditDialog.suggestedCategory = _operation.allocations[0].category;
+                            ruleEditDialog.suggestedCategory = _operation.allocations[0].category ? _operation.allocations[0].category.name : "";
                         }
                         ruleEditDialog.open();
                     }

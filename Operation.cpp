@@ -6,7 +6,7 @@ Operation::Operation(Account* account,
                      double amount,
                      const QString& label,
                      const QString& details,
-                     const QList<CategoryAllocation>& allocations) :
+                     const QList<Allocation*>& allocations) :
     QObject(account),
     _account(account),
     _date(date),
@@ -14,6 +14,8 @@ Operation::Operation(Account* account,
     _label(label),
     _details(details),
     _allocations(allocations) {
+  for (auto alloc : _allocations)
+    alloc->setParent(this);
 }
 
 QDate Operation::budgetDate() const {
@@ -28,35 +30,39 @@ void Operation::set_budgetDate(QDate value) {
   }
 }
 
-QVariantList Operation::allocations() const {
-  QVariantList result;
-  for (const auto& alloc : _allocations) {
-    QVariantMap item;
-    item["category"] = alloc.category ? alloc.category->name() : QVariant();
-    item["amount"] = alloc.amount;
-    result.append(item);
-  }
-  return result;
-}
-
-void Operation::setAllocations(const QList<CategoryAllocation>& allocations) {
-  if (_allocations != allocations) {
+void Operation::setAllocations(const QList<Allocation*>& allocations) {
+  if (!sameAllocations(allocations)) {
     _allocations = allocations;
+    for (auto alloc : _allocations)
+      alloc->setParent(this);
     emit allocationsChanged();
   }
 }
 
 void Operation::clearAllocations() {
   if (!_allocations.isEmpty()) {
+    qDeleteAll(_allocations);
     _allocations.clear();
     emit allocationsChanged();
   }
 }
 
+bool Operation::sameAllocations(const QList<Allocation*>& otherAllocations) const {
+  if (_allocations.count() != otherAllocations.count()) {
+    return false;
+  }
+  for (int i = 0; i < _allocations.count(); i++) {
+    if (*_allocations[i] != *otherAllocations[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Operation::isCategorized() const {
   double totalAmount = 0.0;
   for (auto allocation : _allocations) {
-    totalAmount += allocation.amount;
+    totalAmount += allocation->amount();
   }
   return totalAmount == _amount;
 }
@@ -67,8 +73,8 @@ QString Operation::categoryDisplay() const {
   // Return comma-separated list of categories
   QSet<const Category*> uniqueCategories;
   for (const auto& alloc : _allocations) {
-    if (!uniqueCategories.contains(alloc.category)) {
-      uniqueCategories.insert(alloc.category);
+    if (!uniqueCategories.contains(alloc->category())) {
+      uniqueCategories.insert(alloc->category());
     }
   }
   QStringList displayNames;
@@ -82,8 +88,8 @@ double Operation::amountForCategory(const Category* category) const {
   // Split - sum all allocations for this category
   double total = 0.0;
   for (const auto& alloc : _allocations) {
-    if (alloc.category == category) {
-      total += alloc.amount;
+    if (alloc->category() == category) {
+      total += alloc->amount();
     }
   }
   return total;
