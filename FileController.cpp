@@ -149,13 +149,13 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       // Handle split operations
       ryml::NodeRef allocsNode = opNode["allocations"];
       allocsNode |= ryml::SEQ;
-      for (const auto& alloc : op->allocationsList()) {
+      for (const auto& alloc : op->allocations()) {
         ryml::NodeRef allocNode = allocsNode.append_child();
         allocNode |= ryml::MAP;
-        if (alloc.category) {
-          allocNode["category"] << toStdString(alloc.category->name());
+        if (alloc->category()) {
+          allocNode["category"] << toStdString(alloc->category()->name());
         }
-        allocNode["amount"] << toStdString(QString::number(alloc.amount, 'f', 2));
+        allocNode["amount"] << toStdString(QString::number(alloc->amount(), 'f', 2));
       }
 
       // Only save budget_date if explicitly set (different from operation date)
@@ -390,22 +390,21 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
             // Handle split operations (allocations) vs single category
             if (opNode.has_child("allocations")) {
-              QList<CategoryAllocation> allocations;
+              QList<Allocation*> allocations;
               for (ryml::ConstNodeRef allocNode : opNode["allocations"]) {
                 if (allocNode.has_child("category") && (allocNode.has_child("amount"))) {
                   auto categoryVal = allocNode["category"].val();
                   auto amountVal = allocNode["amount"].val();
-                  CategoryAllocation alloc(
+                  allocations.append(new Allocation(
                       _categoryController.getCategoryByName(QString::fromUtf8(categoryVal.str, categoryVal.len)),
-                      QString::fromUtf8(amountVal.str, amountVal.len).toDouble());
-                  allocations.append(alloc);
+                      QString::fromUtf8(amountVal.str, amountVal.len).toDouble()));
                 }
               }
               op->setAllocations(allocations);
             } else if (opNode.has_child("category")) {  // Support for old format (<= 0.14)
               auto val = opNode["category"].val();
               auto category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
-              op->setAllocations({ CategoryAllocation(category, op->amount()) });
+              op->setAllocations({ new Allocation(category, op->amount()) });
             }
 
             if (opNode.has_child("label")) {
@@ -701,7 +700,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     operation->set_label(label);
     operation->set_details(details);
     if (category) {
-      operation->setAllocations({ CategoryAllocation(category, amount) });
+      operation->setAllocations({ new Allocation(category, amount) });
     }
 
     // Parse budget date (optional - falls back to date if not set)

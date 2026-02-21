@@ -320,17 +320,17 @@ void SetOperationBudgetDateCommand::redo() {
 
 SplitOperationCommand::SplitOperationCommand(Operation& operation,
                                              OperationListModel* operationModel,
-                                             const QList<CategoryAllocation>& newAllocations,
+                                             const QList<Allocation*>& newAllocations,
                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
     _operationModel(operationModel),
-    _oldAllocations(operation.allocationsList()),
+    _oldAllocations(operation.allocations()),
     _newAllocations(newAllocations) {
   if (newAllocations.size() > 1) {
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
   } else if (newAllocations.size() == 1) {
-    auto category = newAllocations.first().category;
+    auto category = newAllocations.first()->category();
     auto name = category ? category->name() : "";
     setText(QObject::tr("Set operation category to \"%1\"").arg(name));
   } else {

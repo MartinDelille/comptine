@@ -13,20 +13,25 @@
 class Account;
 
 // Represents one allocation in a split operation
-struct CategoryAllocation {
-  const Category* category;
-  double amount;
+class Allocation : public QObject {
+  Q_OBJECT
+  QML_ELEMENT
 
-  CategoryAllocation(const Category* c, double a) :
-      category(c), amount(a) {
+  PROPERTY_RW(const Category*, category, nullptr)
+  PROPERTY_RW(double, amount, 0.0)
+
+public:
+  explicit Allocation(const Category* c = nullptr, double a = 0.0, QObject* parent = nullptr) :
+      QObject(parent), _category(c), _amount(a) {
   }
-  bool operator==(const CategoryAllocation& other) const {
+
+  bool operator==(const Allocation& other) const {
     // qFuzzyCompare doesn't work well with zero values, use threshold comparison
     constexpr double epsilon = 0.0001;
-    return category == other.category && std::abs(amount - other.amount) < epsilon;
+    return _category == other._category && std::abs(_amount - other._amount) < epsilon;
   }
 
-  bool operator!=(const CategoryAllocation& other) const { return !(*this == other); }
+  bool operator!=(const Allocation& other) const { return !(*this == other); }
 };
 
 class Operation : public QObject {
@@ -43,7 +48,7 @@ class Operation : public QObject {
   PROPERTY_RW_CUSTOM(QDate, budgetDate, {})
 
   // Split allocations support
-  Q_PROPERTY(QVariantList allocations READ allocations NOTIFY allocationsChanged)
+  Q_PROPERTY(QList<Allocation*> allocations READ allocations NOTIFY allocationsChanged)
   Q_PROPERTY(bool isCategorized READ isCategorized NOTIFY allocationsChanged)
   Q_PROPERTY(QString categoryDisplay READ categoryDisplay NOTIFY allocationsChanged)
 
@@ -53,13 +58,13 @@ public:
             double amount = 0.0,
             const QString& label = {},
             const QString& details = {},
-            const QList<CategoryAllocation>& allocations = {});
+            const QList<Allocation*>& allocations = {});
 
   // Split allocations methods
-  QVariantList allocations() const;
-  QList<CategoryAllocation> allocationsList() const { return _allocations; }
-  void setAllocations(const QList<CategoryAllocation>& allocations);
+  QList<Allocation*> allocations() const { return _allocations; }
+  void setAllocations(const QList<Allocation*>& allocations);
   void clearAllocations();
+  bool sameAllocations(const QList<Allocation*>& otherAllocations) const;
   bool isCategorized() const;
   QString categoryDisplay() const;
 
@@ -70,5 +75,5 @@ signals:
   void allocationsChanged();
 
 private:
-  QList<CategoryAllocation> _allocations;
+  QList<Allocation*> _allocations;
 };
