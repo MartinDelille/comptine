@@ -206,16 +206,20 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>ImportDialog</name>
     <message>
-        <source>Import CSV</source>
-        <translation>Importer CSV</translation>
+        <source>Import CSV Files</source>
+        <translation>Importer des fichiers CSV</translation>
     </message>
     <message>
-        <source>Import into account:</source>
-        <translation>Importer dans le compte :</translation>
+        <source>Import All</source>
+        <translation>Tout importer</translation>
     </message>
     <message>
-        <source>Existing account</source>
-        <translation>Compte existant</translation>
+        <source>Assign each file to an account:</source>
+        <translation>Assigner chaque fichier à un compte :</translation>
+    </message>
+    <message>
+        <source>Use categories from CSV</source>
+        <translation>Utiliser les catégories du CSV</translation>
     </message>
     <message>
         <source>New account</source>
@@ -224,18 +228,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Account name</source>
         <translation>Nom du compte</translation>
-    </message>
-    <message>
-        <source>Account name is required</source>
-        <translation>Le nom du compte est requis</translation>
-    </message>
-    <message>
-        <source>An account with this name already exists</source>
-        <translation>Un compte avec ce nom existe déjà</translation>
-    </message>
-    <message>
-        <source>Use categories from CSV</source>
-        <translation>Utiliser les catégories du CSV</translation>
     </message>
 </context>
 <context>
@@ -357,8 +349,8 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Enregistrer le fichier budget</translation>
     </message>
     <message>
-        <source>Import CSV File</source>
-        <translation>Importer un fichier CSV</translation>
+        <source>Import CSV Files</source>
+        <translation>Importer des fichiers CSV</translation>
     </message>
     <message>
         <source>Delete Operations</source>

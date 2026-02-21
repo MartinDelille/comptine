@@ -63,6 +63,15 @@ Account* BudgetData::accountByName(const QString& name) const {
   return nullptr;
 }
 
+QString BudgetData::suggestedAccountForFile(const QString& filename) const {
+  for (Account* account : _accounts) {
+    if (account->importSources().contains(filename)) {
+      return account->name();
+    }
+  }
+  return {};
+}
+
 int BudgetData::accountIndex(Account* account) const {
   return _accounts.indexOf(account);
 }

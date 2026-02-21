@@ -7,6 +7,7 @@
 #include <QDate>
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 #include <QString>
 #include <QTextStream>
 #include <QUrl>
@@ -133,6 +134,15 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     acc["name"] << toStdString(account->name());
     if (accIdx == currentAccountIndex) {
       acc["current"] << "true";
+    }
+
+    // Save import sources (filenames previously imported into this account)
+    if (!account->importSources().isEmpty()) {
+      ryml::NodeRef sources = acc["import_sources"];
+      sources |= ryml::SEQ;
+      for (const QString& source : account->importSources()) {
+        sources.append_child() << toStdString(source);
+      }
     }
 
     ryml::NodeRef operations = acc["operations"];
@@ -378,6 +388,15 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
             loadedAccountIdx = accIdx;
           }
+        }
+        // Load import sources
+        if (acc.has_child("import_sources")) {
+          QStringList sources;
+          for (ryml::ConstNodeRef sourceNode : acc["import_sources"]) {
+            auto val = sourceNode.val();
+            sources.append(QString::fromUtf8(val.str, val.len));
+          }
+          account->setImportSources(sources);
         }
         // Note: balance field is ignored - balance is calculated from operations
         if (acc.has_child("operations")) {
@@ -783,6 +802,10 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   for (Operation* op : importedOperations) {
     _ruleController.applyRulesToOperation(op);
   }
+
+  // Record import source for future auto-suggestion
+  QString baseFilename = QFileInfo(fileUrl.toLocalFile()).fileName();
+  account->addImportSource(baseFilename);
 
   _budgetData.accountModel()->refresh();
 

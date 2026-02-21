@@ -40,6 +40,7 @@ public:
   QList<Account*> accounts() const;
   Q_INVOKABLE Account* accountAt(int index) const;
   Q_INVOKABLE Account* accountByName(const QString& name) const;
+  Q_INVOKABLE QString suggestedAccountForFile(const QString& filename) const;
   Q_INVOKABLE int accountIndex(Account* account) const;
   Q_INVOKABLE void renameCurrentAccount(const QString& newName);
   void addAccount(Account* account);
