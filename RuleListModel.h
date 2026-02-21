@@ -3,7 +3,7 @@
 #include <QAbstractListModel>
 #include <QObject>
 
-class CategorizationRule;
+class Rule;
 class RuleController;
 
 class RuleListModel : public QAbstractListModel {

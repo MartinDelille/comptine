@@ -9,7 +9,7 @@
 
 class Operation;
 
-class CategorizationRule : public QObject {
+class Rule : public QObject {
   Q_OBJECT
   QML_ELEMENT
 
@@ -20,14 +20,14 @@ class CategorizationRule : public QObject {
   PROPERTY_RW(double, amountFilter, 0)
 
 public:
-  explicit CategorizationRule(QObject* parent = nullptr);
-  CategorizationRule(const Category* category,
-                     const QString& labelPrefix,
-                     QObject* parent = nullptr);
-  CategorizationRule(const Category* category,
-                     const QString& labelPrefix,
-                     double amountFilter,
-                     QObject* parent = nullptr);
+  explicit Rule(QObject* parent = nullptr);
+  Rule(const Category* category,
+       const QString& labelPrefix,
+       QObject* parent = nullptr);
+  Rule(const Category* category,
+       const QString& labelPrefix,
+       double amountFilter,
+       QObject* parent = nullptr);
 
   // Check if this rule matches an operation
   Q_INVOKABLE bool matches(Operation* operation) const;

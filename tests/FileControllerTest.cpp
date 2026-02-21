@@ -9,12 +9,12 @@
 #include "../Account.h"
 #include "../AppSettings.h"
 #include "../BudgetData.h"
-#include "../CategorizationRule.h"
 #include "../Category.h"
 #include "../CategoryController.h"
 #include "../FileController.h"
 #include "../NavigationController.h"
 #include "../Operation.h"
+#include "../Rule.h"
 #include "../RuleController.h"
 #include "../UndoCommands.h"
 
@@ -600,8 +600,8 @@ private slots:
     auto groceries = categoryController->addCategory("Groceries", 300.0);
     auto fuel = categoryController->addCategory("Fuel", 150.0);
 
-    ruleController->addRule(new CategorizationRule(groceries, "SUPERMARKET"));
-    ruleController->addRule(new CategorizationRule(fuel, "PETROL"));
+    ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
+    ruleController->addRule(new Rule(fuel, "PETROL"));
 
     // Save and reload
     QString filePath = tempDir->filePath("rules.comptine");
@@ -610,7 +610,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify rules
-    QList<CategorizationRule*> rules = ruleController->rules();
+    QList<Rule*> rules = ruleController->rules();
     QCOMPARE(rules.size(), 2);
     QCOMPARE(rules[0]->category()->name(), QString("Groceries"));
     QCOMPARE(rules[0]->labelPrefix(), QString("SUPERMARKET"));
@@ -981,7 +981,7 @@ private slots:
   void testImportAppliesCategorizationRules() {
     // Create categorization rule
     auto groceries = categoryController->addCategory("Groceries", 300.0);
-    ruleController->addRule(new CategorizationRule(groceries, "SUPERMARKET"));
+    ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
 
     // Create CSV without category column
     QString csvPath = tempDir->filePath("import_rules.csv");

@@ -1,30 +1,30 @@
-#include "CategorizationRule.h"
+#include "Rule.h"
 
 #include "Operation.h"
 
-CategorizationRule::CategorizationRule(QObject* parent) :
+Rule::Rule(QObject* parent) :
     QObject(parent) {
 }
 
-CategorizationRule::CategorizationRule(const Category* category,
-                                       const QString& labelPrefix,
-                                       QObject* parent) :
+Rule::Rule(const Category* category,
+           const QString& labelPrefix,
+           QObject* parent) :
     QObject(parent) {
   _category = category;
   _labelPrefix = labelPrefix;
 }
 
-CategorizationRule::CategorizationRule(const Category* category,
-                                       const QString& labelPrefix,
-                                       double amountFilter,
-                                       QObject* parent) :
+Rule::Rule(const Category* category,
+           const QString& labelPrefix,
+           double amountFilter,
+           QObject* parent) :
     QObject(parent) {
   _category = category;
   _labelPrefix = labelPrefix;
   _amountFilter = amountFilter;
 }
 
-bool CategorizationRule::matches(Operation* operation) const {
+bool Rule::matches(Operation* operation) const {
   if (!operation) {
     return false;
   }

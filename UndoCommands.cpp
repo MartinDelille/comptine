@@ -2,11 +2,11 @@
 #include "Account.h"
 #include "AccountListModel.h"
 #include "BudgetData.h"
-#include "CategorizationRule.h"
 #include "Category.h"
 #include "CategoryController.h"
 #include "Operation.h"
 #include "OperationListModel.h"
+#include "Rule.h"
 #include "RuleController.h"
 #include "RuleListModel.h"
 
@@ -574,7 +574,7 @@ bool SetLeftoverDecisionCommand::mergeWith(const QUndoCommand* other) {
 
 // AddRuleCommand implementation
 
-AddRuleCommand::AddRuleCommand(RuleController* ruleController, CategorizationRule* rule,
+AddRuleCommand::AddRuleCommand(RuleController* ruleController, Rule* rule,
                                QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
@@ -672,7 +672,7 @@ EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
 
 void EditRuleCommand::undo() {
   if (_ruleController) {
-    CategorizationRule* rule = _ruleController->getRule(_index);
+    Rule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_oldCategory);
       rule->set_labelPrefix(_oldLabelPrefix);
@@ -685,7 +685,7 @@ void EditRuleCommand::undo() {
 
 void EditRuleCommand::redo() {
   if (_ruleController) {
-    CategorizationRule* rule = _ruleController->getRule(_index);
+    Rule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_newCategory);
       rule->set_labelPrefix(_newLabelPrefix);

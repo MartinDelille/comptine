@@ -1,6 +1,6 @@
 #include "RuleListModel.h"
 
-#include "CategorizationRule.h"
+#include "Rule.h"
 #include "RuleController.h"
 
 RuleListModel::RuleListModel(QObject* parent) :
@@ -28,7 +28,7 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
     return QVariant();
   }
 
-  const CategorizationRule* rule = _controller->rules().at(row);
+  const Rule* rule = _controller->rules().at(row);
   if (!rule) {
     return QVariant();
   }

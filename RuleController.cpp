@@ -2,8 +2,8 @@
 
 #include "Account.h"
 #include "BudgetData.h"
-#include "CategorizationRule.h"
 #include "Operation.h"
+#include "Rule.h"
 #include "RuleController.h"
 #include "RuleListModel.h"
 #include "UndoCommands.h"
@@ -24,20 +24,20 @@ int RuleController::ruleCount() const {
   return _rules.size();
 }
 
-CategorizationRule* RuleController::getRule(int index) const {
+Rule* RuleController::getRule(int index) const {
   if (index < 0 || index >= _rules.size()) {
     return nullptr;
   }
   return _rules[index];
 }
 
-void RuleController::addRule(CategorizationRule* rule) {
+void RuleController::addRule(Rule* rule) {
   if (!rule) {
     return;
   }
 
   // Check for duplicate (same prefix + same amount filter)
-  for (const CategorizationRule* existing : _rules) {
+  for (const Rule* existing : _rules) {
     if (existing->labelPrefix().compare(rule->labelPrefix(), Qt::CaseInsensitive) == 0
         && qFuzzyCompare(existing->amountFilter(), rule->amountFilter())) {
       qWarning() << "Rule with same prefix and amount already exists:" << rule->labelPrefix();
@@ -57,7 +57,7 @@ void RuleController::addRule(const Category* category, const QString& labelPrefi
     return;
   }
 
-  auto* rule = new CategorizationRule(category, labelPrefix, amountFilter, this);
+  auto* rule = new Rule(category, labelPrefix, amountFilter, this);
   _undoStack.push(new AddRuleCommand(this, rule));
 }
 
@@ -74,7 +74,7 @@ void RuleController::editRule(int index, const Category* category, const QString
     return;
   }
 
-  CategorizationRule* rule = _rules[index];
+  Rule* rule = _rules[index];
   if (rule->category() == category && rule->labelPrefix() == labelPrefix
       && qFuzzyCompare(rule->amountFilter(), amountFilter)) {
     return;  // No change
@@ -121,7 +121,7 @@ void RuleController::moveRuleDirect(int fromIndex, int toIndex) {
     return;
   }
 
-  CategorizationRule* rule = _rules.takeAt(fromIndex);
+  Rule* rule = _rules.takeAt(fromIndex);
   _rules.insert(toIndex, rule);
 
   _ruleModel->refresh();
@@ -136,12 +136,12 @@ void RuleController::clearRules() {
   emit rulesChanged();
 }
 
-CategorizationRule* RuleController::takeRule(int index) {
+Rule* RuleController::takeRule(int index) {
   if (index < 0 || index >= _rules.size()) {
     return nullptr;
   }
 
-  CategorizationRule* rule = _rules.takeAt(index);
+  Rule* rule = _rules.takeAt(index);
   _ruleModel->refresh();
   emit ruleCountChanged();
   emit rulesChanged();
@@ -153,7 +153,7 @@ const Category* RuleController::matchingCategory(Operation* operation) const {
     return nullptr;
   }
   // Use full matching (label + optional amount) so amount-filtered rules work
-  for (const CategorizationRule* rule : _rules) {
+  for (const Rule* rule : _rules) {
     if (rule->matches(operation)) {
       return rule->category();
     }
@@ -179,7 +179,7 @@ int RuleController::applyRuleToUncategorized(const Category* category, const QSt
   }
 
   // Create a temporary rule for matching
-  CategorizationRule tempRule;
+  Rule tempRule;
   tempRule.set_category(category);
   tempRule.set_labelPrefix(labelPrefix);
   tempRule.set_amountFilter(amountFilter);
