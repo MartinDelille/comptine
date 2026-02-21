@@ -50,6 +50,15 @@ BaseDialog {
         id: ruleEditDialog
     }
 
+    // React to external changes to the operation's allocations
+    // (e.g. when a rule is applied from RuleEditDialog)
+    Connections {
+        target: _operation
+        function onAllocationsChanged() {
+            refreshAllocations();
+        }
+    }
+
     CreateCounterPartDialog {
         id: counterPartDialog
         operation: _operation
@@ -62,11 +71,38 @@ BaseDialog {
         }
     }
 
+    function refreshAllocations() {
+        if (!_operation)
+            return;
+
+        originalAllocations = [];
+        allocationModel.clear();
+
+        if (_operation.allocations && _operation.allocations.length > 0) {
+            for (let i = 0; i < _operation.allocations.length; i++) {
+                let catName = _operation.allocations[i].category ? _operation.allocations[i].category.name : "";
+                let amt = _operation.allocations[i].amount;
+                originalAllocations.push({
+                    category: catName,
+                    amount: amt
+                });
+                allocationModel.append({
+                    category: catName,
+                    amount: amt
+                });
+            }
+        } else {
+            allocationModel.append({
+                category: _operation.category?.name ?? "",
+                amount: _operation.amount || 0
+            });
+        }
+    }
+
     function initialize(operation) {
         _unaffectedCategoryComboBox = null;
 
         _operation = operation;
-        allocationModel.clear();
 
         originalAmount = editedAmount = operation?.amount || 0;
         originalDate = operation?.date || new Date();
@@ -77,31 +113,10 @@ BaseDialog {
         }
         detailsField.text = originalDetails = operation?.details || "";
 
-        if (operation?.allocations && operation.allocations.length > 0) {
-            for (let i = 0; i < operation.allocations.length; i++) {
-                originalAllocations.push({
-                    category: operation.allocations[i].category ? operation.allocations[i].category.name : "",
-                    amount: operation.allocations[i].amount
-                });
-            }
-        }
-
         dateInput.selectedDate = originalDate;
         budgetDateInput.selectedDate = originalBudgetDate;
 
-        if (operation?.allocations && operation.allocations.length > 0) {
-            for (let i = 0; i < operation.allocations.length; i++) {
-                allocationModel.append({
-                    category: operation.allocations[i].category ? operation.allocations[i].category.name : "",
-                    amount: operation.allocations[i].amount
-                });
-            }
-        } else {
-            allocationModel.append({
-                category: operation?.category?.name ?? "",
-                amount: operation?.amount || 0
-            });
-        }
+        refreshAllocations();
         open();
     }
 
@@ -477,9 +492,11 @@ BaseDialog {
                 onClicked: {
                     if (_operation) {
                         ruleEditDialog.isNewRule = true;
-                        ruleEditDialog.suggestedPrefix = _operation.label;
-                        if (_operation.allocations && _operation.allocations.length > 0) {
-                            ruleEditDialog.suggestedCategory = _operation.allocations[0].category ? _operation.allocations[0].category.name : "";
+                        ruleEditDialog.suggestedPrefix = labelField.text.trim();
+                        if (allocationModel.count > 0 && allocationModel.get(0).category !== "") {
+                            ruleEditDialog.suggestedCategory = allocationModel.get(0).category;
+                        } else {
+                            ruleEditDialog.suggestedCategory = "";
                         }
                         ruleEditDialog.open();
                     }

@@ -819,6 +819,10 @@ Importez et gérez vos données bancaires.</translation>
         <source>Rules are matched in order. The first matching rule wins.</source>
         <translation>Les règles sont appliquées dans l&apos;ordre. La première règle correspondante est utilisée.</translation>
     </message>
+    <message>
+        <source>Apply to existing uncategorized operations</source>
+        <translation>Appliquer aux opérations non catégorisées existantes</translation>
+    </message>
 </context>
 <context>
     <name>RulesView</name>
