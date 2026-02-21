@@ -33,6 +33,9 @@
 ## Import
 
 - **CSV Import**: Import operations from CSV files (File > Import CSV)
+- **Multi-File Import**: Select multiple CSV files at once; a batch dialog lets you assign each file to an account
+- **Auto-Suggest Account**: Remembers which account each CSV filename was last imported into, and auto-suggests it next time
+- **Inline Account Creation**: Type a new account name directly in the batch import dialog
 - **Auto-detect Format**: Automatically detects delimiter (comma or semicolon) and encoding
 - **Column Detection**: Automatically maps CSV columns (date, description, amount, category)
 - **French Bank Support**: Handles French number format and common French bank CSV exports

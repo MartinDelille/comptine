@@ -6,6 +6,22 @@ Account::Account(QObject* parent) :
 Account::Account(const QString& name, QObject* parent) :
     QObject(parent), _name(name) {}
 
+QStringList Account::importSources() const {
+  return _importSources;
+}
+
+void Account::addImportSource(const QString& filename) {
+  if (!filename.isEmpty() && !_importSources.contains(filename)) {
+    _importSources.append(filename);
+    emit importSourcesChanged();
+  }
+}
+
+void Account::setImportSources(const QStringList& sources) {
+  _importSources = sources;
+  emit importSourcesChanged();
+}
+
 int Account::currentOperationIndex() const {
   if (!_currentOperation) return -1;
   return _operations.indexOf(_currentOperation);

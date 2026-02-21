@@ -290,11 +290,11 @@ ApplicationWindow {
 
     FileDialog {
         id: csvDialog
-        title: qsTr("Import CSV File")
-        fileMode: FileDialog.OpenFile
+        title: qsTr("Import CSV Files")
+        fileMode: FileDialog.OpenFiles
         nameFilters: ["CSV files (*.csv)", "All files (*)"]
         onAccepted: {
-            importDialog.filePath = selectedFile;
+            importDialog.filePaths = selectedFiles;
             importDialog.open();
         }
     }

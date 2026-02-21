@@ -4,48 +4,77 @@ import QtQuick.Layouts
 
 BaseDialog {
     id: importDialog
-    title: qsTr("Import CSV")
+    title: qsTr("Import CSV Files")
+    acceptButtonText: qsTr("Import All")
+    width: 600
 
-    property string filePath: ""
+    property var filePaths: []
 
-    // Validation for new account name
-    readonly property string newAccountName: newAccountField.text.trim()
-    readonly property bool newAccountNameEmpty: newAccountRadio.checked && newAccountName === ""
-    readonly property bool newAccountNameExists: {
-        if (!newAccountRadio.checked || newAccountName === "")
+    // Model built from filePaths with per-file account info
+    property var fileEntries: []
+
+    okEnabled: {
+        if (fileEntries.length === 0)
             return false;
-        return AppState.data.accountByName(newAccountName) !== null;
+        for (var i = 0; i < fileEntries.length; i++) {
+            if (fileEntries[i].accountName.trim() === "")
+                return false;
+        }
+        return true;
     }
-    okEnabled: existingAccountRadio.checked || (!newAccountNameEmpty && !newAccountNameExists)
 
     onOpened: {
-        // Default to existing account if one is selected, otherwise new account
-        if (AppState.navigation.currentAccountIndex >= 0) {
-            existingAccountRadio.checked = true;
-            accountComboBox.currentIndex = AppState.navigation.currentAccountIndex;
-            accountComboBox.forceActiveFocus();
-        } else {
-            newAccountRadio.checked = true;
-            newAccountField.forceActiveFocus();
+        var entries = [];
+        for (var i = 0; i < filePaths.length; i++) {
+            var url = filePaths[i].toString();
+            var fileName = url.substring(url.lastIndexOf("/") + 1);
+            // Remove query/fragment if present
+            var qIdx = fileName.indexOf("?");
+            if (qIdx >= 0)
+                fileName = fileName.substring(0, qIdx);
+            fileName = decodeURIComponent(fileName);
+
+            // Try auto-suggestion based on stored import sources
+            var suggested = AppState.data.suggestedAccountForFile(fileName);
+            var isNew = true;
+            var existingIndex = -1;
+
+            if (suggested !== "") {
+                // Check if the suggested account exists
+                var account = AppState.data.accountByName(suggested);
+                if (account) {
+                    isNew = false;
+                    existingIndex = AppState.data.accountIndex(account);
+                }
+            } else {
+                // Fall back to filename without extension
+                var dotIdx = fileName.lastIndexOf(".");
+                suggested = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
+                // Check if this name matches an existing account
+                var existing = AppState.data.accountByName(suggested);
+                if (existing) {
+                    isNew = false;
+                    existingIndex = AppState.data.accountIndex(existing);
+                }
+            }
+
+            entries.push({
+                "url": filePaths[i],
+                "fileName": fileName,
+                "accountName": suggested,
+                "isNewAccount": isNew,
+                "existingAccountIndex": existingIndex >= 0 ? existingIndex : 0
+            });
         }
-        // Extract filename without extension as default account name
-        var fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
-        var baseName = fileName.substring(0, fileName.lastIndexOf("."));
-        newAccountField.text = baseName || "";
+        fileEntries = entries;
         useCategoriesCheckBox.checked = false;
     }
 
     onAccepted: {
-        var accountName = "";
-        if (newAccountRadio.checked) {
-            accountName = newAccountName;
-        } else {
-            // Existing account
-            var account = AppState.data.accountAt(accountComboBox.currentIndex);
-            accountName = account ? account.name : "";
+        for (var i = 0; i < fileEntries.length; i++) {
+            var entry = fileEntries[i];
+            AppState.file.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
         }
-
-        AppState.file.importFromCsv(filePath, accountName, useCategoriesCheckBox.checked);
         AppState.navigation.currentTabIndex = 0;
     }
 
@@ -54,56 +83,103 @@ BaseDialog {
         spacing: Theme.spacingNormal
 
         Label {
-            text: qsTr("Import into account:")
+            text: qsTr("Assign each file to an account:")
+            font.pixelSize: Theme.fontSizeNormal
         }
 
-        ButtonGroup {
-            id: accountButtonGroup
-        }
-
-        RadioButton {
-            id: existingAccountRadio
-            text: qsTr("Existing account")
-            ButtonGroup.group: accountButtonGroup
-            enabled: AppState.data.accountCount > 0
-        }
-
-        AccountComboBox {
-            id: accountComboBox
+        ListView {
+            id: fileListView
             Layout.fillWidth: true
-            Layout.leftMargin: Theme.spacingXLarge
-            enabled: existingAccountRadio.checked
-            model: AppState.data.accountModel
-            textRole: "name"
-        }
+            Layout.preferredHeight: Math.min(contentHeight, 300)
+            clip: true
+            model: importDialog.fileEntries.length
+            spacing: Theme.spacingNormal
 
-        RadioButton {
-            id: newAccountRadio
-            text: qsTr("New account")
-            ButtonGroup.group: accountButtonGroup
-        }
+            delegate: ColumnLayout {
+                required property int index
+                width: fileListView.width
+                spacing: Theme.spacingSmall
 
-        TextField {
-            id: newAccountField
-            Layout.fillWidth: true
-            Layout.leftMargin: Theme.spacingXLarge
-            enabled: newAccountRadio.checked
-            placeholderText: qsTr("Account name")
-        }
+                Label {
+                    text: importDialog.fileEntries[index].fileName
+                    font.pixelSize: Theme.fontSizeNormal
+                    font.bold: true
+                    elide: Text.ElideMiddle
+                    Layout.fillWidth: true
+                }
 
-        Label {
-            id: errorLabel
-            Layout.fillWidth: true
-            Layout.leftMargin: Theme.spacingXLarge
-            color: Theme.negative
-            font.pixelSize: Theme.fontSizeSmall
-            visible: newAccountRadio.checked && (newAccountNameEmpty || newAccountNameExists)
-            text: {
-                if (newAccountNameEmpty)
-                    return qsTr("Account name is required");
-                if (newAccountNameExists)
-                    return qsTr("An account with this name already exists");
-                return "";
+                RowLayout {
+                    spacing: Theme.spacingNormal
+                    Layout.fillWidth: true
+
+                    CheckBox {
+                        id: newAccountCheck
+                        text: qsTr("New account")
+                        checked: importDialog.fileEntries[index].isNewAccount
+
+                        onCheckedChanged: {
+                            var entries = importDialog.fileEntries;
+                            if (index < entries.length) {
+                                entries[index].isNewAccount = checked;
+                                if (!checked) {
+                                    // Switching to existing: use combo selection
+                                    var account = AppState.data.accountAt(accountCombo.currentIndex);
+                                    entries[index].accountName = account ? account.name : "";
+                                } else {
+                                    // Switching to new: use text field value
+                                    entries[index].accountName = newAccountField.text.trim();
+                                }
+                                importDialog.fileEntries = entries;
+                            }
+                        }
+                    }
+
+                    AccountComboBox {
+                        id: accountCombo
+                        Layout.fillWidth: true
+                        visible: !newAccountCheck.checked
+
+                        Component.onCompleted: {
+                            var entry = importDialog.fileEntries[index];
+                            if (entry)
+                                currentIndex = entry.existingAccountIndex;
+                        }
+
+                        onCurrentIndexChanged: {
+                            if (!newAccountCheck.checked) {
+                                var entries = importDialog.fileEntries;
+                                if (index < entries.length) {
+                                    var account = AppState.data.accountAt(currentIndex);
+                                    entries[index].accountName = account ? account.name : "";
+                                    importDialog.fileEntries = entries;
+                                }
+                            }
+                        }
+                    }
+
+                    TextField {
+                        id: newAccountField
+                        Layout.fillWidth: true
+                        visible: newAccountCheck.checked
+                        placeholderText: qsTr("Account name")
+
+                        Component.onCompleted: {
+                            var entry = importDialog.fileEntries[index];
+                            if (entry && entry.isNewAccount)
+                                text = entry.accountName;
+                        }
+
+                        onTextChanged: {
+                            if (newAccountCheck.checked) {
+                                var entries = importDialog.fileEntries;
+                                if (index < entries.length) {
+                                    entries[index].accountName = text.trim();
+                                    importDialog.fileEntries = entries;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
