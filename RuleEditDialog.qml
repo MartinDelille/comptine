@@ -11,15 +11,17 @@ BaseDialog {
     property int ruleIndex: -1
     property string originalCategory: ""
     property string originalLabelPrefix: ""
+    property double originalAmountFilter: 0
 
     // For use when creating rule from OperationEditDialog
     property string suggestedPrefix: ""
     property string suggestedCategory: ""
+    property double suggestedAmount: 0
 
     // Category list - refreshed on open
     property var categoryList: []
 
-    okEnabled: categoryCombo.currentText.length > 0 && descriptionPrefixField.text.length > 0
+    okEnabled: categoryCombo.currentText.length > 0 && descriptionPrefixField.text.length > 0 && (!amountCheckBox.checked || amountFilterField.value !== 0)
 
     onOpened: {
         // Refresh category list when dialog opens
@@ -34,11 +36,21 @@ BaseDialog {
                     categoryCombo.currentIndex = catIndex;
                 }
             }
+            // Pre-populate amount filter from suggested amount
+            amountFilterField.value = suggestedAmount;
         } else {
             // Find and select the category
             let catIndex = categoryModel.findCategoryIndex(originalCategory);
             categoryCombo.currentIndex = catIndex;
             descriptionPrefixField.text = originalLabelPrefix;
+            // Restore amount filter state
+            if (originalAmountFilter !== 0) {
+                amountCheckBox.checked = true;
+                amountFilterField.value = originalAmountFilter;
+            } else {
+                amountCheckBox.checked = false;
+                amountFilterField.value = 0;
+            }
         }
         descriptionPrefixField.forceActiveFocus();
     }
@@ -46,17 +58,18 @@ BaseDialog {
     onAccepted: {
         let category = AppState.categories.getCategoryByName(categoryCombo.currentText);
         let prefix = descriptionPrefixField.text.trim();
+        let amount = amountCheckBox.checked ? amountFilterField.value : 0;
 
         if (isNewRule) {
-            AppState.rules.addRule(category, prefix);
+            AppState.rules.addRule(category, prefix, amount);
             if (applyToExistingCheckBox.checked) {
-                let count = AppState.rules.applyRuleToUncategorized(category, prefix);
+                let count = AppState.rules.applyRuleToUncategorized(category, prefix, amount);
                 if (count > 0) {
                     console.log("Applied rule to", count, "uncategorized operation(s)");
                 }
             }
         } else {
-            AppState.rules.editRule(ruleIndex, category, prefix);
+            AppState.rules.editRule(ruleIndex, category, prefix, amount);
         }
     }
 
@@ -104,6 +117,20 @@ BaseDialog {
             Layout.fillWidth: true
             model: root.categoryList
             font.pixelSize: Theme.fontSizeNormal
+        }
+
+        // Optional amount filter
+        CheckBox {
+            id: amountCheckBox
+            text: qsTr("Match specific amount")
+            font.pixelSize: Theme.fontSizeNormal
+        }
+
+        AmountField {
+            id: amountFilterField
+            enabled: amountCheckBox.checked
+            Layout.fillWidth: true
+            value: 0
         }
 
         // Show a hint about how rules work

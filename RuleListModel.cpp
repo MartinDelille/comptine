@@ -41,6 +41,8 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
       break;
     case LabelPrefixRole:
       return rule->labelPrefix();
+    case AmountFilterRole:
+      return rule->amountFilter();
   }
   return QVariant();
 }
@@ -49,6 +51,7 @@ QHash<int, QByteArray> RuleListModel::roleNames() const {
   QHash<int, QByteArray> roles;
   roles[CategoryRole] = "category";
   roles[LabelPrefixRole] = "labelPrefix";
+  roles[AmountFilterRole] = "amountFilter";
   return roles;
 }
 

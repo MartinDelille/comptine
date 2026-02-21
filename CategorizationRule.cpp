@@ -14,17 +14,32 @@ CategorizationRule::CategorizationRule(const Category* category,
   _labelPrefix = labelPrefix;
 }
 
+CategorizationRule::CategorizationRule(const Category* category,
+                                       const QString& labelPrefix,
+                                       double amountFilter,
+                                       QObject* parent) :
+    QObject(parent) {
+  _category = category;
+  _labelPrefix = labelPrefix;
+  _amountFilter = amountFilter;
+}
+
 bool CategorizationRule::matches(Operation* operation) const {
   if (!operation) {
     return false;
   }
-  return matchesLabel(operation->label());
-}
-
-bool CategorizationRule::matchesLabel(const QString& label) const {
   if (_labelPrefix.isEmpty()) {
     return false;
   }
   // Case-insensitive prefix match
-  return label.startsWith(_labelPrefix, Qt::CaseInsensitive);
+  if (!operation->label().startsWith(_labelPrefix, Qt::CaseInsensitive)) {
+    return false;
+  }
+  // If amount filter is set, check it matches
+  if (_amountFilter != 0) {
+    if (!qFuzzyCompare(_amountFilter, operation->amount())) {
+      return false;
+    }
+  }
+  return true;
 }

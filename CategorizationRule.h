@@ -16,15 +16,19 @@ class CategorizationRule : public QObject {
   PROPERTY_RW(const Category*, category, nullptr)
   PROPERTY_RW(QString, labelPrefix, QString())
 
+  // Optional amount filter (0 means no filter)
+  PROPERTY_RW(double, amountFilter, 0)
+
 public:
   explicit CategorizationRule(QObject* parent = nullptr);
   CategorizationRule(const Category* category,
                      const QString& labelPrefix,
                      QObject* parent = nullptr);
+  CategorizationRule(const Category* category,
+                     const QString& labelPrefix,
+                     double amountFilter,
+                     QObject* parent = nullptr);
 
   // Check if this rule matches an operation
   Q_INVOKABLE bool matches(Operation* operation) const;
-
-  // Check if this rule matches a label string (case-insensitive)
-  Q_INVOKABLE bool matchesLabel(const QString& label) const;
 };
