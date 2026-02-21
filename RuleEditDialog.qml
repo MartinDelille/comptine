@@ -49,6 +49,12 @@ BaseDialog {
 
         if (isNewRule) {
             AppState.rules.addRule(category, prefix);
+            if (applyToExistingCheckBox.checked) {
+                let count = AppState.rules.applyRuleToUncategorized(category, prefix);
+                if (count > 0) {
+                    console.log("Applied rule to", count, "uncategorized operation(s)");
+                }
+            }
         } else {
             AppState.rules.editRule(ruleIndex, category, prefix);
         }
@@ -107,6 +113,15 @@ BaseDialog {
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.textSecondary
             wrapMode: Text.WordWrap
+        }
+
+        // Option to apply the new rule to existing uncategorized operations
+        CheckBox {
+            id: applyToExistingCheckBox
+            visible: root.isNewRule
+            checked: true
+            text: qsTr("Apply to existing uncategorized operations")
+            font.pixelSize: Theme.fontSizeSmall
         }
     }
 }

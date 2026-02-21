@@ -173,6 +173,35 @@ int RuleController::applyRulesToOperation(Operation* operation) {
   return 0;
 }
 
+int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelPrefix) {
+  if (!category || labelPrefix.isEmpty()) {
+    return 0;
+  }
+
+  QUndoCommand* macroCommand = new QUndoCommand();
+  int count = 0;
+
+  for (Account* account : _budgetData.accounts()) {
+    for (Operation* op : account->operations()) {
+      if (!op->isCategorized() && op->label().startsWith(labelPrefix, Qt::CaseInsensitive)) {
+        QList<Allocation*> newAllocations;
+        newAllocations.append(new Allocation(category, op->amount()));
+        new SplitOperationCommand(*op, _budgetData.operationModel(),
+                                  newAllocations, macroCommand);
+        count++;
+      }
+    }
+  }
+
+  if (count > 0) {
+    _undoStack.push(macroCommand);
+  } else {
+    delete macroCommand;
+  }
+
+  return count;
+}
+
 Operation* RuleController::nextUncategorizedOperation(Operation* current) const {
   bool foundCurrent = current == nullptr;
   for (Account* account : _budgetData.accounts()) {

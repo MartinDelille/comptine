@@ -49,6 +49,9 @@ public:
   // Apply rules to operations (used during import)
   int applyRulesToOperation(Operation* operation);
 
+  // Apply a specific rule to all uncategorized operations (used after creating a new rule)
+  Q_INVOKABLE int applyRuleToUncategorized(const Category* category, const QString& labelPrefix);
+
   // Navigation between uncategorized operations (for OperationEditDialog)
   Q_INVOKABLE Operation* nextUncategorizedOperation(Operation* current) const;
   Q_INVOKABLE Operation* previousUncategorizedOperation(Operation* current) const;

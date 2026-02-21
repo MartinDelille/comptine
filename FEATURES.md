@@ -41,6 +41,15 @@
 - **Use Categories Option**: Optionally import categories from CSV (new categories auto-created with budget limit 0)
 - **Post-Import Selection**: All imported operations are automatically selected after import
 
+## Categorization Rules
+
+- **Rule-Based Categorization**: Define rules that automatically categorize operations based on label prefix matching
+- **Priority Order**: Rules are matched in order; the first matching rule wins
+- **Add/Edit/Delete Rules**: Manage rules via the Categorization Rules dialog (Edit > Categorization Rules)
+- **Reorder Rules**: Drag rules up/down to change priority
+- **Apply to Existing**: When creating a new rule, optionally apply it to all existing uncategorized operations that match
+- **Auto-Apply on Import**: Rules are automatically applied to newly imported operations
+
 ## Budget View
 
 - **Monthly Budget**: View budget summary by month
