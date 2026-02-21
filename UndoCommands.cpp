@@ -656,6 +656,7 @@ void RemoveRuleCommand::redo() {
 EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
                                  const Category* oldCategory, const Category* newCategory,
                                  const QString& oldLabelPrefix, const QString& newLabelPrefix,
+                                 double oldAmountFilter, double newAmountFilter,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
@@ -663,7 +664,9 @@ EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
     _oldCategory(oldCategory),
     _newCategory(newCategory),
     _oldLabelPrefix(oldLabelPrefix),
-    _newLabelPrefix(newLabelPrefix) {
+    _newLabelPrefix(newLabelPrefix),
+    _oldAmountFilter(oldAmountFilter),
+    _newAmountFilter(newAmountFilter) {
   setText(QObject::tr("Edit rule for \"%1\"").arg(newLabelPrefix));
 }
 
@@ -673,6 +676,7 @@ void EditRuleCommand::undo() {
     if (rule) {
       rule->set_category(_oldCategory);
       rule->set_labelPrefix(_oldLabelPrefix);
+      rule->set_amountFilter(_oldAmountFilter);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();
     }
@@ -685,6 +689,7 @@ void EditRuleCommand::redo() {
     if (rule) {
       rule->set_category(_newCategory);
       rule->set_labelPrefix(_newLabelPrefix);
+      rule->set_amountFilter(_newAmountFilter);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();
     }

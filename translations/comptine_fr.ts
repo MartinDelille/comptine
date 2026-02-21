@@ -823,6 +823,10 @@ Importez et gérez vos données bancaires.</translation>
         <source>Apply to existing uncategorized operations</source>
         <translation>Appliquer aux opérations non catégorisées existantes</translation>
     </message>
+    <message>
+        <source>Match specific amount</source>
+        <translation>Correspondre à un montant spécifique</translation>
+    </message>
 </context>
 <context>
     <name>RulesView</name>
@@ -845,6 +849,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Assign to: %1</source>
         <translation>Assigner à : %1</translation>
+    </message>
+    <message>
+        <source>Assign to: %1 (amount: %2)</source>
+        <translation>Assigner à : %1 (montant : %2)</translation>
     </message>
     <message>
         <source>Move up (higher priority)</source>

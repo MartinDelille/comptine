@@ -342,6 +342,7 @@ public:
   EditRuleCommand(RuleController* ruleController, int index,
                   const Category* oldCategory, const Category* newCategory,
                   const QString& oldLabelPrefix, const QString& newLabelPrefix,
+                  double oldAmountFilter, double newAmountFilter,
                   QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -354,6 +355,8 @@ private:
   const Category* _newCategory;
   QString _oldLabelPrefix;
   QString _newLabelPrefix;
+  double _oldAmountFilter;
+  double _newAmountFilter;
 };
 
 // Command for moving a categorization rule (reordering priority)

@@ -1,11 +1,10 @@
-#include "RuleController.h"
-
 #include <QUndoStack>
 
 #include "Account.h"
 #include "BudgetData.h"
 #include "CategorizationRule.h"
 #include "Operation.h"
+#include "RuleController.h"
 #include "RuleListModel.h"
 #include "UndoCommands.h"
 
@@ -37,10 +36,11 @@ void RuleController::addRule(CategorizationRule* rule) {
     return;
   }
 
-  // Check for duplicate prefix (case-insensitive)
+  // Check for duplicate (same prefix + same amount filter)
   for (const CategorizationRule* existing : _rules) {
-    if (existing->labelPrefix().compare(rule->labelPrefix(), Qt::CaseInsensitive) == 0) {
-      qWarning() << "Rule with prefix already exists:" << rule->labelPrefix();
+    if (existing->labelPrefix().compare(rule->labelPrefix(), Qt::CaseInsensitive) == 0
+        && qFuzzyCompare(existing->amountFilter(), rule->amountFilter())) {
+      qWarning() << "Rule with same prefix and amount already exists:" << rule->labelPrefix();
       return;
     }
   }
@@ -52,12 +52,12 @@ void RuleController::addRule(CategorizationRule* rule) {
   emit rulesChanged();
 }
 
-void RuleController::addRule(const Category* category, const QString& labelPrefix) {
+void RuleController::addRule(const Category* category, const QString& labelPrefix, double amountFilter) {
   if (category == nullptr || labelPrefix.isEmpty()) {
     return;
   }
 
-  auto* rule = new CategorizationRule(category, labelPrefix, this);
+  auto* rule = new CategorizationRule(category, labelPrefix, amountFilter, this);
   _undoStack.push(new AddRuleCommand(this, rule));
 }
 
@@ -69,27 +69,31 @@ void RuleController::removeRule(int index) {
   _undoStack.push(new RemoveRuleCommand(this, index));
 }
 
-void RuleController::editRule(int index, const Category* category, const QString& labelPrefix) {
+void RuleController::editRule(int index, const Category* category, const QString& labelPrefix, double amountFilter) {
   if (index < 0 || index >= _rules.size()) {
     return;
   }
 
   CategorizationRule* rule = _rules[index];
-  if (rule->category() == category && rule->labelPrefix() == labelPrefix) {
+  if (rule->category() == category && rule->labelPrefix() == labelPrefix
+      && qFuzzyCompare(rule->amountFilter(), amountFilter)) {
     return;  // No change
   }
 
-  // Check for duplicate prefix (case-insensitive), excluding the rule being edited
+  // Check for duplicate (same prefix + same amount filter), excluding the rule being edited
   for (int i = 0; i < _rules.size(); i++) {
-    if (i != index && _rules[i]->labelPrefix().compare(labelPrefix, Qt::CaseInsensitive) == 0) {
-      qWarning() << "Rule with prefix already exists:" << labelPrefix;
+    if (i != index
+        && _rules[i]->labelPrefix().compare(labelPrefix, Qt::CaseInsensitive) == 0
+        && qFuzzyCompare(_rules[i]->amountFilter(), amountFilter)) {
+      qWarning() << "Rule with same prefix and amount already exists:" << labelPrefix;
       return;
     }
   }
 
   _undoStack.push(new EditRuleCommand(this, index,
                                       rule->category(), category,
-                                      rule->labelPrefix(), labelPrefix));
+                                      rule->labelPrefix(), labelPrefix,
+                                      rule->amountFilter(), amountFilter));
 }
 
 void RuleController::moveRule(int fromIndex, int toIndex) {
@@ -148,13 +152,9 @@ const Category* RuleController::matchingCategory(Operation* operation) const {
   if (!operation) {
     return nullptr;
   }
-  return matchingCategoryForLabel(operation->label());
-}
-
-const Category* RuleController::matchingCategoryForLabel(const QString& label) const {
-  // Rules are in priority order (first match wins)
+  // Use full matching (label + optional amount) so amount-filtered rules work
   for (const CategorizationRule* rule : _rules) {
-    if (rule->matchesLabel(label)) {
+    if (rule->matches(operation)) {
       return rule->category();
     }
   }
@@ -173,17 +173,23 @@ int RuleController::applyRulesToOperation(Operation* operation) {
   return 0;
 }
 
-int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelPrefix) {
+int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelPrefix, double amountFilter) {
   if (!category || labelPrefix.isEmpty()) {
     return 0;
   }
+
+  // Create a temporary rule for matching
+  CategorizationRule tempRule;
+  tempRule.set_category(category);
+  tempRule.set_labelPrefix(labelPrefix);
+  tempRule.set_amountFilter(amountFilter);
 
   QUndoCommand* macroCommand = new QUndoCommand();
   int count = 0;
 
   for (Account* account : _budgetData.accounts()) {
     for (Operation* op : account->operations()) {
-      if (!op->isCategorized() && op->label().startsWith(labelPrefix, Qt::CaseInsensitive)) {
+      if (!op->isCategorized() && tempRule.matches(op)) {
         QList<Allocation*> newAllocations;
         newAllocations.append(new Allocation(category, op->amount()));
         new SplitOperationCommand(*op, _budgetData.operationModel(),

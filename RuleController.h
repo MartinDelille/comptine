@@ -32,9 +32,9 @@ public:
 
   // Rule management
   void addRule(CategorizationRule* rule);
-  Q_INVOKABLE void addRule(const Category* category, const QString& labelPrefix);
+  Q_INVOKABLE void addRule(const Category* category, const QString& labelPrefix, double amountFilter = 0);
   Q_INVOKABLE void removeRule(int index);
-  Q_INVOKABLE void editRule(int index, const Category* category, const QString& labelPrefix);
+  Q_INVOKABLE void editRule(int index, const Category* category, const QString& labelPrefix, double amountFilter = 0);
   Q_INVOKABLE void moveRule(int fromIndex, int toIndex);
   void clearRules();
 
@@ -44,13 +44,12 @@ public:
 
   // Matching operations
   Q_INVOKABLE const Category* matchingCategory(Operation* operation) const;
-  Q_INVOKABLE const Category* matchingCategoryForLabel(const QString& label) const;
 
   // Apply rules to operations (used during import)
   int applyRulesToOperation(Operation* operation);
 
   // Apply a specific rule to all uncategorized operations (used after creating a new rule)
-  Q_INVOKABLE int applyRuleToUncategorized(const Category* category, const QString& labelPrefix);
+  Q_INVOKABLE int applyRuleToUncategorized(const Category* category, const QString& labelPrefix, double amountFilter = 0);
 
   // Navigation between uncategorized operations (for OperationEditDialog)
   Q_INVOKABLE Operation* nextUncategorizedOperation(Operation* current) const;

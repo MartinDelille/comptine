@@ -493,6 +493,7 @@ BaseDialog {
                     if (_operation) {
                         ruleEditDialog.isNewRule = true;
                         ruleEditDialog.suggestedPrefix = labelField.text.trim();
+                        ruleEditDialog.suggestedAmount = editedAmount;
                         if (allocationModel.count > 0 && allocationModel.get(0).category !== "") {
                             ruleEditDialog.suggestedCategory = allocationModel.get(0).category;
                         } else {

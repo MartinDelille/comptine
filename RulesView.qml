@@ -64,6 +64,7 @@ BaseDialog {
                     required property int index
                     required property string category
                     required property string labelPrefix
+                    required property double amountFilter
 
                     width: ListView.view.width
                     height: contentRow.implicitHeight + Theme.spacingNormal * 2
@@ -82,6 +83,7 @@ BaseDialog {
                             ruleEditDialog.ruleIndex = index;
                             ruleEditDialog.originalCategory = category;
                             ruleEditDialog.originalLabelPrefix = labelPrefix;
+                            ruleEditDialog.originalAmountFilter = amountFilter;
                             ruleEditDialog.open();
                         }
                     }
@@ -115,7 +117,7 @@ BaseDialog {
                             }
 
                             Label {
-                                text: qsTr("Assign to: %1").arg(category)
+                                text: amountFilter !== 0 ? qsTr("Assign to: %1 (amount: %2)").arg(category).arg(Theme.formatAmount(amountFilter)) : qsTr("Assign to: %1").arg(category)
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.textSecondary
                             }
@@ -156,6 +158,7 @@ BaseDialog {
                                 ruleEditDialog.ruleIndex = index;
                                 ruleEditDialog.originalCategory = category;
                                 ruleEditDialog.originalLabelPrefix = labelPrefix;
+                                ruleEditDialog.originalAmountFilter = amountFilter;
                                 ruleEditDialog.open();
                             }
                             ToolTip.visible: hovered

@@ -180,6 +180,9 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       if (rule->category()) {
         ruleNode["category"] << toStdString(rule->category()->name());
         ruleNode["label_prefix"] << toStdString(rule->labelPrefix());
+        if (rule->amountFilter() != 0) {
+          ruleNode["amount"] << rule->amountFilter();
+        }
       }
     }
   }
@@ -458,7 +461,14 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
 
         if (category && !labelPrefix.isEmpty()) {
-          auto* rule = new CategorizationRule(category, labelPrefix);
+          CategorizationRule* rule;
+          if (ruleNode.has_child("amount")) {
+            double amount;
+            ruleNode["amount"] >> amount;
+            rule = new CategorizationRule(category, labelPrefix, amount);
+          } else {
+            rule = new CategorizationRule(category, labelPrefix);
+          }
           _ruleController.addRule(rule);
         }
       }

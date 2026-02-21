@@ -13,6 +13,7 @@ public:
   enum Roles {
     CategoryRole = Qt::UserRole + 1,
     LabelPrefixRole,
+    AmountFilterRole,
   };
 
   explicit RuleListModel(QObject* parent = nullptr);
