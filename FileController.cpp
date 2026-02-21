@@ -16,7 +16,6 @@
 #include "Account.h"
 #include "AppSettings.h"
 #include "BudgetData.h"
-#include "CategorizationRule.h"
 #include "Category.h"
 #include "CategoryController.h"
 #include "CsvParser.h"
@@ -24,6 +23,7 @@
 #include "FileCoordinator.h"
 #include "NavigationController.h"
 #include "Operation.h"
+#include "Rule.h"
 #include "RuleController.h"
 #include "UndoCommands.h"
 
@@ -170,11 +170,11 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   }
 
   // Write categorization rules
-  QList<CategorizationRule*> rulesList = _ruleController.rules();
+  QList<Rule*> rulesList = _ruleController.rules();
   if (!rulesList.isEmpty()) {
     ryml::NodeRef rules = root["rules"];
     rules |= ryml::SEQ;
-    for (const CategorizationRule* rule : rulesList) {
+    for (const Rule* rule : rulesList) {
       ryml::NodeRef ruleNode = rules.append_child();
       ruleNode |= ryml::MAP;
       if (rule->category()) {
@@ -461,13 +461,13 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
 
         if (category && !labelPrefix.isEmpty()) {
-          CategorizationRule* rule;
+          Rule* rule;
           if (ruleNode.has_child("amount")) {
             double amount;
             ruleNode["amount"] >> amount;
-            rule = new CategorizationRule(category, labelPrefix, amount);
+            rule = new Rule(category, labelPrefix, amount);
           } else {
-            rule = new CategorizationRule(category, labelPrefix);
+            rule = new Rule(category, labelPrefix);
           }
           _ruleController.addRule(rule);
         }

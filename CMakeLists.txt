@@ -113,13 +113,13 @@ set(LIBCOMPTINE_SOURCES
   Account.cpp Account.h
   Category.cpp Category.h
   BudgetData.cpp BudgetData.h
-  CategorizationRule.cpp CategorizationRule.h
   OperationListModel.cpp OperationListModel.h
   AccountListModel.cpp AccountListModel.h
   RuleListModel.cpp RuleListModel.h
   CategoryController.cpp CategoryController.h
   ClipboardController.cpp ClipboardController.h
   NavigationController.cpp NavigationController.h
+  Rule.cpp Rule.h
   RuleController.cpp RuleController.h
   FileController.cpp FileController.h
   TranslationManager.cpp TranslationManager.h

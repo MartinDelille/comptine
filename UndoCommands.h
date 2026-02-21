@@ -14,7 +14,7 @@ class Account;
 class AccountListModel;
 class BudgetData;
 class Category;
-class CategorizationRule;
+class Rule;
 class CategoryController;
 class OperationListModel;
 class RuleController;
@@ -306,7 +306,7 @@ private:
 // Command for adding a categorization rule
 class AddRuleCommand : public QUndoCommand {
 public:
-  AddRuleCommand(RuleController* ruleController, CategorizationRule* rule,
+  AddRuleCommand(RuleController* ruleController, Rule* rule,
                  QUndoCommand* parent = nullptr);
   ~AddRuleCommand();
 
@@ -315,7 +315,7 @@ public:
 
 private:
   RuleController* _ruleController;
-  CategorizationRule* _rule;
+  Rule* _rule;
   bool _ownsRule;
 };
 
@@ -331,7 +331,7 @@ public:
 
 private:
   RuleController* _ruleController;
-  CategorizationRule* _rule;
+  Rule* _rule;
   int _index;
   bool _ownsRule;
 };

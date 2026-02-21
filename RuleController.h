@@ -8,7 +8,7 @@
 #include "RuleListModel.h"
 
 class BudgetData;
-class CategorizationRule;
+class Rule;
 class Operation;
 class QUndoStack;
 
@@ -26,12 +26,12 @@ public:
   ~RuleController();
 
   // Rule access
-  QList<CategorizationRule*> rules() const { return _rules; }
-  Q_INVOKABLE CategorizationRule* getRule(int index) const;
+  QList<Rule*> rules() const { return _rules; }
+  Q_INVOKABLE Rule* getRule(int index) const;
   RuleListModel* ruleModel() { return _ruleModel; }
 
   // Rule management
-  void addRule(CategorizationRule* rule);
+  void addRule(Rule* rule);
   Q_INVOKABLE void addRule(const Category* category, const QString& labelPrefix, double amountFilter = 0);
   Q_INVOKABLE void removeRule(int index);
   Q_INVOKABLE void editRule(int index, const Category* category, const QString& labelPrefix, double amountFilter = 0);
@@ -39,7 +39,7 @@ public:
   void clearRules();
 
   // For undo/redo support
-  CategorizationRule* takeRule(int index);
+  Rule* takeRule(int index);
   void moveRuleDirect(int fromIndex, int toIndex);
 
   // Matching operations
@@ -59,7 +59,7 @@ signals:
   void rulesChanged();
 
 private:
-  QList<CategorizationRule*> _rules;
+  QList<Rule*> _rules;
   RuleListModel* _ruleModel = nullptr;
   BudgetData& _budgetData;
   QUndoStack& _undoStack;
