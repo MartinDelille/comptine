@@ -136,20 +136,18 @@ void BudgetData::clearAccounts() {
   emit accountCountChanged();
 }
 
-void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QVariantList& allocations) {
+Allocation* BudgetData::createAllocation(const QString& categoryName, double amount) {
+  const Category* category = _categoryController ? _categoryController->getCategoryByName(categoryName) : nullptr;
+  return new Allocation(category, amount);
+}
+
+void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations) {
   if (!_operationModel) return;
   if (!_navController) return;
   Account* account = accountAt(_navController->currentAccountIndex());
   if (!account) return;
 
-  QList<Allocation*> allocationList;
-  for (auto alloc : allocations) {
-    QVariantMap m = alloc.toMap();
-    allocationList.append(new Allocation(_categoryController->getCategoryByName(m["category"].toString()),
-                                         m["amount"].toDouble()));
-  }
-
-  auto operation = new Operation(account, date, amount, label, details, allocationList);
+  auto operation = new Operation(account, date, amount, label, details, allocations);
   _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
 }
 
@@ -203,24 +201,15 @@ void BudgetData::setOperationDetails(Operation* operation, const QString& newDet
   }
 }
 
-void BudgetData::setOperationAllocations(Operation* operation, const QVariantList& allocations) {
+void BudgetData::setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations) {
   if (!operation) return;
 
-  // Convert QVariantList to QList<Allocation>
-  QList<Allocation*> newAllocations;
-  for (const QVariant& v : allocations) {
-    QVariantMap m = v.toMap();
-    newAllocations.append(new Allocation(
-        _categoryController->getCategoryByName(m["category"].toString()),
-        m["amount"].toDouble()));
-  }
-
   // Only create command if something changed
-  if (!operation->sameAllocations(newAllocations)) {
+  if (!operation->sameAllocations(allocations)) {
     _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
-                                              newAllocations));
+                                              allocations));
   } else {
-    qDeleteAll(newAllocations);
+    qDeleteAll(allocations);
   }
 }
 
