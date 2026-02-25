@@ -149,10 +149,7 @@ BaseDialog {
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
             if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push({
-                    category: item.category,
-                    amount: item.amount
-                });
+                allocations.push(AppState.data.createAllocation(item.category, item.amount));
             }
         }
 

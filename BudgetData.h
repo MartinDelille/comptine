@@ -4,8 +4,6 @@
 #include <QObject>
 #include <QString>
 #include <QUndoStack>
-#include <QVariant>
-
 #include "Account.h"
 #include "AccountListModel.h"
 #include "OperationListModel.h"
@@ -49,14 +47,17 @@ public:
   void selectAccount(int index);           // Select account by index (updates navigation)
   void clearAccounts();
 
+  // Allocation factory (for QML)
+  Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
+
   // Operation editing
-  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QVariantList& allocations);
+  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations);
   Q_INVOKABLE void setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate);
   Q_INVOKABLE void setOperationAmount(Operation* operation, double newAmount);
   Q_INVOKABLE void setOperationDate(Operation* operation, const QDate& newDate);
   Q_INVOKABLE void setOperationLabel(Operation* operation, const QString& newLabel);
   Q_INVOKABLE void setOperationDetails(Operation* operation, const QString& newDetails);
-  Q_INVOKABLE void setOperationAllocations(Operation* operation, const QVariantList& allocations);
+  Q_INVOKABLE void setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations);
   Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount);
   Q_INVOKABLE void deleteSelectedOperations();
   Q_INVOKABLE void deleteCategory(Category* category);
