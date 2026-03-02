@@ -7,7 +7,8 @@ Use exact commands below to configure, build, run, and clean the project. If you
 ### MacOS
 
 - The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
-- **Configure**: `qt-cmake -B build/agent -S . -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
+- **Install dependencies**: `conan install . --output-folder=build/agent --build=missing`
+- **Configure**: `qt-cmake -B build/agent -S . --preset=conan-release`
 - **Build**: `cmake --build build/agent`
 - **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine`
 - **Clean**: `rm -rf build/agent` (run it only if you need a full clean)

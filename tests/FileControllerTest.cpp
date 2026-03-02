@@ -689,7 +689,7 @@ private slots:
     QVERIFY(fileController->errorMessage().contains("empty"));
   }
 
-  // NOTE: Commented out because ryml aborts on truly invalid YAML
+  // NOTE: Commented out because yaml-cpp throws on truly invalid YAML
   // In production, FileCoordinator validation should catch these earlier
   /*
   void testLoadFromInvalidYaml() {
@@ -705,7 +705,7 @@ private slots:
 
     // Should handle parsing error gracefully
     bool loaded = fileController->loadFromYamlFile(filePath);
-    // ryml may be lenient, so either it fails or succeeds but with error logged
+    // yaml-cpp may be lenient, so either it fails or succeeds but with error logged
     // We just verify it doesn't crash
     QVERIFY(loaded == loaded);  // Always pass - just checking no crash
   }
