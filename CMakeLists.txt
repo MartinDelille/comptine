@@ -93,16 +93,8 @@ configure_file(
 )
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-# Fetch rapidyaml (static library, no install)
-include(FetchContent)
-set(RYML_INSTALL OFF CACHE BOOL "" FORCE)
-FetchContent_Declare(
-    rapidyaml
-    GIT_REPOSITORY https://github.com/biojppm/rapidyaml.git
-    GIT_TAG v0.7.2
-    GIT_SHALLOW TRUE
-)
-FetchContent_MakeAvailable(rapidyaml)
+# yaml-cpp (managed by Conan)
+find_package(yaml-cpp REQUIRED)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools Network)
 
@@ -144,7 +136,7 @@ qt_add_qml_module(libComptine
 # Link Qt dependencies
 target_link_libraries(
     libComptine
-    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Network ryml::ryml
+    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Network yaml-cpp::yaml-cpp
 )
 
 # Include generated Version.h
@@ -346,7 +338,12 @@ endif()
 
 target_link_libraries(
     Comptine
-    PRIVATE Qt6::Quick Qt6::Network ryml::ryml libComptine libComptineplugin
+    PRIVATE
+        Qt6::Quick
+        Qt6::Network
+        yaml-cpp::yaml-cpp
+        libComptine
+        libComptineplugin
 )
 
 # Platform-specific file coordination for cloud storage support (Dropbox,

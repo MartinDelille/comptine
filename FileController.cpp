@@ -1,8 +1,4 @@
-// Must be included before Qt headers to avoid 'emit' keyword conflict
-#define RYML_NO_DEFAULT_CALLBACKS
-#include <c4/format.hpp>
-#include <ryml.hpp>
-#include <ryml_std.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <QDate>
 #include <QDebug>
@@ -11,7 +7,6 @@
 #include <QString>
 #include <QTextStream>
 #include <QUrl>
-#include <ryml.hpp>
 #include <string>
 
 #include "Account.h"
@@ -48,7 +43,7 @@ bool FileController::hasUnsavedChanges() const {
   return !_undoStack.isClean();
 }
 
-// Helper to convert QString to std::string for ryml
+// Helper to convert QString to std::string for yaml-cpp
 static std::string toStdString(const QString& s) {
   return s.toStdString();
 }
@@ -67,9 +62,8 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   // Clear any previous error
   set_errorMessage({});
 
-  ryml::Tree tree;
-  ryml::NodeRef root = tree.rootref();
-  root |= ryml::MAP;
+  YAML::Emitter out;
+  out << YAML::BeginMap;
 
   // Get navigation state from NavigationController
   int currentTabIndex = _navController.currentTabIndex();
@@ -77,128 +71,130 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   int currentCategoryIndex = _navController.currentCategoryIndex();
 
   // Write state section
-  ryml::NodeRef state = root["state"];
-  state |= ryml::MAP;
-  state["currentTab"] << currentTabIndex;
-  state["budgetDate"] << _navController.budgetDate().toString("MMMM yyyy").toStdString();
+  out << YAML::Key << "state" << YAML::Value << YAML::BeginMap;
+  out << YAML::Key << "currentTab" << YAML::Value << currentTabIndex;
+  out << YAML::Key << "budgetDate" << YAML::Value << toStdString(_navController.budgetDate().toString("MMMM yyyy"));
+  out << YAML::EndMap;
 
   // Write categories
-  ryml::NodeRef categories = root["categories"];
-  categories |= ryml::SEQ;
+  out << YAML::Key << "categories" << YAML::Value << YAML::BeginSeq;
   QList<Category*> cats = _categoryController.categories();
   for (int i = 0; i < cats.size(); i++) {
     const Category* category = cats[i];
-    ryml::NodeRef cat = categories.append_child();
-    cat |= ryml::MAP;
-    cat["name"] << toStdString(category->name());
-    cat["budget_limit"] << toStdString(QString::number(category->budgetLimit(), 'f', 2));
+    out << YAML::BeginMap;
+    out << YAML::Key << "name" << YAML::Value << toStdString(category->name());
+    out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(category->budgetLimit(), 'f', 2));
     if (i == currentCategoryIndex) {
-      cat["current"] << "true";
+      out << YAML::Key << "current" << YAML::Value << "true";
     }
 
     // Write month history (leftover decisions + budget limit overrides)
     QMap<YearMonth, MonthRecord> history = category->allMonthHistory();
     if (!history.isEmpty()) {
-      ryml::NodeRef historyNode = cat["month_history"];
-      historyNode |= ryml::SEQ;
+      out << YAML::Key << "month_history" << YAML::Value << YAML::BeginSeq;
       for (auto it = history.constBegin(); it != history.constEnd(); ++it) {
         const YearMonth& ym = it.key();
         const MonthRecord& record = it.value();
         if (!record.isEmpty()) {
-          ryml::NodeRef recordNode = historyNode.append_child();
-          recordNode |= ryml::MAP;
-          recordNode["year"] << ym.year;
-          recordNode["month"] << ym.month;
+          out << YAML::BeginMap;
+          out << YAML::Key << "year" << YAML::Value << ym.year;
+          out << YAML::Key << "month" << YAML::Value << ym.month;
           if (record.budgetLimit.has_value()) {
-            recordNode["budget_limit"] << toStdString(QString::number(record.budgetLimit.value(), 'f', 2));
+            out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(record.budgetLimit.value(), 'f', 2));
           }
           if (record.saveAmount != 0.0) {
-            recordNode["save_amount"] << toStdString(QString::number(record.saveAmount, 'f', 2));
+            out << YAML::Key << "save_amount" << YAML::Value << toStdString(QString::number(record.saveAmount, 'f', 2));
           }
           if (record.reportAmount != 0.0) {
-            recordNode["report_amount"] << toStdString(QString::number(record.reportAmount, 'f', 2));
+            out << YAML::Key << "report_amount" << YAML::Value << toStdString(QString::number(record.reportAmount, 'f', 2));
           }
+          out << YAML::EndMap;
         }
       }
+      out << YAML::EndSeq;
     }
+
+    out << YAML::EndMap;
   }
+  out << YAML::EndSeq;
 
   // Write accounts
-  ryml::NodeRef accounts = root["accounts"];
-  accounts |= ryml::SEQ;
+  out << YAML::Key << "accounts" << YAML::Value << YAML::BeginSeq;
   QList<Account*> accs = _budgetData.accounts();
   for (int accIdx = 0; accIdx < accs.size(); accIdx++) {
     const Account* account = accs[accIdx];
-    ryml::NodeRef acc = accounts.append_child();
-    acc |= ryml::MAP;
-    acc["name"] << toStdString(account->name());
+    out << YAML::BeginMap;
+    out << YAML::Key << "name" << YAML::Value << toStdString(account->name());
     if (accIdx == currentAccountIndex) {
-      acc["current"] << "true";
+      out << YAML::Key << "current" << YAML::Value << "true";
     }
 
     // Save import sources (filenames previously imported into this account)
     if (!account->importSources().isEmpty()) {
-      ryml::NodeRef sources = acc["import_sources"];
-      sources |= ryml::SEQ;
+      out << YAML::Key << "import_sources" << YAML::Value << YAML::BeginSeq;
       for (const QString& source : account->importSources()) {
-        sources.append_child() << toStdString(source);
+        out << toStdString(source);
       }
+      out << YAML::EndSeq;
     }
 
-    ryml::NodeRef operations = acc["operations"];
-    operations |= ryml::SEQ;
+    out << YAML::Key << "operations" << YAML::Value << YAML::BeginSeq;
     const auto& ops = account->operations();
     for (int opIdx = 0; opIdx < ops.size(); opIdx++) {
       const Operation* op = ops[opIdx];
-      ryml::NodeRef opNode = operations.append_child();
-      opNode |= ryml::MAP;
-      opNode["date"] << toStdString(op->date().toString("yyyy-MM-dd"));
-      opNode["amount"] << toStdString(QString::number(op->amount(), 'f', 2));
-      opNode["label"] << toStdString(op->label());
+      out << YAML::BeginMap;
+      out << YAML::Key << "date" << YAML::Value << toStdString(op->date().toString("yyyy-MM-dd"));
+      out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(op->amount(), 'f', 2));
+      out << YAML::Key << "label" << YAML::Value << toStdString(op->label());
 
       // Handle split operations
-      ryml::NodeRef allocsNode = opNode["allocations"];
-      allocsNode |= ryml::SEQ;
+      out << YAML::Key << "allocations" << YAML::Value << YAML::BeginSeq;
       for (const auto& alloc : op->allocations()) {
-        ryml::NodeRef allocNode = allocsNode.append_child();
-        allocNode |= ryml::MAP;
+        out << YAML::BeginMap;
         if (alloc->category()) {
-          allocNode["category"] << toStdString(alloc->category()->name());
+          out << YAML::Key << "category" << YAML::Value << toStdString(alloc->category()->name());
         }
-        allocNode["amount"] << toStdString(QString::number(alloc->amount(), 'f', 2));
+        out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(alloc->amount(), 'f', 2));
+        out << YAML::EndMap;
       }
+      out << YAML::EndSeq;
 
       // Only save budget_date if explicitly set (different from operation date)
       if (op->budgetDate() != op->date()) {
-        opNode["budget_date"] << toStdString(op->budgetDate().toString("yyyy-MM-dd"));
+        out << YAML::Key << "budget_date" << YAML::Value << toStdString(op->budgetDate().toString("yyyy-MM-dd"));
       }
       // Mark current operation for this account
       if (op == account->currentOperation()) {
-        opNode["current"] << "true";
+        out << YAML::Key << "current" << YAML::Value << "true";
       }
+
+      out << YAML::EndMap;
     }
+    out << YAML::EndSeq;
+
+    out << YAML::EndMap;
   }
+  out << YAML::EndSeq;
 
   // Write categorization rules
   QList<Rule*> rulesList = _ruleController.rules();
   if (!rulesList.isEmpty()) {
-    ryml::NodeRef rules = root["rules"];
-    rules |= ryml::SEQ;
+    out << YAML::Key << "rules" << YAML::Value << YAML::BeginSeq;
     for (const Rule* rule : rulesList) {
-      ryml::NodeRef ruleNode = rules.append_child();
-      ruleNode |= ryml::MAP;
+      out << YAML::BeginMap;
       if (rule->category()) {
-        ruleNode["category"] << toStdString(rule->category()->name());
-        ruleNode["label_prefix"] << toStdString(rule->labelPrefix());
+        out << YAML::Key << "category" << YAML::Value << toStdString(rule->category()->name());
+        out << YAML::Key << "label_prefix" << YAML::Value << toStdString(rule->labelPrefix());
         if (rule->amountFilter() != 0) {
-          ruleNode["amount"] << rule->amountFilter();
+          out << YAML::Key << "amount" << YAML::Value << rule->amountFilter();
         }
       }
+      out << YAML::EndMap;
     }
+    out << YAML::EndSeq;
   }
 
-  // Emit YAML to string
-  std::string yaml = ryml::emitrs_yaml<std::string>(tree);
+  out << YAML::EndMap;
 
   // Write to file
   QFile file(filePath);
@@ -208,9 +204,10 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     return false;
   }
 
-  QTextStream out(&file);
-  out.setEncoding(QStringConverter::Utf8);
-  out << QString::fromStdString(yaml);
+  QTextStream stream(&file);
+  stream.setEncoding(QStringConverter::Utf8);
+  stream << QString::fromStdString(std::string(out.c_str()));
+  stream << "\n";
   file.close();
 
   qDebug() << "Budget data saved to:" << filePath;
@@ -232,6 +229,14 @@ bool FileController::loadFromYamlUrl(const QUrl& fileUrl) {
   qDebug() << "QUrl passed to loadFromYamlUrl:" << fileUrl;
   qDebug() << "Converted filePath from QUrl:" << filePath;
   return loadFromYamlFile(filePath);
+}
+
+// Helper to safely read a string value from a YAML node
+static QString yamlString(const YAML::Node& node) {
+  if (!node.IsDefined() || node.IsNull()) {
+    return {};
+  }
+  return QString::fromStdString(node.as<std::string>());
 }
 
 bool FileController::loadFromYamlFile(const QString& filePath) {
@@ -266,29 +271,24 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   Operation* currentOperation = nullptr;
 
   try {
-    ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(data.constData()));
-    ryml::ConstNodeRef root = tree.crootref();
+    YAML::Node root = YAML::Load(std::string(data.constData(), data.size()));
 
     // Load state section
-    if (root.has_child("state")) {
-      ryml::ConstNodeRef state = root["state"];
-      if (state.has_child("currentTab")) {
-        auto val = state["currentTab"].val();
-        loadedTabIndex = QString::fromUtf8(val.str, val.len).toInt();
+    if (root["state"]) {
+      YAML::Node state = root["state"];
+      if (state["currentTab"]) {
+        loadedTabIndex = state["currentTab"].as<int>();
       }
-      if (state.has_child("budgetDate")) {
-        auto val = state["budgetDate"].val();
-        loadedBudgetDate = QDate::fromString(QString::fromUtf8(val.str, val.len), "MMMM yyyy");
+      if (state["budgetDate"]) {
+        loadedBudgetDate = QDate::fromString(yamlString(state["budgetDate"]), "MMMM yyyy");
       } else {
         int loadedBudgetYear = 0;
         int loadedBudgetMonth = 0;
-        if (state.has_child("budgetYear")) {
-          auto val = state["budgetYear"].val();
-          loadedBudgetYear = QString::fromUtf8(val.str, val.len).toInt();
+        if (state["budgetYear"]) {
+          loadedBudgetYear = state["budgetYear"].as<int>();
         }
-        if (state.has_child("budgetMonth")) {
-          auto val = state["budgetMonth"].val();
-          loadedBudgetMonth = QString::fromUtf8(val.str, val.len).toInt();
+        if (state["budgetMonth"]) {
+          loadedBudgetMonth = state["budgetMonth"].as<int>();
         }
         if (loadedBudgetYear > 0 && loadedBudgetMonth > 0) {
           loadedBudgetDate = QDate(loadedBudgetYear, loadedBudgetMonth, 1);
@@ -297,59 +297,49 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     }
 
     // Load categories
-    if (root.has_child("categories")) {
+    if (root["categories"]) {
       int catIdx = 0;
-      for (ryml::ConstNodeRef cat : root["categories"]) {
+      for (const auto& cat : root["categories"]) {
         auto category = new Category();
-        if (cat.has_child("name")) {
-          auto val = cat["name"].val();
-          category->set_name(QString::fromUtf8(val.str, val.len));
+        if (cat["name"]) {
+          category->set_name(yamlString(cat["name"]));
         }
-        if (cat.has_child("budget_limit")) {
-          auto val = cat["budget_limit"].val();
-          category->set_budgetLimit(QString::fromUtf8(val.str, val.len).toDouble());
+        if (cat["budget_limit"]) {
+          category->set_budgetLimit(yamlString(cat["budget_limit"]).toDouble());
         }
-        if (cat.has_child("current")) {
-          auto val = cat["current"].val();
-          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+        if (cat["current"]) {
+          if (yamlString(cat["current"]).toLower() == "true") {
             loadedCategoryIdx = catIdx;
           }
         }
 
         // Load month history (new format) or leftover decisions (legacy format)
-        auto loadMonthEntries = [&](ryml::ConstNodeRef entriesNode) {
-          for (ryml::ConstNodeRef entryNode : entriesNode) {
+        auto loadMonthEntries = [&](const YAML::Node& entriesNode) {
+          for (const auto& entryNode : entriesNode) {
             int year = 0, month = 0;
             MonthRecord record;
 
-            if (entryNode.has_child("year")) {
-              auto val = entryNode["year"].val();
-              year = QString::fromUtf8(val.str, val.len).toInt();
+            if (entryNode["year"]) {
+              year = entryNode["year"].as<int>();
             }
-            if (entryNode.has_child("month")) {
-              auto val = entryNode["month"].val();
-              month = QString::fromUtf8(val.str, val.len).toInt();
+            if (entryNode["month"]) {
+              month = entryNode["month"].as<int>();
             }
             // Budget limit override (new in month_history format)
-            if (entryNode.has_child("budget_limit")) {
-              auto val = entryNode["budget_limit"].val();
-              record.budgetLimit = QString::fromUtf8(val.str, val.len).toDouble();
+            if (entryNode["budget_limit"]) {
+              record.budgetLimit = yamlString(entryNode["budget_limit"]).toDouble();
             }
             // New format: separate save_amount and report_amount
-            if (entryNode.has_child("save_amount")) {
-              auto val = entryNode["save_amount"].val();
-              record.saveAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            if (entryNode["save_amount"]) {
+              record.saveAmount = yamlString(entryNode["save_amount"]).toDouble();
             }
-            if (entryNode.has_child("report_amount")) {
-              auto val = entryNode["report_amount"].val();
-              record.reportAmount = QString::fromUtf8(val.str, val.len).toDouble();
+            if (entryNode["report_amount"]) {
+              record.reportAmount = yamlString(entryNode["report_amount"]).toDouble();
             }
             // Legacy format: action + amount
-            if (entryNode.has_child("action") && entryNode.has_child("amount")) {
-              auto actionVal = entryNode["action"].val();
-              QString actionStr = QString::fromUtf8(actionVal.str, actionVal.len).toLower();
-              auto amountVal = entryNode["amount"].val();
-              double amount = QString::fromUtf8(amountVal.str, amountVal.len).toDouble();
+            if (entryNode["action"] && entryNode["amount"]) {
+              QString actionStr = yamlString(entryNode["action"]).toLower();
+              double amount = yamlString(entryNode["amount"]).toDouble();
               if (actionStr == "save") {
                 record.saveAmount = amount;
               } else if (actionStr == "report") {
@@ -363,9 +353,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           }
         };
 
-        if (cat.has_child("month_history")) {
+        if (cat["month_history"]) {
           loadMonthEntries(cat["month_history"]);
-        } else if (cat.has_child("leftover_decisions")) {
+        } else if (cat["leftover_decisions"]) {
           loadMonthEntries(cat["leftover_decisions"]);
         }
 
@@ -375,78 +365,65 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     }
 
     // Load accounts
-    if (root.has_child("accounts")) {
+    if (root["accounts"]) {
       int accIdx = 0;
-      for (ryml::ConstNodeRef acc : root["accounts"]) {
+      for (const auto& acc : root["accounts"]) {
         auto account = new Account();
-        if (acc.has_child("name")) {
-          auto val = acc["name"].val();
-          account->set_name(QString::fromUtf8(val.str, val.len));
+        if (acc["name"]) {
+          account->set_name(yamlString(acc["name"]));
         }
-        if (acc.has_child("current")) {
-          auto val = acc["current"].val();
-          if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+        if (acc["current"]) {
+          if (yamlString(acc["current"]).toLower() == "true") {
             loadedAccountIdx = accIdx;
           }
         }
         // Load import sources
-        if (acc.has_child("import_sources")) {
+        if (acc["import_sources"]) {
           QStringList sources;
-          for (ryml::ConstNodeRef sourceNode : acc["import_sources"]) {
-            auto val = sourceNode.val();
-            sources.append(QString::fromUtf8(val.str, val.len));
+          for (const auto& sourceNode : acc["import_sources"]) {
+            sources.append(QString::fromStdString(sourceNode.as<std::string>()));
           }
           account->setImportSources(sources);
         }
         // Note: balance field is ignored - balance is calculated from operations
-        if (acc.has_child("operations")) {
-          for (ryml::ConstNodeRef opNode : acc["operations"]) {
+        if (acc["operations"]) {
+          for (const auto& opNode : acc["operations"]) {
             auto op = new Operation(account);
-            if (opNode.has_child("date")) {
-              auto val = opNode["date"].val();
-              op->set_date(QDate::fromString(QString::fromUtf8(val.str, val.len), "yyyy-MM-dd"));
+            if (opNode["date"]) {
+              op->set_date(QDate::fromString(yamlString(opNode["date"]), "yyyy-MM-dd"));
             }
-            if (opNode.has_child("amount")) {
-              auto val = opNode["amount"].val();
-              op->set_amount(QString::fromUtf8(val.str, val.len).toDouble());
+            if (opNode["amount"]) {
+              op->set_amount(yamlString(opNode["amount"]).toDouble());
             }
             // Handle split operations (allocations) vs single category
-            if (opNode.has_child("allocations")) {
+            if (opNode["allocations"]) {
               QList<Allocation*> allocations;
-              for (ryml::ConstNodeRef allocNode : opNode["allocations"]) {
-                if (allocNode.has_child("category") && (allocNode.has_child("amount"))) {
-                  auto categoryVal = allocNode["category"].val();
-                  auto amountVal = allocNode["amount"].val();
+              for (const auto& allocNode : opNode["allocations"]) {
+                if (allocNode["category"] && allocNode["amount"]) {
                   allocations.append(new Allocation(
-                      _categoryController.getCategoryByName(QString::fromUtf8(categoryVal.str, categoryVal.len)),
-                      QString::fromUtf8(amountVal.str, amountVal.len).toDouble()));
+                      _categoryController.getCategoryByName(yamlString(allocNode["category"])),
+                      yamlString(allocNode["amount"]).toDouble()));
                 }
               }
               op->setAllocations(allocations);
-            } else if (opNode.has_child("category")) {  // Support for old format (<= 0.14)
-              auto val = opNode["category"].val();
-              auto category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
+            } else if (opNode["category"]) {  // Support for old format (<= 0.14)
+              auto category = _categoryController.getCategoryByName(yamlString(opNode["category"]));
               op->setAllocations({ new Allocation(category, op->amount()) });
             }
 
-            if (opNode.has_child("label")) {
-              auto val = opNode["label"].val();
-              op->set_label(QString::fromUtf8(val.str, val.len));
-            } else if (opNode.has_child("description")) {
-              auto val = opNode["description"].val();
-              op->set_label(QString::fromUtf8(val.str, val.len));
+            if (opNode["label"]) {
+              op->set_label(yamlString(opNode["label"]));
+            } else if (opNode["description"]) {
+              op->set_label(yamlString(opNode["description"]));
             }
-            if (opNode.has_child("details")) {
-              auto val = opNode["details"].val();
-              op->set_details(QString::fromUtf8(val.str, val.len));
+            if (opNode["details"]) {
+              op->set_details(yamlString(opNode["details"]));
             }
-            if (opNode.has_child("budget_date")) {
-              auto val = opNode["budget_date"].val();
-              op->set_budgetDate(QDate::fromString(QString::fromUtf8(val.str, val.len), "yyyy-MM-dd"));
+            if (opNode["budget_date"]) {
+              op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"));
             }
-            if (opNode.has_child("current")) {
-              auto val = opNode["current"].val();
-              if (QString::fromUtf8(val.str, val.len).toLower() == "true") {
+            if (opNode["current"]) {
+              if (yamlString(opNode["current"]).toLower() == "true") {
                 // Set this operation as the current operation for this account
                 account->set_currentOperation(op);
                 // Also track for navigation if this is the current account
@@ -464,26 +441,23 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     }
 
     // Load categorization rules
-    if (root.has_child("rules")) {
+    if (root["rules"]) {
       _ruleController.clearRules();
-      for (ryml::ConstNodeRef ruleNode : root["rules"]) {
+      for (const auto& ruleNode : root["rules"]) {
         Category* category = nullptr;
         QString labelPrefix;
 
-        if (ruleNode.has_child("category")) {
-          auto val = ruleNode["category"].val();
-          category = _categoryController.getCategoryByName(QString::fromUtf8(val.str, val.len));
+        if (ruleNode["category"]) {
+          category = _categoryController.getCategoryByName(yamlString(ruleNode["category"]));
         }
-        if (ruleNode.has_child("label_prefix")) {
-          auto val = ruleNode["label_prefix"].val();
-          labelPrefix = QString::fromUtf8(val.str, val.len);
+        if (ruleNode["label_prefix"]) {
+          labelPrefix = yamlString(ruleNode["label_prefix"]);
         }
 
         if (category && !labelPrefix.isEmpty()) {
           Rule* rule;
-          if (ruleNode.has_child("amount")) {
-            double amount;
-            ruleNode["amount"] >> amount;
+          if (ruleNode["amount"]) {
+            double amount = ruleNode["amount"].as<double>();
             rule = new Rule(category, labelPrefix, amount);
           } else {
             rule = new Rule(category, labelPrefix);
