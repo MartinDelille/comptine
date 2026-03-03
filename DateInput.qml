@@ -10,9 +10,11 @@ Item {
         id: textField
         text: Qt.formatDate(selectedDate, "dd/MM/yyyy")
         onPressed: popup.doSelectDate(selectedDate)
-        onFocusChanged: {
-            if (focus) {
+        onActiveFocusChanged: {
+            if (activeFocus) {
                 popup.doSelectDate(selectedDate);
+            } else {
+                popup.close();
             }
         }
 
