@@ -1,11 +1,12 @@
 pragma Singleton
 import QtQuick
+import Comptine
 
 QtObject {
     id: theme
 
     // Detect system dark mode
-    readonly property bool systemIsDark: Qt.styleHints.colorScheme === Qt.ColorScheme.Dark
+    readonly property bool systemIsDark: Application.styleHints.colorScheme === Qt.ColorScheme.Dark
 
     // Determine if we should use dark mode
     readonly property bool isDark: {

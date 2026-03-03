@@ -1,6 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 BaseDialog {
     id: importDialog
@@ -96,12 +99,13 @@ BaseDialog {
             spacing: Theme.spacingNormal
 
             delegate: ColumnLayout {
+                id: fileDelegate
                 required property int index
-                width: fileListView.width
+                width: parent.width
                 spacing: Theme.spacingSmall
 
                 Label {
-                    text: importDialog.fileEntries[index].fileName
+                    text: importDialog.fileEntries[fileDelegate.index].fileName
                     font.pixelSize: Theme.fontSizeNormal
                     font.bold: true
                     elide: Text.ElideMiddle
@@ -115,19 +119,19 @@ BaseDialog {
                     CheckBox {
                         id: newAccountCheck
                         text: qsTr("New account")
-                        checked: importDialog.fileEntries[index].isNewAccount
+                        checked: importDialog.fileEntries[fileDelegate.index].isNewAccount
 
                         onCheckedChanged: {
                             var entries = importDialog.fileEntries;
-                            if (index < entries.length) {
-                                entries[index].isNewAccount = checked;
+                            if (fileDelegate.index < entries.length) {
+                                entries[fileDelegate.index].isNewAccount = checked;
                                 if (!checked) {
                                     // Switching to existing: use combo selection
                                     var account = AppState.data.accountAt(accountCombo.currentIndex);
-                                    entries[index].accountName = account ? account.name : "";
+                                    entries[fileDelegate.index].accountName = account ? account.name : "";
                                 } else {
                                     // Switching to new: use text field value
-                                    entries[index].accountName = newAccountField.text.trim();
+                                    entries[fileDelegate.index].accountName = newAccountField.text.trim();
                                 }
                                 importDialog.fileEntries = entries;
                             }
@@ -140,7 +144,7 @@ BaseDialog {
                         visible: !newAccountCheck.checked
 
                         Component.onCompleted: {
-                            var entry = importDialog.fileEntries[index];
+                            var entry = importDialog.fileEntries[fileDelegate.index];
                             if (entry)
                                 currentIndex = entry.existingAccountIndex;
                         }
@@ -148,9 +152,9 @@ BaseDialog {
                         onCurrentIndexChanged: {
                             if (!newAccountCheck.checked) {
                                 var entries = importDialog.fileEntries;
-                                if (index < entries.length) {
+                                if (fileDelegate.index < entries.length) {
                                     var account = AppState.data.accountAt(currentIndex);
-                                    entries[index].accountName = account ? account.name : "";
+                                    entries[fileDelegate.index].accountName = account ? account.name : "";
                                     importDialog.fileEntries = entries;
                                 }
                             }
@@ -164,7 +168,7 @@ BaseDialog {
                         placeholderText: qsTr("Account name")
 
                         Component.onCompleted: {
-                            var entry = importDialog.fileEntries[index];
+                            var entry = importDialog.fileEntries[fileDelegate.index];
                             if (entry && entry.isNewAccount)
                                 text = entry.accountName;
                         }
@@ -172,8 +176,8 @@ BaseDialog {
                         onTextChanged: {
                             if (newAccountCheck.checked) {
                                 var entries = importDialog.fileEntries;
-                                if (index < entries.length) {
-                                    entries[index].accountName = text.trim();
+                                if (fileDelegate.index < entries.length) {
+                                    entries[fileDelegate.index].accountName = text.trim();
                                     importDialog.fileEntries = entries;
                                 }
                             }

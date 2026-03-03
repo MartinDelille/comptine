@@ -1,6 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 BaseDialog {
     id: root
@@ -29,7 +32,7 @@ BaseDialog {
     Connections {
         target: AppState.data
         function onOperationDataChanged() {
-            updateOperations();
+            root.updateOperations();
         }
     }
 
@@ -53,16 +56,16 @@ BaseDialog {
             }
 
             Label {
-                text: qsTr("Total: %1").arg(Theme.formatAmount(Math.abs(totalAmount)))
+                text: qsTr("Total: %1").arg(Theme.formatAmount(Math.abs(root.totalAmount)))
                 font.pixelSize: Theme.fontSizeNormal
                 font.bold: true
-                color: totalAmount >= 0 ? Theme.positive : Theme.negative
+                color: root.totalAmount >= 0 ? Theme.positive : Theme.negative
             }
         }
 
         // Operations count
         Label {
-            text: qsTr("%n operation(s)", "", operations.length)
+            text: qsTr("%n operation(s)", "", root.operations.length)
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.textMuted
         }
@@ -71,11 +74,12 @@ BaseDialog {
         ListView {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: operations
+            model: root.operations
             clip: true
             spacing: Theme.spacingSmall
 
             delegate: Rectangle {
+                id: operationDelegate
                 required property var modelData
                 required property int index
 
@@ -90,7 +94,7 @@ BaseDialog {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        let operation = modelData.operation;
+                        let operation = operationDelegate.modelData.operation;
                         AppState.navigation.navigateToOperation(operation);
                         root.close();
                     }
@@ -104,14 +108,14 @@ BaseDialog {
 
                     // Date
                     Label {
-                        text: modelData.date.toLocaleDateString(Qt.locale(), "dd/MM")
+                        text: operationDelegate.modelData.date.toLocaleDateString(Qt.locale(), "dd/MM")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.textMuted
                         Layout.preferredWidth: 50
                     }
 
                     Label {
-                        text: modelData.label
+                        text: operationDelegate.modelData.label
                         font.pixelSize: Theme.fontSizeNormal
                         color: Theme.textPrimary
                         elide: Text.ElideRight
@@ -120,7 +124,7 @@ BaseDialog {
 
                     // Account name
                     Label {
-                        text: modelData.accountName
+                        text: operationDelegate.modelData.accountName
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.textMuted
                         Layout.preferredWidth: 80
@@ -129,10 +133,10 @@ BaseDialog {
 
                     // Amount
                     Label {
-                        text: Theme.formatAmount(modelData.amount)
+                        text: Theme.formatAmount(operationDelegate.modelData.amount)
                         font.pixelSize: Theme.fontSizeNormal
                         font.bold: true
-                        color: modelData.amount >= 0 ? Theme.positive : Theme.negative
+                        color: operationDelegate.modelData.amount >= 0 ? Theme.positive : Theme.negative
                         horizontalAlignment: Text.AlignRight
                         Layout.preferredWidth: 100
                     }
@@ -144,7 +148,7 @@ BaseDialog {
         Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: operations.length === 0
+            visible: root.operations.length === 0
             text: qsTr("No operations for this category")
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

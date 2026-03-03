@@ -19,6 +19,11 @@ class CategoryController;
 class OperationListModel;
 class RuleController;
 
+class UndoStack : public QUndoStack {
+  Q_OBJECT
+  QML_ELEMENT
+};
+
 // Command for adding a new account
 // Note: This command manages account lifecycle in BudgetData
 class AddAccountCommand : public QUndoCommand {

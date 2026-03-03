@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 Rectangle {
     id: root
@@ -46,13 +47,13 @@ Rectangle {
                 text: "\u270F\uFE0F"
                 font.pixelSize: Theme.fontSizeNormal
                 focusPolicy: Qt.NoFocus
-                visible: operation !== null && !root.multipleSelected
+                visible: root.operation !== null && !root.multipleSelected
                 opacity: hovered ? 1.0 : 0.5
                 ToolTip.visible: hovered
                 ToolTip.text: qsTr("Edit operation...")
                 onClicked: {
-                    if (operation) {
-                        root.editRequested(operation);
+                    if (root.operation) {
+                        root.editRequested(root.operation);
                     }
                 }
             }
@@ -60,7 +61,7 @@ Rectangle {
 
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            Layout.preferredHeight: 1
             color: Theme.border
         }
 
@@ -106,7 +107,7 @@ Rectangle {
             Layout.fillWidth: true
             columns: 1
             rowSpacing: Theme.spacingNormal
-            visible: operation !== null && !root.multipleSelected
+            visible: root.operation !== null && !root.multipleSelected
 
             Label {
                 text: qsTr("Date:")
@@ -117,7 +118,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: operation?.date ? operation.date.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
+                text: root.operation?.date ? root.operation.date.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap
@@ -133,7 +134,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: operation?.budgetDate ? operation.budgetDate.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
+                text: root.operation?.budgetDate ? root.operation.budgetDate.toLocaleDateString(Qt.locale(), Locale.LongFormat) : ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap
@@ -149,7 +150,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: operation?.label ?? ""
+                text: root.operation?.label ?? ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap
@@ -157,7 +158,7 @@ Rectangle {
 
             Label {
                 text: qsTr("Details:")
-                visible: operation?.details !== ""
+                visible: root.operation?.details !== ""
                 font.pixelSize: Theme.fontSizeSmall
                 font.bold: true
                 color: Theme.textSecondary
@@ -166,8 +167,8 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                visible: operation?.details !== ""
-                text: operation?.details ?? ""
+                visible: root.operation?.details !== ""
+                text: root.operation?.details ?? ""
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textPrimary
                 wrapMode: Text.WordWrap
@@ -187,9 +188,10 @@ Rectangle {
                 spacing: Theme.spacingSmall
 
                 Repeater {
-                    model: operation?.allocations
+                    model: root.operation?.allocations
 
                     RowLayout {
+                        id: allocationRow
                         Layout.fillWidth: true
                         spacing: Theme.spacingSmall
 
@@ -197,17 +199,17 @@ Rectangle {
 
                         Label {
                             Layout.fillWidth: true
-                            text: modelData.category ? modelData.category.name : qsTr("Uncategorized")
+                            text: allocationRow.modelData.category ? allocationRow.modelData.category.name : qsTr("Uncategorized")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textPrimary
                             elide: Text.ElideRight
                         }
 
                         Label {
-                            text: Theme.formatAmount(modelData.amount)
+                            text: Theme.formatAmount(allocationRow.modelData.amount)
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
-                            color: Theme.amountColor(modelData.amount)
+                            color: Theme.amountColor(allocationRow.modelData.amount)
                         }
                     }
                 }
@@ -216,7 +218,7 @@ Rectangle {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Theme.spacingSmall
-                    visible: !operation?.allocations.length
+                    visible: !root.operation?.allocations.length
 
                     Label {
                         Layout.fillWidth: true
@@ -228,10 +230,10 @@ Rectangle {
                     }
 
                     Label {
-                        text: Theme.formatAmount(operation?.amount ?? 0)
+                        text: Theme.formatAmount(root.operation?.amount ?? 0)
                         font.pixelSize: Theme.fontSizeSmall
                         font.bold: true
-                        color: Theme.amountColor(operation?.amount ?? 0)
+                        color: Theme.amountColor(root.operation?.amount ?? 0)
                     }
                 }
             }
@@ -246,10 +248,10 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: operation ? Theme.formatAmount(operation.amount) : ""
+                text: root.operation ? Theme.formatAmount(root.operation.amount) : ""
                 font.pixelSize: Theme.fontSizeNormal
                 font.bold: true
-                color: Theme.amountColor(operation?.amount ?? 0)
+                color: Theme.amountColor(root.operation?.amount ?? 0)
                 wrapMode: Text.WordWrap
             }
         }
@@ -257,7 +259,7 @@ Rectangle {
         Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: operation === null && !root.multipleSelected ? qsTr("Select an operation to view details") : ""
+            text: root.operation === null && !root.multipleSelected ? qsTr("Select an operation to view details") : ""
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.textMuted
             horizontalAlignment: Text.AlignHCenter

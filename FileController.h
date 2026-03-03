@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QObject>
+#include <QQmlEngine>
 #include <QString>
 #include <QUndoStack>
 #include <QUrl>
@@ -15,6 +16,7 @@ class RuleController;
 
 class FileController : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
   // Current file path (macro-generated)
   PROPERTY_RW(QString, currentFilePath, {})

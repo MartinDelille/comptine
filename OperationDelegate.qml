@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 Rectangle {
     id: root
@@ -18,7 +19,7 @@ Rectangle {
     border.color: root.focused ? Theme.accent : Theme.border
 
     color: {
-        if (root.selected)
+        if (selected)
             return Theme.backgroundSelected;
         if (root.alternate)
             return Theme.backgroundAlt;
@@ -31,7 +32,7 @@ Rectangle {
         spacing: Theme.spacingNormal
 
         Label {
-            text: operation?.date ? operation.date.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+            text: root.operation?.date ? root.operation.date.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
             verticalAlignment: Text.AlignVCenter
             font.pixelSize: Theme.fontSizeNormal
             color: Theme.textPrimary
@@ -40,7 +41,7 @@ Rectangle {
 
         Label {
             Layout.fillWidth: true
-            text: operation?.label ?? ""
+            text: root.operation?.label ?? ""
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             font.pixelSize: Theme.fontSizeNormal
@@ -48,7 +49,7 @@ Rectangle {
         }
 
         Label {
-            text: operation?.categoryDisplay || ""
+            text: root.operation?.categoryDisplay || ""
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
             elide: Text.ElideRight
@@ -58,21 +59,21 @@ Rectangle {
         }
 
         Label {
-            text: Theme.formatAmount(operation?.amount ?? 0)
+            text: Theme.formatAmount(root.operation?.amount ?? 0)
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
             font.pixelSize: Theme.fontSizeNormal
-            color: Theme.amountColor(operation?.amount ?? 0)
+            color: Theme.amountColor(root.operation?.amount ?? 0)
             font.bold: true
             Layout.preferredWidth: 100
         }
 
         Label {
-            text: Theme.formatAmount(balance)
+            text: Theme.formatAmount(root.balance)
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
             font.pixelSize: Theme.fontSizeNormal
-            color: Theme.balanceColor(balance)
+            color: Theme.balanceColor(root.balance)
             Layout.preferredWidth: 100
         }
     }

@@ -12,8 +12,7 @@ AppSettings::AppSettings() :
   _theme = _settings.value("theme", QString()).toString();
   _checkForUpdates = _settings.value("checkForUpdates", true).toBool();
   _lastUpdateCheck = _settings.value("lastUpdateCheck", QDateTime()).toDateTime();
-  _recentFilesModel.setStringList(
-      _settings.value("recentFiles", QStringList()).toStringList());
+  _recentFilesModel.setStringList(_settings.value("recentFiles", QStringList()).toStringList());
 }
 
 int AppSettings::windowX() const {
@@ -121,7 +120,7 @@ void AppSettings::set_lastUpdateCheck(QDateTime value) {
   }
 }
 
-QStringListModel* AppSettings::recentFilesModel() {
+QAbstractListModel* AppSettings::recentFilesModel() {
   return &_recentFilesModel;
 }
 

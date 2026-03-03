@@ -1,4 +1,5 @@
 import QtQuick.Controls
+import Comptine
 
 ComboBox {
     model: AppState.data.accountModel

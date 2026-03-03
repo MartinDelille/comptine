@@ -1,6 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Layouts
+import Comptine
 
 FocusScope {
     id: focusScope
@@ -24,30 +26,30 @@ FocusScope {
         focus: true
         keyNavigationEnabled: false  // We handle key navigation ourselves
         highlightFollowsCurrentItem: false  // Don't auto-scroll highlight
-        currentIndex: currentAccount ? currentAccount.currentOperationIndex : -1
+        currentIndex: focusScope.currentAccount ? focusScope.currentAccount.currentOperationIndex : -1
 
         // Restore focus when YAML file is loaded
         Connections {
             target: AppState.file
             function onYamlFileLoaded() {
-                if (listView.count > 0 && currentAccount) {
+                if (listView.count > 0 && focusScope.currentAccount) {
                     // Use the index from the file (already set in account.currentOperationIndex)
-                    let idx = Math.min(currentAccount.currentOperationIndex, listView.count - 1);
+                    let idx = Math.min(focusScope.currentAccount.currentOperationIndex, listView.count - 1);
                     if (idx < 0)
                         idx = 0;
-                    currentAccount.currentOperationIndex = idx;
-                    currentAccount.selectAt(idx, false);
+                    focusScope.currentAccount.currentOperationIndex = idx;
+                    focusScope.currentAccount.selectAt(idx, false);
                     listView.positionViewAtIndex(idx, ListView.Center);
                 }
                 listView.forceActiveFocus();
             }
             function onDataLoaded() {
                 // For CSV import: sync ListView currentIndex with model selection
-                if (listView.count > 0 && currentAccount && currentAccount.currentOperationIndex < 0) {
-                    currentAccount.currentOperationIndex = 0;
-                    currentAccount.selectAt(0, false);
+                if (listView.count > 0 && focusScope.currentAccount && focusScope.currentAccount.currentOperationIndex < 0) {
+                    focusScope.currentAccount.currentOperationIndex = 0;
+                    focusScope.currentAccount.selectAt(0, false);
                 }
-                let idx = currentAccount ? currentAccount.currentOperationIndex : 0;
+                let idx = focusScope.currentAccount ? focusScope.currentAccount.currentOperationIndex : 0;
                 listView.positionViewAtIndex(idx >= 0 ? idx : 0, ListView.Contain);
                 listView.forceActiveFocus();
             }
@@ -57,9 +59,9 @@ FocusScope {
             target: AppState.navigation
             function onOperationSelected(index) {
                 // Navigate from CategoryDetailView: focus and scroll to the operation
-                if (currentAccount) {
-                    currentAccount.currentOperationIndex = index;
-                    currentAccount.selectAt(index, false);
+                if (focusScope.currentAccount) {
+                    focusScope.currentAccount.currentOperationIndex = index;
+                    focusScope.currentAccount.selectAt(index, false);
                 }
                 listView.positionViewAtIndex(index, ListView.Center);
                 listView.forceActiveFocus();
@@ -67,14 +69,14 @@ FocusScope {
             function onCurrentAccountChanged() {
                 // When account changes, scroll to the account's current operation
                 // Selection is already per-account, no need to call select()
-                if (!currentAccount)
+                if (!focusScope.currentAccount)
                     return;
-                let idx = currentAccount.currentOperationIndex;
+                let idx = focusScope.currentAccount.currentOperationIndex;
                 if (idx < 0 && listView.count > 0) {
                     // Account has no current operation yet, default to first operation
                     idx = 0;
-                    currentAccount.currentOperationIndex = idx;
-                    currentAccount.selectAt(idx, false);
+                    focusScope.currentAccount.currentOperationIndex = idx;
+                    focusScope.currentAccount.selectAt(idx, false);
                 }
                 if (idx >= 0 && idx < listView.count) {
                     listView.positionViewAtIndex(idx, ListView.Contain);
@@ -92,23 +94,23 @@ FocusScope {
 
         Keys.onUpPressed: event => {
             AppState.navigation.previousOperation(event.modifiers & Qt.ShiftModifier);
-            if (currentAccount) {
-                positionViewAtIndex(currentAccount.currentOperationIndex, ListView.Contain);
+            if (focusScope.currentAccount) {
+                positionViewAtIndex(focusScope.currentAccount.currentOperationIndex, ListView.Contain);
             }
         }
 
         Keys.onDownPressed: event => {
             AppState.navigation.nextOperation(event.modifiers & Qt.ShiftModifier);
-            if (currentAccount) {
-                positionViewAtIndex(currentAccount.currentOperationIndex, ListView.Contain);
+            if (focusScope.currentAccount) {
+                positionViewAtIndex(focusScope.currentAccount.currentOperationIndex, ListView.Contain);
             }
         }
 
         // Cmd+A to select all
         Keys.onPressed: event => {
             if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_A) {
-                if (currentAccount) {
-                    currentAccount.selectRange(0, count - 1);
+                if (focusScope.currentAccount) {
+                    focusScope.currentAccount.selectRange(0, count - 1);
                 }
                 event.accepted = true;
             }
@@ -131,24 +133,24 @@ FocusScope {
 
                     if (mouse.modifiers & Qt.ControlModifier) {
                         // Cmd/Ctrl+click: toggle selection
-                        if (currentAccount) {
-                            currentAccount.toggleSelectionAt(parent.index);
+                        if (focusScope.currentAccount) {
+                            focusScope.currentAccount.toggleSelectionAt(parent.index);
                         }
                     } else if (mouse.modifiers & Qt.ShiftModifier) {
                         // Shift+click: range selection from current operation
-                        if (currentAccount) {
-                            currentAccount.selectAt(parent.index, true);
+                        if (focusScope.currentAccount) {
+                            focusScope.currentAccount.selectAt(parent.index, true);
                         }
                     } else {
                         // Plain click: single selection (clear others)
-                        if (currentAccount) {
-                            currentAccount.selectAt(parent.index, false);
+                        if (focusScope.currentAccount) {
+                            focusScope.currentAccount.selectAt(parent.index, false);
                         }
                     }
 
                     // Update cursor (current operation) after selection handling
-                    if (currentAccount) {
-                        currentAccount.currentOperationIndex = parent.index;
+                    if (focusScope.currentAccount) {
+                        focusScope.currentAccount.currentOperationIndex = parent.index;
                     }
                 }
             }

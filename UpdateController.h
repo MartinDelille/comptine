@@ -2,17 +2,19 @@
 
 #include <QDateTime>
 #include <QNetworkAccessManager>
+#include <QNetworkReply>
 #include <QObject>
+#include <QQmlEngine>
 #include <QString>
 
 #include "PropertyMacros.h"
 
 class QNetworkAccessManager;
-class QNetworkReply;
 class AppSettings;
 
 class UpdateController : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
   // Current state
   PROPERTY_RW(bool, checking, false)

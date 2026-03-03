@@ -2,12 +2,14 @@
 
 #include <QAbstractListModel>
 #include <QObject>
+#include <QQmlEngine>
 
 class Rule;
 class RuleController;
 
 class RuleListModel : public QAbstractListModel {
   Q_OBJECT
+  QML_ELEMENT
 
 public:
   enum Roles {

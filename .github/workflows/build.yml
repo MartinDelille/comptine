@@ -84,6 +84,10 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure ${{ matrix.ctest-args }}
 
+      - name: Run qmllint
+        if: matrix.os == 'macos-latest'
+        run: qmllint --max-warnings 0 --qmldirs build *.qml
+
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
