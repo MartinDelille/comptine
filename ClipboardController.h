@@ -1,11 +1,13 @@
 #pragma once
 
 #include <QObject>
+#include <QQmlEngine>
 
 class OperationListModel;
 
 class ClipboardController : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
 public:
   explicit ClipboardController(OperationListModel& operationModel);

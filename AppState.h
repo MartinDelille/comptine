@@ -11,6 +11,7 @@
 #include "FileController.h"
 #include "NavigationController.h"
 #include "RuleController.h"
+#include "UndoCommands.h"
 #include "UpdateController.h"
 #include "Version.h"
 
@@ -30,7 +31,7 @@ class AppState : public QObject {
   Q_PROPERTY(FileController* file READ file CONSTANT)
   Q_PROPERTY(RuleController* rules READ rules CONSTANT)
   Q_PROPERTY(UpdateController* update READ update CONSTANT)
-  Q_PROPERTY(QUndoStack* undoStack READ undoStack CONSTANT)
+  Q_PROPERTY(UndoStack* undoStack READ undoStack CONSTANT)
 
 public:
   explicit AppState(QObject* parent = nullptr);
@@ -43,12 +44,10 @@ public:
   FileController* file() { return &_file; }
   RuleController* rules() { return &_rules; }
   UpdateController* update() { return &_update; }
-
-public:
-  QUndoStack* undoStack() { return &_undoStack; }
+  UndoStack* undoStack() { return &_undoStack; }
 
 private:
-  QUndoStack _undoStack;
+  UndoStack _undoStack;
   AppSettings _settings;
   BudgetData _data;
   NavigationController _navigation;

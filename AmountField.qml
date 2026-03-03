@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import Comptine
 
 // Reusable text field for entering monetary amounts.
 // Handles both decimal separators (. and ,), removes spaces and currency symbols,

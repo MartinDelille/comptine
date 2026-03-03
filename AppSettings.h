@@ -2,6 +2,7 @@
 
 #include <QDateTime>
 #include <QObject>
+#include <QQmlEngine>
 #include <QSettings>
 #include <QString>
 #include <QStringListModel>
@@ -10,6 +11,7 @@
 
 class AppSettings : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
   PROPERTY_RW_CUSTOM(int, windowX, 200)
   PROPERTY_RW_CUSTOM(int, windowY, 200)
@@ -29,12 +31,12 @@ class AppSettings : public QObject {
   PROPERTY_RW_CUSTOM(QDateTime, lastUpdateCheck, QDateTime())
 
   // Recent files model for proper QML binding
-  Q_PROPERTY(QStringListModel* recentFilesModel READ recentFilesModel CONSTANT)
+  Q_PROPERTY(QAbstractListModel* recentFilesModel READ recentFilesModel CONSTANT)
 
 public:
   explicit AppSettings();
 
-  QStringListModel* recentFilesModel();
+  QAbstractListModel* recentFilesModel();
   QStringList recentFiles() const;
   Q_INVOKABLE void addRecentFile(const QString& filePath);
   Q_INVOKABLE void clearRecentFiles();

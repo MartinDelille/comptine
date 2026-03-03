@@ -1,6 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 BaseDialog {
     id: root
@@ -53,21 +56,21 @@ BaseDialog {
     // React to external changes to the operation's allocations
     // (e.g. when a rule is applied from RuleEditDialog)
     Connections {
-        target: _operation
+        target: root._operation
         function onAllocationsChanged() {
-            refreshAllocations();
+            root.refreshAllocations();
         }
     }
 
     CreateCounterPartDialog {
         id: counterPartDialog
-        operation: _operation
+        operation: root._operation
         onCreateCounterPart: function (account) {
             let newOperation = AppState.data.createCounterPart(operation, account);
             // AppState.navigation.currentAccount = account;
             AppState.navigation.currentOperation = newOperation;
             AppState.navigation.navigateToOperation(newOperation);
-            initialize(newOperation);
+            root.initialize(newOperation);
         }
     }
 
@@ -336,7 +339,7 @@ BaseDialog {
 
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            Layout.preferredHeight: 1
             color: Theme.border
         }
 
@@ -344,11 +347,11 @@ BaseDialog {
         RowLayout {
             Layout.fillWidth: true
             spacing: Theme.spacingNormal
-            visible: _operation !== null
+            visible: root._operation !== null
 
             Button {
                 text: qsTr("Previous Uncategorized")
-                enabled: _operation && AppState.rules.previousUncategorizedOperation(_operation) !== null
+                enabled: root._operation && AppState.rules.previousUncategorizedOperation(root._operation) !== null
                 onClicked: root.goToPreviousUncategorized()
             }
 
@@ -358,7 +361,7 @@ BaseDialog {
 
             Button {
                 text: qsTr("Next Uncategorized")
-                enabled: _operation && AppState.rules.nextUncategorizedOperation(_operation) !== null
+                enabled: root._operation && AppState.rules.nextUncategorizedOperation(root._operation) !== null
                 onClicked: root.goToNextUncategorized()
             }
         }
@@ -408,7 +411,8 @@ BaseDialog {
             }
 
             delegate: RowLayout {
-                width: allocationListView.width
+                id: allocationDelegate
+                width: parent.width
                 spacing: Theme.spacingNormal
 
                 required property int index
@@ -420,18 +424,18 @@ BaseDialog {
                     Layout.fillWidth: true
                     model: root.categoryList
                     currentIndex: {
-                        if (category === "")
+                        if (allocationDelegate.category === "")
                             return 0;
-                        let idx = root.categoryList.indexOf(category);
+                        let idx = root.categoryList.indexOf(allocationDelegate.category);
                         return idx >= 0 ? idx : 0;
                     }
                     displayText: currentIndex === 0 ? qsTr("Select category...") : currentText
                     onActivated: idx => {
-                        allocationModel.setProperty(index, "category", idx === 0 ? "" : root.categoryList[idx]);
+                        allocationModel.setProperty(allocationDelegate.index, "category", idx === 0 ? "" : root.categoryList[idx]);
                     }
                     Component.onCompleted: {
-                        if (category === "") {
-                            _unaffectedCategoryComboBox = categoryCombo;
+                        if (allocationDelegate.category === "") {
+                            root._unaffectedCategoryComboBox = categoryCombo;
                         }
                     }
                 }
@@ -439,12 +443,12 @@ BaseDialog {
                 AmountField {
                     id: allocationAmountField
                     Layout.preferredWidth: 120
-                    value: amount
+                    value: allocationDelegate.amount
                     onEdited: newValue => {
-                        allocationModel.setProperty(index, "amount", newValue);
+                        allocationModel.setProperty(allocationDelegate.index, "amount", newValue);
                     }
                     onLiveEdited: newValue => {
-                        allocationModel.setProperty(index, "amount", newValue);
+                        allocationModel.setProperty(allocationDelegate.index, "amount", newValue);
                     }
                 }
 
@@ -455,8 +459,8 @@ BaseDialog {
                     ToolTip.text: qsTr("Balance to remaining amount")
                     onClicked: {
                         // Add the remaining amount to this allocation's amount
-                        let newAmount = amount + root.remainingAmount;
-                        allocationModel.setProperty(index, "amount", newAmount);
+                        let newAmount = allocationDelegate.amount + root.remainingAmount;
+                        allocationModel.setProperty(allocationDelegate.index, "amount", newAmount);
                     }
                 }
 
@@ -467,7 +471,7 @@ BaseDialog {
                     focusPolicy: Qt.NoFocus
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("Remove category")
-                    onClicked: root.removeAllocation(index)
+                    onClicked: root.removeAllocation(allocationDelegate.index)
                 }
             }
         }
@@ -485,12 +489,12 @@ BaseDialog {
             // Create rule button
             Button {
                 text: qsTr("Create Rule...")
-                visible: _operation !== null
+                visible: root._operation !== null
                 onClicked: {
-                    if (_operation) {
+                    if (root._operation) {
                         ruleEditDialog.isNewRule = true;
                         ruleEditDialog.suggestedPrefix = labelField.text.trim();
-                        ruleEditDialog.suggestedAmount = editedAmount;
+                        ruleEditDialog.suggestedAmount = root.editedAmount;
                         if (allocationModel.count > 0 && allocationModel.get(0).category !== "") {
                             ruleEditDialog.suggestedCategory = allocationModel.get(0).category;
                         } else {

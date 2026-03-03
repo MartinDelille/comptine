@@ -44,20 +44,20 @@ Dialog {
             id: acceptButton
 
             focus: true
-            text: acceptButtonText
+            text: root.acceptButtonText
             DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
         }
 
         Button {
             id: discardButton
-            text: discardButtonText
+            text: root.discardButtonText
             visible: text.length > 0
             DialogButtonBox.buttonRole: DialogButtonBox.DestructiveRole
         }
 
         Button {
             id: rejectButton
-            text: rejectButtonText
+            text: root.rejectButtonText
             visible: text.length > 0
             DialogButtonBox.buttonRole: DialogButtonBox.RejectRole
         }

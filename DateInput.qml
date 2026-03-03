@@ -1,18 +1,22 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 Item {
+    id: root
     property date selectedDate: new Date()
     width: textField.width
     height: textField.height
     TextField {
         id: textField
-        text: Qt.formatDate(selectedDate, "dd/MM/yyyy")
-        onPressed: popup.doSelectDate(selectedDate)
+        text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
+        onPressed: popup.doSelectDate(root.selectedDate)
         onActiveFocusChanged: {
             if (activeFocus) {
-                popup.doSelectDate(selectedDate);
+                popup.doSelectDate(root.selectedDate);
             } else {
                 popup.close();
             }
@@ -82,16 +86,17 @@ Item {
                 locale: Qt.locale("en_US")
 
                 onClicked: function (date) {
-                    selectedDate = date;
+                    root.selectedDate = date;
                     popup.close();
                 }
                 delegate: Rectangle {
+                    id: dayDelegate
                     required property var model
                     color: {
                         if (hoverHandler.hovered) {
                             return Theme.backgroundHover;
                         }
-                        if (model.day === selectedDate.getDate() && model.month === selectedDate.getMonth() && model.year === selectedDate.getFullYear()) {
+                        if (model.day === root.selectedDate.getDate() && model.month === root.selectedDate.getMonth() && model.year === root.selectedDate.getFullYear()) {
                             return Theme.backgroundSelected;
                         }
                         return "transparent";
@@ -103,8 +108,8 @@ Item {
                         anchors.fill: parent
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        opacity: model.month === monthGrid.month ? 1 : 0
-                        text: monthGrid.locale.toString(model.date, "d")
+                        opacity: dayDelegate.model.month === monthGrid.month ? 1 : 0
+                        text: monthGrid.locale.toString(dayDelegate.model.date, "d")
                         font: monthGrid.font
                     }
                 }

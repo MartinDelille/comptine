@@ -2,6 +2,7 @@
 
 #include <QDate>
 #include <QObject>
+#include <QQmlEngine>
 
 #include "PropertyMacros.h"
 
@@ -12,6 +13,7 @@ class Operation;
 
 class NavigationController : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
   // Tab navigation
   PROPERTY_RW(int, currentTabIndex, 0)

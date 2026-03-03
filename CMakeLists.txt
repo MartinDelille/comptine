@@ -109,49 +109,37 @@ find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools Network)
 qt_standard_project_setup(REQUIRES 6.8)
 
 # libComptine - Core Business Logic Library
-# Shared library containing all business logic, models, and controllers.
+# Static library containing all business logic, models, and controllers.
+# Declared as a QML module so that classes with QML_ELEMENT are properly
+# registered in the QML type system.
 # Used by both the main application and unit tests to avoid code duplication.
 
-set(LIBCOMPTINE_SOURCES
-    AppSettings.cpp
-    AppSettings.h
-    Operation.cpp
-    Operation.h
-    Account.cpp
-    Account.h
-    Category.cpp
-    Category.h
-    BudgetData.cpp
-    BudgetData.h
-    OperationListModel.cpp
-    OperationListModel.h
-    AccountListModel.cpp
-    AccountListModel.h
-    RuleListModel.cpp
-    RuleListModel.h
-    CategoryController.cpp
-    CategoryController.h
-    ClipboardController.cpp
-    ClipboardController.h
-    NavigationController.cpp
-    NavigationController.h
-    Rule.cpp
-    Rule.h
-    RuleController.cpp
-    RuleController.h
-    FileController.cpp
-    FileController.h
-    TranslationManager.cpp
-    TranslationManager.h
-    UpdateController.cpp
-    UpdateController.h
-    UndoCommands.cpp
-    UndoCommands.h
+qt_add_library(libComptine STATIC)
+
+qt_add_qml_module(libComptine
+  URI ComptineLib
+  OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ComptineLib
+  SOURCES
+    AppSettings.cpp AppSettings.h
+    Operation.cpp Operation.h
+    Account.cpp Account.h
+    Category.cpp Category.h
+    BudgetData.cpp BudgetData.h
+    OperationListModel.cpp OperationListModel.h
+    AccountListModel.cpp AccountListModel.h
+    RuleListModel.cpp RuleListModel.h
+    CategoryController.cpp CategoryController.h
+    ClipboardController.cpp ClipboardController.h
+    NavigationController.cpp NavigationController.h
+    Rule.cpp Rule.h
+    RuleController.cpp RuleController.h
+    FileController.cpp FileController.h
+    TranslationManager.cpp TranslationManager.h
+    UpdateController.cpp UpdateController.h
+    UndoCommands.cpp UndoCommands.h
     CsvParser.h
     PropertyMacros.h
 )
-
-add_library(libComptine STATIC ${LIBCOMPTINE_SOURCES})
 
 # Link Qt dependencies
 target_link_libraries(
@@ -301,6 +289,8 @@ qt_add_qml_module(
   Comptine
   URI
   Comptine
+  DEPENDENCIES
+  ComptineLib
   QML_FILES
   Main.qml
   AboutDialog.qml
@@ -356,7 +346,7 @@ endif()
 
 target_link_libraries(
     Comptine
-    PRIVATE Qt6::Quick Qt6::Network ryml::ryml libComptine
+    PRIVATE Qt6::Quick Qt6::Network ryml::ryml libComptine libComptineplugin
 )
 
 # Platform-specific file coordination for cloud storage support (Dropbox,

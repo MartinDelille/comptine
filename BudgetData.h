@@ -14,6 +14,7 @@ class NavigationController;
 
 class BudgetData : public QObject {
   Q_OBJECT
+  QML_ELEMENT
 
   // Read-only computed properties (macro-generated, implemented in .cpp)
   PROPERTY_RO(int, accountCount)

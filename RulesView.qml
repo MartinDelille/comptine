@@ -1,6 +1,9 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Comptine
 
 BaseDialog {
     id: root
@@ -69,21 +72,21 @@ BaseDialog {
                     width: ListView.view.width
                     height: contentRow.implicitHeight + Theme.spacingNormal * 2
                     color: delegateMouseArea.containsMouse ? Theme.backgroundHover : Theme.surfaceElevated
-                    border.color: ruleListView.currentIndex === index ? Theme.accent : Theme.borderLight
-                    border.width: ruleListView.currentIndex === index ? 2 : Theme.cardBorderWidth
+                    border.color: ListView.isCurrentItem ? Theme.accent : Theme.borderLight
+                    border.width: ListView.isCurrentItem ? 2 : Theme.cardBorderWidth
                     radius: Theme.cardRadius
 
                     MouseArea {
                         id: delegateMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        onClicked: ruleListView.currentIndex = index
+                        onClicked: ruleListView.currentIndex = ruleDelegate.index
                         onDoubleClicked: {
                             ruleEditDialog.isNewRule = false;
-                            ruleEditDialog.ruleIndex = index;
-                            ruleEditDialog.originalCategory = category;
-                            ruleEditDialog.originalLabelPrefix = labelPrefix;
-                            ruleEditDialog.originalAmountFilter = amountFilter;
+                            ruleEditDialog.ruleIndex = ruleDelegate.index;
+                            ruleEditDialog.originalCategory = ruleDelegate.category;
+                            ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                            ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                             ruleEditDialog.open();
                         }
                     }
@@ -96,11 +99,11 @@ BaseDialog {
 
                         // Priority indicator
                         Label {
-                            text: (index + 1).toString()
+                            text: (ruleDelegate.index + 1).toString()
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textMuted
                             Layout.preferredWidth: 24
-                            horizontalAlignment: Text.AlignCenter
+                            horizontalAlignment: Text.AlignHCenter
                         }
 
                         // Rule info
@@ -109,7 +112,7 @@ BaseDialog {
                             spacing: 2
 
                             Label {
-                                text: qsTr("Prefix: \"%1\"").arg(labelPrefix)
+                                text: qsTr("Prefix: \"%1\"").arg(ruleDelegate.labelPrefix)
                                 font.pixelSize: Theme.fontSizeNormal
                                 color: Theme.textPrimary
                                 elide: Text.ElideRight
@@ -117,7 +120,7 @@ BaseDialog {
                             }
 
                             Label {
-                                text: amountFilter !== 0 ? qsTr("Assign to: %1 (amount: %2)").arg(category).arg(Theme.formatAmount(amountFilter)) : qsTr("Assign to: %1").arg(category)
+                                text: ruleDelegate.amountFilter !== 0 ? qsTr("Assign to: %1 (amount: %2)").arg(ruleDelegate.category).arg(Theme.formatAmount(ruleDelegate.amountFilter)) : qsTr("Assign to: %1").arg(ruleDelegate.category)
                                 font.pixelSize: Theme.fontSizeSmall
                                 color: Theme.textSecondary
                             }
@@ -127,10 +130,10 @@ BaseDialog {
                         ToolButton {
                             text: "\u2191"
                             font.pixelSize: Theme.fontSizeNormal
-                            enabled: index > 0
+                            enabled: ruleDelegate.index > 0
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: AppState.rules.moveRule(index, index - 1)
+                            onClicked: AppState.rules.moveRule(ruleDelegate.index, ruleDelegate.index - 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move up (higher priority)")
                         }
@@ -139,10 +142,10 @@ BaseDialog {
                         ToolButton {
                             text: "\u2193"
                             font.pixelSize: Theme.fontSizeNormal
-                            enabled: index < AppState.rules.ruleCount - 1
+                            enabled: ruleDelegate.index < AppState.rules.ruleCount - 1
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: AppState.rules.moveRule(index, index + 1)
+                            onClicked: AppState.rules.moveRule(ruleDelegate.index, ruleDelegate.index + 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move down (lower priority)")
                         }
@@ -155,10 +158,10 @@ BaseDialog {
                             opacity: hovered ? 1.0 : 0.5
                             onClicked: {
                                 ruleEditDialog.isNewRule = false;
-                                ruleEditDialog.ruleIndex = index;
-                                ruleEditDialog.originalCategory = category;
-                                ruleEditDialog.originalLabelPrefix = labelPrefix;
-                                ruleEditDialog.originalAmountFilter = amountFilter;
+                                ruleEditDialog.ruleIndex = ruleDelegate.index;
+                                ruleEditDialog.originalCategory = ruleDelegate.category;
+                                ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                                ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                                 ruleEditDialog.open();
                             }
                             ToolTip.visible: hovered
@@ -171,7 +174,7 @@ BaseDialog {
                             font.pixelSize: Theme.fontSizeNormal
                             focusPolicy: Qt.NoFocus
                             opacity: hovered ? 1.0 : 0.5
-                            onClicked: AppState.rules.removeRule(index)
+                            onClicked: AppState.rules.removeRule(ruleDelegate.index)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Delete rule")
                         }

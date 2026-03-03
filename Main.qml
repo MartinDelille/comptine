@@ -1,7 +1,10 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
+import Comptine
 
 ApplicationWindow {
     id: window
@@ -72,7 +75,7 @@ ApplicationWindow {
                 text: qsTr("&New...")
                 shortcut: StandardKey.New
                 onTriggered: {
-                    if (!checkUnsavedChanges("new")) {
+                    if (!window.checkUnsavedChanges("new")) {
                         AppState.file.clear();
                     }
                 }
@@ -81,7 +84,7 @@ ApplicationWindow {
                 text: qsTr("&Open...")
                 shortcut: StandardKey.Open
                 onTriggered: {
-                    if (!checkUnsavedChanges("open")) {
+                    if (!window.checkUnsavedChanges("open")) {
                         openDialog.open();
                     }
                 }
@@ -110,6 +113,7 @@ ApplicationWindow {
                 Instantiator {
                     model: AppState.settings.recentFilesModel
                     delegate: MenuItem {
+                        required property var model
                         text: model.display
                         onTriggered: window.openRecentFile(model.display)
                     }
@@ -138,7 +142,7 @@ ApplicationWindow {
                 text: qsTr("&Quit")
                 shortcut: StandardKey.Quit
                 onTriggered: {
-                    if (!checkUnsavedChanges("quit")) {
+                    if (!window.checkUnsavedChanges("quit")) {
                         Qt.quit();
                     }
                 }
@@ -229,13 +233,13 @@ ApplicationWindow {
             Action {
                 text: qsTr("&Previous Month")
                 shortcut: "Left"
-                enabled: AppState.navigation.currentTabIndex === 1 && !anyDialogOpen
+                enabled: AppState.navigation.currentTabIndex === 1 && !window.anyDialogOpen
                 onTriggered: AppState.navigation.previousMonth()
             }
             Action {
                 text: qsTr("&Next Month")
                 shortcut: "Right"
-                enabled: AppState.navigation.currentTabIndex === 1 && !anyDialogOpen
+                enabled: AppState.navigation.currentTabIndex === 1 && !window.anyDialogOpen
                 onTriggered: AppState.navigation.nextMonth()
             }
         }
@@ -403,7 +407,7 @@ ApplicationWindow {
                     saveDialog.open();
                 }
             } else if (button === MessageDialog.Discard) {
-                forceQuit = (pendingAction === "quit");
+                window.forceQuit = (window.pendingAction === "quit");
                 window.performPendingAction();
             } else {
                 // Cancel: clear pending action
