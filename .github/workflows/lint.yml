@@ -46,6 +46,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ steps.qt-version.outputs.version }}
+          cache: true
 
       - name: Format C++
         run: find . -name '*.cpp' -o -name '*.h' | xargs uv run clang-format -i
