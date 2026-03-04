@@ -53,6 +53,9 @@ jobs:
       - name: Format QML
         run: find . -name '*.qml' | xargs qmlformat -i
 
+      - name: Format CMake with gersemi
+        run: find . -name 'CMakeLists.txt' -o -name '*.cmake' | xargs uv run gersemi -i
+
       - name: Check formatting
         run: git diff --exit-code
 
