@@ -18,7 +18,11 @@ BaseDialog {
         incomeCheckBox.checked = originalBudgetLimit > 0;
         // Display absolute value
         budgetLimitField.value = Math.abs(originalBudgetLimit);
-        budgetLimitField.forceActiveFocus();
+        if (originalName === "") {
+            categoryNameField.forceActiveFocus();
+        } else {
+            budgetLimitField.forceActiveFocus();
+        }
     }
 
     onAccepted: {
