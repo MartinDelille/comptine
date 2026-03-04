@@ -45,6 +45,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ steps.qt-version.outputs.version }}
+          cache: true
 
       - name: Check translations complete
         if: matrix.os == 'macos-latest'
