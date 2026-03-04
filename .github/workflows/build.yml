@@ -59,19 +59,11 @@ jobs:
           fi
           echo "All translations are complete!"
 
-      - name: Install librsvg (MacOS)
-        if: matrix.os == 'macos-latest'
-        run: brew install librsvg
-
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y librsvg2-bin imagemagick libxcb-cursor0 libfuse2
-
-      - name: Install dependencies (Windows)
-        if: matrix.os == 'windows-latest'
-        run: choco install imagemagick rsvg-convert -y
+          sudo apt-get install -y libxcb-cursor0 libfuse2
 
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
