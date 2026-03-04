@@ -1,0 +1,3 @@
+# vim: filetype=yaml
+
+warn_about_unknown_commands: false
