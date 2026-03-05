@@ -292,14 +292,6 @@ BaseDialog {
                         allocationModel.setProperty(0, "amount", newValue);
                     }
                 }
-                onLiveEdited: newValue => {
-                    root.editedAmount = newValue;
-                    // When there's only one allocation (single category operation),
-                    // automatically update its amount to match the total
-                    if (allocationModel.count === 1) {
-                        allocationModel.setProperty(0, "amount", newValue);
-                    }
-                }
             }
         }
 
@@ -445,9 +437,6 @@ BaseDialog {
                     Layout.preferredWidth: 120
                     value: allocationDelegate.amount
                     onEdited: newValue => {
-                        allocationModel.setProperty(allocationDelegate.index, "amount", newValue);
-                    }
-                    onLiveEdited: newValue => {
                         allocationModel.setProperty(allocationDelegate.index, "amount", newValue);
                     }
                 }

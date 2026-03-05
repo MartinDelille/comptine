@@ -17,9 +17,6 @@ TextField {
     // Signal emitted when the value changes via user input (on editing finished)
     signal edited(double newValue)
 
-    // Signal emitted on each text change for live updates (e.g., sum recalculation)
-    signal liveEdited(double newValue)
-
     horizontalAlignment: Text.AlignRight
 
     // Handle undo/redo: always forward to app's undo stack and clear focus
@@ -76,7 +73,7 @@ TextField {
             _userEditing = true;
             let parsed = root.parseAmount(text);
             if (!isNaN(parsed)) {
-                root.liveEdited(parsed);
+                root.edited(parsed);
             }
         }
     }
