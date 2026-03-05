@@ -109,7 +109,6 @@ Rectangle {
                     }
 
                     onEdited: newValue => applyValue(newValue)
-                    onLiveEdited: newValue => applyValue(newValue)
                 }
 
                 ToolButton {
@@ -160,7 +159,6 @@ Rectangle {
                     }
 
                     onEdited: newValue => applyValue(newValue)
-                    onLiveEdited: newValue => applyValue(newValue)
                 }
 
                 ToolButton {
