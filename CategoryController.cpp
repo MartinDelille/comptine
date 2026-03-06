@@ -19,11 +19,11 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _navigation(navigation),
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::leftoverDataChanged);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
   connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
-  connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::leftoverDataChanged);
-  connect(this, &CategoryController::leftoverDataChanged, this, &CategoryController::refresh);
+  connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::budgetDataChanged);
+  connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
   connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
 
@@ -79,6 +79,28 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
     { ReportAmountRole, "reportAmount" },
     { BudgetLimitRole, "budgetLimit" },
   };
+}
+
+double CategoryController::totalIncome() const {
+  double total = 0.0;
+  for (const Category* category : _categories) {
+    double budgetLimit = category->budgetLimitForMonth(_navigation.budgetDate());
+    if (budgetLimit > 0) {
+      total += budgetLimit;
+    }
+  }
+  return total;
+}
+
+double CategoryController::totalExpense() const {
+  double total = 0.0;
+  for (const Category* category : _categories) {
+    double budgetLimit = category->budgetLimitForMonth(_navigation.budgetDate());
+    if (budgetLimit < 0) {
+      total += -budgetLimit;  // Show expenses as positive
+    }
+  }
+  return total;
 }
 
 double CategoryController::totalToSave() const {
@@ -155,6 +177,7 @@ void CategoryController::addCategory(Category* category) {
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
   connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
+  connect(category, &Category::budgetLimitChanged, this, &CategoryController::budgetDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);
 

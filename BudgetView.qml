@@ -85,6 +85,23 @@ FocusScope {
                         spacing: Theme.spacingSmall
 
                         Label {
+                            text: qsTr("Total Budget:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            property real _balance: AppState.categories.totalIncome - AppState.categories.totalExpense
+                            text: `${Theme.formatAmountWithoutCurrency(AppState.categories.totalIncome)} - ${Theme.formatAmountWithoutCurrency(AppState.categories.totalExpense)} = ${Theme.formatAmount(_balance)}`
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                            color: _balance == 0 ? Theme.textMuted : Theme.negative
+                        }
+                    }
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+
+                        Label {
                             text: qsTr("To Save:")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textSecondary

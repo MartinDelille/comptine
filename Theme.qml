@@ -64,8 +64,12 @@ QtObject {
     readonly property int spacingXLarge: 20
 
     // Helper function to format currency
+    function formatAmountWithoutCurrency(amount: real): string {
+        return amount.toFixed(2).replace('.', ',');
+    }
+
     function formatAmount(amount: real): string {
-        return amount.toFixed(2).replace('.', ',') + " €";
+        return formatAmountWithoutCurrency(amount) + " €";
     }
 
     // Get amount color based on value

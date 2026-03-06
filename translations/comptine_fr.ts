@@ -53,6 +53,10 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>BudgetView</name>
     <message>
+        <source>Total Budget:</source>
+        <translation>Budget Total:</translation>
+    </message>
+    <message>
         <source>To Save:</source>
         <translation>Vers l&apos;épargne :</translation>
     </message>
