@@ -65,8 +65,8 @@ public:
 
   // Category management
   Q_INVOKABLE Category* addCategory(const QString& name, double budgetLimit);
+  Q_INVOKABLE void deleteCategory(Category* category);
   void addCategory(Category* category);
-  void removeCategory(int index);
   void clear();
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
 

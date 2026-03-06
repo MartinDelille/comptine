@@ -336,7 +336,7 @@ ApplicationWindow {
             text: qsTr(`Are you sure you want to delete ${_categoryName} ?`)
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: AppState.data.deleteCategory(AppState.categories.current)
+        onAccepted: AppState.categories.deleteCategory(AppState.categories.current)
     }
 
     RulesView {
