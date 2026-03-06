@@ -20,10 +20,12 @@ class CategoryController : public QAbstractListModel {
   QML_ELEMENT
 
   Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
-  Q_PROPERTY(double totalToSave READ totalToSave NOTIFY leftoverDataChanged)
-  Q_PROPERTY(double totalToReport READ totalToReport NOTIFY leftoverDataChanged)
-  Q_PROPERTY(double totalFromReport READ totalFromReport NOTIFY leftoverDataChanged)
-  Q_PROPERTY(double netReport READ netReport NOTIFY leftoverDataChanged)
+  Q_PROPERTY(double totalIncome READ totalIncome NOTIFY budgetDataChanged)
+  Q_PROPERTY(double totalExpense READ totalExpense NOTIFY budgetDataChanged)
+  Q_PROPERTY(double totalToSave READ totalToSave NOTIFY budgetDataChanged)
+  Q_PROPERTY(double totalToReport READ totalToReport NOTIFY budgetDataChanged)
+  Q_PROPERTY(double totalFromReport READ totalFromReport NOTIFY budgetDataChanged)
+  Q_PROPERTY(double netReport READ netReport NOTIFY budgetDataChanged)
   PROPERTY_RO(Category*, current)
 
 public:
@@ -47,7 +49,9 @@ public:
   QVariant data(const QModelIndex& index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;
 
-  // Leftover totals accessors
+  // Totals accessors
+  double totalIncome() const;
+  double totalExpense() const;
   double totalToSave() const;
   double totalToReport() const;
   double totalFromReport() const;
@@ -98,7 +102,7 @@ public slots:
 
 signals:
   void countChanged();
-  void leftoverDataChanged();
+  void budgetDataChanged();
   void monthHistoryChanged();
 
 private:

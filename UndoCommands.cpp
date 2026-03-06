@@ -522,7 +522,7 @@ void SetLeftoverDecisionCommand::undo() {
     _category.setLeftoverDecision(_date.year(), _date.month(), _oldDecision);
   }
   if (_categoryController) {
-    emit _categoryController->leftoverDataChanged();
+    emit _categoryController->budgetDataChanged();
   }
 }
 
@@ -533,7 +533,7 @@ void SetLeftoverDecisionCommand::redo() {
     _category.setLeftoverDecision(_date.year(), _date.month(), _newDecision);
   }
   if (_categoryController) {
-    emit _categoryController->leftoverDataChanged();
+    emit _categoryController->budgetDataChanged();
   }
 }
 
