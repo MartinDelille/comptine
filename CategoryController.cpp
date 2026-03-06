@@ -164,6 +164,34 @@ Category* CategoryController::addCategory(const QString& name, double budgetLimi
   return category;
 }
 
+void CategoryController::deleteCategory(Category* category) {
+  if (!category) return;
+  if (!_budgetData.operationModel()) return;
+
+  QUndoCommand* macroCommand = new QUndoCommand();
+
+  // Update all operations that reference this category to remove it from their allocations
+  for (Account* account : _budgetData.accounts()) {
+    for (Operation* op : account->operations()) {
+      // Create a new allocations list without the deleted category
+      QList<Allocation*> newAllocations;
+      for (auto alloc : op->allocations()) {
+        if (alloc->category() != category) {
+          newAllocations.append(new Allocation(alloc->category(), alloc->amount()));
+        }
+      }
+      // Only create a command if the allocations actually changed
+      if (newAllocations.size() != op->allocations().size()) {
+        new SplitOperationCommand(*op, _budgetData.operationModel(),
+                                  newAllocations, macroCommand);
+      }
+    }
+  }
+
+  _undoStack.push(new DeleteCategoryCommand(this, category));
+  _undoStack.push(macroCommand);
+}
+
 void CategoryController::addCategory(Category* category) {
   if (category == nullptr) {
     return;
@@ -192,15 +220,6 @@ void CategoryController::addCategory(Category* category) {
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
-}
-
-void CategoryController::removeCategory(int index) {
-  if (index >= 0 && index < _categories.size()) {
-    beginRemoveRows(QModelIndex(), index, index);
-    delete _categories.takeAt(index);
-    endRemoveRows();
-    emit countChanged();
-  }
 }
 
 void CategoryController::clear() {
