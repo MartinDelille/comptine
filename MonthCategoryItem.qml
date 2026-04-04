@@ -112,22 +112,25 @@ Rectangle {
                 }
 
                 ToolButton {
-                    text: "⬆"
+                    property bool canDiscard: root.saveAmount != 0
+                    text: canDiscard ? "✖" : "⬆"
                     font.pixelSize: Theme.fontSizeSmall
-                    enabled: !root.isBalanced
+                    enabled: !(root.isBalanced && root.saveAmount === 0)
                     opacity: enabled ? 1.0 : 0.3
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
-                    padding: 0
-                    focusPolicy: Qt.NoFocus
 
                     onClicked: {
-                        let newSave = root.saveAmount + root.remainingLeftover;
-                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newSave, root.reportAmount);
+                        if (canDiscard) {
+                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, 0, root.reportAmount);
+                        } else {
+                            let newSave = root.saveAmount + root.remainingLeftover;
+                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newSave, root.reportAmount);
+                        }
                     }
 
                     ToolTip.visible: hovered
-                    ToolTip.text: qsTr("Allocate remaining to Save")
+                    ToolTip.text: canDiscard ? qsTr("Discard") : qsTr("Allocate remaining to Save")
                     ToolTip.delay: 500
                 }
             }
@@ -162,36 +165,31 @@ Rectangle {
                 }
 
                 ToolButton {
-                    text: "⬆"
+                    property bool canDiscard: root.reportAmount != 0
+                    text: canDiscard ? "✖" : "⬆"
                     font.pixelSize: Theme.fontSizeSmall
-                    enabled: !root.isBalanced
+                    enabled: !(root.isBalanced && root.reportAmount === 0)
                     opacity: enabled ? 1.0 : 0.3
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
-                    padding: 0
-                    focusPolicy: Qt.NoFocus
 
                     onClicked: {
-                        if (root.leftover >= 0) {
-                            let newReport = root.reportAmount + root.remainingLeftover;
-                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newReport);
+                        if (canDiscard) {
+                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, 0);
                         } else {
-                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, root.leftover);
+                            if (root.leftover >= 0) {
+                                let newReport = root.reportAmount + root.remainingLeftover;
+                                AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newReport);
+                            } else {
+                                AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, root.leftover);
+                            }
                         }
                     }
 
                     ToolTip.visible: hovered
-                    ToolTip.text: root.leftover >= 0 ? qsTr("Allocate remaining to Report") : qsTr("Carry forward deficit")
+                    ToolTip.text: canDiscard ? qsTr("Clear report") : (root.leftover >= 0 ? qsTr("Allocate remaining to Report") : qsTr("Carry forward deficit"))
                     ToolTip.delay: 500
                 }
-            }
-
-            // Balanced indicator
-            Label {
-                text: root.isBalanced ? "✓" : ""
-                font.pixelSize: Theme.fontSizeNormal
-                color: Theme.positive
-                visible: root.leftover !== 0
             }
 
             Label {

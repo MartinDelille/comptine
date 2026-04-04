@@ -424,6 +424,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Reste : %1</translation>
     </message>
     <message>
+        <source>Clear report</source>
+        <translation>Réinitialiser le report</translation>
+    </message>
+    <message>
         <source>Exceeded: %1</source>
         <translation>Dépassement : %1</translation>
     </message>
@@ -454,6 +458,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Allocate remaining to Save</source>
         <translation>Allouer le reste à l&apos;épargne</translation>
+    </message>
+    <message>
+        <source>Discard</source>
+        <translation>Remettre à zéro</translation>
     </message>
     <message>
         <source>Allocate remaining to Report</source>
