@@ -93,9 +93,8 @@ public:
   // Get monthly totals for savings and leftover transfers
   Q_INVOKABLE QVariantMap leftoverTotals(const QDate& date) const;
 
-  // Set leftover amounts (undoable) - supports partial allocation
-  Q_INVOKABLE void setLeftoverAmounts(const QString& categoryName, const QDate& date,
-                                      double saveAmount, double reportAmount);
+  Q_INVOKABLE void setSaveAmount(Category* category, const QDate& date, double saveAmount);
+  Q_INVOKABLE void setReportAmount(Category* category, const QDate& date, double reportAmount);
 
 public slots:
   void refresh();

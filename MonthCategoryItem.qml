@@ -105,7 +105,7 @@ Rectangle {
                     function applyValue(newValue) {
                         let maxSave = root.saveAmount + root.remainingLeftover;
                         let clampedValue = Math.max(0, Math.min(newValue, maxSave));
-                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newValue, root.reportAmount);
+                        AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -122,10 +122,10 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, 0, root.reportAmount);
+                            AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, 0);
                         } else {
                             let newSave = root.saveAmount + root.remainingLeftover;
-                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, newSave, root.reportAmount);
+                            AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, newSave);
                         }
                     }
 
@@ -158,7 +158,7 @@ Rectangle {
                         } else {
                             clampedValue = Math.max(root.leftover, Math.min(newValue, 0));
                         }
-                        AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newValue);
+                        AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -175,13 +175,13 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, 0);
+                            AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, 0);
                         } else {
                             if (root.leftover >= 0) {
                                 let newReport = root.reportAmount + root.remainingLeftover;
-                                AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, newReport);
+                                AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, newReport);
                             } else {
-                                AppState.categories.setLeftoverAmounts(root.category.name, AppState.navigation.budgetDate, root.saveAmount, root.leftover);
+                                AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, root.leftover);
                             }
                         }
                     }
@@ -285,13 +285,7 @@ Rectangle {
             }
 
             Label {
-                text: {
-                    let base = Theme.formatAmount(Math.abs(root.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit));
-                    if (root.accumulated > 0) {
-                        return base + " (+" + Theme.formatAmount(root.accumulated) + ")";
-                    }
-                    return base;
-                }
+                text: Theme.formatAmount(Math.abs(root.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit)) + " (" + (root.accumulated > 0 ? "+" : "") + Theme.formatAmount(root.accumulated) + ")"
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary
             }

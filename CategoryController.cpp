@@ -416,15 +416,26 @@ QVariantMap CategoryController::leftoverTotals(const QDate& date) const {
   return result;
 }
 
-void CategoryController::setLeftoverAmounts(const QString& categoryName,
-                                            const QDate& date,
-                                            double saveAmount, double reportAmount) {
-  Category* category = getCategoryByName(categoryName);
+void CategoryController::setSaveAmount(Category* category, const QDate& date, double saveAmount) {
   if (!category) return;
 
   MonthRecord oldRecord = category->monthRecord(date.year(), date.month());
   MonthRecord newRecord = oldRecord;  // Preserve budgetLimit if set
   newRecord.saveAmount = saveAmount;
+
+  // Only create undo command if something changed
+  if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount)) {
+    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, oldRecord, newRecord));
+  }
+}
+
+void CategoryController::setReportAmount(Category* category,
+                                         const QDate& date,
+                                         double reportAmount) {
+  if (!category) return;
+
+  MonthRecord oldRecord = category->monthRecord(date.year(), date.month());
+  MonthRecord newRecord = oldRecord;  // Preserve budgetLimit if set
   newRecord.reportAmount = reportAmount;
 
   // Only create undo command if something changed
