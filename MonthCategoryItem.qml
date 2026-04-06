@@ -191,34 +191,6 @@ Rectangle {
                     ToolTip.delay: 500
                 }
             }
-
-            Label {
-                text: {
-                    if (root.isIncome) {
-                        if (root.amount > root.budgetLimit) {
-                            return qsTr("PENDING");
-                        }
-                    } else if (root.amount < root.budgetLimit) {
-                        return qsTr("EXCEEDED");
-                    }
-                    return "";
-                }
-                font.pixelSize: Theme.fontSizeSmall
-                font.bold: true
-                color: root.isIncome ? Theme.warning : Theme.negative
-            }
-
-            Label {
-                text: {
-                    let base = Theme.formatAmount(Math.abs(root.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit));
-                    if (root.accumulated > 0) {
-                        return base + " (+" + Theme.formatAmount(root.accumulated) + ")";
-                    }
-                    return base;
-                }
-                font.pixelSize: Theme.fontSizeNormal
-                color: Theme.textSecondary
-            }
         }
 
         Rectangle {
@@ -258,36 +230,70 @@ Rectangle {
             }
         }
 
-        Label {
-            property double remaining: root.isIncome ? (root.budgetLimit - root.amount) : (root.amount - root.budgetLimit)
-            text: {
-                let label, value;
-                if (root.isIncome) {
-                    if (remaining > 0) {
-                        label = qsTr("Expected: %1");
-                        value = remaining;
+        RowLayout {
+            Label {
+                property double remaining: root.isIncome ? (root.budgetLimit - root.amount) : (root.amount - root.budgetLimit)
+                text: {
+                    let label, value;
+                    if (root.isIncome) {
+                        if (remaining > 0) {
+                            label = qsTr("Expected: %1");
+                            value = remaining;
+                        } else {
+                            label = qsTr("Received: %1 extra");
+                            value = -remaining;
+                        }
                     } else {
-                        label = qsTr("Received: %1 extra");
-                        value = -remaining;
+                        if (remaining >= 0) {
+                            label = qsTr("Remaining: %1");
+                            value = remaining;
+                        } else {
+                            label = qsTr("Exceeded: %1");
+                            value = -remaining;
+                        }
                     }
-                } else {
-                    if (remaining >= 0) {
-                        label = qsTr("Remaining: %1");
-                        value = remaining;
+                    return label.arg(Theme.formatAmount(value));
+                }
+                font.pixelSize: Theme.fontSizeSmall
+                color: {
+                    if (root.isIncome) {
+                        return remaining > 0 ? Theme.warning : Theme.positive;
                     } else {
-                        label = qsTr("Exceeded: %1");
-                        value = -remaining;
+                        return remaining >= 0 ? Theme.textSecondary : Theme.negative;
                     }
                 }
-                return label.arg(Theme.formatAmount(value));
             }
-            font.pixelSize: Theme.fontSizeSmall
-            color: {
-                if (root.isIncome) {
-                    return remaining > 0 ? Theme.warning : Theme.positive;
-                } else {
-                    return remaining >= 0 ? Theme.textSecondary : Theme.negative;
+
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Label {
+                text: {
+                    if (root.isIncome) {
+                        if (root.amount > root.budgetLimit) {
+                            return qsTr("PENDING");
+                        }
+                    } else if (root.amount < root.budgetLimit) {
+                        return qsTr("EXCEEDED");
+                    }
+                    return "";
                 }
+                font.pixelSize: Theme.fontSizeSmall
+                font.bold: true
+                color: root.isIncome ? Theme.warning : Theme.negative
+            }
+
+            Label {
+                text: {
+                    let base = Theme.formatAmount(Math.abs(root.amount)) + " / " + Theme.formatAmount(Math.abs(root.budgetLimit));
+                    if (root.accumulated > 0) {
+                        return base + " (+" + Theme.formatAmount(root.accumulated) + ")";
+                    }
+                    return base;
+                }
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textSecondary
             }
         }
     }
