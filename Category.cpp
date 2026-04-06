@@ -112,7 +112,7 @@ double Category::accumulatedLeftoverBefore(const QDate& date) const {
   for (auto it = _monthHistory.constBegin(); it != _monthHistory.constEnd(); ++it) {
     const YearMonth& ym = it.key();
     // Only count decisions before the specified month
-    if (ym.year < date.year() || (ym.year == date.year() && ym.month < date.month())) {
+    if (ym.year < date.year() || (ym.year == date.year() && ym.month <= date.month())) {
       // Only reported amounts carry forward
       total += it.value().reportAmount;
     }

@@ -342,16 +342,16 @@ private slots:
     cat.setLeftoverDecision(2025, 3, { 0.0, 10.0 });   // report 10
 
     // Before January: nothing
-    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 1, 1)), 0.0);
+    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2024, 12, 31)), 0.0);
 
     // Before February: only January's report
-    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 2, 1)), 30.0);
+    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 1, 31)), 30.0);
 
     // Before March: January + February reports
-    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 3, 1)), 50.0);
+    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 2, 28)), 50.0);
 
     // Before April: all three
-    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 4, 1)), 60.0);
+    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 3, 31)), 60.0);
   }
 
   void testAccumulatedLeftoverBeforeIgnoresSaveAmounts() {
@@ -373,8 +373,8 @@ private slots:
     // Before Feb 2025: all three
     QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 2, 1)), 80.0);
 
-    // Before Jan 2025: only 2024 entries
-    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2025, 1, 1)), 65.0);
+    // Before December 2024: only 2024 entries
+    QCOMPARE(cat.accumulatedLeftoverBefore(QDate(2024, 12, 1)), 65.0);
   }
 
   // allMonthHistory
