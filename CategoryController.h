@@ -81,15 +81,6 @@ public:
   // Get accumulated leftover from previous months (sum of all "report" decisions before this month)
   Q_INVOKABLE double accumulatedLeftover(const QString& categoryName, const QDate& date) const;
 
-  // Get the current leftover decision for a category in a month
-  Q_INVOKABLE QVariantMap leftoverDecision(const QString& categoryName, const QDate& date) const;
-
-  // Get summary of all categories with leftover info for a month (for the leftover dialog)
-  Q_INVOKABLE QVariantList leftoverSummary(const QDate& date) const;
-
-  // Get monthly totals for savings and leftover transfers
-  Q_INVOKABLE QVariantMap leftoverTotals(const QDate& date) const;
-
   Q_INVOKABLE void setSaveAmount(Category* category, const QDate& date, double saveAmount);
   Q_INVOKABLE void setReportAmount(Category* category, const QDate& date, double reportAmount);
 
