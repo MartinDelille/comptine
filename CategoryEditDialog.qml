@@ -8,34 +8,31 @@ BaseDialog {
     title: qsTr("Edit Category")
     width: 400
 
-    property string originalName: ""
-    property real originalBudgetLimit: 0  // Signed: positive = income, negative = expense
+    property var _category: null
     okEnabled: categoryNameField.text.trim().length > 0
 
-    onOpened: {
-        categoryNameField.text = originalName;
+    function edit(category = null) {
+        _category = category;
+        categoryNameField.text = _category ? _category.name : "";
         // Set checkbox based on sign (positive = income)
-        incomeCheckBox.checked = originalBudgetLimit > 0;
+        let budgetLimit = _category ? _category.budgetLimitForMonth(AppState.navigation.budgetDate) : 0;
+        incomeCheckBox.checked = budgetLimit > 0;
         // Display absolute value
-        budgetLimitField.value = Math.abs(originalBudgetLimit);
-        if (originalName === "") {
-            categoryNameField.forceActiveFocus();
-        } else {
+        budgetLimitField.value = Math.abs(budgetLimit);
+        if (_category) {
             budgetLimitField.forceActiveFocus();
+        } else {
+            categoryNameField.forceActiveFocus();
         }
+
+        open();
     }
 
     onAccepted: {
         let amount = budgetLimitField.value;
         // Apply sign based on checkbox: income = positive, expense = negative
         let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
-        if (originalName === "") {
-            // Adding a new category
-            AppState.categories.addCategory(categoryNameField.text, newBudgetLimit);
-        } else {
-            // Editing an existing category
-            AppState.categories.editCategory(originalName, categoryNameField.text, newBudgetLimit, AppState.navigation.budgetDate);
-        }
+        AppState.categories.editCategory(categoryNameField.text, newBudgetLimit, _category, AppState.navigation.budgetDate);
     }
 
     ColumnLayout {
@@ -57,11 +54,6 @@ BaseDialog {
                 selectAll()
         }
 
-        CheckBox {
-            id: incomeCheckBox
-            text: qsTr("This is an income category")
-        }
-
         Label {
             text: qsTr("Budget Limit")
             font.pixelSize: Theme.fontSizeNormal
@@ -75,6 +67,11 @@ BaseDialog {
             onEdited: function (newValue) {
                 value = newValue;
             }
+        }
+
+        CheckBox {
+            id: incomeCheckBox
+            text: qsTr("This is an income category")
         }
     }
 }

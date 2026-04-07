@@ -13,16 +13,12 @@ FocusScope {
     function editCurrentCategory() {
         let category = AppState.categories.current;
         if (category) {
-            categoryEditDialog.originalName = category.name;
-            categoryEditDialog.originalBudgetLimit = category.budgetLimitForMonth(AppState.navigation.budgetDate);
-            categoryEditDialog.open();
+            categoryEditDialog.edit(category);
         }
     }
 
     function addCategory() {
-        categoryEditDialog.originalName = "";
-        categoryEditDialog.originalBudgetLimit = 0;
-        categoryEditDialog.open();
+        categoryEditDialog.edit();
     }
 
     CategoryEditDialog {
@@ -189,9 +185,7 @@ FocusScope {
 
                     onEditClicked: {
                         categoryListView.currentIndex = index;
-                        categoryEditDialog.originalName = category.name;
-                        categoryEditDialog.originalBudgetLimit = budgetLimit;
-                        categoryEditDialog.open();
+                        categoryEditDialog.edit(category);
                     }
                 }
             }

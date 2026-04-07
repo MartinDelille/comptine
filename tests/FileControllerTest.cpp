@@ -149,7 +149,7 @@ private slots:
     op->setAllocations({ new Allocation(new Category("Food"), -50) });
     account->appendOperation(op);
 
-    categoryController->addCategory("Food", 200.0);
+    categoryController->editCategory("Food", 200.0);
 
     // Save to file
     QString filePath = tempDir->filePath("single_account.comptine");
@@ -223,10 +223,8 @@ private slots:
     op->set_amount(-150.0);
     op->set_label("Mixed Purchase");
 
-    auto food = new Category("Food", 200.0);
-    auto transport = new Category("Transport", 100.0);
-    categoryController->addCategory(food);
-    categoryController->addCategory(transport);
+    auto food = categoryController->editCategory("Food", 200.0);
+    auto transport = categoryController->editCategory("Transport", 100.0);
 
     QList<Allocation*> allocations;
     allocations.append(new Allocation{ food, -100.0 });
@@ -268,7 +266,7 @@ private slots:
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
     account->appendOperation(op);
 
-    categoryController->addCategory("Shopping", 150.0);
+    categoryController->editCategory("Shopping", 150.0);
 
     // Save and reload
     QString filePath = tempDir->filePath("budget_date.comptine");
@@ -286,8 +284,7 @@ private slots:
     Account* account = new Account("Test Account");
     budgetData->addAccount(account);
 
-    auto food = new Category("Food", 200.0);
-    categoryController->addCategory(food);
+    auto food = categoryController->editCategory("Food", 200.0);
 
     Operation* op = new Operation(account);
     op->set_date(QDate(2025, 3, 15));
@@ -597,8 +594,8 @@ private slots:
   // Save/Load with Categorization Rules
 
   void testSaveAndLoadCategorizationRules() {
-    auto groceries = categoryController->addCategory("Groceries", 300.0);
-    auto fuel = categoryController->addCategory("Fuel", 150.0);
+    auto groceries = categoryController->editCategory("Groceries", 300.0);
+    auto fuel = categoryController->editCategory("Fuel", 150.0);
 
     ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
     ruleController->addRule(new Rule(fuel, "PETROL"));
@@ -631,8 +628,8 @@ private slots:
     op->set_label("Test Op");
     account2->appendOperation(op);
 
-    categoryController->addCategory("Cat 1", 100.0);
-    categoryController->addCategory("Cat 2", 200.0);
+    categoryController->editCategory("Cat 1", 100.0);
+    categoryController->editCategory("Cat 2", 200.0);
 
     // Set navigation state
     navController->set_currentTabIndex(1);  // Budget view
@@ -980,7 +977,7 @@ private slots:
 
   void testImportAppliesCategorizationRules() {
     // Create categorization rule
-    auto groceries = categoryController->addCategory("Groceries", 300.0);
+    auto groceries = categoryController->editCategory("Groceries", 300.0);
     ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
 
     // Create CSV without category column

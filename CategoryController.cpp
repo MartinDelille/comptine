@@ -158,9 +158,22 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
   return nullptr;
 }
 
-Category* CategoryController::addCategory(const QString& name, double budgetLimit) {
-  auto category = new Category(name, budgetLimit);
-  _undoStack.push(new AddCategoryCommand(this, category));
+Category* CategoryController::editCategory(const QString& name, double budgetLimit, Category* category, QDate budgetDate) {
+  if (category) {
+    QString oldName = category->name();
+    double oldBudgetLimit = category->budgetLimit();
+
+    // Only create undo command if something changed
+    if (oldName != name || oldBudgetLimit != budgetLimit) {
+      _undoStack.push(new EditCategoryCommand(*category,
+                                              oldName, name,
+                                              oldBudgetLimit, budgetLimit,
+                                              budgetDate));
+    }
+  } else {
+    category = new Category(name, budgetLimit);
+    _undoStack.push(new AddCategoryCommand(this, category));
+  }
   return category;
 }
 
@@ -250,22 +263,6 @@ QStringList CategoryController::categoryNames() const {
     names.append(category->name());
   }
   return names;
-}
-
-void CategoryController::editCategory(const QString& originalName, const QString& newName, double newBudgetLimit, const QDate& budgetDate) {
-  Category* category = getCategoryByName(originalName);
-  if (!category) return;
-
-  QString oldName = category->name();
-  double oldBudgetLimit = category->budgetLimit();
-
-  // Only create undo command if something changed
-  if (oldName != newName || oldBudgetLimit != newBudgetLimit) {
-    _undoStack.push(new EditCategoryCommand(*category,
-                                            oldName, newName,
-                                            oldBudgetLimit, newBudgetLimit,
-                                            budgetDate));
-  }
 }
 
 double CategoryController::spentInCategory(const Category* category, const QDate& budgetDate) const {
