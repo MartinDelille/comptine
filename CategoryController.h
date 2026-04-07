@@ -64,14 +64,11 @@ public:
   Q_INVOKABLE QStringList categoryNames() const;
 
   // Category management
-  Q_INVOKABLE Category* addCategory(const QString& name, double budgetLimit);
+  Q_INVOKABLE Category* editCategory(const QString& name, double budgetLimit, Category* category = nullptr, QDate budgetDate = QDate());
   Q_INVOKABLE void deleteCategory(Category* category);
   void addCategory(Category* category);
   void clear();
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
-
-  // Category editing (undoable)
-  Q_INVOKABLE void editCategory(const QString& originalName, const QString& newName, double newBudgetLimit, const QDate& budgetDate);
 
   // Budget calculations (aggregates across all accounts)
   Q_INVOKABLE double spentInCategory(const Category* categoryName, const QDate& budgetDate) const;
