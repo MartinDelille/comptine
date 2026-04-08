@@ -37,6 +37,18 @@ FileController::FileController(AppSettings& appSettings,
     _navController(navController),
     _ruleController(ruleController),
     _undoStack(undoStack) {
+  connect(&_fileWatcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
+    qDebug() << "File changed detected by QFileSystemWatcher:" << path;
+    if (path == currentFilePath()) {
+      if (hasUnsavedChanges()) {
+        qDebug() << "Current file was modified externally, but there are unsaved changes.";
+        emit externalChangeDetected();
+      } else {
+        qDebug() << "Current file was modified externally. Reloading...";
+        reloadCurrentFile();
+      }
+    }
+  });
 }
 
 bool FileController::hasUnsavedChanges() const {
@@ -511,7 +523,22 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   qDebug() << "  Accounts:" << _budgetData.accountCount();
   qDebug() << "  Categories:" << _categoryController.rowCount();
 
+  _fileWatcher.addPath(filePath);
+
   return true;
+}
+
+void FileController::reloadCurrentFile() {
+  if (!currentFilePath().isEmpty()) {
+    int tabIndex = _navController.currentTabIndex();
+    QDate budgetDate = _navController.budgetDate();
+    int accountIndex = _navController.currentAccountIndex();
+    int categoryIndex = _navController.currentCategoryIndex();
+    Account* currentAccount = _budgetData.accountAt(accountIndex);
+    int operationIndex = currentAccount ? currentAccount->operations().indexOf(currentAccount->currentOperation()) : 0;
+    loadFromYamlFile(currentFilePath());
+    emit navigationStateLoaded(tabIndex, budgetDate, accountIndex, categoryIndex, operationIndex);
+  }
 }
 
 bool FileController::importFromCsv(const QUrl& fileUrl,
@@ -801,6 +828,9 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 void FileController::clear() {
   _budgetData.clear();
   _categoryController.clear();
+  if (_fileWatcher.files().contains(currentFilePath())) {
+    _fileWatcher.removePath(currentFilePath());
+  }
   set_currentFilePath({});
 }
 

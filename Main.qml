@@ -348,6 +348,17 @@ ApplicationWindow {
         id: updateDialog
         anchors.centerIn: parent
     }
+    MessageDialog {
+        id: externalChangeDialog
+        title: qsTr("File Changed Externally")
+        text: qsTr("The current file has been modified outside of Comptine. Do you want to reload it? Any unsaved changes will be lost.")
+        buttons: MessageDialog.Yes | MessageDialog.No
+        onButtonClicked: function (button, role) {
+            if (button === MessageDialog.Yes) {
+                AppState.file.loadFromYamlFile(AppState.file.currentFilePath);
+            }
+        }
+    }
 
     MessageDialog {
         id: noUpdateDialog
@@ -429,6 +440,9 @@ ApplicationWindow {
             if (AppState.file.errorMessage.length > 0) {
                 fileErrorDialog.open();
             }
+        }
+        function onExternalChangeDetected() {
+            externalChangeDialog.open();
         }
     }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFileSystemWatcher>
 #include <QObject>
 #include <QQmlEngine>
 #include <QString>
@@ -38,6 +39,7 @@ public:
   // File operations
   Q_INVOKABLE bool loadFromYamlUrl(const QUrl& fileUrl);
   Q_INVOKABLE bool loadFromYamlFile(const QString& filePath);
+  Q_INVOKABLE void reloadCurrentFile();
   Q_INVOKABLE bool saveToYamlUrl(const QUrl& fileUrl);
   Q_INVOKABLE bool saveToYamlFile(const QString& filePath);
   Q_INVOKABLE bool importFromCsv(const QUrl& fileUrl,
@@ -54,6 +56,7 @@ signals:
   void dataLoaded();      // Emitted after any data load (YAML or CSV import)
   void yamlFileLoaded();  // Emitted only after YAML file load (for UI state restore)
   void dataSaved();
+  void externalChangeDetected();  // Emitted when QFileSystemWatcher detects external modification
 
   // Navigation state signals for file load/save coordination
   void navigationStateLoaded(int tabIndex, const QDate& budgetDate,
@@ -66,4 +69,5 @@ private:
   NavigationController& _navController;
   RuleController& _ruleController;
   QUndoStack& _undoStack;
+  QFileSystemWatcher _fileWatcher;
 };

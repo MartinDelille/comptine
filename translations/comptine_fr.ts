@@ -369,6 +369,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Supprimer</translation>
     </message>
     <message>
+        <source>File Changed Externally</source>
+        <translation>Fichier modifié par un autre programme</translation>
+    </message>
+    <message>
+        <source>The current file has been modified outside of Comptine. Do you want to reload it? Any unsaved changes will be lost.</source>
+        <translation>Le fichier actuel a été modifié en dehors de Comptine. Voulez-vous le recharger&#xa0;? Toute modification non enregistrée sera perdue.</translation>
+    </message>
+    <message>
         <source>Unsaved Changes</source>
         <translation>Modifications non enregistrées</translation>
     </message>
