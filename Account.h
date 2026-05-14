@@ -17,7 +17,7 @@ class Account : public QObject {
   PROPERTY_RW(Operation*, currentOperation, nullptr)
 
   // Filenames (base name only) of CSV files previously imported into this account
-  Q_PROPERTY(QStringList importSources READ importSources NOTIFY importSourcesChanged)
+  Q_PROPERTY(QStringList importSourcePrefixes READ importSourcePrefixes NOTIFY importSourcePrefixesChanged)
 
   // Computed property: index of currentOperation in operations list
   // Uses currentOperationChanged signal since it changes when currentOperation changes
@@ -33,9 +33,9 @@ public:
   explicit Account(const QString& name, QObject* parent = nullptr);
 
   // Import source management
-  QStringList importSources() const;
-  void addImportSource(const QString& filename);
-  void setImportSources(const QStringList& sources);
+  QStringList importSourcePrefixes() const;
+  void addImportSourcePrefix(const QString& filename);
+  void setImportSourcePrefixes(const QStringList& sources);
 
   // Current operation index (computed from currentOperation pointer)
   int currentOperationIndex() const;
@@ -71,7 +71,7 @@ public:
 
 signals:
   void selectionChanged();
-  void importSourcesChanged();
+  void importSourcePrefixesChanged();
 
 private:
   QList<Operation*> _operations;

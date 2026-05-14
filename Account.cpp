@@ -6,20 +6,20 @@ Account::Account(QObject* parent) :
 Account::Account(const QString& name, QObject* parent) :
     QObject(parent), _name(name) {}
 
-QStringList Account::importSources() const {
+QStringList Account::importSourcePrefixes() const {
   return _importSources;
 }
 
-void Account::addImportSource(const QString& filename) {
+void Account::addImportSourcePrefix(const QString& filename) {
   if (!filename.isEmpty() && !_importSources.contains(filename)) {
     _importSources.append(filename);
-    emit importSourcesChanged();
+    emit importSourcePrefixesChanged();
   }
 }
 
-void Account::setImportSources(const QStringList& sources) {
+void Account::setImportSourcePrefixes(const QStringList& sources) {
   _importSources = sources;
-  emit importSourcesChanged();
+  emit importSourcePrefixesChanged();
 }
 
 int Account::currentOperationIndex() const {

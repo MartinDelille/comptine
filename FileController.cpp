@@ -142,9 +142,9 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     }
 
     // Save import sources (filenames previously imported into this account)
-    if (!account->importSources().isEmpty()) {
-      out << YAML::Key << "import_sources" << YAML::Value << YAML::BeginSeq;
-      for (const QString& source : account->importSources()) {
+    if (!account->importSourcePrefixes().isEmpty()) {
+      out << YAML::Key << "import_source_prefixes" << YAML::Value << YAML::BeginSeq;
+      for (const QString& source : account->importSourcePrefixes()) {
         out << toStdString(source);
       }
       out << YAML::EndSeq;
@@ -389,13 +389,19 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             loadedAccountIdx = accIdx;
           }
         }
-        // Load import sources
-        if (acc["import_sources"]) {
+        // Load import source prefix
+        YAML::Node importSourcePrefixes;
+        if (acc["import_source_prefixes"]) {
+          importSourcePrefixes = acc["import_source_prefixes"];
+        } else if (acc["import_sources"]) {  // legacy support
+          importSourcePrefixes = acc["import_sources"];
+        }
+        if (importSourcePrefixes) {
           QStringList sources;
-          for (const auto& sourceNode : acc["import_sources"]) {
+          for (const auto& sourceNode : importSourcePrefixes) {
             sources.append(QString::fromStdString(sourceNode.as<std::string>()));
           }
-          account->setImportSources(sources);
+          account->setImportSourcePrefixes(sources);
         }
         // Note: balance field is ignored - balance is calculated from operations
         if (acc["operations"]) {
@@ -806,7 +812,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Record import source for future auto-suggestion
   QString baseFilename = QFileInfo(fileUrl.toLocalFile()).fileName();
-  account->addImportSource(baseFilename);
+  account->addImportSourcePrefix(baseFilename);
 
   _budgetData.accountModel()->refresh();
 
