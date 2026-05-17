@@ -20,6 +20,7 @@ class CategoryController : public QAbstractListModel {
   QML_ELEMENT
 
   Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
+  Q_PROPERTY(int balancedCount READ balancedCount NOTIFY budgetDataChanged)
   Q_PROPERTY(double totalIncome READ totalIncome NOTIFY budgetDataChanged)
   Q_PROPERTY(double totalExpense READ totalExpense NOTIFY budgetDataChanged)
   Q_PROPERTY(double totalToSave READ totalToSave NOTIFY budgetDataChanged)
@@ -46,6 +47,7 @@ public:
 
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  int balancedCount() const;
   QVariant data(const QModelIndex& index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;
 

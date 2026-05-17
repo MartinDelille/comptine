@@ -73,6 +73,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Net :</translation>
     </message>
     <message>
+        <source>Balanced:</source>
+        <translation>Équilibré:</translation>
+    </message>
+    <message>
         <source>No categories defined</source>
         <translation>Aucune catégorie définie</translation>
     </message>

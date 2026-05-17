@@ -1,5 +1,6 @@
 #include <QCollator>
 #include <QDate>
+#include <QtMath>
 #include <algorithm>
 
 #include "Account.h"
@@ -36,6 +37,19 @@ int CategoryController::rowCount(const QModelIndex& parent) const {
     return 0;
 
   return _categories.size();
+}
+
+int CategoryController::balancedCount() const {
+  int result = 0;
+  int year = _navigation.budgetDate().year();
+  int month = _navigation.budgetDate().month();
+  for (const Category* category : _categories) {
+    if (qAbs(category->budgetLimitForMonth(_navigation.budgetDate()) - spentInCategory(category, _navigation.budgetDate()) + category->leftoverDecision(year, month).leftoverTotal()) < 0.01) {
+      result++;
+    }
+  }
+
+  return result;
 }
 
 QVariant CategoryController::data(const QModelIndex& index, int role) const {

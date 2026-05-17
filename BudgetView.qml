@@ -158,6 +158,21 @@ FocusScope {
                             color: Theme.amountColor(AppState.categories.netReport)
                         }
                     }
+
+                    RowLayout {
+                        spacing: Theme.spacingSmall
+
+                        Label {
+                            text: qsTr("Balanced:")
+                            font.pixelSize: Theme.fontSizeSmall
+                            color: Theme.textSecondary
+                        }
+                        Label {
+                            text: `${AppState.categories.balancedCount} / ${AppState.categories.count}`
+                            font.pixelSize: Theme.fontSizeSmall
+                            font.bold: true
+                        }
+                    }
                 }
             }
 
