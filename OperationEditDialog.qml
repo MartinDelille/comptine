@@ -67,7 +67,6 @@ BaseDialog {
         operation: root._operation
         onCreateCounterPart: function (account) {
             let newOperation = AppState.data.createCounterPart(operation, account);
-            // AppState.navigation.currentAccount = account;
             AppState.navigation.currentOperation = newOperation;
             AppState.navigation.navigateToOperation(newOperation);
             root.initialize(newOperation);
@@ -495,7 +494,10 @@ BaseDialog {
             }
             Button {
                 text: qsTr("Create counter part...")
-                onClicked: counterPartDialog.open()
+                onClicked: {
+                    applyChanges();
+                    counterPartDialog.open();
+                }
             }
         }
     }
