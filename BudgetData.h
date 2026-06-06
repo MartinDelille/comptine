@@ -59,7 +59,7 @@ public:
   Q_INVOKABLE void setOperationLabel(Operation* operation, const QString& newLabel);
   Q_INVOKABLE void setOperationDetails(Operation* operation, const QString& newDetails);
   Q_INVOKABLE void setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations);
-  Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount);
+  Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName);
   Q_INVOKABLE void deleteSelectedOperations();
 
   // Clear all data (called by FileController)

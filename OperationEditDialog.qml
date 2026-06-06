@@ -65,8 +65,8 @@ BaseDialog {
     CreateCounterPartDialog {
         id: counterPartDialog
         operation: root._operation
-        onCreateCounterPart: function (account) {
-            let newOperation = AppState.data.createCounterPart(operation, account);
+        onCreateCounterPart: function (account, category) {
+            let newOperation = AppState.data.createCounterPart(operation, account, category);
             AppState.navigation.currentOperation = newOperation;
             AppState.navigation.navigateToOperation(newOperation);
             root.initialize(newOperation);

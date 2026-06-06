@@ -215,15 +215,19 @@ void BudgetData::setOperationAllocations(Operation* operation, const QList<Alloc
   }
 }
 
-Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAccount) {
+Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName) {
   if (!operation || !targetAccount) return nullptr;
 
   QList<Allocation*> newAllocations;
+  double amount = 0;
   for (auto allocation : operation->allocations()) {
-    newAllocations.append(new Allocation(allocation->category(), -allocation->amount()));
+    if (categoryName.isEmpty() || (allocation->category() && allocation->category()->name() == categoryName)) {
+      amount -= allocation->amount();
+      newAllocations.append(new Allocation(allocation->category(), -allocation->amount()));
+    }
   }
 
-  auto newOperation = new Operation(targetAccount, operation->date(), -operation->amount(),
+  auto newOperation = new Operation(targetAccount, operation->date(), amount,
                                     operation->label(), operation->details(), newAllocations);
 
   _undoStack.push(new AddOperationCommand(newOperation, *targetAccount, *_operationModel));

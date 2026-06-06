@@ -30,6 +30,16 @@ void Operation::set_budgetDate(QDate value) {
   }
 }
 
+QStringList Operation::allocatedCategoryNames() const {
+  QStringList names;
+  for (const auto& alloc : _allocations) {
+    if (alloc && alloc->category()) {
+      names.append(alloc->category()->name());
+    }
+  }
+  return names;
+}
+
 void Operation::setAllocations(const QList<Allocation*>& allocations) {
   if (!sameAllocations(allocations)) {
     _allocations = allocations;

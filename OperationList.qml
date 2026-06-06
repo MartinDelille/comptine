@@ -64,7 +64,6 @@ FocusScope {
                     focusScope.currentAccount.selectAt(index, false);
                 }
                 listView.positionViewAtIndex(index, ListView.Center);
-                listView.forceActiveFocus();
             }
             function onCurrentAccountChanged() {
                 // When account changes, scroll to the account's current operation

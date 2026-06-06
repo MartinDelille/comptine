@@ -51,6 +51,7 @@ class Operation : public QObject {
   Q_PROPERTY(QList<Allocation*> allocations READ allocations NOTIFY allocationsChanged)
   Q_PROPERTY(bool isCategorized READ isCategorized NOTIFY allocationsChanged)
   Q_PROPERTY(QString categoryDisplay READ categoryDisplay NOTIFY allocationsChanged)
+  Q_PROPERTY(QStringList allocatedCategoryNames READ allocatedCategoryNames NOTIFY allocationsChanged)
 
 public:
   Operation(Account* account = nullptr,
@@ -62,6 +63,7 @@ public:
 
   // Split allocations methods
   QList<Allocation*> allocations() const { return _allocations; }
+  QStringList allocatedCategoryNames() const;
   void setAllocations(const QList<Allocation*>& allocations);
   void clearAllocations();
   bool sameAllocations(const QList<Allocation*>& otherAllocations) const;

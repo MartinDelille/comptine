@@ -132,6 +132,10 @@ Importez et gérez vos données bancaires.</translation>
         <source>Account:</source>
         <translation>Compte:</translation>
     </message>
+    <message>
+        <source>On one allocation</source>
+        <translation>Sur une allocation</translation>
+    </message>
 </context>
 <context>
     <name>DateLabel</name>

@@ -47,6 +47,7 @@ FocusScope {
                 currentIndex: AppState.navigation.currentAccountIndex
                 onActivated: function (index) {
                     AppState.navigation.currentAccountIndex = index;
+                    operationList.forceActiveFocus();
                 }
             }
 
