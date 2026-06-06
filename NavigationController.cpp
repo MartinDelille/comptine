@@ -31,25 +31,17 @@ int NavigationController::currentAccountIndex() const {
 void NavigationController::set_currentAccountIndex(int index) {
   int accountCount = _budgetData.accountCount();
   if (index >= -1 && index < accountCount) {
-    bool indexChanged = (index != _currentAccountIndex);
     _currentAccountIndex = index;
 
     Account* newAccount = _budgetData.accountAt(index);
-    bool accountChanged = (_currentAccount != newAccount);
     _currentAccount = newAccount;
 
     // Always update the operation model with the current account pointer
     // (the model has its own guard to avoid unnecessary resets)
     _budgetData.operationModel()->setAccount(newAccount);
 
-    // Emit signals if either the index or the actual account pointer changed
-    // (account pointer can change even with same index when loading a new file)
-    if (indexChanged) {
-      emit currentAccountIndexChanged();
-    }
-    if (accountChanged) {
-      emit currentAccountChanged();
-    }
+    emit currentAccountIndexChanged();
+    emit currentAccountChanged();
   }
 }
 
