@@ -50,14 +50,7 @@ jobs:
 
       - name: Check translations complete
         if: matrix.os == 'macos-latest'
-        run: |
-          lupdate *.qml *.cpp *.h -ts translations/comptine_fr.ts 2>&1
-          if grep -q 'type="unfinished"' translations/comptine_fr.ts; then
-            echo "Error: Found unfinished translations:"
-            grep -B2 'type="unfinished"' translations/comptine_fr.ts | grep "<source>"
-            exit 1
-          fi
-          echo "All translations are complete!"
+        run: ./scripts/check-translations.sh
 
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -98,7 +91,7 @@ jobs:
 
       - name: Run qmllint
         if: matrix.os == 'macos-latest'
-        run: qmllint --max-warnings 0 --qmldirs build *.qml
+        run: qmllint --max-warnings 0 --qmldirs build **/*.qml
 
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'

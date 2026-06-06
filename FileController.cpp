@@ -526,8 +526,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   emit yamlFileLoaded();
   emit dataLoaded();
   qDebug() << "Budget data loaded from:" << filePath;
-  qDebug() << "  Accounts:" << _budgetData.accountCount();
-  qDebug() << "  Categories:" << _categoryController.rowCount();
 
   _fileWatcher.addPath(filePath);
 

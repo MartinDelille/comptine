@@ -1,11 +1,14 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 Rectangle {
     id: root
 
+    required property var categories
+    required property var navigation
     required property var modelData
     required property int index
     required property bool isCurrentItem
@@ -105,7 +108,7 @@ Rectangle {
                     function applyValue(newValue) {
                         let maxSave = root.saveAmount + root.remainingLeftover;
                         let clampedValue = Math.max(0, Math.min(newValue, maxSave));
-                        AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, newValue);
+                        root.categories.setSaveAmount(root.category, root.navigation.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -122,10 +125,10 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, 0);
+                            root.categories.setSaveAmount(root.category, root.navigation.budgetDate, 0);
                         } else {
                             let newSave = root.saveAmount + root.remainingLeftover;
-                            AppState.categories.setSaveAmount(root.category, AppState.navigation.budgetDate, newSave);
+                            root.categories.setSaveAmount(root.category, root.navigation.budgetDate, newSave);
                         }
                     }
 
@@ -158,7 +161,7 @@ Rectangle {
                         } else {
                             clampedValue = Math.max(root.leftover, Math.min(newValue, 0));
                         }
-                        AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, newValue);
+                        root.categories.setReportAmount(root.category, root.navigation.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -175,13 +178,13 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, 0);
+                            root.categories.setReportAmount(root.category, root.navigation.budgetDate, 0);
                         } else {
                             if (root.leftover >= 0) {
                                 let newReport = root.reportAmount + root.remainingLeftover;
-                                AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, newReport);
+                                root.categories.setReportAmount(root.category, root.navigation.budgetDate, newReport);
                             } else {
-                                AppState.categories.setReportAmount(root.category, AppState.navigation.budgetDate, root.leftover);
+                                root.categories.setReportAmount(root.category, root.navigation.budgetDate, root.leftover);
                             }
                         }
                     }

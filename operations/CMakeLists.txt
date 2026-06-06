@@ -1,0 +1,19 @@
+qt_add_qml_module(
+  Operations
+  URI
+  operations
+  DEPENDENCIES
+  CommonUI
+  Rules
+  QML_FILES
+  AccountComboBox.qml
+  BalanceHeader.qml
+  CreateCounterPartDialog.qml
+  DateInput.qml
+  OperationDelegate.qml
+  OperationDetails.qml
+  OperationEditDialog.qml
+  OperationList.qml
+  OperationView.qml
+  RenameAccountDialog.qml
+)

@@ -1,7 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+
 import Comptine
+import commonui
 
 BaseDialog {
     id: aboutDialog

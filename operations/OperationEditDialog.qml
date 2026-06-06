@@ -3,10 +3,17 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
+import rules
 
 BaseDialog {
     id: root
+
+    required property var budgetData
+    required property var categories
+    required property var navigation
+    required property var rules
 
     property var _operation: null
 
@@ -42,7 +49,7 @@ BaseDialog {
 
     onOpened: {
         // Refresh category list when dialog opens
-        root.categoryList = [""].concat(AppState.categories.categoryNames());
+        root.categoryList = [""].concat(root.categories.categoryNames());
     }
 
     ListModel {
@@ -51,6 +58,8 @@ BaseDialog {
 
     RuleEditDialog {
         id: ruleEditDialog
+        categories: root.categories
+        rules: root.rules
     }
 
     // React to external changes to the operation's allocations
@@ -64,11 +73,12 @@ BaseDialog {
 
     CreateCounterPartDialog {
         id: counterPartDialog
+        budgetData: root.budgetData
         operation: root._operation
         onCreateCounterPart: function (account, category) {
-            let newOperation = AppState.data.createCounterPart(operation, account, category);
-            AppState.navigation.currentOperation = newOperation;
-            AppState.navigation.navigateToOperation(newOperation);
+            let newOperation = root.budgetData.createCounterPart(operation, account, category);
+            root.navigation.currentOperation = newOperation;
+            root.navigation.navigateToOperation(newOperation);
             root.initialize(newOperation);
         }
     }
@@ -151,31 +161,31 @@ BaseDialog {
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
             if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push(AppState.data.createAllocation(item.category, item.amount));
+                allocations.push(root.budgetData.createAllocation(item.category, item.amount));
             }
         }
 
         if (_operation === null) {
-            AppState.data.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
+            root.budgetData.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
             return;
         }
 
         if (newLabel !== originalLabel) {
-            AppState.data.setOperationLabel(_operation, newLabel);
+            root.budgetData.setOperationLabel(_operation, newLabel);
         }
 
         if (newDetails !== originalDetails) {
-            AppState.data.setOperationDetails(_operation, newDetails);
+            root.budgetData.setOperationDetails(_operation, newDetails);
         }
 
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
-            AppState.data.setOperationAmount(_operation, editedAmount);
+            root.budgetData.setOperationAmount(_operation, editedAmount);
         }
 
         // Apply budget date change if different
         if (budgetDateInput.selectedDate.getTime() !== originalBudgetDate.getTime()) {
-            AppState.data.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
+            root.budgetData.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
         }
 
         if (allocations.length > 0) {
@@ -193,19 +203,19 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                AppState.data.setOperationAllocations(_operation, allocations);
+                root.budgetData.setOperationAllocations(_operation, allocations);
             }
         }
 
         // Apply date change LAST (since it sorts and changes the operation's index)
         if (dateInput.selectedDate.getTime() !== originalDate.getTime()) {
-            AppState.data.setOperationDate(_operation, dateInput.selectedDate);
+            root.budgetData.setOperationDate(_operation, dateInput.selectedDate);
         }
     }
 
     // Navigate to previous uncategorized operation
     function goToPreviousUncategorized() {
-        let prevOp = AppState.rules.previousUncategorizedOperation(_operation);
+        let prevOp = root.rules.previousUncategorizedOperation(_operation);
         if (prevOp) {
             applyChanges();
             initialize(prevOp);
@@ -214,7 +224,7 @@ BaseDialog {
 
     // Navigate to next uncategorized operation
     function goToNextUncategorized() {
-        let nextOp = AppState.rules.nextUncategorizedOperation(_operation);
+        let nextOp = root.rules.nextUncategorizedOperation(_operation);
         if (nextOp) {
             applyChanges();
             initialize(nextOp);
@@ -342,7 +352,7 @@ BaseDialog {
 
             Button {
                 text: qsTr("Previous Uncategorized")
-                enabled: root._operation && AppState.rules.previousUncategorizedOperation(root._operation) !== null
+                enabled: root._operation && root.rules.previousUncategorizedOperation(root._operation) !== null
                 onClicked: root.goToPreviousUncategorized()
             }
 
@@ -352,7 +362,7 @@ BaseDialog {
 
             Button {
                 text: qsTr("Next Uncategorized")
-                enabled: root._operation && AppState.rules.nextUncategorizedOperation(root._operation) !== null
+                enabled: root._operation && root.rules.nextUncategorizedOperation(root._operation) !== null
                 onClicked: root.goToNextUncategorized()
             }
         }
@@ -495,7 +505,7 @@ BaseDialog {
             Button {
                 text: qsTr("Create counter part...")
                 onClicked: {
-                    applyChanges();
+                    root.applyChanges();
                     counterPartDialog.open();
                 }
             }

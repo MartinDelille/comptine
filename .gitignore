@@ -81,8 +81,6 @@ CMakeLists.txt.user*
 .uic/
 /build*/
 
-.qmlls.ini
-
 .envrc
 .venv
 docs/assets/screenshots

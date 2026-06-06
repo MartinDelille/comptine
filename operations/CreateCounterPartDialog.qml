@@ -2,13 +2,18 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
-BaseDialog {
-    title: qsTr("Create Counter Part")
-    okEnabled: accountComboBox.currentIndex >= 0 && operation.account !== accountComboBox.currentAccount
+import commonui
 
+BaseDialog {
+    id: root
+    title: qsTr("Create Counter Part")
+
+    required property var budgetData
     required property var operation
 
     signal createCounterPart(account: var, category: string)
+
+    okEnabled: accountComboBox.currentIndex >= 0 && operation.account !== accountComboBox.currentAccount
 
     onAccepted: {
         createCounterPart(accountComboBox.currentAccount, allocationCheckBox.checked ? allocationComboBox.currentText : "");
@@ -25,11 +30,12 @@ BaseDialog {
         }
         ComboBox {
             id: allocationComboBox
-            model: operation ? operation.allocatedCategoryNames : []
+            model: root.operation ? root.operation.allocatedCategoryNames : []
             enabled: allocationCheckBox.checked
         }
         AccountComboBox {
             id: accountComboBox
+            budgetData: root.budgetData
             Layout.fillWidth: true
             focus: true
         }

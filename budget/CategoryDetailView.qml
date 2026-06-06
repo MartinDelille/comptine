@@ -3,38 +3,23 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 BaseDialog {
     id: root
+
+    required property var category
+    required property date date
+    property var operations: []
+    property real totalAmount: operations.reduce((sum, op) => sum + op.amount, 0)
+
+    signal navigateToOperation(var operation)
+
     title: category?.name || ""
     width: 600
     height: 500
     rejectButtonText: ""
-
-    property var category: AppState.categories.current
-    property var operations: []
-    property real totalAmount: 0
-
-    function updateOperations() {
-        operations = AppState.categories.operationsForCategory(category, AppState.navigation.budgetDate);
-        totalAmount = operations.reduce((sum, op) => sum + op.amount, 0);
-    }
-
-    Component.onCompleted: {
-        AppState.navigation.budgetDateChanged.connect(updateOperations);
-        updateOperations();
-    }
-    onCategoryChanged: {
-        updateOperations();
-    }
-
-    Connections {
-        target: AppState.data
-        function onOperationDataChanged() {
-            root.updateOperations();
-        }
-    }
 
     ColumnLayout {
         anchors.fill: parent
@@ -45,7 +30,7 @@ BaseDialog {
             Layout.fillWidth: true
 
             Label {
-                text: AppState.navigation.budgetDate.toLocaleDateString(Qt.locale(), "MMMM yyyy")
+                text: root.date.toLocaleDateString(Qt.locale(), "MMMM yyyy")
                 font.pixelSize: Theme.fontSizeLarge
                 font.bold: true
                 color: Theme.textPrimary
@@ -95,7 +80,7 @@ BaseDialog {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
                         let operation = operationDelegate.modelData.operation;
-                        AppState.navigation.navigateToOperation(operation);
+                        root.navigateToOperation(operation);
                         root.close();
                     }
                 }

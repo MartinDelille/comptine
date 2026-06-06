@@ -1,0 +1,10 @@
+qt_add_qml_module(
+  Rules
+  URI
+  rules
+  DEPENDENCIES
+  CommonUI
+  QML_FILES
+  RuleEditDialog.qml
+  RulesView.qml
+)

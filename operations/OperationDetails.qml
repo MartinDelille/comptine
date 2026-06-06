@@ -1,21 +1,23 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 Rectangle {
     id: root
 
+    required property var budgetData
     required property int currentIndex
 
     // Signal to request opening edit dialog (handled by parent)
     signal editRequested(var operation)
 
     // Get operation from the model using helper methods
-    readonly property var operation: currentIndex >= 0 ? AppState.data.operationModel.operationAt(currentIndex) : null
+    readonly property var operation: currentIndex >= 0 ? budgetData.operationModel.operationAt(currentIndex) : null
 
     // Multi-selection state
-    readonly property bool multipleSelected: AppState.data.operationModel.selectionCount > 1
+    readonly property bool multipleSelected: budgetData.operationModel.selectionCount > 1
 
     radius: Theme.cardRadius
     border.width: Theme.cardBorderWidth
@@ -80,7 +82,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: qsTr("%n operation(s)", "", AppState.data.operationModel.selectionCount)
+                text: qsTr("%n operation(s)", "", root.budgetData.operationModel.selectionCount)
                 font.pixelSize: Theme.fontSizeNormal
                 color: Theme.textPrimary
             }
@@ -95,10 +97,10 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: Theme.formatAmount(AppState.data.operationModel.selectedTotal)
+                text: Theme.formatAmount(root.budgetData.operationModel.selectedTotal)
                 font.pixelSize: Theme.fontSizeLarge
                 font.bold: true
-                color: Theme.amountColor(AppState.data.operationModel.selectedTotal)
+                color: Theme.amountColor(root.budgetData.operationModel.selectedTotal)
             }
         }
 

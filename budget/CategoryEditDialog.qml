@@ -1,12 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 BaseDialog {
     id: root
     title: qsTr("Edit Category")
     width: 400
+
+    required property var categories
+    required property date date
 
     property var _category: null
     okEnabled: categoryNameField.text.trim().length > 0
@@ -15,7 +19,7 @@ BaseDialog {
         _category = category;
         categoryNameField.text = _category ? _category.name : "";
         // Set checkbox based on sign (positive = income)
-        let budgetLimit = _category ? _category.budgetLimitForMonth(AppState.navigation.budgetDate) : 0;
+        let budgetLimit = _category ? _category.budgetLimitForMonth(date) : 0;
         incomeCheckBox.checked = budgetLimit > 0;
         // Display absolute value
         budgetLimitField.value = Math.abs(budgetLimit);
@@ -32,7 +36,7 @@ BaseDialog {
         let amount = budgetLimitField.value;
         // Apply sign based on checkbox: income = positive, expense = negative
         let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
-        AppState.categories.editCategory(categoryNameField.text, newBudgetLimit, _category, AppState.navigation.budgetDate);
+        categories.editCategory(categoryNameField.text, newBudgetLimit, _category, date);
     }
 
     ColumnLayout {

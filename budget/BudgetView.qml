@@ -3,15 +3,18 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 FocusScope {
     id: root
 
+    required property var categories
+    required property var navigation
     property bool dialogOpen: categoryEditDialog.visible
 
     function editCurrentCategory() {
-        let category = AppState.categories.current;
+        let category = categories.current;
         if (category) {
             categoryEditDialog.edit(category);
         }
@@ -23,10 +26,22 @@ FocusScope {
 
     CategoryEditDialog {
         id: categoryEditDialog
+        categories: root.categories
+        date: root.navigation.budgetDate
     }
 
     CategoryDetailView {
         id: categoryDetailView
+        category: root.categories.current
+        date: root.navigation.budgetDate
+
+        onOpened: {
+            operations = root.categories.operationsForCategory(category, date);
+        }
+
+        onNavigateToOperation: function (operation) {
+            root.navigation.navigateToOperation(operation);
+        }
     }
 
     Rectangle {
@@ -50,12 +65,11 @@ FocusScope {
                     Button {
                         text: "<"
                         focusPolicy: Qt.NoFocus
-                        onClicked: AppState.navigation.previousMonth()
-                        implicitWidth: 40
+                        onClicked: root.navigation.previousMonth()
                     }
 
                     DateLabel {
-                        date: AppState.navigation.budgetDate
+                        date: root.navigation.budgetDate
                         color: Theme.textPrimary
                         horizontalAlignment: Text.AlignHCenter
                         Layout.preferredWidth: 150
@@ -64,8 +78,7 @@ FocusScope {
                     Button {
                         text: ">"
                         focusPolicy: Qt.NoFocus
-                        onClicked: AppState.navigation.nextMonth()
-                        implicitWidth: 40
+                        onClicked: root.navigation.nextMonth()
                     }
                 }
 
@@ -86,8 +99,8 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            property real _balance: AppState.categories.totalIncome - AppState.categories.totalExpense
-                            text: `${Theme.formatAmountWithoutCurrency(AppState.categories.totalIncome)} - ${Theme.formatAmountWithoutCurrency(AppState.categories.totalExpense)} = ${Theme.formatAmount(_balance)}`
+                            property real _balance: root.categories.totalIncome - root.categories.totalExpense
+                            text: `${Theme.formatAmountWithoutCurrency(root.categories.totalIncome)} - ${Theme.formatAmountWithoutCurrency(root.categories.totalExpense)} = ${Theme.formatAmount(_balance)}`
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
                             color: _balance == 0 ? Theme.textMuted : Theme.negative
@@ -103,7 +116,7 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            text: Theme.formatAmount(AppState.categories.totalToSave)
+                            text: Theme.formatAmount(root.categories.totalToSave)
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
                             color: Theme.positive
@@ -119,7 +132,7 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            text: Theme.formatAmount(AppState.categories.totalToReport)
+                            text: Theme.formatAmount(root.categories.totalToReport)
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
                             color: Theme.accent
@@ -128,7 +141,7 @@ FocusScope {
 
                     RowLayout {
                         spacing: Theme.spacingSmall
-                        visible: AppState.categories.totalFromReport > 0
+                        visible: root.categories.totalFromReport > 0
 
                         Label {
                             text: qsTr("From Leftover:")
@@ -136,7 +149,7 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            text: Theme.formatAmount(AppState.categories.totalFromReport)
+                            text: Theme.formatAmount(root.categories.totalFromReport)
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
                             color: Theme.warning
@@ -152,10 +165,10 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            text: Theme.formatAmount(AppState.categories.netReport)
+                            text: Theme.formatAmount(root.categories.netReport)
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
-                            color: Theme.amountColor(AppState.categories.netReport)
+                            color: Theme.amountColor(root.categories.netReport)
                         }
                     }
 
@@ -168,7 +181,7 @@ FocusScope {
                             color: Theme.textSecondary
                         }
                         Label {
-                            text: `${AppState.categories.balancedCount} / ${AppState.categories.count}`
+                            text: `${root.categories.balancedCount} / ${root.categories.count}`
                             font.pixelSize: Theme.fontSizeSmall
                             font.bold: true
                         }
@@ -180,16 +193,18 @@ FocusScope {
                 id: categoryListView
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                model: AppState.categories
+                model: root.categories
                 spacing: Theme.spacingNormal
                 clip: true
                 focus: true
-                currentIndex: AppState.navigation.currentCategoryIndex
-                onCurrentIndexChanged: AppState.navigation.currentCategoryIndex = currentIndex
+                currentIndex: root.navigation.currentCategoryIndex
+                onCurrentIndexChanged: root.navigation.currentCategoryIndex = currentIndex
 
                 Keys.onReturnPressed: categoryDetailView.open()
 
                 delegate: MonthCategoryItem {
+                    categories: root.categories
+                    navigation: root.navigation
                     width: ListView.view.width
                     isCurrentItem: categoryListView.currentIndex === index
 
@@ -209,7 +224,7 @@ FocusScope {
             Label {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                visible: AppState.categories.count === 0
+                visible: root.categories.count === 0
                 text: qsTr("No categories defined")
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

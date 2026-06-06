@@ -1,11 +1,17 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 FocusScope {
     id: root
     objectName: "OperationView"
+
+    required property var budgetData
+    required property var categories
+    required property var navigation
+    required property var rules
 
     onActiveFocusChanged: {
         if (activeFocus) {
@@ -18,7 +24,7 @@ FocusScope {
     }
 
     function editCurrentOperation() {
-        let operation = AppState.data.operationModel.operationAt(operationList.currentIndex);
+        let operation = budgetData.operationModel.operationAt(operationList.currentIndex);
 
         if (operation) {
             operationEditDialog.initialize(operation);
@@ -27,10 +33,15 @@ FocusScope {
 
     RenameAccountDialog {
         id: renameDialog
+        budgetData: root.budgetData
     }
 
     OperationEditDialog {
         id: operationEditDialog
+        budgetData: root.budgetData
+        categories: root.categories
+        navigation: root.navigation
+        rules: root.rules
         onClosed: operationList.forceActiveFocus()
     }
 
@@ -43,24 +54,25 @@ FocusScope {
             spacing: Theme.spacingNormal
 
             AccountComboBox {
+                budgetData: root.budgetData
                 Layout.preferredWidth: 200
-                currentIndex: AppState.navigation.currentAccountIndex
+                currentIndex: root.navigation.currentAccountIndex
                 onActivated: function (index) {
-                    AppState.navigation.currentAccountIndex = index;
+                    root.navigation.currentAccountIndex = index;
                     operationList.forceActiveFocus();
                 }
             }
 
             Button {
                 text: qsTr("Rename")
-                enabled: AppState.data.accountCount > 0
+                enabled: root.budgetData.accountCount > 0
                 onClicked: renameDialog.open()
             }
 
             BalanceHeader {
                 Layout.fillWidth: true
-                balance: AppState.data.operationModel.count > 0 ? AppState.data.operationModel.balanceAt(0) : 0
-                operationCount: AppState.data.operationModel.count
+                balance: root.budgetData.operationModel.count > 0 ? root.budgetData.operationModel.balanceAt(0) : 0
+                operationCount: root.budgetData.operationModel.count
             }
         }
 
@@ -71,12 +83,15 @@ FocusScope {
 
             OperationList {
                 id: operationList
+                budgetData: root.budgetData
+                navigation: root.navigation
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
 
             OperationDetails {
                 id: operationDetails
+                budgetData: root.budgetData
                 Layout.preferredWidth: parent.width * 0.3
                 Layout.minimumWidth: 200
                 Layout.maximumWidth: 400

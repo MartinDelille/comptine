@@ -1,0 +1,13 @@
+qt_add_qml_module(
+  Budget
+  URI
+  budget
+  DEPENDENCIES
+  CommonUI
+  QML_FILES
+  BudgetProgress.qml
+  BudgetView.qml
+  CategoryDetailView.qml
+  CategoryEditDialog.qml
+  MonthCategoryItem.qml
+)

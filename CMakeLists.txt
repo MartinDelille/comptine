@@ -208,7 +208,10 @@ elseif(WIN32)
     target_sources(Comptine PRIVATE ${APP_ICON_RC})
 endif()
 
-set_source_files_properties(Theme.qml PROPERTIES QT_QML_SINGLETON_TYPE TRUE)
+add_subdirectory(budget)
+add_subdirectory(commonui)
+add_subdirectory(operations)
+add_subdirectory(rules)
 
 qt_add_qml_module(
   Comptine
@@ -216,32 +219,15 @@ qt_add_qml_module(
   Comptine
   DEPENDENCIES
   ComptineLib
+  Budget
+  CommonUI
+  Operations
+  Rules
   QML_FILES
   Main.qml
   AboutDialog.qml
-  AccountComboBox.qml
-  AmountField.qml
-  BalanceHeader.qml
-  BaseDialog.qml
-  BudgetView.qml
-  BudgetProgress.qml
-  CategoryDetailView.qml
-  CategoryEditDialog.qml
-  CreateCounterPartDialog.qml
-  DateInput.qml
   ImportDialog.qml
-  DateLabel.qml
-  MonthCategoryItem.qml
-  OperationDelegate.qml
-  OperationDetails.qml
-  OperationEditDialog.qml
-  OperationList.qml
-  OperationView.qml
   PreferencesDialog.qml
-  RenameAccountDialog.qml
-  RuleEditDialog.qml
-  RulesView.qml
-  Theme.qml
   UpdateDialog.qml
   SOURCES
   AppState.cpp AppState.h
@@ -277,6 +263,10 @@ target_link_libraries(
         yaml-cpp::yaml-cpp
         libComptine
         libComptineplugin
+        Budget
+        CommonUI
+        Operations
+        Rules
 )
 
 # Platform-specific file coordination for cloud storage support (Dropbox,

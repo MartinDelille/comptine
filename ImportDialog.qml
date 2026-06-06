@@ -3,7 +3,10 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+
 import Comptine
+import commonui
+import operations
 
 BaseDialog {
     id: importDialog
@@ -140,6 +143,7 @@ BaseDialog {
 
                     AccountComboBox {
                         id: accountCombo
+                        budgetData: AppState.data
                         Layout.fillWidth: true
                         visible: !newAccountCheck.checked
 

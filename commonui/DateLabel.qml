@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
-import Comptine
+
+import commonui
 
 Label {
     required property var date

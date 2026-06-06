@@ -1,12 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Comptine
+
+import commonui
 
 BaseDialog {
     id: root
     title: isNewRule ? qsTr("Add Rule") : qsTr("Edit Rule")
     width: 450
+
+    required property var categories
+    required property var rules
 
     property bool isNewRule: true
     property int ruleIndex: -1
@@ -26,7 +30,7 @@ BaseDialog {
 
     onOpened: {
         // Refresh category list when dialog opens
-        root.categoryList = AppState.categories.categoryNames();
+        root.categoryList = categories.categoryNames();
 
         if (isNewRule) {
             categoryCombo.currentIndex = -1;
@@ -57,20 +61,20 @@ BaseDialog {
     }
 
     onAccepted: {
-        let category = AppState.categories.getCategoryByName(categoryCombo.currentText);
+        let category = categories.getCategoryByName(categoryCombo.currentText);
         let prefix = descriptionPrefixField.text.trim();
         let amount = amountCheckBox.checked ? amountFilterField.value : 0;
 
         if (isNewRule) {
-            AppState.rules.addRule(category, prefix, amount);
+            rules.addRule(category, prefix, amount);
             if (applyToExistingCheckBox.checked) {
-                let count = AppState.rules.applyRuleToUncategorized(category, prefix, amount);
+                let count = rules.applyRuleToUncategorized(category, prefix, amount);
                 if (count > 0) {
                     console.log("Applied rule to", count, "uncategorized operation(s)");
                 }
             }
         } else {
-            AppState.rules.editRule(ruleIndex, category, prefix, amount);
+            rules.editRule(ruleIndex, category, prefix, amount);
         }
     }
 

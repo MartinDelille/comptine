@@ -4,7 +4,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
+
 import Comptine
+import budget
+import commonui
+import operations
+import rules
 
 ApplicationWindow {
     id: window
@@ -305,22 +310,21 @@ ApplicationWindow {
 
     ImportDialog {
         id: importDialog
-        anchors.centerIn: parent
     }
 
     AboutDialog {
         id: aboutDialog
-        anchors.centerIn: parent
     }
 
     PreferencesDialog {
         id: preferencesDialog
-        anchors.centerIn: parent
+        settings: AppState.settings
     }
 
     BaseDialog {
         id: deleteSelectedOperationsDialog
         title: qsTr("Delete Operations")
+        width: 400
         Label {
             text: qsTr("Are you sure you want to delete the selected operations?")
         }
@@ -331,6 +335,7 @@ ApplicationWindow {
     BaseDialog {
         id: deleteCurrentCagegoryDialog
         title: qsTr("Delete Category")
+        width: 400
         Label {
             property string _categoryName: AppState.categories.current ? AppState.categories.current.name : ""
             text: qsTr(`Are you sure you want to delete ${_categoryName} ?`)
@@ -341,13 +346,15 @@ ApplicationWindow {
 
     RulesView {
         id: rulesView
-        anchors.centerIn: parent
+        categories: AppState.categories
+        rules: AppState.rules
     }
 
     UpdateDialog {
         id: updateDialog
-        anchors.centerIn: parent
+        update: AppState.update
     }
+
     MessageDialog {
         id: externalChangeDialog
         title: qsTr("File Changed Externally")
@@ -504,6 +511,10 @@ ApplicationWindow {
             // Operations view
             OperationView {
                 id: operationView
+                budgetData: AppState.data
+                categories: AppState.categories
+                navigation: AppState.navigation
+                rules: AppState.rules
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
@@ -511,6 +522,8 @@ ApplicationWindow {
             // Budget view
             BudgetView {
                 id: budgetView
+                categories: AppState.categories
+                navigation: AppState.navigation
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
