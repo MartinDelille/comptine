@@ -48,14 +48,6 @@ ApplicationWindow {
         pendingAction = "";
     }
 
-    function openRecentFile(filePath) {
-        if (checkUnsavedChanges("openRecent")) {
-            pendingRecentFile = filePath;
-        } else {
-            AppState.file.loadFromYamlFile(filePath);
-        }
-    }
-
     function checkUnsavedChanges(action) {
         if (AppState.file.hasUnsavedChanges) {
             pendingAction = action;
@@ -73,200 +65,67 @@ ApplicationWindow {
         }
     }
 
-    menuBar: MenuBar {
-        Menu {
-            title: qsTr("&File")
-            Action {
-                text: qsTr("&New...")
-                shortcut: StandardKey.New
-                onTriggered: {
-                    if (!window.checkUnsavedChanges("new")) {
-                        AppState.file.clear();
-                    }
-                }
-            }
-            Action {
-                text: qsTr("&Open...")
-                shortcut: StandardKey.Open
-                onTriggered: {
-                    if (!window.checkUnsavedChanges("open")) {
-                        openDialog.open();
-                    }
-                }
-            }
-            Action {
-                text: qsTr("&Save")
-                shortcut: StandardKey.Save
-                onTriggered: {
-                    if (AppState.file.currentFilePath.length > 0) {
-                        AppState.file.saveToYamlFile(AppState.file.currentFilePath);
-                    } else {
-                        saveDialog.open();
-                    }
-                }
-            }
-            Action {
-                text: qsTr("&Save As...")
-                shortcut: StandardKey.SaveAs
-                onTriggered: saveDialog.open()
-            }
-            Menu {
-                id: recentFilesMenu
-                title: qsTr("Open &Recent")
-                enabled: AppState.settings.recentFilesModel.rowCount() > 0
-
-                Instantiator {
-                    model: AppState.settings.recentFilesModel
-                    delegate: MenuItem {
-                        required property var model
-                        text: model.display
-                        onTriggered: window.openRecentFile(model.display)
-                    }
-                    onObjectAdded: (index, object) => recentFilesMenu.insertItem(index, object)
-                    onObjectRemoved: (index, object) => recentFilesMenu.removeItem(object)
-                }
-
-                MenuSeparator {
-                    visible: AppState.settings.recentFilesModel.rowCount() > 0
-                }
-
-                MenuItem {
-                    text: qsTr("Clear Recent Files")
-                    enabled: AppState.settings.recentFilesModel.rowCount() > 0
-                    onTriggered: AppState.settings.clearRecentFiles()
-                }
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&Import CSV...")
-                shortcut: "Ctrl+Shift+I"
-                onTriggered: csvDialog.open()
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&Quit")
-                shortcut: StandardKey.Quit
-                onTriggered: {
-                    if (!window.checkUnsavedChanges("quit")) {
-                        Qt.quit();
-                    }
-                }
+    menuBar: ApplicationMenuBar {
+        anyDialogOpen: window.anyDialogOpen
+        onNewFileAction: {
+            if (!window.checkUnsavedChanges("new")) {
+                AppState.file.clear();
             }
         }
-        Menu {
-            title: qsTr("&Edit")
-            Action {
-                text: qsTr("&Undo")
-                shortcut: StandardKey.Undo
-                enabled: AppState.undoStack.canUndo
-                onTriggered: AppState.data.undo()
-            }
-            Action {
-                text: qsTr("&Redo")
-                shortcut: StandardKey.Redo
-                enabled: AppState.undoStack.canRedo
-                onTriggered: AppState.data.redo()
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&Copy")
-                shortcut: StandardKey.Copy
-                enabled: AppState.data.operationModel.selectionCount > 0
-                onTriggered: AppState.clipboard.copySelectedOperations()
-            }
-            MenuSeparator {}
-            Action {
-                text: AppState.navigation.currentTabIndex === 0 ? qsTr("Add New Operation...") : qsTr("Add New Category...")
-                shortcut: "Ctrl+Shift+N"
-                onTriggered: {
-                    if (AppState.navigation.currentTabIndex === 0) {
-                        operationView.addOperation();
-                    } else {
-                        budgetView.addCategory();
-                    }
-                }
-            }
-            Action {
-                text: AppState.navigation.currentTabIndex === 0 ? qsTr("Edit &Operation...") : qsTr("Edit &Category...")
-                shortcut: "Ctrl+E"
-                enabled: (AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount === 1) || (AppState.navigation.currentTabIndex === 1 && AppState.navigation.currentCategoryIndex >= 0)
-                onTriggered: {
-                    if (AppState.navigation.currentTabIndex === 0) {
-                        operationView.editCurrentOperation();
-                    } else {
-                        budgetView.editCurrentCategory();
-                    }
-                }
-            }
-            Action {
-                text: AppState.navigation.currentTabIndex === 0 ? qsTr("Delete Operation") : qsTr("Delete Category")
-                shortcut: "Ctrl+Backspace"
-                enabled: (AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.selectionCount > 0) || (AppState.navigation.currentTabIndex === 1 && AppState.navigation.currentCategoryIndex >= 0)
-                onTriggered: {
-                    if (AppState.navigation.currentTabIndex === 0) {
-                        deleteSelectedOperationsDialog.open();
-                    } else {
-                        deleteCurrentCagegoryDialog.open();
-                    }
-                }
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("Categorization &Rules...")
-                onTriggered: rulesView.open()
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&Preferences...")
-                shortcut: StandardKey.Preferences
-                onTriggered: preferencesDialog.open()
+        onOpenFileAction: {
+            if (!window.checkUnsavedChanges("open")) {
+                openDialog.open();
             }
         }
-        Menu {
-            title: qsTr("&View")
-            Action {
-                text: qsTr("&Operations")
-                shortcut: "Ctrl+1"
-                onTriggered: AppState.navigation.showOperationsTab()
-            }
-            Action {
-                text: qsTr("&Budget")
-                shortcut: "Ctrl+2"
-                onTriggered: AppState.navigation.showBudgetTab()
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&Previous Month")
-                shortcut: "Left"
-                enabled: AppState.navigation.currentTabIndex === 1 && !window.anyDialogOpen
-                onTriggered: AppState.navigation.previousMonth()
-            }
-            Action {
-                text: qsTr("&Next Month")
-                shortcut: "Right"
-                enabled: AppState.navigation.currentTabIndex === 1 && !window.anyDialogOpen
-                onTriggered: AppState.navigation.nextMonth()
+        onSaveFileAction: saveAs => {
+            if (!saveAs && AppState.file.currentFilePath.length > 0) {
+                AppState.file.saveToYamlFile(AppState.file.currentFilePath);
+            } else {
+                saveDialog.open();
             }
         }
-        Menu {
-            title: qsTr("&Help")
-            Action {
-                text: qsTr("Check for &Updates...")
-                onTriggered: {
-                    window.manualUpdateCheck = true;
-                    AppState.update.checkForUpdates();
-                }
-            }
-            Action {
-                text: qsTr("&Project Page")
-                onTriggered: Qt.openUrlExternally("https://martin.delille.org/comptine/")
-            }
-            MenuSeparator {}
-            Action {
-                text: qsTr("&About Comptine")
-                onTriggered: aboutDialog.open()
+        onOpenRecentFileAction: filePath => {
+            if (!window.checkUnsavedChanges("openRecent")) {
+                AppState.file.loadFromYamlFile(filePath);
+            } else {
+                window.pendingRecentFile = filePath;
             }
         }
+        onImportCsvAction: csvDialog.open()
+        onQuitAction: {
+            if (!window.checkUnsavedChanges("quit")) {
+                Qt.quit();
+            }
+        }
+        onAddAction: {
+            if (AppState.navigation.currentTabIndex === 0) {
+                operationView.addOperation();
+            } else {
+                budgetView.addCategory();
+            }
+        }
+        onEditAction: {
+            if (AppState.navigation.currentTabIndex === 0) {
+                operationView.editCurrentOperation();
+            } else {
+                budgetView.editCurrentCategory();
+            }
+        }
+        onDeleteAction: {
+            if (AppState.navigation.currentTabIndex === 0) {
+                deleteSelectedOperationsDialog.open();
+            } else {
+                deleteCurrentCagegoryDialog.open();
+            }
+        }
+        onRulesAction: rulesView.open()
+        onPreferencesAction: preferencesDialog.open()
+        onCheckUpdateAction: {
+            window.manualUpdateCheck = true;
+            AppState.update.checkForUpdates();
+        }
+        onProjectPageAction: Qt.openUrlExternally("https://martin.delille.org/comptine/")
+        onAboutAction: aboutDialog.open()
     }
 
     FileDialog {

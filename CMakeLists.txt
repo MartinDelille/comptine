@@ -225,6 +225,7 @@ qt_add_qml_module(
   Rules
   QML_FILES
   Main.qml
+  ApplicationMenuBar.qml
   AboutDialog.qml
   ImportDialog.qml
   PreferencesDialog.qml
