@@ -1,10 +1,14 @@
 #include "Account.h"
 
-Account::Account(QObject* parent) :
-    QObject(parent) {}
-
 Account::Account(const QString& name, QObject* parent) :
-    QObject(parent), _name(name) {}
+    QObject(parent), _name(name) {
+  connect(this, &Account::currentOperationChanged, this, [this]() {
+    if (_currentOperation) {
+      _selectedOperations.insert(_currentOperation);
+      emit selectionChanged();
+    }
+  });
+}
 
 QStringList Account::importSourcePrefixes() const {
   return _importSources;
@@ -218,6 +222,10 @@ void Account::selectRange(int fromIndex, int toIndex) {
   }
 
   emit selectionChanged();
+}
+
+void Account::selectAll() {
+  selectRange(0, _operations.size() - 1);
 }
 
 void Account::clearSelection() {

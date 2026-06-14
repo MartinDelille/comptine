@@ -83,10 +83,22 @@ FocusScope {
 
             OperationList {
                 id: operationList
-                budgetData: root.budgetData
-                navigation: root.navigation
+                currentIndex: root.navigation.currentAccount ? root.navigation.currentAccount.currentOperationIndex : -1
+                model: root.budgetData.operationModel
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                onPreviousOperation: shift => {
+                    root.navigation.previousOperation(shift);
+                }
+                onNextOperation: shift => {
+                    root.navigation.nextOperation(shift);
+                }
+                onToggleSelectionAt: index => {
+                    root.navigation.currentAccount.toggleSelectionAt(index);
+                }
+                onSelectAt: (index, extend) => {
+                    root.navigation.currentAccount.selectAt(index, extend);
+                }
             }
 
             OperationDetails {

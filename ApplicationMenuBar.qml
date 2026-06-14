@@ -106,6 +106,12 @@ MenuBar {
             enabled: AppState.data.operationModel.selectionCount > 0
             onTriggered: AppState.clipboard.copySelectedOperations()
         }
+        Action {
+            text: qsTr("Select &All")
+            shortcut: StandardKey.SelectAll
+            enabled: AppState.navigation.currentTabIndex === 0 && AppState.data.operationModel.count > 0
+            onTriggered: AppState.navigation.currentAccount.selectAll()
+        }
         MenuSeparator {}
         Action {
             text: AppState.navigation.currentTabIndex === 0 ? qsTr("Add New Operation...") : qsTr("Add New Category...")

@@ -29,8 +29,7 @@ class Account : public QObject {
   Q_PROPERTY(double selectedTotal READ selectedTotal NOTIFY selectionChanged)
 
 public:
-  explicit Account(QObject* parent = nullptr);
-  explicit Account(const QString& name, QObject* parent = nullptr);
+  explicit Account(const QString& name = "", QObject* parent = nullptr);
 
   // Import source management
   QStringList importSourcePrefixes() const;
@@ -63,6 +62,7 @@ public:
   void toggleSelection(Operation* operation);
   Q_INVOKABLE void toggleSelectionAt(int index);
   Q_INVOKABLE void selectRange(int fromIndex, int toIndex);
+  Q_INVOKABLE void selectAll();
   Q_INVOKABLE void clearSelection();
   int selectionCount() const;
   double selectedTotal() const;
