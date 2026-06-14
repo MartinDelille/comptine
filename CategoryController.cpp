@@ -174,14 +174,11 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
 
 Category* CategoryController::editCategory(const QString& name, double budgetLimit, Category* category, QDate budgetDate) {
   if (category) {
-    QString oldName = category->name();
-    double oldBudgetLimit = category->budgetLimit();
-
     // Only create undo command if something changed
-    if (oldName != name || oldBudgetLimit != budgetLimit) {
+    if (category->name() != name || category->budgetLimitForMonth(budgetDate) != budgetLimit) {
       _undoStack.push(new EditCategoryCommand(*category,
-                                              oldName, name,
-                                              oldBudgetLimit, budgetLimit,
+                                              name,
+                                              budgetLimit,
                                               budgetDate));
     }
   } else {

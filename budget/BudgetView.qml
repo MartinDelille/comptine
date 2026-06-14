@@ -26,8 +26,10 @@ FocusScope {
 
     CategoryEditDialog {
         id: categoryEditDialog
-        categories: root.categories
         date: root.navigation.budgetDate
+        onCategoryEdited: function (category, newName, newBudgetLimit) {
+            root.categories.editCategory(newName, newBudgetLimit, category, date);
+        }
     }
 
     CategoryDetailView {

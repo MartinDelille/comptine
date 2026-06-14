@@ -427,8 +427,8 @@ private slots:
     QDate budgetDate(2025, 6, 1);  // Changing budget while viewing June
 
     // Push edit command: change limit from 250 to 300
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
-                                            -250.0, -300.0, budgetDate));
+    undoStack->push(new EditCategoryCommand(*cat, "Food",
+                                            -300.0, budgetDate));
 
     // After redo: current limit should be 300
     // Old limit (250) is stored at May (month before June), so:
@@ -469,8 +469,8 @@ private slots:
     // Change limit from 250 to 300 while viewing June
     // The old limit (250) will be recorded at May (month before June),
     // overwriting the pre-existing 200
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
-                                            -250.0, -300.0, budgetDate));
+    undoStack->push(new EditCategoryCommand(*cat, "Food",
+                                            -300.0, budgetDate));
 
     // May history should now have the OLD limit (250), not the pre-existing 200
     QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
@@ -493,8 +493,8 @@ private slots:
     QDate budgetDate(2025, 6, 1);
 
     // Only rename, don't change budget limit
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Groceries",
-                                            -250.0, -250.0, budgetDate));
+    undoStack->push(new EditCategoryCommand(*cat, "Groceries",
+                                            -250.0, budgetDate));
 
     // Name should change, but no history entry should be created
     QCOMPARE(cat->name(), QString("Groceries"));

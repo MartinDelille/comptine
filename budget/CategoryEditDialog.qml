@@ -9,11 +9,12 @@ BaseDialog {
     title: qsTr("Edit Category")
     width: 400
 
-    required property var categories
     required property date date
 
     property var _category: null
     okEnabled: categoryNameField.text.trim().length > 0
+
+    signal categoryEdited(var category, string newName, double newBudgetLimit)
 
     function edit(category = null) {
         _category = category;
@@ -36,7 +37,7 @@ BaseDialog {
         let amount = budgetLimitField.value;
         // Apply sign based on checkbox: income = positive, expense = negative
         let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
-        categories.editCategory(categoryNameField.text, newBudgetLimit, _category, date);
+        categoryEdited(_category, categoryNameField.text, newBudgetLimit);
     }
 
     ColumnLayout {

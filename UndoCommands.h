@@ -67,8 +67,8 @@ private:
 class EditCategoryCommand : public QUndoCommand {
 public:
   EditCategoryCommand(Category& category,
-                      const QString& oldName, const QString& newName,
-                      double oldBudgetLimit, double newBudgetLimit,
+                      const QString& newName,
+                      double newBudgetLimit,
                       const QDate& budgetDate,
                       QUndoCommand* parent = nullptr);
 

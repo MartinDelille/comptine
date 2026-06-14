@@ -79,17 +79,15 @@ void RenameAccountCommand::redo() {
 }
 
 EditCategoryCommand::EditCategoryCommand(Category& category,
-                                         const QString& oldName,
                                          const QString& newName,
-                                         double oldBudgetLimit,
                                          double newBudgetLimit,
                                          const QDate& budgetDate,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
-    _oldName(oldName),
+    _oldName(category.name()),
     _newName(newName),
-    _oldBudgetLimit(oldBudgetLimit),
+    _oldBudgetLimit(category.budgetLimitForMonth(budgetDate)),
     _newBudgetLimit(newBudgetLimit),
     _budgetDate(budgetDate),
     _historyDate(budgetDate.addMonths(-1)) {
@@ -97,9 +95,9 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
   MonthRecord existingRecord = category.monthRecord(_historyDate.year(), _historyDate.month());
   _previousHistoryBudgetLimit = existingRecord.budgetLimit;
 
-  if (oldName != newName && oldBudgetLimit != newBudgetLimit) {
+  if (_oldName != _newName && _oldBudgetLimit != _newBudgetLimit) {
     setText(QObject::tr("Edit category \"%1\"").arg(newName));
-  } else if (oldName != newName) {
+  } else if (_oldName != _newName) {
     setText(QObject::tr("Rename category to \"%1\"").arg(newName));
   } else {
     setText(QObject::tr("Change budget limit of \"%1\"").arg(newName));
