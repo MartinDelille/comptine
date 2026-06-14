@@ -338,30 +338,6 @@ ApplicationWindow {
             }
         }
 
-        Connections {
-            target: AppState.file
-            function onDataLoaded() {
-                // Focus the appropriate view after data load
-                if (AppState.navigation.currentTabIndex === 0) {
-                    operationView.forceActiveFocus();
-                } else {
-                    budgetView.forceActiveFocus();
-                }
-            }
-        }
-
-        Connections {
-            target: AppState.navigation
-            function onCurrentTabIndexChanged() {
-                // Focus the appropriate view when tab changes
-                if (AppState.navigation.currentTabIndex === 0) {
-                    operationView.forceActiveFocus();
-                } else {
-                    budgetView.forceActiveFocus();
-                }
-            }
-        }
-
         StackLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -374,6 +350,7 @@ ApplicationWindow {
                 categories: AppState.categories
                 navigation: AppState.navigation
                 rules: AppState.rules
+                focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
@@ -383,6 +360,7 @@ ApplicationWindow {
                 id: budgetView
                 categories: AppState.categories
                 navigation: AppState.navigation
+                focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
