@@ -17,20 +17,14 @@ BaseDialog {
     property var filePaths: []
 
     // Model built from filePaths with per-file account info
-    property var fileEntries: []
-
-    okEnabled: {
-        if (fileEntries.length === 0)
-            return false;
-        for (var i = 0; i < fileEntries.length; i++) {
-            if (fileEntries[i].accountName.trim() === "")
-                return false;
-        }
-        return true;
+    ListModel {
+        id: fileEntries
     }
 
+    okEnabled: fileEntries.count > 0
+
     onOpened: {
-        var entries = [];
+        fileEntries.clear();
         for (var i = 0; i < filePaths.length; i++) {
             var url = filePaths[i].toString();
             var fileName = url.substring(url.lastIndexOf("/") + 1);
@@ -64,21 +58,20 @@ BaseDialog {
                 }
             }
 
-            entries.push({
-                "url": filePaths[i],
-                "fileName": fileName,
-                "accountName": suggested,
-                "isNewAccount": isNew,
-                "existingAccountIndex": existingIndex >= 0 ? existingIndex : 0
+            fileEntries.append({
+                url: filePaths[i],
+                fileName: fileName,
+                accountName: suggested,
+                isNewAccount: isNew,
+                existingAccountIndex: existingIndex >= 0 ? existingIndex : 0
             });
         }
-        fileEntries = entries;
         useCategoriesCheckBox.checked = false;
     }
 
     onAccepted: {
-        for (var i = 0; i < fileEntries.length; i++) {
-            var entry = fileEntries[i];
+        for (var i = 0; i < fileEntries.count; i++) {
+            var entry = fileEntries.get(i);
             AppState.file.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
         }
         AppState.navigation.currentTabIndex = 0;
@@ -98,21 +91,33 @@ BaseDialog {
             Layout.fillWidth: true
             Layout.preferredHeight: Math.min(contentHeight, 300)
             clip: true
-            model: importDialog.fileEntries.length
+            model: fileEntries
             spacing: Theme.spacingNormal
 
             delegate: ColumnLayout {
                 id: fileDelegate
+                required property var model
                 required property int index
                 width: parent.width
                 spacing: Theme.spacingSmall
 
-                Label {
-                    text: importDialog.fileEntries[fileDelegate.index].fileName
-                    font.pixelSize: Theme.fontSizeNormal
-                    font.bold: true
-                    elide: Text.ElideMiddle
-                    Layout.fillWidth: true
+                RowLayout {
+                    Label {
+                        text: fileDelegate.model.fileName
+                        font.pixelSize: Theme.fontSizeNormal
+                        font.bold: true
+                        elide: Text.ElideMiddle
+                        Layout.fillWidth: true
+                    }
+
+                    ToolButton {
+                        text: "🗑️"
+                        onClicked: {
+                            if (fileDelegate.index < fileEntries.count) {
+                                fileEntries.remove(fileDelegate.index);
+                            }
+                        }
+                    }
                 }
 
                 RowLayout {
@@ -122,22 +127,10 @@ BaseDialog {
                     CheckBox {
                         id: newAccountCheck
                         text: qsTr("New account")
-                        checked: importDialog.fileEntries[fileDelegate.index].isNewAccount
+                        checked: fileDelegate.model.isNewAccount
 
                         onCheckedChanged: {
-                            var entries = importDialog.fileEntries;
-                            if (fileDelegate.index < entries.length) {
-                                entries[fileDelegate.index].isNewAccount = checked;
-                                if (!checked) {
-                                    // Switching to existing: use combo selection
-                                    var account = AppState.data.accountAt(accountCombo.currentIndex);
-                                    entries[fileDelegate.index].accountName = account ? account.name : "";
-                                } else {
-                                    // Switching to new: use text field value
-                                    entries[fileDelegate.index].accountName = newAccountField.text.trim();
-                                }
-                                importDialog.fileEntries = entries;
-                            }
+                            fileDelegate.model.isNewAccount = checked;
                         }
                     }
 
@@ -146,23 +139,9 @@ BaseDialog {
                         budgetData: AppState.data
                         Layout.fillWidth: true
                         visible: !newAccountCheck.checked
+                        currentIndex: fileDelegate.model.existingAccountIndex
 
-                        Component.onCompleted: {
-                            var entry = importDialog.fileEntries[fileDelegate.index];
-                            if (entry)
-                                currentIndex = entry.existingAccountIndex;
-                        }
-
-                        onCurrentIndexChanged: {
-                            if (!newAccountCheck.checked) {
-                                var entries = importDialog.fileEntries;
-                                if (fileDelegate.index < entries.length) {
-                                    var account = AppState.data.accountAt(currentIndex);
-                                    entries[fileDelegate.index].accountName = account ? account.name : "";
-                                    importDialog.fileEntries = entries;
-                                }
-                            }
-                        }
+                        onCurrentIndexChanged: fileDelegate.model.existingAccountIndex = currentIndex
                     }
 
                     TextField {
@@ -170,21 +149,10 @@ BaseDialog {
                         Layout.fillWidth: true
                         visible: newAccountCheck.checked
                         placeholderText: qsTr("Account name")
-
-                        Component.onCompleted: {
-                            var entry = importDialog.fileEntries[fileDelegate.index];
-                            if (entry && entry.isNewAccount)
-                                text = entry.accountName;
-                        }
+                        text: fileDelegate.model.accountName
 
                         onTextChanged: {
-                            if (newAccountCheck.checked) {
-                                var entries = importDialog.fileEntries;
-                                if (fileDelegate.index < entries.length) {
-                                    entries[fileDelegate.index].accountName = text.trim();
-                                    importDialog.fileEntries = entries;
-                                }
-                            }
+                            fileDelegate.model.accountName = text;
                         }
                     }
                 }
