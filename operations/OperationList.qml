@@ -31,33 +31,6 @@ FocusScope {
         highlightFollowsCurrentItem: false  // Don't auto-scroll highlight
         currentIndex: root.currentAccount ? root.currentAccount.currentOperationIndex : -1
 
-        // Restore focus when YAML file is loaded
-        Connections {
-            target: AppState.file
-            function onYamlFileLoaded() {
-                if (listView.count > 0 && focusScope.currentAccount) {
-                    // Use the index from the file (already set in account.currentOperationIndex)
-                    let idx = Math.min(focusScope.currentAccount.currentOperationIndex, listView.count - 1);
-                    if (idx < 0)
-                        idx = 0;
-                    focusScope.currentAccount.currentOperationIndex = idx;
-                    focusScope.currentAccount.selectAt(idx, false);
-                    listView.positionViewAtIndex(idx, ListView.Center);
-                }
-                listView.forceActiveFocus();
-            }
-            function onDataLoaded() {
-                // For CSV import: sync ListView currentIndex with model selection
-                if (listView.count > 0 && focusScope.currentAccount && focusScope.currentAccount.currentOperationIndex < 0) {
-                    focusScope.currentAccount.currentOperationIndex = 0;
-                    focusScope.currentAccount.selectAt(0, false);
-                }
-                let idx = focusScope.currentAccount ? focusScope.currentAccount.currentOperationIndex : 0;
-                listView.positionViewAtIndex(idx >= 0 ? idx : 0, ListView.Contain);
-                listView.forceActiveFocus();
-            }
-        }
-
         Connections {
             target: root.navigation
             function onOperationSelected(index) {
