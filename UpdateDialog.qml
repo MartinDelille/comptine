@@ -56,7 +56,6 @@ BaseDialog {
                     text: root.update.releaseNotes
                     textFormat: TextEdit.MarkdownText
                     readOnly: true
-                    wrapMode: TextArea.WordWrap
                     background: null
                 }
             }

@@ -243,26 +243,6 @@ ApplicationWindow {
     // Track if update check was manual (user clicked menu) vs automatic
     property bool manualUpdateCheck: false
 
-    // Handle update check results
-    Connections {
-        target: AppState.update
-        function onUpdateCheckCompleted() {
-            AppState.update.markUpdateChecked();
-            if (AppState.update.updateAvailable) {
-                updateDialog.open();
-            } else if (window.manualUpdateCheck) {
-                noUpdateDialog.open();
-            }
-            window.manualUpdateCheck = false;
-        }
-        function onUpdateCheckFailed(error) {
-            if (window.manualUpdateCheck) {
-                updateErrorDialog.open();
-            }
-            window.manualUpdateCheck = false;
-        }
-    }
-
     // Auto-check for updates on startup
     Component.onCompleted: {
         if (AppState.update.shouldAutoCheck()) {
@@ -309,6 +289,26 @@ ApplicationWindow {
         }
         function onExternalChangeDetected() {
             externalChangeDialog.open();
+        }
+    }
+
+    // Handle update check results
+    Connections {
+        target: AppState.update
+        function onUpdateCheckCompleted() {
+            AppState.update.markUpdateChecked();
+            if (AppState.update.updateAvailable) {
+                updateDialog.open();
+            } else if (window.manualUpdateCheck) {
+                noUpdateDialog.open();
+            }
+            window.manualUpdateCheck = false;
+        }
+        function onUpdateCheckFailed(error) {
+            if (window.manualUpdateCheck) {
+                updateErrorDialog.open();
+            }
+            window.manualUpdateCheck = false;
         }
     }
 
