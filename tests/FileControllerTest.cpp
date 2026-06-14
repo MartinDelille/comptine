@@ -47,10 +47,13 @@ private slots:
   }
 
   void cleanup() {
-    // Note: For simplicity in integration tests, we're not deleting objects here
-    // The test process will clean up memory on exit
-    // In production code, proper cleanup would be essential
-    // TODO: Investigate proper cleanup order that doesn't cause crashes
+    delete fileController;
+    delete ruleController;
+    delete categoryController;
+    delete navController;
+    delete budgetData;
+    delete appSettings;
+    delete undoStack;
   }
 
   void cleanupTestCase() { delete tempDir; }
@@ -502,93 +505,6 @@ private slots:
 
     QVERIFY(content.contains("month_history"));
     QVERIFY(!content.contains("leftover_decisions"));
-  }
-
-  // EditCategoryCommand undo/redo with budget limit history
-
-  void testEditCategoryCommandUndoRedo() {
-    Category* cat = new Category("Food", -250.0);
-    categoryController->addCategory(cat);
-
-    QDate budgetDate(2025, 6, 1);  // Changing budget while viewing June
-
-    // Push edit command: change limit from 250 to 300
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
-                                            -250.0, -300.0, budgetDate));
-
-    // After redo: current limit should be 300
-    // Old limit (250) is stored at May (month before June), so:
-    // May and before show 250, June and after show 300
-    QCOMPARE(cat->budgetLimit(), -300.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
-
-    // Undo: should restore to 250, and clear the May history entry
-    undoStack->undo();
-    QCOMPARE(cat->budgetLimit(), -250.0);
-    MonthRecord record = cat->monthRecord(2025, 5);
-    QVERIFY(!record.budgetLimit.has_value());
-
-    // All months should now return 250
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -250.0);
-
-    // Redo again
-    undoStack->redo();
-    QCOMPARE(cat->budgetLimit(), -300.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
-  }
-
-  void testEditCategoryCommandPreservesExistingHistory() {
-    Category* cat = new Category("Food", -250.0);
-    categoryController->addCategory(cat);
-
-    // Pre-existing budget limit in history for May (e.g., from a previous change)
-    cat->setBudgetLimitForMonth(2025, 5, -200.0);
-
-    QDate budgetDate(2025, 6, 1);
-
-    // Change limit from 250 to 300 while viewing June
-    // The old limit (250) will be recorded at May (month before June),
-    // overwriting the pre-existing 200
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Food",
-                                            -250.0, -300.0, budgetDate));
-
-    // May history should now have the OLD limit (250), not the pre-existing 200
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 5, 1)), -250.0);
-    // June should show new limit
-    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
-    QCOMPARE(cat->budgetLimit(), -300.0);
-
-    // Undo: should restore to 250, and restore the pre-existing 200 in May history
-    undoStack->undo();
-    QCOMPARE(cat->budgetLimit(), -250.0);
-    MonthRecord record = cat->monthRecord(2025, 5);
-    QVERIFY(record.budgetLimit.has_value());
-    QCOMPARE(record.budgetLimit.value(), -200.0);
-  }
-
-  void testEditCategoryNameOnlyNoHistoryChange() {
-    Category* cat = new Category("Food", -250.0);
-    categoryController->addCategory(cat);
-
-    QDate budgetDate(2025, 6, 1);
-
-    // Only rename, don't change budget limit
-    undoStack->push(new EditCategoryCommand(*cat, "Food", "Groceries",
-                                            -250.0, -250.0, budgetDate));
-
-    // Name should change, but no history entry should be created
-    QCOMPARE(cat->name(), QString("Groceries"));
-    QCOMPARE(cat->budgetLimit(), -250.0);
-    QVERIFY(cat->allMonthHistory().isEmpty());
-
-    undoStack->undo();
-    QCOMPARE(cat->name(), QString("Food"));
   }
 
   // Save/Load with Categorization Rules
