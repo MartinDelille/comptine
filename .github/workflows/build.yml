@@ -42,6 +42,11 @@ jobs:
         shell: bash
         run: echo "version=$(cat .qt-version)" >> $GITHUB_OUTPUT
 
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
@@ -61,11 +66,6 @@ jobs:
       - name: Install NSIS (Windows)
         if: matrix.os == 'windows-latest'
         run: choco install nsis -y
-
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          enable-cache: true
 
       - name: Install Conan
         run: uv run conan profile detect
