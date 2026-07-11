@@ -16,17 +16,19 @@ jobs:
             name: MacOS
             artifact-path: build/Comptine-*.dmg
             release-file: build/Comptine-*.dmg
+            conan-profile: conan/profiles/macos
           - os: ubuntu-latest
             name: Linux
             artifact-path: build/Comptine-*.AppImage
             release-file: build/Comptine-*.AppImage
+            conan-profile: conan/profiles/linux
           - os: windows-latest
             name: Windows
             artifact-path: build/Comptine-*.exe
             release-file: build/Comptine-*.exe
-            conan-preset: conan-default
             cmake-build-args: --config Release
             ctest-args: -C Release
+            conan-profile: conan/profiles/windows
 
     runs-on: ${{ matrix.os }}
     permissions:
@@ -67,8 +69,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: choco install nsis -y
 
-      - name: Install Conan
-        run: uv run conan profile detect
+      - name: Setup MSVC environment (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Cache Conan packages
         uses: actions/cache@v4
@@ -78,10 +83,16 @@ jobs:
           restore-keys: conan-${{ matrix.os }}-
 
       - name: Install C++ dependencies
-        run: uv run conan install . --output-folder=build --build=missing
+        shell: bash
+        run: |
+          uv run conan install . \
+          --output-folder=build \
+          --build=missing \
+          -pr:h=${{ matrix.conan-profile }} \
+          -pr:b=${{ matrix.conan-profile }}
 
       - name: Configure
-        run: cmake -B build -S . --preset=${{ matrix.conan-preset || 'conan-release' }}
+        run: cmake -B build -S . --preset=conan-release
 
       - name: Build
         run: cmake --build build ${{ matrix.cmake-build-args }}
