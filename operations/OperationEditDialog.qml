@@ -318,6 +318,7 @@ BaseDialog {
 
             DateInput {
                 id: dateInput
+                readOnly: true
             }
         }
 

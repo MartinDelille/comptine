@@ -9,15 +9,18 @@ import commonui
 Item {
     id: root
     property date selectedDate: new Date()
+    property bool readOnly: false
     width: textField.width
     height: textField.height
     TextField {
         id: textField
         text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
-        onPressed: popup.doSelectDate(root.selectedDate)
+        readOnly: root.readOnly
         onActiveFocusChanged: {
             if (activeFocus) {
-                popup.doSelectDate(root.selectedDate);
+                if (!readOnly) {
+                    popup.doSelectDate(root.selectedDate);
+                }
             } else {
                 popup.close();
             }
