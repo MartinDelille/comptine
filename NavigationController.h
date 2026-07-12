@@ -36,10 +36,6 @@ public:
   Q_INVOKABLE void previousMonth();
   Q_INVOKABLE void nextMonth();
 
-  // Operation navigation
-  Q_INVOKABLE void previousOperation(bool extendSelection = false);
-  Q_INVOKABLE void nextOperation(bool extendSelection = false);
-
   // Tab shortcuts
   Q_INVOKABLE void showOperationsTab();
   Q_INVOKABLE void showBudgetTab();

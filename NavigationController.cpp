@@ -55,30 +55,6 @@ void NavigationController::nextMonth() {
   set_budgetDate(QDate(date.year(), date.month(), 1));
 }
 
-void NavigationController::previousOperation(bool extendSelection) {
-  Account* account = currentAccount();
-  if (!account) return;
-
-  int currentIndex = account->currentOperationIndex();
-  if (currentIndex > 0) {
-    int newIndex = currentIndex - 1;
-    account->selectAt(newIndex, extendSelection);
-    account->set_currentOperationIndex(newIndex);
-  }
-}
-
-void NavigationController::nextOperation(bool extendSelection) {
-  Account* account = currentAccount();
-  if (!account) return;
-
-  int currentIndex = account->currentOperationIndex();
-  if (currentIndex < account->operationCount() - 1) {
-    int newIndex = currentIndex + 1;
-    account->selectAt(newIndex, extendSelection);
-    account->set_currentOperationIndex(newIndex);
-  }
-}
-
 void NavigationController::showOperationsTab() {
   set_currentTabIndex(0);
 }

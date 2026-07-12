@@ -24,11 +24,7 @@ FocusScope {
     }
 
     function editCurrentOperation() {
-        let operation = budgetData.operationModel.operationAt(operationList.currentIndex);
-
-        if (operation) {
-            operationEditDialog.initialize(operation);
-        }
+        operationEditDialog.initialize(navigation.currentAccount.currentOperation);
     }
 
     RenameAccountDialog {
@@ -83,22 +79,10 @@ FocusScope {
 
             OperationList {
                 id: operationList
-                currentIndex: root.navigation.currentAccount ? root.navigation.currentAccount.currentOperationIndex : -1
+                account: root.navigation.currentAccount
                 model: root.budgetData.operationModel
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                onPreviousOperation: shift => {
-                    root.navigation.previousOperation(shift);
-                }
-                onNextOperation: shift => {
-                    root.navigation.nextOperation(shift);
-                }
-                onToggleSelectionAt: index => {
-                    root.navigation.currentAccount.toggleSelectionAt(index);
-                }
-                onSelectAt: (index, extend) => {
-                    root.navigation.currentAccount.selectAt(index, extend);
-                }
             }
 
             OperationDetails {
@@ -108,7 +92,7 @@ FocusScope {
                 Layout.minimumWidth: 200
                 Layout.maximumWidth: 400
                 Layout.fillHeight: true
-                currentIndex: operationList.currentIndex
+                operation: root.navigation.currentAccount.currentOperation
                 onEditRequested: operation => {
                     operationEditDialog.initialize(operation);
                 }
