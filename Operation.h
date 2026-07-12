@@ -71,7 +71,7 @@ public:
   QString categoryDisplay() const;
 
   // Get amount allocated to a specific category (for budget calculations)
-  double amountForCategory(const Category* category) const;
+  Q_INVOKABLE double amountForCategory(const Category* category) const;
 
 signals:
   void allocationsChanged();

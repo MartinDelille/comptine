@@ -65,7 +65,7 @@ BaseDialog {
 
             delegate: Rectangle {
                 id: operationDelegate
-                required property var modelData
+                required property var operation
                 required property int index
 
                 width: ListView.view.width
@@ -79,7 +79,7 @@ BaseDialog {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                        let operation = operationDelegate.modelData.operation;
+                        let operation = operationDelegate.operation;
                         root.navigateToOperation(operation);
                         root.close();
                     }
@@ -93,14 +93,14 @@ BaseDialog {
 
                     // Date
                     Label {
-                        text: operationDelegate.modelData.date.toLocaleDateString(Qt.locale(), "dd/MM")
+                        text: operationDelegate.operation.date.toLocaleDateString(Qt.locale(), "dd/MM")
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.textMuted
                         Layout.preferredWidth: 50
                     }
 
                     Label {
-                        text: operationDelegate.modelData.label
+                        text: operationDelegate.operation.label
                         font.pixelSize: Theme.fontSizeNormal
                         color: Theme.textPrimary
                         elide: Text.ElideRight
@@ -109,7 +109,7 @@ BaseDialog {
 
                     // Account name
                     Label {
-                        text: operationDelegate.modelData.accountName
+                        text: operationDelegate.operation.account.name
                         font.pixelSize: Theme.fontSizeSmall
                         color: Theme.textMuted
                         Layout.preferredWidth: 80
@@ -118,7 +118,7 @@ BaseDialog {
 
                     // Amount
                     AmountLabel {
-                        amount: operationDelegate.modelData.amount
+                        amount: operationDelegate.operation.amountForCategory(root.category)
                         horizontalAlignment: Text.AlignRight
                         Layout.preferredWidth: 100
                     }
