@@ -117,11 +117,8 @@ BaseDialog {
                     }
 
                     // Amount
-                    Label {
-                        text: Theme.formatAmount(operationDelegate.modelData.amount)
-                        font.pixelSize: Theme.fontSizeNormal
-                        font.bold: true
-                        color: operationDelegate.modelData.amount >= 0 ? Theme.positive : Theme.negative
+                    AmountLabel {
+                        amount: operationDelegate.modelData.amount
                         horizontalAlignment: Text.AlignRight
                         Layout.preferredWidth: 100
                     }

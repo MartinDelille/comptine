@@ -6,6 +6,7 @@ qt_add_qml_module(
   commonui
   QML_FILES
   AmountField.qml
+  AmountLabel.qml
   BaseDialog.qml
   DateLabel.qml
   Theme.qml

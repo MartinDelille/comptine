@@ -82,11 +82,9 @@ Rectangle {
             }
 
             // Leftover display and allocation fields (inline)
-            Label {
-                text: Theme.formatAmount(root.remainingLeftover)
+            AmountLabel {
+                amount: root.remainingLeftover
                 font.pixelSize: Theme.fontSizeSmall
-                font.bold: true
-                color: root.remainingLeftover >= 0 ? Theme.positive : Theme.negative
                 visible: root.leftover !== 0
             }
 

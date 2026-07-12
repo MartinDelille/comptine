@@ -27,11 +27,9 @@ Rectangle {
             color: Theme.textSecondary
         }
 
-        Label {
-            text: Theme.formatAmount(root.balance)
+        AmountLabel {
+            amount: root.balance
             font.pixelSize: Theme.fontSizeXLarge
-            font.bold: true
-            color: Theme.balanceColor(root.balance)
         }
 
         Item {

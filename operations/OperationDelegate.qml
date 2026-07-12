@@ -59,22 +59,19 @@ Rectangle {
             Layout.preferredWidth: 120
         }
 
-        Label {
-            text: Theme.formatAmount(root.operation?.amount ?? 0)
+        AmountLabel {
+            amount: root.operation?.amount ?? 0
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
             font.pixelSize: Theme.fontSizeNormal
-            color: Theme.amountColor(root.operation?.amount ?? 0)
-            font.bold: true
             Layout.preferredWidth: 100
         }
 
-        Label {
-            text: Theme.formatAmount(root.balance)
+        AmountLabel {
+            amount: root.balance
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignRight
             font.pixelSize: Theme.fontSizeNormal
-            color: Theme.balanceColor(root.balance)
             Layout.preferredWidth: 100
         }
     }

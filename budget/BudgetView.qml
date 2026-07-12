@@ -99,11 +99,9 @@ FocusScope {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.textSecondary
                 }
-                Label {
-                    text: Theme.formatAmount(root.categories.totalToSave)
+                AmountLabel {
+                    amount: root.categories.totalToSave
                     font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
-                    color: Theme.positive
                 }
             }
 
@@ -115,11 +113,10 @@ FocusScope {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.textSecondary
                 }
-                Label {
-                    text: Theme.formatAmount(root.categories.totalToReport)
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
+                AmountLabel {
+                    amount: root.categories.totalToReport
                     color: Theme.accent
+                    font.pixelSize: Theme.fontSizeSmall
                 }
             }
 
@@ -132,10 +129,9 @@ FocusScope {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.textSecondary
                 }
-                Label {
-                    text: Theme.formatAmount(root.categories.totalFromReport)
+                AmountLabel {
+                    amount: root.categories.totalFromReport
                     font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
                     color: Theme.warning
                 }
             }
@@ -148,11 +144,9 @@ FocusScope {
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.textSecondary
                 }
-                Label {
-                    text: Theme.formatAmount(root.categories.netReport)
+                AmountLabel {
+                    amount: root.categories.netReport
                     font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
-                    color: Theme.amountColor(root.categories.netReport)
                 }
             }
 

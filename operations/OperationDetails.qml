@@ -95,12 +95,10 @@ Rectangle {
                 Layout.topMargin: Theme.spacingSmall
             }
 
-            Label {
+            AmountLabel {
+                amount: root.budgetData.operationModel.selectedTotal
                 Layout.fillWidth: true
-                text: Theme.formatAmount(root.budgetData.operationModel.selectedTotal)
                 font.pixelSize: Theme.fontSizeLarge
-                font.bold: true
-                color: Theme.amountColor(root.budgetData.operationModel.selectedTotal)
             }
         }
 
@@ -207,11 +205,9 @@ Rectangle {
                             elide: Text.ElideRight
                         }
 
-                        Label {
-                            text: Theme.formatAmount(allocationRow.modelData.amount)
+                        AmountLabel {
+                            amount: allocationRow.modelData.amount
                             font.pixelSize: Theme.fontSizeSmall
-                            font.bold: true
-                            color: Theme.amountColor(allocationRow.modelData.amount)
                         }
                     }
                 }
@@ -231,11 +227,9 @@ Rectangle {
                         elide: Text.ElideRight
                     }
 
-                    Label {
-                        text: Theme.formatAmount(root.operation?.amount ?? 0)
+                    AmountLabel {
+                        amount: root.operation?.amount ?? 0
                         font.pixelSize: Theme.fontSizeSmall
-                        font.bold: true
-                        color: Theme.amountColor(root.operation?.amount ?? 0)
                     }
                 }
             }
@@ -248,13 +242,10 @@ Rectangle {
                 Layout.topMargin: Theme.spacingSmall
             }
 
-            Label {
+            AmountLabel {
+                amount: root.operation?.amount ?? 0
                 Layout.fillWidth: true
-                text: root.operation ? Theme.formatAmount(root.operation.amount) : ""
                 font.pixelSize: Theme.fontSizeNormal
-                font.bold: true
-                color: Theme.amountColor(root.operation?.amount ?? 0)
-                wrapMode: Text.WordWrap
             }
         }
 

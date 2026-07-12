@@ -387,10 +387,8 @@ BaseDialog {
                 color: Theme.textSecondary
             }
 
-            Label {
-                text: Theme.formatAmount(root.remainingAmount)
-                font.bold: true
-                color: Math.abs(root.remainingAmount) < 0.01 ? Theme.positive : Theme.warning
+            AmountLabel {
+                amount: root.remainingAmount
             }
         }
 
