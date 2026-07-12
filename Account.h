@@ -42,6 +42,10 @@ public:
 
   QList<Operation*> operations() const;
 
+  // Operation navigation
+  Q_INVOKABLE void previousOperation(bool extendSelection = false);
+  Q_INVOKABLE void nextOperation(bool extendSelection = false);
+
   void addOperation(Operation* operation);
   void appendOperation(Operation* operation);  // Append without sorting (for file loading)
   void removeOperation(int index);

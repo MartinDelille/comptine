@@ -8,13 +8,10 @@ Rectangle {
     id: root
 
     required property var budgetData
-    required property int currentIndex
+    required property var operation
 
     // Signal to request opening edit dialog (handled by parent)
     signal editRequested(var operation)
-
-    // Get operation from the model using helper methods
-    readonly property var operation: currentIndex >= 0 ? budgetData.operationModel.operationAt(currentIndex) : null
 
     // Multi-selection state
     readonly property bool multipleSelected: budgetData.operationModel.selectionCount > 1
@@ -103,10 +100,9 @@ Rectangle {
         }
 
         // Single operation details
-        GridLayout {
+        ColumnLayout {
             Layout.fillWidth: true
-            columns: 1
-            rowSpacing: Theme.spacingNormal
+            spacing: Theme.spacingNormal
             visible: root.operation !== null && !root.multipleSelected
 
             Label {

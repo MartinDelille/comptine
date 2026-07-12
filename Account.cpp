@@ -2,12 +2,6 @@
 
 Account::Account(const QString& name, QObject* parent) :
     QObject(parent), _name(name) {
-  connect(this, &Account::currentOperationChanged, this, [this]() {
-    if (_currentOperation) {
-      _selectedOperations.insert(_currentOperation);
-      emit selectionChanged();
-    }
-  });
 }
 
 QStringList Account::importSourcePrefixes() const {
@@ -32,7 +26,7 @@ int Account::currentOperationIndex() const {
 }
 
 void Account::set_currentOperationIndex(int index) {
-  set_currentOperation(getOperation(index));
+  select(getOperation(index));
 }
 
 int Account::operationIndex(Operation* operation) const {
@@ -174,6 +168,7 @@ void Account::select(Operation* operation, bool extend) {
     // Clear existing selection and select only this operation
     _selectedOperations.clear();
     _selectedOperations.insert(operation);
+    set_currentOperation(operation);
   } else {
     // Extend selection from currentOperation to this operation
     if (_currentOperation && _operations.contains(_currentOperation)) {
@@ -190,6 +185,14 @@ void Account::select(Operation* operation, bool extend) {
   }
 
   emit selectionChanged();
+}
+
+void Account::previousOperation(bool extendSelection) {
+  select(getOperation(currentOperationIndex() - 1), extendSelection);
+}
+
+void Account::nextOperation(bool extendSelection) {
+  select(getOperation(currentOperationIndex() + 1), extendSelection);
 }
 
 void Account::selectAt(int index, bool extend) {
