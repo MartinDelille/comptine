@@ -5,9 +5,8 @@ import QtQuick.Controls
 import QtQuick.Dialogs
 import QtQuick.Layouts
 
-import Comptine
-import budget
 import commonui
+import budget
 import operations
 import rules
 
@@ -67,6 +66,14 @@ ApplicationWindow {
 
     menuBar: ApplicationMenuBar {
         anyDialogOpen: window.anyDialogOpen
+        file: AppState.file
+        budgetData: AppState.data
+        settings: AppState.settings
+        undoStack: AppState.undoStack
+        window: window
+        currentTabIndex: AppState.navigation.currentTabIndex
+        categories: AppState.categories
+
         onNewFileAction: {
             if (!window.checkUnsavedChanges("new")) {
                 AppState.file.clear();
@@ -77,42 +84,37 @@ ApplicationWindow {
                 openDialog.open();
             }
         }
-        onSaveFileAction: saveAs => {
-            if (!saveAs && AppState.file.currentFilePath.length > 0) {
-                AppState.file.saveToYamlFile(AppState.file.currentFilePath);
-            } else {
-                saveDialog.open();
-            }
-        }
-        onOpenRecentFileAction: filePath => {
+        onSaveFileDialogAction: saveDialog.open()
+        onImportFileDialogAction: csvDialog.open()
+        onOpenRecentFileAction: {
             if (!window.checkUnsavedChanges("openRecent")) {
                 AppState.file.loadFromYamlFile(filePath);
             } else {
                 window.pendingRecentFile = filePath;
             }
         }
-        onImportCsvAction: csvDialog.open()
         onQuitAction: {
             if (!window.checkUnsavedChanges("quit")) {
                 Qt.quit();
             }
         }
+
         onAddAction: {
-            if (AppState.navigation.currentTabIndex === 0) {
+            if (currentTabIndex === 0) {
                 operationView.addOperation();
             } else {
                 budgetView.addCategory();
             }
         }
         onEditAction: {
-            if (AppState.navigation.currentTabIndex === 0) {
+            if (currentTabIndex === 0) {
                 operationView.editCurrentOperation();
             } else {
                 budgetView.editCurrentCategory();
             }
         }
         onDeleteAction: {
-            if (AppState.navigation.currentTabIndex === 0) {
+            if (currentTabIndex === 0) {
                 deleteSelectedOperationsDialog.open();
             } else {
                 deleteCurrentCagegoryDialog.open();
@@ -120,6 +122,7 @@ ApplicationWindow {
         }
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
+
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;
             AppState.update.checkForUpdates();

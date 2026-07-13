@@ -1,31 +1,16 @@
-#include "BudgetData.h"
+#include <QClipboard>
 #include <QDate>
 #include <QDebug>
+#include <QGuiApplication>
 
 #include "AccountListModel.h"
-#include "CategoryController.h"
+#include "BudgetData.h"
 #include "NavigationController.h"
-#include "OperationListModel.h"
 #include "UndoCommands.h"
-
-void BudgetData::setNavigationController(NavigationController* navController) {
-  _navController = navController;
-  if (_navController) {
-    connect(_navController, &NavigationController::currentAccountIndexChanged,
-            this, &BudgetData::currentAccountChanged);
-  }
-}
-
-void BudgetData::setCategoryController(CategoryController* categoryController) {
-  _categoryController = categoryController;
-}
 
 BudgetData::BudgetData(QUndoStack& undoStack) :
     _undoStack(undoStack),
-    _operationModel(new OperationListModel(this)),
     _accountModel(new AccountListModel(_accounts, this)) {
-  connect(_operationModel, &OperationListModel::operationDataChanged,
-          this, &BudgetData::operationDataChanged);
 }
 
 BudgetData::~BudgetData() {
@@ -36,6 +21,14 @@ int BudgetData::accountCount() const {
   return _accounts.size();
 }
 
+int BudgetData::currentAccountIndex() const {
+  return accountIndex(_currentAccount);
+}
+
+void BudgetData::set_currentAccountIndex(int index) {
+  set_currentAccount(accountAt(index));
+}
+
 QList<Account*> BudgetData::accounts() const {
   return _accounts;
 }
@@ -43,13 +36,6 @@ QList<Account*> BudgetData::accounts() const {
 Account* BudgetData::accountAt(int index) const {
   if (index >= 0 && index < _accounts.size()) {
     return _accounts[index];
-  }
-  return nullptr;
-}
-
-Account* BudgetData::currentAccount() const {
-  if (_navController) {
-    return accountAt(_navController->currentAccountIndex());
   }
   return nullptr;
 }
@@ -79,8 +65,7 @@ int BudgetData::accountIndex(Account* account) const {
 }
 
 void BudgetData::renameCurrentAccount(const QString& newName) {
-  if (!_navController) return;
-  Account* account = accountAt(_navController->currentAccountIndex());
+  Account* account = currentAccount();
   if (account && !newName.isEmpty() && account->name() != newName) {
     _undoStack.push(new RenameAccountCommand(*account, _accountModel,
                                              account->name(), newName));
@@ -106,13 +91,12 @@ Account* BudgetData::takeAccount(Account* account) {
   int index = _accounts.indexOf(account);
   if (index >= 0) {
     // If this is the current account, update navigation before removing
-    if (_navController && _navController->currentAccountIndex() == index) {
+    if (account == currentAccount()) {
       // Select previous account, or -1 if this was the only account
-      int newIndex = _accounts.size() > 1 ? qMax(0, index - 1) : -1;
-      _navController->set_currentAccountIndex(newIndex);
-    } else if (_navController && _navController->currentAccountIndex() > index) {
+      set_currentAccount(account);
+    } else if (currentAccountIndex() > index) {
       // Adjust index if removing an account before the current one
-      _navController->set_currentAccountIndex(_navController->currentAccountIndex() - 1);
+      set_currentAccountIndex(currentAccountIndex() - 1);
     }
 
     Account* acc = _accounts.takeAt(index);
@@ -124,33 +108,19 @@ Account* BudgetData::takeAccount(Account* account) {
   return nullptr;
 }
 
-void BudgetData::selectAccount(int index) {
-  if (_navController && index >= 0 && index < _accounts.size()) {
-    _navController->set_currentAccountIndex(index);
-  }
-}
-
 void BudgetData::clearAccounts() {
-  _operationModel->setAccount(nullptr);
   qDeleteAll(_accounts);
   _accounts.clear();
   _accountModel->refresh();
   emit accountCountChanged();
 }
 
-Allocation* BudgetData::createAllocation(const QString& categoryName, double amount) {
-  const Category* category = _categoryController ? _categoryController->getCategoryByName(categoryName) : nullptr;
-  return new Allocation(category, amount);
-}
-
 void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations) {
-  if (!_operationModel) return;
-  if (!_navController) return;
-  Account* account = accountAt(_navController->currentAccountIndex());
+  Account* account = currentAccount();
   if (!account) return;
 
   auto operation = new Operation(account, date, amount, label, details, allocations);
-  _undoStack.push(new AddOperationCommand(operation, *account, *_operationModel));
+  _undoStack.push(new AddOperationCommand(operation, *account));
 }
 
 void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate) {
@@ -158,7 +128,7 @@ void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBu
 
   QDate oldBudgetDate = operation->budgetDate();
   if (oldBudgetDate != newBudgetDate) {
-    _undoStack.push(new SetOperationBudgetDateCommand(*operation, _operationModel,
+    _undoStack.push(new SetOperationBudgetDateCommand(*operation,
                                                       oldBudgetDate, newBudgetDate));
   }
 }
@@ -168,7 +138,7 @@ void BudgetData::setOperationAmount(Operation* operation, double newAmount) {
 
   double oldAmount = operation->amount();
   if (!qFuzzyCompare(oldAmount, newAmount)) {
-    _undoStack.push(new SetOperationAmountCommand(*operation, _operationModel,
+    _undoStack.push(new SetOperationAmountCommand(*operation,
                                                   oldAmount, newAmount));
   }
 }
@@ -178,7 +148,7 @@ void BudgetData::setOperationDate(Operation* operation, const QDate& newDate) {
 
   QDate oldDate = operation->date();
   if (oldDate != newDate) {
-    _undoStack.push(new SetOperationDateCommand(*operation, _operationModel,
+    _undoStack.push(new SetOperationDateCommand(*operation,
                                                 oldDate, newDate));
   }
 }
@@ -188,7 +158,7 @@ void BudgetData::setOperationLabel(Operation* operation, const QString& newLabel
 
   QString oldLabel = operation->label();
   if (oldLabel != newLabel) {
-    _undoStack.push(new SetOperationLabelCommand(*operation, _operationModel,
+    _undoStack.push(new SetOperationLabelCommand(*operation,
                                                  oldLabel, newLabel));
   }
 }
@@ -198,7 +168,7 @@ void BudgetData::setOperationDetails(Operation* operation, const QString& newDet
 
   QString oldDetails = operation->details();
   if (oldDetails != newDetails) {
-    _undoStack.push(new SetOperationDetailsCommand(*operation, _operationModel,
+    _undoStack.push(new SetOperationDetailsCommand(*operation,
                                                    oldDetails, newDetails));
   }
 }
@@ -208,7 +178,7 @@ void BudgetData::setOperationAllocations(Operation* operation, const QList<Alloc
 
   // Only create command if something changed
   if (!operation->sameAllocations(allocations)) {
-    _undoStack.push(new SplitOperationCommand(*operation, _operationModel,
+    _undoStack.push(new SplitOperationCommand(*operation,
                                               allocations));
   } else {
     qDeleteAll(allocations);
@@ -230,20 +200,18 @@ Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAc
   auto newOperation = new Operation(targetAccount, operation->date(), amount,
                                     operation->label(), operation->details(), newAllocations);
 
-  _undoStack.push(new AddOperationCommand(newOperation, *targetAccount, *_operationModel));
+  _undoStack.push(new AddOperationCommand(newOperation, *targetAccount));
   return newOperation;
 }
 
 void BudgetData::deleteSelectedOperations() {
-  if (!_operationModel) return;
-  if (!_navController) return;
-  Account* account = accountAt(_navController->currentAccountIndex());
+  Account* account = currentAccount();
   if (!account) return;
 
   QUndoCommand* macroCommand = new QUndoCommand();
 
   for (Operation* op : account->selectedOperations()) {
-    new DeleteOperationCommand(op, *account, *_operationModel, macroCommand);
+    new DeleteOperationCommand(op, *account, macroCommand);
   }
   _undoStack.push(macroCommand);
 }
@@ -254,10 +222,12 @@ void BudgetData::clear() {
   _undoStack.setClean();
 }
 
-void BudgetData::undo() {
-  _undoStack.undo();
-}
+void BudgetData::copySelectedOperations() const {
+  Account* account = currentAccount();
+  if (!account) return;
 
-void BudgetData::redo() {
-  _undoStack.redo();
+  QString csv = account->selectedOperationsAsCsv();
+  if (!csv.isEmpty()) {
+    QGuiApplication::clipboard()->setText(csv);
+  }
 }

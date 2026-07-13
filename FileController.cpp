@@ -79,8 +79,8 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
   // Get navigation state from NavigationController
   int currentTabIndex = _navController.currentTabIndex();
-  int currentAccountIndex = _navController.currentAccountIndex();
-  int currentCategoryIndex = _navController.currentCategoryIndex();
+  auto currentAccount = _budgetData.currentAccount();
+  auto currentCategory = _categoryController.current();
 
   // Write state section
   out << YAML::Key << "state" << YAML::Value << YAML::BeginMap;
@@ -91,12 +91,11 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   // Write categories
   out << YAML::Key << "categories" << YAML::Value << YAML::BeginSeq;
   QList<Category*> cats = _categoryController.categories();
-  for (int i = 0; i < cats.size(); i++) {
-    const Category* category = cats[i];
+  for (auto category : _categoryController.categories()) {
     out << YAML::BeginMap;
     out << YAML::Key << "name" << YAML::Value << toStdString(category->name());
     out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(category->budgetLimit(), 'f', 2));
-    if (i == currentCategoryIndex) {
+    if (category == currentCategory) {
       out << YAML::Key << "current" << YAML::Value << "true";
     }
 
@@ -132,12 +131,10 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
   // Write accounts
   out << YAML::Key << "accounts" << YAML::Value << YAML::BeginSeq;
-  QList<Account*> accs = _budgetData.accounts();
-  for (int accIdx = 0; accIdx < accs.size(); accIdx++) {
-    const Account* account = accs[accIdx];
+  for (auto account : _budgetData.accounts()) {
     out << YAML::BeginMap;
     out << YAML::Key << "name" << YAML::Value << toStdString(account->name());
-    if (accIdx == currentAccountIndex) {
+    if (account == currentAccount) {
       out << YAML::Key << "current" << YAML::Value << "true";
     }
 
@@ -278,9 +275,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   // Default to current year/month if not specified in file
   int loadedTabIndex = 0;
   QDate loadedBudgetDate = QDate::currentDate();
-  int loadedAccountIdx = 0;
-  int loadedCategoryIdx = 0;
-  Operation* currentOperation = nullptr;
 
   try {
     YAML::Node root = YAML::Load(std::string(data.constData(), data.size()));
@@ -310,7 +304,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
     // Load categories
     if (root["categories"]) {
-      int catIdx = 0;
       for (const auto& cat : root["categories"]) {
         auto category = new Category();
         if (cat["name"]) {
@@ -318,11 +311,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
         if (cat["budget_limit"]) {
           category->set_budgetLimit(yamlString(cat["budget_limit"]).toDouble());
-        }
-        if (cat["current"]) {
-          if (yamlString(cat["current"]).toLower() == "true") {
-            loadedCategoryIdx = catIdx;
-          }
         }
 
         // Load month history (new format) or leftover decisions (legacy format)
@@ -372,23 +360,23 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
 
         _categoryController.addCategory(category);
-        catIdx++;
+
+        if (cat["current"]) {
+          if (yamlString(cat["current"]).toLower() == "true") {
+            _categoryController.set_current(category);
+          }
+        }
       }
     }
 
     // Load accounts
     if (root["accounts"]) {
-      int accIdx = 0;
       for (const auto& acc : root["accounts"]) {
-        auto account = new Account();
+        QString name;
         if (acc["name"]) {
-          account->set_name(yamlString(acc["name"]));
+          name = yamlString(acc["name"]);
         }
-        if (acc["current"]) {
-          if (yamlString(acc["current"]).toLower() == "true") {
-            loadedAccountIdx = accIdx;
-          }
-        }
+        auto account = new Account(name);
         // Load import source prefix
         YAML::Node importSourcePrefixes;
         if (acc["import_source_prefixes"]) {
@@ -440,21 +428,21 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             if (opNode["budget_date"]) {
               op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"));
             }
+            account->addOperation(op, false);  // Preserve file order
             if (opNode["current"]) {
               if (yamlString(opNode["current"]).toLower() == "true") {
                 // Set this operation as the current operation for this account
-                account->set_currentOperation(op);
-                // Also track for navigation if this is the current account
-                if (accIdx == loadedAccountIdx) {
-                  currentOperation = op;
-                }
+                account->select(op);
               }
             }
-            account->appendOperation(op);  // Preserve file order
           }
         }
         _budgetData.addAccount(account);
-        accIdx++;
+        if (acc["current"]) {
+          if (yamlString(acc["current"]).toLower() == "true") {
+            _budgetData.set_currentAccount(account);
+          }
+        }
       }
     }
 
@@ -492,29 +480,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   // Refresh account model
   _budgetData.accountModel()->refresh();
-
-  // Calculate operation index from pointer
-  int loadedOperationIdx = 0;
-  if (currentOperation) {
-    QList<Account*> accs = _budgetData.accounts();
-    int boundedAccountIdx = qBound(0, loadedAccountIdx, accs.size() - 1);
-    Account* account = _budgetData.accountAt(boundedAccountIdx);
-    if (account) {
-      QList<Operation*> ops = account->operations();
-      int idx = ops.indexOf(currentOperation);
-      if (idx >= 0) {
-        loadedOperationIdx = idx;
-      }
-    }
-  }
-
-  // Emit signal with loaded navigation state for NavigationController
-  emit navigationStateLoaded(
-      loadedTabIndex,
-      loadedBudgetDate,
-      qBound(0, loadedAccountIdx, qMax(0, _budgetData.accountCount() - 1)),
-      qBound(0, loadedCategoryIdx, qMax(0, _categoryController.rowCount() - 1)),
-      loadedOperationIdx);
+  _navController.set_budgetDate(loadedBudgetDate);
+  _navController.set_currentTabIndex(loadedTabIndex);
 
   set_currentFilePath(filePath);
   _undoStack.clear();
@@ -536,12 +503,17 @@ void FileController::reloadCurrentFile() {
   if (!currentFilePath().isEmpty()) {
     int tabIndex = _navController.currentTabIndex();
     QDate budgetDate = _navController.budgetDate();
-    int accountIndex = _navController.currentAccountIndex();
-    int categoryIndex = _navController.currentCategoryIndex();
-    Account* currentAccount = _budgetData.accountAt(accountIndex);
-    int operationIndex = currentAccount ? currentAccount->operations().indexOf(currentAccount->currentOperation()) : 0;
+    int accountIndex = _budgetData.currentAccountIndex();
+    int categoryIndex = _categoryController.currentIndex();
+    auto account = _budgetData.currentAccount();
+    int operationIndex = account ? account->currentOperationIndex() : -1;
     loadFromYamlFile(currentFilePath());
-    emit navigationStateLoaded(tabIndex, budgetDate, accountIndex, categoryIndex, operationIndex);
+    account = _budgetData.accountAt(accountIndex);
+    _budgetData.set_currentAccount(account);
+    _categoryController.set_currentIndex(categoryIndex);
+    account->selectAt(operationIndex);
+    _navController.set_budgetDate(budgetDate);
+    _navController.set_currentTabIndex(tabIndex);
   }
 }
 
@@ -771,7 +743,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     }
 
     // Add operations command
-    new ImportOperationsCommand(*account, *_budgetData.operationModel(), importedOperations, macroCommand);
+    new ImportOperationsCommand(*account, importedOperations, macroCommand);
 
     // Set text based on what was imported
     if (isNewAccount && newCategories.count()) {
@@ -797,11 +769,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   }
 
   // Set as current account
-  QList<Account*> accs = _budgetData.accounts();
-  int accountIndex = accs.indexOf(account);
-  if (accountIndex >= 0) {
-    _navController.set_currentAccountIndex(accountIndex);
-  }
+  _budgetData.set_currentAccount(account);
 
   // Apply categorization rules to imported operations
   for (Operation* op : importedOperations) {
@@ -821,7 +789,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
       account->select(op, true);  // Extend selection to include all imported operations
     }
     // Set the first imported operation as the current operation
-    account->set_currentOperation(importedOperations.first());
+    account->select(importedOperations.first());
   }
 
   emit dataLoaded();

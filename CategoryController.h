@@ -13,12 +13,15 @@
 #include "PropertyMacros.h"
 
 class Account;
+class Allocation;
 class BudgetData;
 
 class CategoryController : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
 
+  PROPERTY_RW(Category*, current, nullptr)
+  Q_PROPERTY(int currentIndex READ currentIndex WRITE set_currentIndex NOTIFY currentChanged)
   Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
   Q_PROPERTY(int balancedCount READ balancedCount NOTIFY budgetDataChanged)
   Q_PROPERTY(double totalIncome READ totalIncome NOTIFY budgetDataChanged)
@@ -27,7 +30,6 @@ class CategoryController : public QAbstractListModel {
   Q_PROPERTY(double totalToReport READ totalToReport NOTIFY budgetDataChanged)
   Q_PROPERTY(double totalFromReport READ totalFromReport NOTIFY budgetDataChanged)
   Q_PROPERTY(double netReport READ netReport NOTIFY budgetDataChanged)
-  PROPERTY_RO(Category*, current)
 
 public:
   enum Roles {
@@ -44,6 +46,9 @@ public:
   explicit CategoryController(BudgetData& budgetData,
                               const NavigationController& navigation,
                               QUndoStack& undoStack);
+
+  int currentIndex() const;
+  void set_currentIndex(int index);
 
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -62,10 +67,12 @@ public:
   // Category accessors
   QList<Category*> categories() const;
   Q_INVOKABLE Category* at(int index) const;
+  int categoryIndex(const Category* category) const;
   Q_INVOKABLE Category* getCategoryByName(const QString& name) const;
   Q_INVOKABLE QStringList categoryNames() const;
 
   // Category management
+  Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
   Q_INVOKABLE Category* editCategory(const QString& name, double budgetLimit, Category* category = nullptr, QDate budgetDate = QDate());
   Q_INVOKABLE void deleteCategory(Category* category);
   void addCategory(Category* category);

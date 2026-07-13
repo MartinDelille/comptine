@@ -117,7 +117,6 @@ qt_add_qml_module(libComptine
     Account.cpp Account.h
     Category.cpp Category.h
     BudgetData.cpp BudgetData.h
-    OperationListModel.cpp OperationListModel.h
     AccountListModel.cpp AccountListModel.h
     RuleListModel.cpp RuleListModel.h
     CategoryController.cpp CategoryController.h
@@ -226,6 +225,10 @@ qt_add_qml_module(
   QML_FILES
   Main.qml
   ApplicationMenuBar.qml
+  FileMenu.qml
+  EditMenu.qml
+  ViewMenu.qml
+  HelpMenu.qml
   AboutDialog.qml
   ImportDialog.qml
   PreferencesDialog.qml

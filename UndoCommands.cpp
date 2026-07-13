@@ -5,7 +5,6 @@
 #include "Category.h"
 #include "CategoryController.h"
 #include "Operation.h"
-#include "OperationListModel.h"
 #include "Rule.h"
 #include "RuleController.h"
 #include "RuleListModel.h"
@@ -41,10 +40,7 @@ void AddAccountCommand::redo() {
     _ownsAccount = false;
 
     // Select the newly added account
-    int accountIndex = _budgetData->accounts().indexOf(_account);
-    if (accountIndex >= 0) {
-      _budgetData->selectAccount(accountIndex);
-    }
+    _budgetData->set_currentAccount(_account);
     _budgetData->accountModel()->refresh();
   }
 }
@@ -199,12 +195,10 @@ void DeleteCategoryCommand::redo() {
 // AddOperationCommand implementation
 
 ImportOperationsCommand::ImportOperationsCommand(Account& account,
-                                                 OperationListModel& operationModel,
                                                  const QList<Operation*>& operations,
                                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _account(account),
-    _operationModel(operationModel),
     _operations(operations),
     _ownsOperations(false) {
   setText(QObject::tr("Import %n operation(s)", "", operations.size()));
@@ -225,7 +219,7 @@ void ImportOperationsCommand::undo() {
   }
   _ownsOperations = true;
 
-  _operationModel.refresh();
+  _account.refresh();
 }
 
 void ImportOperationsCommand::redo() {
@@ -234,65 +228,53 @@ void ImportOperationsCommand::redo() {
     _account.addOperation(op);
   }
   _ownsOperations = false;
-  _operationModel.refresh();
+  _account.refresh();
 }
 
 AddOperationCommand::AddOperationCommand(Operation* operation,
                                          Account& account,
-                                         OperationListModel& operationModel,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _account(account),
-    _operationModel(operationModel) {
+    _account(account) {
   setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
 }
 
 void AddOperationCommand::undo() {
   _account.removeOperation(_operation);
   _operation->setParent(nullptr);
-  _operationModel.refresh();
+  _account.refresh();
 }
 
 void AddOperationCommand::redo() {
   _account.addOperation(_operation);
-  _operationModel.refresh();
-  _operationModel.selectByPointer(_operation);
-  emit _operationModel.operationDataChanged();
 }
 
 DeleteOperationCommand::DeleteOperationCommand(Operation* operation,
                                                Account& account,
-                                               OperationListModel& operationModel,
                                                QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _account(account),
-    _operationModel(operationModel) {
+    _account(account) {
   setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
 }
 
 void DeleteOperationCommand::undo() {
   _account.addOperation(_operation);
-  _operationModel.refresh();
-  _operationModel.selectByPointer(_operation);
-  emit _operationModel.operationDataChanged();
 }
 
 void DeleteOperationCommand::redo() {
   _account.removeOperation(_operation);
   _operation->setParent(nullptr);
-  _operationModel.refresh();
+  _account.refresh();
 }
 
 SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operation,
-                                                             OperationListModel* operationModel,
                                                              const QDate& oldBudgetDate,
                                                              const QDate& newBudgetDate,
                                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldBudgetDate(oldBudgetDate),
     _newBudgetDate(newBudgetDate) {
   setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy")));
@@ -300,29 +282,17 @@ SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operatio
 
 void SetOperationBudgetDateCommand::undo() {
   _operation.set_budgetDate(_oldBudgetDate);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SetOperationBudgetDateCommand::redo() {
   _operation.set_budgetDate(_newBudgetDate);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 SplitOperationCommand::SplitOperationCommand(Operation& operation,
-                                             OperationListModel* operationModel,
                                              const QList<Allocation*>& newAllocations,
                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldAllocations(operation.allocations()),
     _newAllocations(newAllocations) {
   if (newAllocations.size() > 1) {
@@ -338,30 +308,18 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
 
 void SplitOperationCommand::undo() {
   _operation.setAllocations(_oldAllocations);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SplitOperationCommand::redo() {
   _operation.setAllocations(_newAllocations);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 SetOperationAmountCommand::SetOperationAmountCommand(Operation& operation,
-                                                     OperationListModel* operationModel,
                                                      double oldAmount,
                                                      double newAmount,
                                                      QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldAmount(oldAmount),
     _newAmount(newAmount) {
   setText(QObject::tr("Set operation amount to %1").arg(newAmount, 0, 'f', 2));
@@ -369,30 +327,18 @@ SetOperationAmountCommand::SetOperationAmountCommand(Operation& operation,
 
 void SetOperationAmountCommand::undo() {
   _operation.set_amount(_oldAmount);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SetOperationAmountCommand::redo() {
   _operation.set_amount(_newAmount);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
-                                                 OperationListModel* operationModel,
                                                  const QDate& oldDate,
                                                  const QDate& newDate,
                                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldDate(oldDate),
     _newDate(newDate) {
   setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy")));
@@ -400,36 +346,18 @@ SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
 
 void SetOperationDateCommand::undo() {
   _operation.set_date(_oldDate);
-  if (_operationModel) {
-    if (_operationModel->account()) {
-      _operationModel->account()->sortOperations();
-    }
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SetOperationDateCommand::redo() {
   _operation.set_date(_newDate);
-  if (_operationModel) {
-    if (_operationModel->account()) {
-      _operationModel->account()->sortOperations();
-    }
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 SetOperationLabelCommand::SetOperationLabelCommand(Operation& operation,
-                                                   OperationListModel* operationModel,
                                                    const QString& oldLabel,
                                                    const QString& newLabel,
                                                    QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldLabel(oldLabel),
     _newLabel(newLabel) {
   setText(QObject::tr("Set operation label"));
@@ -437,30 +365,18 @@ SetOperationLabelCommand::SetOperationLabelCommand(Operation& operation,
 
 void SetOperationLabelCommand::undo() {
   _operation.set_label(_oldLabel);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SetOperationLabelCommand::redo() {
   _operation.set_label(_newLabel);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 SetOperationDetailsCommand::SetOperationDetailsCommand(Operation& operation,
-                                                       OperationListModel* operationModel,
                                                        const QString& oldDetails,
                                                        const QString& newDetails,
                                                        QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _operationModel(operationModel),
     _oldDetails(oldDetails),
     _newDetails(newDetails) {
   setText(QObject::tr("Set operation details"));
@@ -468,20 +384,10 @@ SetOperationDetailsCommand::SetOperationDetailsCommand(Operation& operation,
 
 void SetOperationDetailsCommand::undo() {
   _operation.set_details(_oldDetails);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 void SetOperationDetailsCommand::redo() {
   _operation.set_details(_newDetails);
-  if (_operationModel) {
-    _operationModel->refresh();
-    _operationModel->selectByPointer(&_operation);
-    emit _operationModel->operationDataChanged();
-  }
 }
 
 // SetLeftoverDecisionCommand implementation

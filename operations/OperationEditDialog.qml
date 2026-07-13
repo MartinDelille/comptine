@@ -161,7 +161,7 @@ BaseDialog {
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
             if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push(root.budgetData.createAllocation(item.category, item.amount));
+                allocations.push(root.categories.createAllocation(item.category, item.amount));
             }
         }
 
