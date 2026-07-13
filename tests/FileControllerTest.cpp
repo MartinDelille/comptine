@@ -38,11 +38,6 @@ private slots:
     navController = new NavigationController(*budgetData);
     categoryController = new CategoryController(*budgetData, *navController, *undoStack);
     ruleController = new RuleController(*budgetData, *undoStack);
-
-    // Wire up cross-references
-    budgetData->setNavigationController(navController);
-    budgetData->setCategoryController(categoryController);
-
     fileController = new FileController(*appSettings, *budgetData, *categoryController, *navController, *ruleController, *undoStack);
   }
 
@@ -150,7 +145,7 @@ private slots:
     op->set_amount(-50.0);
     op->set_label("Grocery Store");
     op->setAllocations({ new Allocation(new Category("Food"), -50) });
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     categoryController->editCategory("Food", 200.0);
 
@@ -192,13 +187,13 @@ private slots:
     op1->set_date(QDate(2025, 1, 10));
     op1->set_amount(-100.0);
     op1->set_label("Purchase 1");
-    checking->appendOperation(op1);
+    checking->addOperation(op1, false);
 
     Operation* op2 = new Operation(savings);
     op2->set_date(QDate(2025, 1, 20));
     op2->set_amount(500.0);
     op2->set_label("Deposit");
-    savings->appendOperation(op2);
+    savings->addOperation(op2, false);
 
     // Save and reload
     QString filePath = tempDir->filePath("multiple_accounts.comptine");
@@ -234,7 +229,7 @@ private slots:
     allocations.append(new Allocation{ transport, -50.0 });
     op->setAllocations(allocations);
 
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     // Save and reload
     QString filePath = tempDir->filePath("split_operation.comptine");
@@ -267,7 +262,7 @@ private slots:
     op->set_label("Late Month Purchase");
     op->setAllocations({ new Allocation(new Category("Shopping"), -75.0) });
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     categoryController->editCategory("Shopping", 150.0);
 
@@ -295,7 +290,7 @@ private slots:
     op->set_label("Normal Purchase");
     op->setAllocations({ new Allocation(food, -30.0) });
     // budgetDate defaults to date, so it should not be saved
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     // Save and check file content doesn't have budget_date
     QString filePath = tempDir->filePath("no_budget_date.comptine");
@@ -527,54 +522,6 @@ private slots:
     QCOMPARE(rules.size(), 2);
     QCOMPARE(rules[0]->category()->name(), QString("Groceries"));
     QCOMPARE(rules[0]->labelPrefix(), QString("SUPERMARKET"));
-  }
-
-  // Save/Load Navigation State
-
-  void testSaveAndLoadNavigationState() {
-    // Create accounts and categories
-    Account* account1 = new Account("Account 1");
-    Account* account2 = new Account("Account 2");
-    budgetData->addAccount(account1);
-    budgetData->addAccount(account2);
-
-    Operation* op = new Operation(account2);
-    op->set_date(QDate(2025, 3, 10));
-    op->set_amount(-25.0);
-    op->set_label("Test Op");
-    account2->appendOperation(op);
-
-    categoryController->editCategory("Cat 1", 100.0);
-    categoryController->editCategory("Cat 2", 200.0);
-
-    // Set navigation state
-    navController->set_currentTabIndex(1);  // Budget view
-    navController->set_budgetDate(QDate(2024, 12, 1));
-    navController->set_currentAccountIndex(1);   // Account 2
-    navController->set_currentCategoryIndex(1);  // Cat 2
-    account2->set_currentOperation(op);
-
-    // Save and reload
-    QString filePath = tempDir->filePath("nav_state.comptine");
-    fileController->saveToYamlFile(filePath);
-
-    // Reset navigation state
-    navController->set_currentTabIndex(0);
-    navController->set_budgetDate(QDate(2025, 1, 1));
-    navController->set_currentAccountIndex(0);
-    navController->set_currentCategoryIndex(0);
-
-    // Reload - navigation state should be restored via signal
-    QSignalSpy navSpy(fileController, &FileController::navigationStateLoaded);
-    fileController->loadFromYamlFile(filePath);
-
-    QCOMPARE(navSpy.count(), 1);
-    QList<QVariant> args = navSpy.takeFirst();
-    QCOMPARE(args[0].toInt(), 1);                    // tabIndex
-    QCOMPARE(args[1].toDate(), QDate(2024, 12, 1));  // budgetDate
-    QCOMPARE(args[2].toInt(), 1);                    // accountIndex
-    QCOMPARE(args[3].toInt(), 1);                    // categoryIndex
-    QCOMPARE(args[4].toInt(), 0);                    // operationIndex
   }
 
   // Error Handling

@@ -174,8 +174,8 @@ FocusScope {
             spacing: Theme.spacingNormal
             clip: true
             focus: true
-            currentIndex: root.navigation.currentCategoryIndex
-            onCurrentIndexChanged: root.navigation.currentCategoryIndex = currentIndex
+            currentIndex: root.categories.currentIndex
+            onCurrentIndexChanged: root.categories.currentIndex = currentIndex
 
             Keys.onReturnPressed: categoryDetailView.open()
             ScrollBar.vertical: ScrollBar {

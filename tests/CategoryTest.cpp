@@ -23,10 +23,6 @@ private slots:
     budgetData = new BudgetData(*undoStack);
     navController = new NavigationController(*budgetData);
     categoryController = new CategoryController(*budgetData, *navController, *undoStack);
-
-    // Wire up cross-references
-    budgetData->setNavigationController(navController);
-    budgetData->setCategoryController(categoryController);
   }
 
   void cleanup() {

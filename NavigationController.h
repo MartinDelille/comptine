@@ -6,9 +6,7 @@
 
 #include "PropertyMacros.h"
 
-class Account;
 class BudgetData;
-class CategoryController;
 class Operation;
 
 class NavigationController : public QObject {
@@ -20,15 +18,6 @@ class NavigationController : public QObject {
 
   PROPERTY_RW(QDate, budgetDate, QDate::currentDate())
 
-  // Category navigation
-  PROPERTY_RW(int, currentCategoryIndex, -1)
-
-  // Account navigation (custom setter to update operation model)
-  PROPERTY_RW_CUSTOM(int, currentAccountIndex, -1)
-
-  // Current account (computed from currentAccountIndex)
-  PROPERTY_RW_CUSTOM(Account*, currentAccount, nullptr)
-
 public:
   explicit NavigationController(BudgetData& budgetData);
 
@@ -36,20 +25,8 @@ public:
   Q_INVOKABLE void previousMonth();
   Q_INVOKABLE void nextMonth();
 
-  // Tab shortcuts
-  Q_INVOKABLE void showOperationsTab();
-  Q_INVOKABLE void showBudgetTab();
-
   // Cross-navigation (switch account and select operation)
   Q_INVOKABLE void navigateToOperation(Operation* operation);
-
-public slots:
-  // Called when FileController loads navigation state from a file
-  void onNavigationStateLoaded(int tabIndex, const QDate& budgetDate,
-                               int accountIndex, int categoryIndex, int operationIndex);
-
-signals:
-  void operationSelected(int index);  // Emitted when an operation is selected via navigateToOperation()
 
 private:
   BudgetData& _budgetData;

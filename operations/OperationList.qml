@@ -8,7 +8,8 @@ ListView {
 
     required property var account
 
-    currentIndex: account.currentOperationIndex
+    model: account
+    currentIndex: account?.currentOperationIndex ?? -1
     activeFocusOnTab: true
     clip: true
     focus: true

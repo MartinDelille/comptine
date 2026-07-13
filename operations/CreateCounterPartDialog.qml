@@ -13,7 +13,7 @@ BaseDialog {
 
     signal createCounterPart(account: var, category: string)
 
-    okEnabled: accountComboBox.currentIndex >= 0 && operation.account !== accountComboBox.currentAccount
+    okEnabled: accountComboBox.currentIndex >= 0 && operation && operation.account !== accountComboBox.currentAccount
 
     onAccepted: {
         createCounterPart(accountComboBox.currentAccount, allocationCheckBox.checked ? allocationComboBox.currentText : "");

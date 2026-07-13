@@ -21,15 +21,19 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
-  connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
+  // maybe move setter to category controller
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
   connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
 
-Category* CategoryController::current() const {
-  return at(_navigation.currentCategoryIndex());
+int CategoryController::currentIndex() const {
+  return _categories.indexOf(_current);
+}
+
+void CategoryController::set_currentIndex(int index) {
+  set_current(at(index));
 }
 
 int CategoryController::rowCount(const QModelIndex& parent) const {
@@ -163,6 +167,10 @@ Category* CategoryController::at(int index) const {
   return nullptr;
 }
 
+int CategoryController::categoryIndex(const Category* category) const {
+  return _categories.indexOf(const_cast<Category*>(category));
+}
+
 Category* CategoryController::getCategoryByName(const QString& name) const {
   for (Category* category : _categories) {
     if (category->name() == name) {
@@ -170,6 +178,11 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
     }
   }
   return nullptr;
+}
+
+Allocation* CategoryController::createAllocation(const QString& categoryName, double amount) {
+  const Category* category = getCategoryByName(categoryName);
+  return new Allocation(category, amount);
 }
 
 Category* CategoryController::editCategory(const QString& name, double budgetLimit, Category* category, QDate budgetDate) {
@@ -190,7 +203,6 @@ Category* CategoryController::editCategory(const QString& name, double budgetLim
 
 void CategoryController::deleteCategory(Category* category) {
   if (!category) return;
-  if (!_budgetData.operationModel()) return;
 
   QUndoCommand* macroCommand = new QUndoCommand();
 
@@ -206,7 +218,7 @@ void CategoryController::deleteCategory(Category* category) {
       }
       // Only create a command if the allocations actually changed
       if (newAllocations.size() != op->allocations().size()) {
-        new SplitOperationCommand(*op, _budgetData.operationModel(),
+        new SplitOperationCommand(*op,
                                   newAllocations, macroCommand);
       }
     }

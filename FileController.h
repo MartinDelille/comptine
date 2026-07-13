@@ -10,7 +10,9 @@
 #include "PropertyMacros.h"
 
 class AppSettings;
+class Account;
 class BudgetData;
+class Category;
 class CategoryController;
 class NavigationController;
 class RuleController;
@@ -57,10 +59,6 @@ signals:
   void yamlFileLoaded();  // Emitted only after YAML file load (for UI state restore)
   void dataSaved();
   void externalChangeDetected();  // Emitted when QFileSystemWatcher detects external modification
-
-  // Navigation state signals for file load/save coordination
-  void navigationStateLoaded(int tabIndex, const QDate& budgetDate,
-                             int accountIndex, int categoryIndex, int operationIndex);
 
 private:
   AppSettings& _appSettings;

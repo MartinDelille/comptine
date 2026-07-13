@@ -192,7 +192,7 @@ int RuleController::applyRuleToUncategorized(const Category* category, const QSt
       if (!op->isCategorized() && tempRule.matches(op)) {
         QList<Allocation*> newAllocations;
         newAllocations.append(new Allocation(category, op->amount()));
-        new SplitOperationCommand(*op, _budgetData.operationModel(),
+        new SplitOperationCommand(*op,
                                   newAllocations, macroCommand);
         count++;
       }

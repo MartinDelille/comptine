@@ -30,7 +30,7 @@ QVariant AccountListModel::data(const QModelIndex& index, int role) const {
     case NameRole:
       return account->name();
     case OperationCountRole:
-      return account->operationCount();
+      return account->rowCount();
     case AccountRole:
       return QVariant::fromValue(account);
   }

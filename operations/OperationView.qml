@@ -24,7 +24,7 @@ FocusScope {
     }
 
     function editCurrentOperation() {
-        operationEditDialog.initialize(navigation.currentAccount.currentOperation);
+        operationEditDialog.initialize(budgetData.currentAccount.currentOperation);
     }
 
     RenameAccountDialog {
@@ -52,9 +52,9 @@ FocusScope {
             AccountComboBox {
                 budgetData: root.budgetData
                 Layout.preferredWidth: 200
-                currentIndex: root.navigation.currentAccountIndex
+                currentIndex: root.budgetData.currentAccountIndex
                 onActivated: function (index) {
-                    root.navigation.currentAccountIndex = index;
+                    root.budgetData.currentAccountIndex = index;
                 }
             }
 
@@ -66,8 +66,8 @@ FocusScope {
 
             BalanceHeader {
                 Layout.fillWidth: true
-                balance: root.budgetData.operationModel.count > 0 ? root.budgetData.operationModel.balanceAt(0) : 0
-                operationCount: root.budgetData.operationModel.count
+                balance: root.budgetData.currentAccount?.count > 0 ? root.budgetData.currentAccount?.balanceAt(0) : 0
+                operationCount: root.budgetData.currentAccount?.count || 0
             }
         }
 
@@ -78,20 +78,19 @@ FocusScope {
 
             OperationList {
                 id: operationList
-                account: root.navigation.currentAccount
-                model: root.budgetData.operationModel
+                account: root.budgetData.currentAccount
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }
 
             OperationDetails {
                 id: operationDetails
-                budgetData: root.budgetData
+                account: root.budgetData.currentAccount
                 Layout.preferredWidth: parent.width * 0.3
                 Layout.minimumWidth: 200
                 Layout.maximumWidth: 400
                 Layout.fillHeight: true
-                operation: root.navigation.currentAccount.currentOperation
+                operation: root.budgetData.currentAccount?.currentOperation
                 onEditRequested: operation => {
                     operationEditDialog.initialize(operation);
                 }

@@ -6,34 +6,29 @@
 #include <QUndoStack>
 #include "Account.h"
 #include "AccountListModel.h"
-#include "OperationListModel.h"
 #include "PropertyMacros.h"
-
-class CategoryController;
-class NavigationController;
 
 class BudgetData : public QObject {
   Q_OBJECT
   QML_ELEMENT
 
-  // Read-only computed properties (macro-generated, implemented in .cpp)
+  PROPERTY_RW(Account*, currentAccount, nullptr)
   PROPERTY_RO(int, accountCount)
 
-  // Models exposed to QML
-  Q_PROPERTY(OperationListModel* operationModel READ operationModel CONSTANT)
-  Q_PROPERTY(AccountListModel* accountModel READ accountModel CONSTANT)
+  Q_PROPERTY(int currentAccountIndex READ currentAccountIndex WRITE set_currentAccountIndex NOTIFY currentAccountChanged)
 
-  Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
+  // Models exposed to QML
+  Q_PROPERTY(AccountListModel* accountModel READ accountModel CONSTANT)
 
 public:
   explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
 
   // Model accessors
-  OperationListModel* operationModel() const { return _operationModel; }
-  AccountListModel* accountModel() const { return _accountModel; }
+  int currentAccountIndex() const;
+  void set_currentAccountIndex(int index);
 
-  Account* currentAccount() const;
+  AccountListModel* accountModel() const { return _accountModel; }
 
   // Account management
   QList<Account*> accounts() const;
@@ -45,11 +40,7 @@ public:
   void addAccount(Account* account);
   void removeAccount(int index);
   Account* takeAccount(Account* account);  // Remove without deleting, returns nullptr if not found
-  void selectAccount(int index);           // Select account by index (updates navigation)
   void clearAccounts();
-
-  // Allocation factory (for QML)
-  Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
 
   // Operation editing
   Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations);
@@ -65,25 +56,14 @@ public:
   // Clear all data (called by FileController)
   void clear();
 
-  // Undo/Redo
-  Q_INVOKABLE void undo();
-  Q_INVOKABLE void redo();
-
-  // Set reference to NavigationController (for current account access)
-  void setNavigationController(NavigationController* navController);
-
-  // Set reference to CategoryController (for clearing categories)
-  void setCategoryController(CategoryController* categoryController);
+  // Copy selected operations to system clipboard as CSV
+  Q_INVOKABLE void copySelectedOperations() const;
 
 signals:
-  void operationDataChanged();   // Emitted when operation data changes (e.g., category edit)
-  void currentAccountChanged();  // Emitted when current account changes (for QML binding)
+  void operationDataChanged();  // Emitted when operation data changes (e.g., category edit)
 
 private:
   QUndoStack& _undoStack;
   QList<Account*> _accounts;
-  OperationListModel* _operationModel;
   AccountListModel* _accountModel;
-  NavigationController* _navController = nullptr;
-  CategoryController* _categoryController = nullptr;
 };
