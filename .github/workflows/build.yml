@@ -14,20 +14,22 @@ jobs:
         include:
           - os: macos-latest
             name: MacOS
-            artifact-path: build/Comptine-*.dmg
-            release-file: build/Comptine-*.dmg
+            artifact-path: build/Release/Comptine-*.dmg
+            release-file: build/Release/Comptine-*.dmg
+            ctest-dir: build/Release
             conan-profile: conan/profiles/macos
           - os: ubuntu-latest
             name: Linux
             artifact-path: build/Comptine-*.AppImage
             release-file: build/Comptine-*.AppImage
+            ctest-dir: build/Release
             conan-profile: conan/profiles/linux
           - os: windows-latest
             name: Windows
-            artifact-path: build/Comptine-*.exe
-            release-file: build/Comptine-*.exe
+            artifact-path: Comptine-Windows.exe
+            release-file: Comptine-Windows.exe
             cmake-build-args: --config Release
-            ctest-args: -C Release
+            ctest-dir: build
             conan-profile: conan/profiles/windows
 
     runs-on: ${{ matrix.os }}
@@ -86,35 +88,34 @@ jobs:
         shell: bash
         run: |
           uv run conan install . \
-          --output-folder=build \
           --build=missing \
           -pr:h=${{ matrix.conan-profile }} \
           -pr:b=${{ matrix.conan-profile }}
 
       - name: Configure
-        run: cmake -B build -S . --preset=conan-release
+        run: cmake --preset=conan-release
 
       - name: Build
-        run: cmake --build build ${{ matrix.cmake-build-args }}
+        run: cmake --build --preset=conan-release
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure ${{ matrix.ctest-args }}
+        run: ctest --test-dir ${{ matrix.ctest-dir }} --output-on-failure ${{ matrix.ctest-args }}
 
       - name: Run qmllint
         if: matrix.os == 'macos-latest'
-        run: qmllint --max-warnings 0 --qmldirs build **/*.qml
+        run: qmllint --max-warnings 0 --qmldirs build/Release **/*.qml
 
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
-          macdeployqt build/Comptine.app -qmldir=.
-          codesign --force --deep --sign - build/Comptine.app
+          macdeployqt build/Release/Comptine.app -qmldir=.
+          codesign --force --deep --sign - build/Release/Comptine.app
 
       - name: Capture screenshots (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           ./scripts/capture-screenshots.sh \
-            build/Comptine.app \
+            build/Release/Comptine.app \
             long_example.comptine \
             screenshots
 
@@ -128,14 +129,12 @@ jobs:
       - name: Create installer (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
-          cd build
+          cd build/Release
           cpack -G DragNDrop
 
       - name: Create installer (Windows)
         if: matrix.os == 'windows-latest'
-        run: |
-          cd build
-          cpack -G NSIS -C Release
+        run: cpack --config build/CPackConfig.cmake -G NSIS
 
       - name: Create installer (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -150,7 +149,7 @@ jobs:
           export QML_SOURCES_PATHS="${{ github.workspace }}"
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable comptine \
+            --executable Release/comptine \
             --icon-file ../comptine.svg \
             --desktop-file ../comptine.desktop \
             --plugin qt \
