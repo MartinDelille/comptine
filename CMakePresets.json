@@ -1,0 +1,19 @@
+{
+  "version": 4,
+  "include": ["./ConanPresets.json"],
+  "configurePresets": [
+    {
+      "name": "Debug",
+      "displayName": "debug single config",
+      "inherits": "conan-debug"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Debug",
+      "configurePreset": "Debug",
+      "configuration": "Debug",
+      "inherits": "conan-debug"
+    }
+  ]
+}
