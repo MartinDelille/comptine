@@ -478,8 +478,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     return false;
   }
 
-  // Refresh account model
-  _budgetData.accountModel()->refresh();
   _navController.set_budgetDate(loadedBudgetDate);
   _navController.set_currentTabIndex(loadedTabIndex);
 
@@ -779,8 +777,6 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   // Record import source for future auto-suggestion
   QString baseFilename = QFileInfo(fileUrl.toLocalFile()).fileName();
   account->addImportSourcePrefix(baseFilename);
-
-  _budgetData.accountModel()->refresh();
 
   // Select all imported operations
   if (!importedOperations.isEmpty()) {

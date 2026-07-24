@@ -117,7 +117,6 @@ qt_add_qml_module(libComptine
     Account.cpp Account.h
     Category.cpp Category.h
     BudgetData.cpp BudgetData.h
-    AccountListModel.cpp AccountListModel.h
     RuleListModel.cpp RuleListModel.h
     CategoryController.cpp CategoryController.h
     ClipboardController.cpp ClipboardController.h

@@ -3,22 +3,17 @@
 #include <QDebug>
 #include <QGuiApplication>
 
-#include "AccountListModel.h"
+#include "Account.h"
 #include "BudgetData.h"
 #include "NavigationController.h"
 #include "UndoCommands.h"
 
 BudgetData::BudgetData(QUndoStack& undoStack) :
-    _undoStack(undoStack),
-    _accountModel(new AccountListModel(_accounts, this)) {
+    _undoStack(undoStack) {
 }
 
 BudgetData::~BudgetData() {
   clear();
-}
-
-int BudgetData::accountCount() const {
-  return _accounts.size();
 }
 
 int BudgetData::currentAccountIndex() const {
@@ -27,6 +22,39 @@ int BudgetData::currentAccountIndex() const {
 
 void BudgetData::set_currentAccountIndex(int index) {
   set_currentAccount(accountAt(index));
+}
+
+int BudgetData::rowCount(const QModelIndex& parent) const {
+  if (parent.isValid())
+    return 0;
+
+  return _accounts.size();
+}
+
+QVariant BudgetData::data(const QModelIndex& index, int role) const {
+  if (!index.isValid())
+    return QVariant();
+
+  Account* account = accountAt(index.row());
+  if (account == nullptr)
+    return QVariant();
+
+  switch (static_cast<Roles>(role)) {
+    case NameRole:
+      return account->name();
+    case OperationCountRole:
+      return account->rowCount();
+    case AccountRole:
+      return QVariant::fromValue(account);
+  }
+}
+
+QHash<int, QByteArray> BudgetData::roleNames() const {
+  return {
+    { NameRole, "name" },
+    { OperationCountRole, "operationCount" },
+    { AccountRole, "account" }
+  };
 }
 
 QList<Account*> BudgetData::accounts() const {
@@ -67,15 +95,21 @@ int BudgetData::accountIndex(Account* account) const {
 void BudgetData::renameCurrentAccount(const QString& newName) {
   Account* account = currentAccount();
   if (account && !newName.isEmpty() && account->name() != newName) {
-    _undoStack.push(new RenameAccountCommand(*account, _accountModel,
+    _undoStack.push(new RenameAccountCommand(*account,
                                              account->name(), newName));
   }
 }
 
 void BudgetData::addAccount(Account* account) {
   if (account) {
+    connect(account, &Account::nameChanged, this, [this, account] {
+      auto index = createIndex(this->accountIndex(account), 0);
+      emit dataChanged(index, index);
+    });
+    beginInsertRows(QModelIndex(), _accounts.size(), _accounts.size());
     account->setParent(this);
     _accounts.append(account);
+    endInsertRows();
     emit accountCountChanged();
   }
 }
@@ -101,7 +135,6 @@ Account* BudgetData::takeAccount(Account* account) {
 
     Account* acc = _accounts.takeAt(index);
     acc->setParent(nullptr);  // Release Qt ownership
-    _accountModel->refresh();
     emit accountCountChanged();
     return acc;
   }
@@ -109,9 +142,10 @@ Account* BudgetData::takeAccount(Account* account) {
 }
 
 void BudgetData::clearAccounts() {
+  beginResetModel();
   qDeleteAll(_accounts);
   _accounts.clear();
-  _accountModel->refresh();
+  endResetModel();
   emit accountCountChanged();
 }
 

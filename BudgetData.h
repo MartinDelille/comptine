@@ -5,22 +5,25 @@
 #include <QString>
 #include <QUndoStack>
 #include "Account.h"
-#include "AccountListModel.h"
 #include "PropertyMacros.h"
 
-class BudgetData : public QObject {
+class BudgetData : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
 
   PROPERTY_RW(Account*, currentAccount, nullptr)
-  PROPERTY_RO(int, accountCount)
+  Q_PROPERTY(int accountCount READ rowCount NOTIFY accountCountChanged)
 
   Q_PROPERTY(int currentAccountIndex READ currentAccountIndex WRITE set_currentAccountIndex NOTIFY currentAccountChanged)
 
-  // Models exposed to QML
-  Q_PROPERTY(AccountListModel* accountModel READ accountModel CONSTANT)
-
 public:
+  enum Roles {
+    NameRole = Qt::UserRole + 1,
+    OperationCountRole,
+    AccountRole
+  };
+  Q_ENUM(Roles)
+
   explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
 
@@ -28,7 +31,10 @@ public:
   int currentAccountIndex() const;
   void set_currentAccountIndex(int index);
 
-  AccountListModel* accountModel() const { return _accountModel; }
+  // QAbstractListModel interface
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  QHash<int, QByteArray> roleNames() const override;
 
   // Account management
   QList<Account*> accounts() const;
@@ -60,10 +66,10 @@ public:
   Q_INVOKABLE void copySelectedOperations() const;
 
 signals:
+  void accountCountChanged();
   void operationDataChanged();  // Emitted when operation data changes (e.g., category edit)
 
 private:
   QUndoStack& _undoStack;
   QList<Account*> _accounts;
-  AccountListModel* _accountModel;
 };

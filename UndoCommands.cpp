@@ -1,6 +1,5 @@
 #include "UndoCommands.h"
 #include "Account.h"
-#include "AccountListModel.h"
 #include "BudgetData.h"
 #include "Category.h"
 #include "CategoryController.h"
@@ -30,7 +29,6 @@ void AddAccountCommand::undo() {
   if (_budgetData) {
     _budgetData->takeAccount(_account);
     _ownsAccount = true;
-    _budgetData->accountModel()->refresh();
   }
 }
 
@@ -41,20 +39,17 @@ void AddAccountCommand::redo() {
 
     // Select the newly added account
     _budgetData->set_currentAccount(_account);
-    _budgetData->accountModel()->refresh();
   }
 }
 
 // RenameAccountCommand implementation
 
 RenameAccountCommand::RenameAccountCommand(Account& account,
-                                           AccountListModel* accountModel,
                                            const QString& oldName,
                                            const QString& newName,
                                            QUndoCommand* parent) :
     QUndoCommand(parent),
     _account(account),
-    _accountModel(accountModel),
     _oldName(oldName),
     _newName(newName) {
   setText(QObject::tr("Rename account to \"%1\"").arg(newName));
@@ -62,16 +57,10 @@ RenameAccountCommand::RenameAccountCommand(Account& account,
 
 void RenameAccountCommand::undo() {
   _account.set_name(_oldName);
-  if (_accountModel) {
-    _accountModel->refresh();
-  }
 }
 
 void RenameAccountCommand::redo() {
   _account.set_name(_newName);
-  if (_accountModel) {
-    _accountModel->refresh();
-  }
 }
 
 EditCategoryCommand::EditCategoryCommand(Category& category,

@@ -64,18 +64,18 @@ private slots:
 
   void testClear() {
     // First just check we can access things
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
 
     // Try adding an account
     Account* account = new Account("Test Account");
     budgetData->addAccount(account);
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
 
     // Now try clear
     fileController->clear();
 
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
     QCOMPARE(fileController->currentFilePath(), QString());
   }
@@ -107,7 +107,7 @@ private slots:
     fileController->clear();
     QVERIFY(fileController->loadFromYamlFile(filePath));
 
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
   }
 
@@ -130,7 +130,7 @@ private slots:
     fileController->clear();
     QUrl fileUrl = QUrl::fromLocalFile(filePath);
     QVERIFY(fileController->loadFromYamlUrl(fileUrl));
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
   }
 
   // Save/Load with Accounts and Operations
@@ -158,7 +158,7 @@ private slots:
     QVERIFY(fileController->loadFromYamlFile(filePath));
 
     // Verify data was restored
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     QCOMPARE(categoryController->rowCount(), 1);
 
     Account* loadedAccount = budgetData->accountAt(0);
@@ -202,7 +202,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     QCOMPARE(budgetData->accountAt(0)->name(), QString("Checking"));
     QCOMPARE(budgetData->accountAt(1)->name(), QString("Savings"));
     QCOMPARE(budgetData->accountAt(0)->operations().size(), 1);
@@ -611,7 +611,7 @@ private slots:
     QVERIFY(fileController->loadFromYamlUrl(QUrl("file::/tests/example.comptine")));
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
@@ -656,7 +656,7 @@ private slots:
     QVERIFY(loisirs != nullptr);
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
@@ -698,7 +698,7 @@ private slots:
     auto energie = categoryController->getCategoryByName("Energie eau, gaz, electricite, fioul");
     QVERIFY(energie != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
@@ -729,7 +729,7 @@ private slots:
     // Verify import
     QCOMPARE(categoryController->rowCount(), 0);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
@@ -749,7 +749,7 @@ private slots:
     auto telephone = categoryController->getCategoryByName("Téléphone : Internet");
     QVERIFY(telephone != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
@@ -773,7 +773,7 @@ private slots:
     auto ameublement = categoryController->getCategoryByName("Factures : Ameublement");
     QVERIFY(ameublement != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 3);
@@ -805,7 +805,7 @@ private slots:
     QVERIFY(fileController->importFromCsv(csvUrl, "Bank Account", true));
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);

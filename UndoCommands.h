@@ -45,7 +45,7 @@ private:
 // Command for renaming an account
 class RenameAccountCommand : public QUndoCommand {
 public:
-  RenameAccountCommand(Account& account, AccountListModel* accountModel,
+  RenameAccountCommand(Account& account,
                        const QString& oldName, const QString& newName,
                        QUndoCommand* parent = nullptr);
 
@@ -54,7 +54,6 @@ public:
 
 private:
   Account& _account;
-  AccountListModel* _accountModel;
   QString _oldName;
   QString _newName;
 };
