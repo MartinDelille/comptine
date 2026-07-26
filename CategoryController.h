@@ -9,7 +9,6 @@
 #include <QVariant>
 
 #include "Category.h"
-#include "NavigationController.h"
 #include "PropertyMacros.h"
 
 class Account;
@@ -44,7 +43,6 @@ public:
   Q_ENUM(Roles)
 
   explicit CategoryController(BudgetData& budgetData,
-                              const NavigationController& navigation,
                               QUndoStack& undoStack);
 
   int currentIndex() const;
@@ -104,6 +102,5 @@ signals:
 private:
   QList<Category*> _categories;
   BudgetData& _budgetData;
-  const NavigationController& _navigation;
   QUndoStack& _undoStack;
 };

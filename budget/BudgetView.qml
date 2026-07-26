@@ -10,7 +10,7 @@ FocusScope {
     id: root
 
     required property var categories
-    required property var navigation
+    required property var budgetData
     property bool dialogOpen: categoryEditDialog.visible
 
     function editCurrentCategory() {
@@ -26,7 +26,7 @@ FocusScope {
 
     CategoryEditDialog {
         id: categoryEditDialog
-        date: root.navigation.budgetDate
+        date: root.budgetData.budgetDate
         onCategoryEdited: function (category, newName, newBudgetLimit) {
             root.categories.editCategory(newName, newBudgetLimit, category, date);
         }
@@ -35,14 +35,14 @@ FocusScope {
     CategoryDetailView {
         id: categoryDetailView
         category: root.categories.current
-        date: root.navigation.budgetDate
+        date: root.budgetData.budgetDate
 
         onOpened: {
             operations = root.categories.operationsForCategory(category, date);
         }
 
         onNavigateToOperation: function (operation) {
-            root.navigation.navigateToOperation(operation);
+            root.budgetData.navigateToOperation(operation);
         }
     }
 
@@ -57,11 +57,11 @@ FocusScope {
             Button {
                 text: "<"
                 focusPolicy: Qt.NoFocus
-                onClicked: root.navigation.previousMonth()
+                onClicked: root.budgetData.previousMonth()
             }
 
             DateLabel {
-                date: root.navigation.budgetDate
+                date: root.budgetData.budgetDate
                 color: Theme.textPrimary
                 horizontalAlignment: Text.AlignHCenter
                 Layout.preferredWidth: 150
@@ -70,7 +70,7 @@ FocusScope {
             Button {
                 text: ">"
                 focusPolicy: Qt.NoFocus
-                onClicked: root.navigation.nextMonth()
+                onClicked: root.budgetData.nextMonth()
             }
         }
 
@@ -184,7 +184,7 @@ FocusScope {
 
             delegate: MonthCategoryItem {
                 categories: root.categories
-                navigation: root.navigation
+                budgetData: root.budgetData
                 width: ListView.view.width - scrollBar.width
                 isCurrentItem: categoryListView.currentIndex === index
 

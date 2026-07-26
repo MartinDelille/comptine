@@ -14,20 +14,17 @@ class CategoryTest : public QObject {
   QUndoStack* undoStack;
   BudgetData* budgetData;
   CategoryController* categoryController;
-  NavigationController* navController;
 
 private slots:
   void init() {
     // Create fresh instances before each test
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
-    navController = new NavigationController(*budgetData);
-    categoryController = new CategoryController(*budgetData, *navController, *undoStack);
+    categoryController = new CategoryController(*budgetData, *undoStack);
   }
 
   void cleanup() {
     delete categoryController;
-    delete navController;
     delete budgetData;
     delete undoStack;
   }

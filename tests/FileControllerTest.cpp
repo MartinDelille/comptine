@@ -12,7 +12,6 @@
 #include "../Category.h"
 #include "../CategoryController.h"
 #include "../FileController.h"
-#include "../NavigationController.h"
 #include "../Operation.h"
 #include "../Rule.h"
 #include "../RuleController.h"
@@ -35,17 +34,15 @@ private slots:
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
     appSettings = new AppSettings();
-    navController = new NavigationController(*budgetData);
-    categoryController = new CategoryController(*budgetData, *navController, *undoStack);
+    categoryController = new CategoryController(*budgetData, *undoStack);
     ruleController = new RuleController(*budgetData, *undoStack);
-    fileController = new FileController(*appSettings, *budgetData, *categoryController, *navController, *ruleController, *undoStack);
+    fileController = new FileController(*appSettings, *budgetData, *categoryController, *ruleController, *undoStack);
   }
 
   void cleanup() {
     delete fileController;
     delete ruleController;
     delete categoryController;
-    delete navController;
     delete budgetData;
     delete appSettings;
     delete undoStack;
@@ -872,7 +869,6 @@ private:
   AppSettings* appSettings;
   BudgetData* budgetData;
   CategoryController* categoryController;
-  NavigationController* navController;
   RuleController* ruleController;
   FileController* fileController;
 };

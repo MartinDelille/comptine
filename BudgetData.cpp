@@ -5,10 +5,10 @@
 
 #include "Account.h"
 #include "BudgetData.h"
-#include "NavigationController.h"
 #include "UndoCommands.h"
 
 BudgetData::BudgetData(QUndoStack& undoStack) :
+    _budgetDate(QDate::currentDate()),
     _undoStack(undoStack) {
 }
 
@@ -24,6 +24,26 @@ void BudgetData::set_currentAccountIndex(int index) {
   set_currentAccount(accountAt(index));
 }
 
+void BudgetData::previousMonth() {
+  QDate date = _budgetDate.addMonths(-1);
+  set_budgetDate(QDate(date.year(), date.month(), 1));
+}
+
+void BudgetData::nextMonth() {
+  QDate date = _budgetDate.addMonths(1);
+  set_budgetDate(QDate(date.year(), date.month(), 1));
+}
+
+void BudgetData::navigateToOperation(Operation* operation) {
+  Account* account = operation->account();
+  // Switch to the account
+  set_currentAccount(account);
+
+  // Find the operation in the account
+  account->select(operation, false);
+
+  set_currentTabIndex(0);
+}
 int BudgetData::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
     return 0;

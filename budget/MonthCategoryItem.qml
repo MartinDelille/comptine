@@ -8,7 +8,7 @@ Rectangle {
     id: root
 
     required property var categories
-    required property var navigation
+    required property var budgetData
     required property var modelData
     required property int index
     required property bool isCurrentItem
@@ -106,7 +106,7 @@ Rectangle {
                     function applyValue(newValue) {
                         let maxSave = root.saveAmount + root.remainingLeftover;
                         let clampedValue = Math.max(0, Math.min(newValue, maxSave));
-                        root.categories.setSaveAmount(root.category, root.navigation.budgetDate, newValue);
+                        root.categories.setSaveAmount(root.category, root.budgetData.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -123,10 +123,10 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            root.categories.setSaveAmount(root.category, root.navigation.budgetDate, 0);
+                            root.categories.setSaveAmount(root.category, root.budgetData.budgetDate, 0);
                         } else {
                             let newSave = root.saveAmount + root.remainingLeftover;
-                            root.categories.setSaveAmount(root.category, root.navigation.budgetDate, newSave);
+                            root.categories.setSaveAmount(root.category, root.budgetData.budgetDate, newSave);
                         }
                     }
 
@@ -159,7 +159,7 @@ Rectangle {
                         } else {
                             clampedValue = Math.max(root.leftover, Math.min(newValue, 0));
                         }
-                        root.categories.setReportAmount(root.category, root.navigation.budgetDate, newValue);
+                        root.categories.setReportAmount(root.category, root.budgetData.budgetDate, newValue);
                     }
 
                     onEdited: newValue => applyValue(newValue)
@@ -176,13 +176,13 @@ Rectangle {
 
                     onClicked: {
                         if (canDiscard) {
-                            root.categories.setReportAmount(root.category, root.navigation.budgetDate, 0);
+                            root.categories.setReportAmount(root.category, root.budgetData.budgetDate, 0);
                         } else {
                             if (root.leftover >= 0) {
                                 let newReport = root.reportAmount + root.remainingLeftover;
-                                root.categories.setReportAmount(root.category, root.navigation.budgetDate, newReport);
+                                root.categories.setReportAmount(root.category, root.budgetData.budgetDate, newReport);
                             } else {
-                                root.categories.setReportAmount(root.category, root.navigation.budgetDate, root.leftover);
+                                root.categories.setReportAmount(root.category, root.budgetData.budgetDate, root.leftover);
                             }
                         }
                     }

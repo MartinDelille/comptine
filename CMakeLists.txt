@@ -120,7 +120,6 @@ qt_add_qml_module(libComptine
     RuleListModel.cpp RuleListModel.h
     CategoryController.cpp CategoryController.h
     ClipboardController.cpp ClipboardController.h
-    NavigationController.cpp NavigationController.h
     Rule.cpp Rule.h
     RuleController.cpp RuleController.h
     FileController.cpp FileController.h

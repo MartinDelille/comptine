@@ -54,7 +54,10 @@ MenuBar {
         onRulesAction: root.rulesAction()
         onPreferencesAction: root.preferencesAction()
     }
-    ViewMenu {}
+    ViewMenu {
+        budgetData: root.budgetData
+        anyDialogOpen: root.anyDialogOpen
+    }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()
         onProjectPageAction: root.projectPageAction()

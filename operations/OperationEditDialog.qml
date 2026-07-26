@@ -12,7 +12,6 @@ BaseDialog {
 
     required property var budgetData
     required property var categories
-    required property var navigation
     required property var rules
 
     property var _operation: null
@@ -77,8 +76,7 @@ BaseDialog {
         operation: root._operation
         onCreateCounterPart: function (account, category) {
             let newOperation = root.budgetData.createCounterPart(operation, account, category);
-            root.navigation.currentOperation = newOperation;
-            root.navigation.navigateToOperation(newOperation);
+            root.budgetData.navigateToOperation(newOperation);
             root.initialize(newOperation);
         }
     }

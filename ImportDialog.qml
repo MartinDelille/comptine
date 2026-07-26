@@ -35,26 +35,26 @@ BaseDialog {
             fileName = decodeURIComponent(fileName);
 
             // Try auto-suggestion based on stored import sources
-            var suggested = AppState.data.suggestedAccountForFile(fileName);
+            var suggested = AppState.budgetData.suggestedAccountForFile(fileName);
             var isNew = true;
             var existingIndex = -1;
 
             if (suggested !== "") {
                 // Check if the suggested account exists
-                var account = AppState.data.accountByName(suggested);
+                var account = AppState.budgetData.accountByName(suggested);
                 if (account) {
                     isNew = false;
-                    existingIndex = AppState.data.accountIndex(account);
+                    existingIndex = AppState.budgetData.accountIndex(account);
                 }
             } else {
                 // Fall back to filename without extension
                 var dotIdx = fileName.lastIndexOf(".");
                 suggested = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
                 // Check if this name matches an existing account
-                var existing = AppState.data.accountByName(suggested);
+                var existing = AppState.budgetData.accountByName(suggested);
                 if (existing) {
                     isNew = false;
-                    existingIndex = AppState.data.accountIndex(existing);
+                    existingIndex = AppState.budgetData.accountIndex(existing);
                 }
             }
 
@@ -74,7 +74,7 @@ BaseDialog {
             var entry = fileEntries.get(i);
             AppState.file.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
         }
-        AppState.navigation.currentTabIndex = 0;
+        AppState.budgetData.currentTabIndex = 0;
     }
 
     ColumnLayout {
@@ -136,7 +136,7 @@ BaseDialog {
 
                     AccountComboBox {
                         id: accountCombo
-                        budgetData: AppState.data
+                        budgetData: AppState.budgetData
                         Layout.fillWidth: true
                         visible: !newAccountCheck.checked
                         currentIndex: fileDelegate.model.existingAccountIndex

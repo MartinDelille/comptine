@@ -2,10 +2,9 @@
 
 AppState::AppState(QObject* parent) :
     QObject(parent),
-    _data(_undoStack),
-    _navigation(_data),
-    _categories(_data, _navigation, _undoStack),
-    _rules(_data, _undoStack),
-    _file(_settings, _data, _categories, _navigation, _rules, _undoStack),
+    _budgetData(_undoStack),
+    _categories(_budgetData, _undoStack),
+    _rules(_budgetData, _undoStack),
+    _file(_settings, _budgetData, _categories, _rules, _undoStack),
     _update(_settings) {
 }

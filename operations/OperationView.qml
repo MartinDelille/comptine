@@ -10,7 +10,6 @@ FocusScope {
 
     required property var budgetData
     required property var categories
-    required property var navigation
     required property var rules
 
     onActiveFocusChanged: {
@@ -36,7 +35,6 @@ FocusScope {
         id: operationEditDialog
         budgetData: root.budgetData
         categories: root.categories
-        navigation: root.navigation
         rules: root.rules
         onClosed: operationList.forceActiveFocus()
     }

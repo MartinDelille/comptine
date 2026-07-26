@@ -11,9 +11,11 @@ class BudgetData : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
 
+  PROPERTY_RW(int, currentTabIndex, 0)
   PROPERTY_RW(Account*, currentAccount, nullptr)
-  Q_PROPERTY(int accountCount READ rowCount NOTIFY accountCountChanged)
+  PROPERTY_RW(QDate, budgetDate, QDate::currentDate())
 
+  Q_PROPERTY(int accountCount READ rowCount NOTIFY accountCountChanged)
   Q_PROPERTY(int currentAccountIndex READ currentAccountIndex WRITE set_currentAccountIndex NOTIFY currentAccountChanged)
 
 public:
@@ -27,9 +29,12 @@ public:
   explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
 
-  // Model accessors
+  // Navigation
   int currentAccountIndex() const;
   void set_currentAccountIndex(int index);
+  Q_INVOKABLE void previousMonth();
+  Q_INVOKABLE void nextMonth();
+  Q_INVOKABLE void navigateToOperation(Operation* operation);
 
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;

@@ -67,11 +67,11 @@ ApplicationWindow {
     menuBar: ApplicationMenuBar {
         anyDialogOpen: window.anyDialogOpen
         file: AppState.file
-        budgetData: AppState.data
+        budgetData: AppState.budgetData
         settings: AppState.settings
         undoStack: AppState.undoStack
         window: window
-        currentTabIndex: AppState.navigation.currentTabIndex
+        currentTabIndex: AppState.budgetData.currentTabIndex
         categories: AppState.categories
 
         onNewFileAction: {
@@ -191,7 +191,7 @@ ApplicationWindow {
             text: qsTr("Are you sure you want to delete the selected operations?")
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: AppState.data.deleteSelectedOperations()
+        onAccepted: AppState.budgetData.deleteSelectedOperations()
     }
 
     BaseDialog {
@@ -323,8 +323,8 @@ ApplicationWindow {
         TabBar {
             id: tabBar
             Layout.fillWidth: true
-            currentIndex: AppState.navigation.currentTabIndex
-            onCurrentIndexChanged: AppState.navigation.currentTabIndex = currentIndex
+            currentIndex: AppState.budgetData.currentTabIndex
+            onCurrentIndexChanged: AppState.budgetData.currentTabIndex = currentIndex
             focusPolicy: Qt.NoFocus  // Prevent tab bar from stealing focus
 
             background: Rectangle {
@@ -349,9 +349,8 @@ ApplicationWindow {
             // Operations view
             OperationView {
                 id: operationView
-                budgetData: AppState.data
+                budgetData: AppState.budgetData
                 categories: AppState.categories
-                navigation: AppState.navigation
                 rules: AppState.rules
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
@@ -361,8 +360,8 @@ ApplicationWindow {
             // Budget view
             BudgetView {
                 id: budgetView
+                budgetData: AppState.budgetData
                 categories: AppState.categories
-                navigation: AppState.navigation
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true

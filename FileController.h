@@ -14,7 +14,6 @@ class Account;
 class BudgetData;
 class Category;
 class CategoryController;
-class NavigationController;
 class RuleController;
 
 class FileController : public QObject {
@@ -34,7 +33,6 @@ public:
   FileController(AppSettings& appSettings,
                  BudgetData& budgetData,
                  CategoryController& categoryController,
-                 NavigationController& navController,
                  RuleController& ruleController,
                  QUndoStack& undoStack);
 
@@ -64,7 +62,6 @@ private:
   AppSettings& _appSettings;
   BudgetData& _budgetData;
   CategoryController& _categoryController;
-  NavigationController& _navController;
   RuleController& _ruleController;
   QUndoStack& _undoStack;
   QFileSystemWatcher _fileWatcher;

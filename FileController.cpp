@@ -17,7 +17,6 @@
 #include "CsvParser.h"
 #include "FileController.h"
 #include "FileCoordinator.h"
-#include "NavigationController.h"
 #include "Operation.h"
 #include "Rule.h"
 #include "RuleController.h"
@@ -28,13 +27,11 @@ using namespace CsvParser;
 FileController::FileController(AppSettings& appSettings,
                                BudgetData& budgetData,
                                CategoryController& categoryController,
-                               NavigationController& navController,
                                RuleController& ruleController,
                                QUndoStack& undoStack) :
     _appSettings(appSettings),
     _budgetData(budgetData),
     _categoryController(categoryController),
-    _navController(navController),
     _ruleController(ruleController),
     _undoStack(undoStack) {
   connect(&_fileWatcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
@@ -78,14 +75,14 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   out << YAML::BeginMap;
 
   // Get navigation state from NavigationController
-  int currentTabIndex = _navController.currentTabIndex();
+  int currentTabIndex = _budgetData.currentTabIndex();
   auto currentAccount = _budgetData.currentAccount();
   auto currentCategory = _categoryController.current();
 
   // Write state section
   out << YAML::Key << "state" << YAML::Value << YAML::BeginMap;
   out << YAML::Key << "currentTab" << YAML::Value << currentTabIndex;
-  out << YAML::Key << "budgetDate" << YAML::Value << toStdString(_navController.budgetDate().toString("MMMM yyyy"));
+  out << YAML::Key << "budgetDate" << YAML::Value << toStdString(_budgetData.budgetDate().toString("MMMM yyyy"));
   out << YAML::EndMap;
 
   // Write categories
@@ -271,7 +268,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   _budgetData.clear();
 
-  // Track state from file for NavigationController
+  // Track state from file for navigation
   // Default to current year/month if not specified in file
   int loadedTabIndex = 0;
   QDate loadedBudgetDate = QDate::currentDate();
@@ -478,8 +475,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
     return false;
   }
 
-  _navController.set_budgetDate(loadedBudgetDate);
-  _navController.set_currentTabIndex(loadedTabIndex);
+  _budgetData.set_budgetDate(loadedBudgetDate);
+  _budgetData.set_currentTabIndex(loadedTabIndex);
 
   set_currentFilePath(filePath);
   _undoStack.clear();
@@ -499,8 +496,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
 void FileController::reloadCurrentFile() {
   if (!currentFilePath().isEmpty()) {
-    int tabIndex = _navController.currentTabIndex();
-    QDate budgetDate = _navController.budgetDate();
+    int tabIndex = _budgetData.currentTabIndex();
+    QDate budgetDate = _budgetData.budgetDate();
     int accountIndex = _budgetData.currentAccountIndex();
     int categoryIndex = _categoryController.currentIndex();
     auto account = _budgetData.currentAccount();
@@ -510,8 +507,8 @@ void FileController::reloadCurrentFile() {
     _budgetData.set_currentAccount(account);
     _categoryController.set_currentIndex(categoryIndex);
     account->selectAt(operationIndex);
-    _navController.set_budgetDate(budgetDate);
-    _navController.set_currentTabIndex(tabIndex);
+    _budgetData.set_budgetDate(budgetDate);
+    _budgetData.set_currentTabIndex(tabIndex);
   }
 }
 
