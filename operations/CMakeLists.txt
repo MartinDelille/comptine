@@ -2,6 +2,8 @@ qt_add_qml_module(
   Operations
   URI
   operations
+  STATIC
+  NO_PLUGIN
   DEPENDENCIES
   CommonUI
   Rules

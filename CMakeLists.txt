@@ -111,6 +111,7 @@ qt_add_library(libComptine STATIC)
 qt_add_qml_module(libComptine
   URI ComptineLib
   OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ComptineLib
+  NO_PLUGIN
   SOURCES
     AppSettings.cpp AppSettings.h
     Operation.cpp Operation.h
@@ -264,7 +265,6 @@ target_link_libraries(
         Qt6::Network
         yaml-cpp::yaml-cpp
         libComptine
-        libComptineplugin
         Budget
         CommonUI
         Operations
