@@ -8,7 +8,6 @@ BaseDialog {
     id: root
     title: qsTr("Create Counter Part")
 
-    required property var budgetData
     required property var operation
 
     signal createCounterPart(account: var, category: string)
@@ -35,7 +34,6 @@ BaseDialog {
         }
         AccountComboBox {
             id: accountComboBox
-            budgetData: root.budgetData
             Layout.fillWidth: true
             focus: true
         }

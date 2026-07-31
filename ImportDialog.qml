@@ -35,26 +35,26 @@ BaseDialog {
             fileName = decodeURIComponent(fileName);
 
             // Try auto-suggestion based on stored import sources
-            var suggested = AppState.budgetData.suggestedAccountForFile(fileName);
+            var suggested = BudgetData.suggestedAccountForFile(fileName);
             var isNew = true;
             var existingIndex = -1;
 
             if (suggested !== "") {
                 // Check if the suggested account exists
-                var account = AppState.budgetData.accountByName(suggested);
+                var account = BudgetData.accountByName(suggested);
                 if (account) {
                     isNew = false;
-                    existingIndex = AppState.budgetData.accountIndex(account);
+                    existingIndex = BudgetData.accountIndex(account);
                 }
             } else {
                 // Fall back to filename without extension
                 var dotIdx = fileName.lastIndexOf(".");
                 suggested = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
                 // Check if this name matches an existing account
-                var existing = AppState.budgetData.accountByName(suggested);
+                var existing = BudgetData.accountByName(suggested);
                 if (existing) {
                     isNew = false;
-                    existingIndex = AppState.budgetData.accountIndex(existing);
+                    existingIndex = BudgetData.accountIndex(existing);
                 }
             }
 
@@ -72,9 +72,9 @@ BaseDialog {
     onAccepted: {
         for (var i = 0; i < fileEntries.count; i++) {
             var entry = fileEntries.get(i);
-            AppState.file.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
+            FileController.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
         }
-        AppState.budgetData.currentTabIndex = 0;
+        BudgetData.currentTabIndex = 0;
     }
 
     ColumnLayout {
@@ -136,7 +136,6 @@ BaseDialog {
 
                     AccountComboBox {
                         id: accountCombo
-                        budgetData: AppState.budgetData
                         Layout.fillWidth: true
                         visible: !newAccountCheck.checked
                         currentIndex: fileDelegate.model.existingAccountIndex

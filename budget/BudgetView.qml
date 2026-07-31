@@ -5,16 +5,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import commonui
+import Comptine
 
 FocusScope {
     id: root
 
-    required property var categories
-    required property var budgetData
     property bool dialogOpen: categoryEditDialog.visible
 
     function editCurrentCategory() {
-        let category = categories.current;
+        let category = CategoryController.current;
         if (category) {
             categoryEditDialog.edit(category);
         }
@@ -26,23 +25,23 @@ FocusScope {
 
     CategoryEditDialog {
         id: categoryEditDialog
-        date: root.budgetData.budgetDate
+        date: BudgetData.budgetDate
         onCategoryEdited: function (category, newName, newBudgetLimit) {
-            root.categories.editCategory(newName, newBudgetLimit, category, date);
+            CategoryController.editCategory(newName, newBudgetLimit, category, date);
         }
     }
 
     CategoryDetailView {
         id: categoryDetailView
-        category: root.categories.current
-        date: root.budgetData.budgetDate
+        category: CategoryController.current
+        date: BudgetData.budgetDate
 
         onOpened: {
-            operations = root.categories.operationsForCategory(category, date);
+            operations = CategoryController.operationsForCategory(category, date);
         }
 
         onNavigateToOperation: function (operation) {
-            root.budgetData.navigateToOperation(operation);
+            BudgetData.navigateToOperation(operation);
         }
     }
 
@@ -57,11 +56,11 @@ FocusScope {
             Button {
                 text: "<"
                 focusPolicy: Qt.NoFocus
-                onClicked: root.budgetData.previousMonth()
+                onClicked: BudgetData.previousMonth()
             }
 
             DateLabel {
-                date: root.budgetData.budgetDate
+                date: BudgetData.budgetDate
                 color: Theme.textPrimary
                 horizontalAlignment: Text.AlignHCenter
                 Layout.preferredWidth: 150
@@ -70,7 +69,7 @@ FocusScope {
             Button {
                 text: ">"
                 focusPolicy: Qt.NoFocus
-                onClicked: root.budgetData.nextMonth()
+                onClicked: BudgetData.nextMonth()
             }
         }
 
@@ -83,8 +82,8 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 Label {
-                    property real _balance: root.categories.totalIncome - root.categories.totalExpense
-                    text: `${Theme.formatAmountWithoutCurrency(root.categories.totalIncome)} - ${Theme.formatAmountWithoutCurrency(root.categories.totalExpense)} = ${Theme.formatAmount(_balance)}`
+                    property real _balance: CategoryController.totalIncome - CategoryController.totalExpense
+                    text: `${Theme.formatAmountWithoutCurrency(CategoryController.totalIncome)} - ${Theme.formatAmountWithoutCurrency(CategoryController.totalExpense)} = ${Theme.formatAmount(_balance)}`
                     font.pixelSize: Theme.fontSizeSmall
                     font.bold: true
                     color: _balance == 0 ? Theme.textMuted : Theme.negative
@@ -100,7 +99,7 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 AmountLabel {
-                    amount: root.categories.totalToSave
+                    amount: CategoryController.totalToSave
                     font.pixelSize: Theme.fontSizeSmall
                 }
             }
@@ -114,7 +113,7 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 AmountLabel {
-                    amount: root.categories.totalToReport
+                    amount: CategoryController.totalToReport
                     color: Theme.accent
                     font.pixelSize: Theme.fontSizeSmall
                 }
@@ -122,7 +121,7 @@ FocusScope {
 
             RowLayout {
                 spacing: Theme.spacingSmall
-                visible: root.categories.totalFromReport > 0
+                visible: CategoryController.totalFromReport > 0
 
                 Label {
                     text: qsTr("From Leftover:")
@@ -130,7 +129,7 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 AmountLabel {
-                    amount: root.categories.totalFromReport
+                    amount: CategoryController.totalFromReport
                     font.pixelSize: Theme.fontSizeSmall
                     color: Theme.warning
                 }
@@ -145,7 +144,7 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 AmountLabel {
-                    amount: root.categories.netReport
+                    amount: CategoryController.netReport
                     font.pixelSize: Theme.fontSizeSmall
                 }
             }
@@ -159,7 +158,7 @@ FocusScope {
                     color: Theme.textSecondary
                 }
                 Label {
-                    text: `${root.categories.balancedCount} / ${root.categories.count}`
+                    text: `${CategoryController.balancedCount} / ${CategoryController.count}`
                     font.pixelSize: Theme.fontSizeSmall
                     font.bold: true
                 }
@@ -170,12 +169,12 @@ FocusScope {
             id: categoryListView
             Layout.fillWidth: true
             Layout.fillHeight: true
-            model: root.categories
+            model: CategoryController
             spacing: Theme.spacingNormal
             clip: true
             focus: true
-            currentIndex: root.categories.currentIndex
-            onCurrentIndexChanged: root.categories.currentIndex = currentIndex
+            currentIndex: CategoryController.currentIndex
+            onCurrentIndexChanged: CategoryController.currentIndex = currentIndex
 
             Keys.onReturnPressed: categoryDetailView.open()
             ScrollBar.vertical: ScrollBar {
@@ -183,8 +182,8 @@ FocusScope {
             }
 
             delegate: MonthCategoryItem {
-                categories: root.categories
-                budgetData: root.budgetData
+                categories: CategoryController
+                budgetData: BudgetData
                 width: ListView.view.width - scrollBar.width
                 isCurrentItem: categoryListView.currentIndex === index
 
@@ -204,7 +203,7 @@ FocusScope {
         Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: root.categories.count === 0
+            visible: CategoryController.count === 0
             text: qsTr("No categories defined")
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter

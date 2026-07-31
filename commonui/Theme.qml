@@ -1,5 +1,6 @@
 pragma Singleton
 import QtQuick
+
 import Comptine
 
 QtObject {
@@ -10,9 +11,9 @@ QtObject {
 
     // Determine if we should use dark mode
     readonly property bool isDark: {
-        if (AppState.settings.theme === "dark")
+        if (AppSettings.theme === "dark")
             return true;
-        if (AppState.settings.theme === "light")
+        if (AppSettings.theme === "light")
             return false;
         return systemIsDark; // System default
     }

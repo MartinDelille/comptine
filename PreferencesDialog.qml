@@ -3,12 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import commonui
+import Comptine
 
 BaseDialog {
     id: root
     title: qsTr("Preferences")
-
-    required property var settings
 
     property string originalLanguage: ""
     property string originalTheme: ""
@@ -16,42 +15,42 @@ BaseDialog {
 
     onOpened: {
         // Save original values to restore on cancel
-        originalLanguage = settings.language;
-        originalTheme = settings.theme;
-        originalCheckForUpdates = settings.checkForUpdates;
+        originalLanguage = AppSettings.language;
+        originalTheme = AppSettings.theme;
+        originalCheckForUpdates = AppSettings.checkForUpdates;
 
         // Set initial language combo box value
-        if (settings.language === "") {
+        if (AppSettings.language === "") {
             languageComboBox.currentIndex = 0;
-        } else if (settings.language === "en") {
+        } else if (AppSettings.language === "en") {
             languageComboBox.currentIndex = 1;
-        } else if (settings.language === "fr") {
+        } else if (AppSettings.language === "fr") {
             languageComboBox.currentIndex = 2;
         }
 
         // Set initial theme combo box value
-        if (settings.theme === "") {
+        if (AppSettings.theme === "") {
             themeComboBox.currentIndex = 0;
-        } else if (settings.theme === "light") {
+        } else if (AppSettings.theme === "light") {
             themeComboBox.currentIndex = 1;
-        } else if (settings.theme === "dark") {
+        } else if (AppSettings.theme === "dark") {
             themeComboBox.currentIndex = 2;
         }
 
         // Set initial update checkbox value
-        updateCheckBox.checked = settings.checkForUpdates;
+        updateCheckBox.checked = AppSettings.checkForUpdates;
     }
 
     onRejected: {
         // Restore original values on cancel
-        if (settings.language !== originalLanguage) {
-            settings.language = originalLanguage;
+        if (AppSettings.language !== originalLanguage) {
+            AppSettings.language = originalLanguage;
         }
-        if (settings.theme !== originalTheme) {
-            settings.theme = originalTheme;
+        if (AppSettings.theme !== originalTheme) {
+            AppSettings.theme = originalTheme;
         }
-        if (settings.checkForUpdates !== originalCheckForUpdates) {
-            settings.checkForUpdates = originalCheckForUpdates;
+        if (AppSettings.checkForUpdates !== originalCheckForUpdates) {
+            AppSettings.checkForUpdates = originalCheckForUpdates;
         }
     }
 
@@ -80,7 +79,7 @@ BaseDialog {
                     } else if (currentIndex === 2) {
                         newLanguage = "fr";
                     }
-                    root.settings.language = newLanguage;
+                    AppSettings.language = newLanguage;
                 }
             }
 
@@ -100,7 +99,7 @@ BaseDialog {
                     } else if (currentIndex === 2) {
                         newTheme = "dark";
                     }
-                    root.settings.theme = newTheme;
+                    AppSettings.theme = newTheme;
                 }
             }
 
@@ -112,7 +111,7 @@ BaseDialog {
                 id: updateCheckBox
                 text: qsTr("Check for updates on startup")
                 onToggled: {
-                    root.settings.checkForUpdates = checked;
+                    AppSettings.checkForUpdates = checked;
                 }
             }
         }

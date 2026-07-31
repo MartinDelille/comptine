@@ -9,15 +9,16 @@ import commonui
 import budget
 import operations
 import rules
+import Comptine
 
 ApplicationWindow {
     id: window
-    x: AppState.settings.windowX
-    y: AppState.settings.windowY
-    width: AppState.settings.windowWidth
-    height: AppState.settings.windowHeight
+    x: AppSettings.windowX
+    y: AppSettings.windowY
+    width: AppSettings.windowWidth
+    height: AppSettings.windowHeight
     visible: true
-    title: AppState.file.currentFilePath.length > 0 ? "Comptine - " + AppState.file.currentFilePath.split('/').pop() : "Comptine"
+    title: FileController.currentFilePath.length > 0 ? "Comptine - " + FileController.currentFilePath.split('/').pop() : "Comptine"
     color: Theme.background
 
     property bool fileDialogOpen: openDialog.visible || saveDialog.visible || csvDialog.visible
@@ -27,28 +28,28 @@ ApplicationWindow {
     property bool forceQuit: false  // Set to true when user confirmed quit without saving
 
     Component.onDestruction: {
-        AppState.settings.windowX = x;
-        AppState.settings.windowY = y;
-        AppState.settings.windowWidth = width;
-        AppState.settings.windowHeight = height;
+        AppSettings.windowX = x;
+        AppSettings.windowY = y;
+        AppSettings.windowWidth = width;
+        AppSettings.windowHeight = height;
     }
 
     function performPendingAction() {
         if (pendingAction === "quit") {
             Qt.quit();
         } else if (pendingAction === "new") {
-            AppState.file.clear();
+            FileController.clear();
         } else if (pendingAction === "open") {
             openDialog.open();
         } else if (pendingAction === "openRecent") {
-            AppState.file.loadFromYamlFile(pendingRecentFile);
+            FileController.loadFromYamlFile(pendingRecentFile);
             pendingRecentFile = "";
         }
         pendingAction = "";
     }
 
     function checkUnsavedChanges(action) {
-        if (AppState.file.hasUnsavedChanges) {
+        if (FileController.hasUnsavedChanges) {
             pendingAction = action;
             unsavedChangesDialog.open();
             return true;  // Has unsaved changes, action deferred
@@ -57,7 +58,7 @@ ApplicationWindow {
     }
 
     onClosing: function (close) {
-        if (AppState.file.hasUnsavedChanges && !forceQuit) {
+        if (FileController.hasUnsavedChanges && !forceQuit) {
             close.accepted = false;
             pendingAction = "quit";
             unsavedChangesDialog.open();
@@ -66,17 +67,11 @@ ApplicationWindow {
 
     menuBar: ApplicationMenuBar {
         anyDialogOpen: window.anyDialogOpen
-        file: AppState.file
-        budgetData: AppState.budgetData
-        settings: AppState.settings
-        undoStack: AppState.undoStack
         window: window
-        currentTabIndex: AppState.budgetData.currentTabIndex
-        categories: AppState.categories
 
         onNewFileAction: {
             if (!window.checkUnsavedChanges("new")) {
-                AppState.file.clear();
+                FileController.clear();
             }
         }
         onOpenFileAction: {
@@ -88,7 +83,7 @@ ApplicationWindow {
         onImportFileDialogAction: csvDialog.open()
         onOpenRecentFileAction: function (filePath) {
             if (!window.checkUnsavedChanges("openRecent")) {
-                AppState.file.loadFromYamlFile(filePath);
+                FileController.loadFromYamlFile(filePath);
             } else {
                 window.pendingRecentFile = filePath;
             }
@@ -100,21 +95,21 @@ ApplicationWindow {
         }
 
         onAddAction: {
-            if (currentTabIndex === 0) {
+            if (BudgetData.currentTabIndex === 0) {
                 operationView.addOperation();
             } else {
                 budgetView.addCategory();
             }
         }
         onEditAction: {
-            if (currentTabIndex === 0) {
+            if (BudgetData.currentTabIndex === 0) {
                 operationView.editCurrentOperation();
             } else {
                 budgetView.editCurrentCategory();
             }
         }
         onDeleteAction: {
-            if (currentTabIndex === 0) {
+            if (BudgetData.currentTabIndex === 0) {
                 deleteSelectedOperationsDialog.open();
             } else {
                 deleteCurrentCagegoryDialog.open();
@@ -125,7 +120,7 @@ ApplicationWindow {
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;
-            AppState.update.checkForUpdates();
+            UpdateController.checkForUpdates();
         }
         onProjectPageAction: Qt.openUrlExternally("https://martin.delille.org/comptine/")
         onAboutAction: aboutDialog.open()
@@ -137,7 +132,7 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFile
         nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
         onAccepted: {
-            AppState.file.loadFromYamlUrl(selectedFile);
+            FileController.loadFromYamlUrl(selectedFile);
         }
     }
 
@@ -146,9 +141,9 @@ ApplicationWindow {
         title: qsTr("Save Budget File")
         fileMode: FileDialog.SaveFile
         nameFilters: ["Comptine files (*.comptine)", "All files (*)"]
-        currentFile: AppState.file.currentFilePath.length > 0 ? "file://" + AppState.file.currentFilePath : ""
+        currentFile: FileController.currentFilePath.length > 0 ? "file://" + FileController.currentFilePath : ""
         onAccepted: {
-            if (AppState.file.saveToYamlUrl(selectedFile)) {
+            if (FileController.saveToYamlUrl(selectedFile)) {
                 if (window.pendingAction !== "") {
                     window.performPendingAction();
                 }
@@ -180,7 +175,6 @@ ApplicationWindow {
 
     PreferencesDialog {
         id: preferencesDialog
-        settings: AppState.settings
     }
 
     BaseDialog {
@@ -191,7 +185,7 @@ ApplicationWindow {
             text: qsTr("Are you sure you want to delete the selected operations?")
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: AppState.budgetData.deleteSelectedOperations()
+        onAccepted: BudgetData.deleteSelectedOperations()
     }
 
     BaseDialog {
@@ -199,22 +193,19 @@ ApplicationWindow {
         title: qsTr("Delete Category")
         width: 400
         Label {
-            property string _categoryName: AppState.categories.current ? AppState.categories.current.name : ""
+            property string _categoryName: CategoryController.current ? CategoryController.current.name : ""
             text: qsTr(`Are you sure you want to delete ${_categoryName} ?`)
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: AppState.categories.deleteCategory(AppState.categories.current)
+        onAccepted: CategoryController.deleteCategory(CategoryController.current)
     }
 
     RulesView {
         id: rulesView
-        categories: AppState.categories
-        rules: AppState.rules
     }
 
     UpdateDialog {
         id: updateDialog
-        update: AppState.update
     }
 
     MessageDialog {
@@ -224,7 +215,7 @@ ApplicationWindow {
         buttons: MessageDialog.Yes | MessageDialog.No
         onButtonClicked: function (button, role) {
             if (button === MessageDialog.Yes) {
-                AppState.file.loadFromYamlFile(AppState.file.currentFilePath);
+                FileController.loadFromYamlFile(FileController.currentFilePath);
             }
         }
     }
@@ -232,14 +223,14 @@ ApplicationWindow {
     MessageDialog {
         id: noUpdateDialog
         title: qsTr("No Update Available")
-        text: qsTr("You are running the latest version of Comptine (%1).").arg(AppState.update.currentVersion())
+        text: qsTr("You are running the latest version of Comptine (%1).").arg(UpdateController.currentVersion())
         buttons: MessageDialog.Ok
     }
 
     MessageDialog {
         id: updateErrorDialog
         title: qsTr("Update Check Failed")
-        text: AppState.update.errorMessage
+        text: UpdateController.errorMessage
         buttons: MessageDialog.Ok
     }
 
@@ -248,8 +239,8 @@ ApplicationWindow {
 
     // Auto-check for updates on startup
     Component.onCompleted: {
-        if (AppState.update.shouldAutoCheck()) {
-            AppState.update.checkForUpdates();
+        if (UpdateController.shouldAutoCheck()) {
+            UpdateController.checkForUpdates();
         }
     }
 
@@ -260,8 +251,8 @@ ApplicationWindow {
         buttons: MessageDialog.Save | MessageDialog.Discard | MessageDialog.Cancel
         onButtonClicked: function (button, role) {
             if (button === MessageDialog.Save) {
-                if (AppState.file.currentFilePath.length > 0) {
-                    AppState.file.saveToYamlFile(AppState.file.currentFilePath);
+                if (FileController.currentFilePath.length > 0) {
+                    FileController.saveToYamlFile(FileController.currentFilePath);
                     window.performPendingAction();
                 } else {
                     saveDialog.open();
@@ -279,14 +270,14 @@ ApplicationWindow {
     MessageDialog {
         id: fileErrorDialog
         title: qsTr("File Error")
-        text: AppState.file.errorMessage
+        text: FileController.errorMessage
         buttons: MessageDialog.Ok
     }
 
     Connections {
-        target: AppState.file
+        target: FileController
         function onErrorMessageChanged() {
-            if (AppState.file.errorMessage.length > 0) {
+            if (FileController.errorMessage.length > 0) {
                 fileErrorDialog.open();
             }
         }
@@ -297,10 +288,10 @@ ApplicationWindow {
 
     // Handle update check results
     Connections {
-        target: AppState.update
+        target: UpdateController
         function onUpdateCheckCompleted() {
-            AppState.update.markUpdateChecked();
-            if (AppState.update.updateAvailable) {
+            UpdateController.markUpdateChecked();
+            if (UpdateController.updateAvailable) {
                 updateDialog.open();
             } else if (window.manualUpdateCheck) {
                 noUpdateDialog.open();
@@ -323,8 +314,8 @@ ApplicationWindow {
         TabBar {
             id: tabBar
             Layout.fillWidth: true
-            currentIndex: AppState.budgetData.currentTabIndex
-            onCurrentIndexChanged: AppState.budgetData.currentTabIndex = currentIndex
+            currentIndex: BudgetData.currentTabIndex
+            onCurrentIndexChanged: BudgetData.currentTabIndex = currentIndex
             focusPolicy: Qt.NoFocus  // Prevent tab bar from stealing focus
 
             background: Rectangle {
@@ -349,9 +340,6 @@ ApplicationWindow {
             // Operations view
             OperationView {
                 id: operationView
-                budgetData: AppState.budgetData
-                categories: AppState.categories
-                rules: AppState.rules
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -360,8 +348,6 @@ ApplicationWindow {
             // Budget view
             BudgetView {
                 id: budgetView
-                budgetData: AppState.budgetData
-                categories: AppState.categories
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true

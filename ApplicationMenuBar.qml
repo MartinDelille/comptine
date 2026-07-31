@@ -5,13 +5,7 @@ MenuBar {
     id: root
 
     required property bool anyDialogOpen
-    required property var file
-    required property var budgetData
-    required property var undoStack
-    required property var settings
     required property var window
-    required property var currentTabIndex
-    required property var categories
 
     signal newFileAction
     signal openFileAction
@@ -31,8 +25,6 @@ MenuBar {
     signal quitAction
 
     FileMenu {
-        file: root.file
-        settings: root.settings
         window: root.window
 
         onNewFileAction: root.newFileAction()
@@ -43,11 +35,6 @@ MenuBar {
         onQuitAction: root.quitAction()
     }
     EditMenu {
-        budgetData: root.budgetData
-        undoStack: root.undoStack
-        currentTabIndex: root.currentTabIndex
-        categories: root.categories
-
         onAddAction: root.addAction()
         onEditAction: root.editAction()
         onDeleteAction: root.deleteAction()
@@ -55,7 +42,6 @@ MenuBar {
         onPreferencesAction: root.preferencesAction()
     }
     ViewMenu {
-        budgetData: root.budgetData
         anyDialogOpen: root.anyDialogOpen
     }
     HelpMenu {

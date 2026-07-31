@@ -233,7 +233,8 @@ qt_add_qml_module(
   PreferencesDialog.qml
   UpdateDialog.qml
   SOURCES
-  AppState.cpp AppState.h
+  AppState.h
+  Foreigners.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If

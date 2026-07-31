@@ -1,13 +1,12 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-
 import QtQuick.Controls
+
+import Comptine
 
 Menu {
     id: root
-    required property var file
-    required property var settings
     required property var window
 
     signal newFileAction
@@ -32,8 +31,8 @@ Menu {
         text: qsTr("&Save")
         shortcut: StandardKey.Save
         onTriggered: {
-            if (root.file.currentFilePath.length > 0) {
-                root.file.saveToYamlFile(root.file.currentFilePath);
+            if (FileController.currentFilePath.length > 0) {
+                FileController.saveToYamlFile(FileController.currentFilePath);
             } else {
                 root.saveFileDialogAction();
             }
@@ -47,10 +46,10 @@ Menu {
     Menu {
         id: recentFilesMenu
         title: qsTr("Open &Recent")
-        enabled: root.settings.recentFilesModel.rowCount() > 0
+        enabled: AppSettings.recentFilesModel.rowCount() > 0
 
         Instantiator {
-            model: root.settings.recentFilesModel
+            model: AppSettings.recentFilesModel
             delegate: MenuItem {
                 required property var model
                 text: model.display
@@ -61,13 +60,13 @@ Menu {
         }
 
         MenuSeparator {
-            visible: root.settings.recentFilesModel.rowCount() > 0
+            visible: AppSettings.recentFilesModel.rowCount() > 0
         }
 
         MenuItem {
             text: qsTr("Clear Recent Files")
-            enabled: root.settings.recentFilesModel.rowCount() > 0
-            onTriggered: root.settings.clearRecentFiles()
+            enabled: AppSettings.recentFilesModel.rowCount() > 0
+            onTriggered: AppSettings.clearRecentFiles()
         }
     }
     MenuSeparator {}
