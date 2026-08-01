@@ -56,7 +56,7 @@ FocusScope {
 
             BalanceHeader {
                 Layout.fillWidth: true
-                balance: BudgetData.currentAccount?.count > 0 ? BudgetData.currentAccount?.balanceAt(0) : 0
+                balance: BudgetData.currentAccount?.currentBalance || 0
                 operationCount: BudgetData.currentAccount?.count || 0
             }
         }

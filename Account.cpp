@@ -158,6 +158,7 @@ bool Account::removeOperation(Operation* operation) {
     emit currentOperationChanged();
   }
   endRemoveRows();
+  recalculateBalances();
   emit countChanged();
   if (wasSelected) {
     emit selectionChanged();
@@ -345,6 +346,12 @@ QString Account::selectedOperationsAsCsv() const {
   return csv;
 }
 
+double Account::currentBalance() const {
+  if (_balances.isEmpty())
+    return 0.0;
+  return _balances.first();
+}
+
 double Account::balanceAt(int index) const {
   if (index < 0 || index >= _balances.size())
     return 0.0;
@@ -372,4 +379,5 @@ void Account::recalculateBalances() {
     _balances[i] = balance;
   }
   emit dataChanged(createIndex(0, 0), createIndex(count - 1, 0), { BalanceRole });
+  emit balanceChanged();
 }

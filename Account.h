@@ -27,6 +27,7 @@ class Account : public QAbstractListModel {
   // Selection properties (pointer-based, survives sorting)
   Q_PROPERTY(int selectionCount READ selectionCount NOTIFY selectionChanged)
   Q_PROPERTY(double selectedTotal READ selectedTotal NOTIFY selectionChanged)
+  Q_PROPERTY(double currentBalance READ currentBalance NOTIFY balanceChanged)
 
 public:
   enum Roles {
@@ -89,11 +90,14 @@ public:
   QSet<Operation*> selectedOperations() const;
   QString selectedOperationsAsCsv() const;
 
+  double currentBalance() const;
+
   Q_INVOKABLE double balanceAt(int index) const;
 
 signals:
   void countChanged();
   void selectionChanged();
+  void balanceChanged();
   void importSourcePrefixesChanged();
 
 private:
