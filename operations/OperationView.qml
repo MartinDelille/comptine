@@ -19,8 +19,8 @@ FocusScope {
         operationEditDialog.initialize(null);
     }
 
-    function editCurrentOperation() {
-        operationEditDialog.initialize(BudgetData.currentAccount.currentOperation);
+    function editCurrentOperation(advanced) {
+        operationEditDialog.initialize(BudgetData.currentAccount.currentOperation, advanced);
     }
 
     RenameAccountDialog {

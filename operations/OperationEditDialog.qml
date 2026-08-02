@@ -103,7 +103,7 @@ BaseDialog {
         }
     }
 
-    function initialize(operation) {
+    function initialize(operation, advanced) {
         _unaffectedCategoryComboBox = null;
 
         _operation = operation;
@@ -118,6 +118,7 @@ BaseDialog {
         detailsField.text = originalDetails = operation?.details || "";
 
         dateInput.selectedDate = originalDate;
+        dateInput.readOnly = !advanced;
         budgetDateInput.selectedDate = originalBudgetDate;
 
         refreshAllocations();
@@ -310,7 +311,6 @@ BaseDialog {
 
             DateInput {
                 id: dateInput
-                readOnly: true
             }
         }
 
