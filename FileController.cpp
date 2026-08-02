@@ -434,6 +434,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
           }
         }
+        account->sortOperations();
         _budgetData.addAccount(account);
         if (acc["current"]) {
           if (yamlString(acc["current"]).toLower() == "true") {
