@@ -326,7 +326,7 @@ class EditRuleCommand : public QUndoCommand {
 public:
   EditRuleCommand(RuleController* ruleController, int index,
                   const Category* oldCategory, const Category* newCategory,
-                  const QString& oldLabelPrefix, const QString& newLabelPrefix,
+                  const QString& oldLabelMatch, const QString& newLabelMatch,
                   double oldAmountFilter, double newAmountFilter,
                   QUndoCommand* parent = nullptr);
 
@@ -338,8 +338,8 @@ private:
   int _index;
   const Category* _oldCategory;
   const Category* _newCategory;
-  QString _oldLabelPrefix;
-  QString _newLabelPrefix;
+  QString _oldLabelMatch;
+  QString _newLabelMatch;
   double _oldAmountFilter;
   double _newAmountFilter;
 };

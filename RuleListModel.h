@@ -14,7 +14,7 @@ class RuleListModel : public QAbstractListModel {
 public:
   enum Roles {
     CategoryRole = Qt::UserRole + 1,
-    LabelPrefixRole,
+    LabelMatchRole,
     AmountFilterRole,
   };
 

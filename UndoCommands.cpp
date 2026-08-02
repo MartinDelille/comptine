@@ -473,7 +473,7 @@ AddRuleCommand::AddRuleCommand(RuleController* ruleController, Rule* rule,
     _ruleController(ruleController),
     _rule(rule),
     _ownsRule(true) {
-  setText(QObject::tr("Add rule for \"%1\"").arg(rule->labelPrefix()));
+  setText(QObject::tr("Add rule for \"%1\"").arg(rule->labelMatch()));
 }
 
 AddRuleCommand::~AddRuleCommand() {
@@ -511,7 +511,7 @@ RemoveRuleCommand::RemoveRuleCommand(RuleController* ruleController, int index,
     _ownsRule(false) {
   if (ruleController && index >= 0 && index < ruleController->rules().size()) {
     _rule = ruleController->rules().at(index);
-    setText(QObject::tr("Remove rule for \"%1\"").arg(_rule->labelPrefix()));
+    setText(QObject::tr("Remove rule for \"%1\"").arg(_rule->labelMatch()));
   }
 }
 
@@ -548,7 +548,7 @@ void RemoveRuleCommand::redo() {
 
 EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
                                  const Category* oldCategory, const Category* newCategory,
-                                 const QString& oldLabelPrefix, const QString& newLabelPrefix,
+                                 const QString& oldLabelMatch, const QString& newLabelMatch,
                                  double oldAmountFilter, double newAmountFilter,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
@@ -556,11 +556,11 @@ EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
     _index(index),
     _oldCategory(oldCategory),
     _newCategory(newCategory),
-    _oldLabelPrefix(oldLabelPrefix),
-    _newLabelPrefix(newLabelPrefix),
+    _oldLabelMatch(oldLabelMatch),
+    _newLabelMatch(newLabelMatch),
     _oldAmountFilter(oldAmountFilter),
     _newAmountFilter(newAmountFilter) {
-  setText(QObject::tr("Edit rule for \"%1\"").arg(newLabelPrefix));
+  setText(QObject::tr("Edit rule for \"%1\"").arg(newLabelMatch));
 }
 
 void EditRuleCommand::undo() {
@@ -568,7 +568,7 @@ void EditRuleCommand::undo() {
     Rule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_oldCategory);
-      rule->set_labelPrefix(_oldLabelPrefix);
+      rule->set_labelMatch(_oldLabelMatch);
       rule->set_amountFilter(_oldAmountFilter);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();
@@ -581,7 +581,7 @@ void EditRuleCommand::redo() {
     Rule* rule = _ruleController->getRule(_index);
     if (rule) {
       rule->set_category(_newCategory);
-      rule->set_labelPrefix(_newLabelPrefix);
+      rule->set_labelMatch(_newLabelMatch);
       rule->set_amountFilter(_newAmountFilter);
       _ruleController->ruleModel()->refresh();
       emit _ruleController->rulesChanged();

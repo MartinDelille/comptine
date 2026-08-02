@@ -41,7 +41,7 @@ BaseDialog {
                 text: qsTr("Add Rule...")
                 onClicked: {
                     ruleEditDialog.isNewRule = true;
-                    ruleEditDialog.suggestedPrefix = "";
+                    ruleEditDialog.suggestedMatch = "";
                     ruleEditDialog.open();
                 }
             }
@@ -69,7 +69,7 @@ BaseDialog {
                     id: ruleDelegate
                     required property int index
                     required property string category
-                    required property string labelPrefix
+                    required property string labelMatch
                     required property double amountFilter
 
                     width: ListView.view.width
@@ -88,7 +88,7 @@ BaseDialog {
                             ruleEditDialog.isNewRule = false;
                             ruleEditDialog.ruleIndex = ruleDelegate.index;
                             ruleEditDialog.originalCategory = ruleDelegate.category;
-                            ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                            ruleEditDialog.originalLabelMatch = ruleDelegate.labelMatch;
                             ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                             ruleEditDialog.open();
                         }
@@ -115,7 +115,7 @@ BaseDialog {
                             spacing: 2
 
                             Label {
-                                text: qsTr("Prefix: \"%1\"").arg(ruleDelegate.labelPrefix)
+                                text: qsTr("Prefix: \"%1\"").arg(ruleDelegate.labelMatch)
                                 font.pixelSize: Theme.fontSizeNormal
                                 color: Theme.textPrimary
                                 elide: Text.ElideRight
@@ -163,7 +163,7 @@ BaseDialog {
                                 ruleEditDialog.isNewRule = false;
                                 ruleEditDialog.ruleIndex = ruleDelegate.index;
                                 ruleEditDialog.originalCategory = ruleDelegate.category;
-                                ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                                ruleEditDialog.originalLabelMatch = ruleDelegate.labelMatch;
                                 ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                                 ruleEditDialog.open();
                             }

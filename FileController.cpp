@@ -190,7 +190,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       out << YAML::BeginMap;
       if (rule->category()) {
         out << YAML::Key << "category" << YAML::Value << toStdString(rule->category()->name());
-        out << YAML::Key << "label_prefix" << YAML::Value << toStdString(rule->labelPrefix());
+        out << YAML::Key << "label_match" << YAML::Value << toStdString(rule->labelMatch());
         if (rule->amountFilter() != 0) {
           out << YAML::Key << "amount" << YAML::Value << rule->amountFilter();
         }
@@ -449,22 +449,24 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
       _ruleController.clearRules();
       for (const auto& ruleNode : root["rules"]) {
         Category* category = nullptr;
-        QString labelPrefix;
+        QString labelMatch;
 
         if (ruleNode["category"]) {
           category = _categoryController.getCategoryByName(yamlString(ruleNode["category"]));
         }
-        if (ruleNode["label_prefix"]) {
-          labelPrefix = yamlString(ruleNode["label_prefix"]);
+        if (ruleNode["label_match"]) {
+          labelMatch = yamlString(ruleNode["label_match"]);
+        } else if (ruleNode["label_prefix"]) {
+          labelMatch = yamlString(ruleNode["label_prefix"]);
         }
 
-        if (category && !labelPrefix.isEmpty()) {
+        if (category && !labelMatch.isEmpty()) {
           Rule* rule;
           if (ruleNode["amount"]) {
             double amount = ruleNode["amount"].as<double>();
-            rule = new Rule(category, labelPrefix, amount);
+            rule = new Rule(category, labelMatch, amount);
           } else {
-            rule = new Rule(category, labelPrefix);
+            rule = new Rule(category, labelMatch);
           }
           _ruleController.addRule(rule);
         }

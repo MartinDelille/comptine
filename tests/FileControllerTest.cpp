@@ -518,7 +518,7 @@ private slots:
     QList<Rule*> rules = ruleController->rules();
     QCOMPARE(rules.size(), 2);
     QCOMPARE(rules[0]->category()->name(), QString("Groceries"));
-    QCOMPARE(rules[0]->labelPrefix(), QString("SUPERMARKET"));
+    QCOMPARE(rules[0]->labelMatch(), QString("SUPERMARKET"));
   }
 
   // Error Handling
