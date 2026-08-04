@@ -394,7 +394,7 @@ BaseDialog {
 
             delegate: RowLayout {
                 id: allocationDelegate
-                width: parent.width
+                width: parent?.width || 0
                 spacing: Theme.spacingNormal
 
                 required property int index
