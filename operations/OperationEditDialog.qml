@@ -206,21 +206,11 @@ BaseDialog {
         }
     }
 
-    // Navigate to previous uncategorized operation
-    function goToPreviousUncategorized() {
-        let prevOp = RuleController.previousUncategorizedOperation(_operation);
-        if (prevOp) {
+    function goToOperation(operation) {
+        if (operation) {
             applyChanges();
-            initialize(prevOp);
-        }
-    }
-
-    // Navigate to next uncategorized operation
-    function goToNextUncategorized() {
-        let nextOp = RuleController.nextUncategorizedOperation(_operation);
-        if (nextOp) {
-            applyChanges();
-            initialize(nextOp);
+            initialize(operation);
+            BudgetData.navigateToOperation(operation);
         }
     }
 
@@ -346,7 +336,7 @@ BaseDialog {
             Button {
                 text: qsTr("Previous Uncategorized")
                 enabled: root._operation && RuleController.previousUncategorizedOperation(root._operation) !== null
-                onClicked: root.goToPreviousUncategorized()
+                onClicked: root.goToOperation(RuleController.previousUncategorizedOperation(root._operation))
             }
 
             Item {
@@ -356,7 +346,7 @@ BaseDialog {
             Button {
                 text: qsTr("Next Uncategorized")
                 enabled: root._operation && RuleController.nextUncategorizedOperation(root._operation) !== null
-                onClicked: root.goToNextUncategorized()
+                onClicked: root.goToOperation(RuleController.nextUncategorizedOperation(root._operation))
             }
         }
 
