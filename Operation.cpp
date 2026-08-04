@@ -74,7 +74,7 @@ bool Operation::isCategorized() const {
   for (auto allocation : _allocations) {
     totalAmount += allocation->amount();
   }
-  return totalAmount == _amount;
+  return qFuzzyCompare(totalAmount, _amount);
 }
 
 QString Operation::categoryDisplay() const {
