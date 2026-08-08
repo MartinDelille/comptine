@@ -1,6 +1,7 @@
 #include <QClipboard>
 #include <QDate>
 #include <QDebug>
+#include <QFileInfo>
 #include <QGuiApplication>
 
 #include "Account.h"
@@ -99,15 +100,19 @@ Account* BudgetData::accountByName(const QString& name) const {
   return nullptr;
 }
 
-QString BudgetData::suggestedAccountForFile(const QString& filename) const {
+QString BudgetData::suggestedAccountForUrl(const QUrl& url) const {
+  auto baseName = QFileInfo(url.toLocalFile()).baseName();
   for (Account* account : _accounts) {
+    if (account->name().compare(baseName, Qt::CaseInsensitive) == 0) {
+      return account->name();
+    }
     for (QString source : account->importSourcePrefixes()) {
-      if (filename.startsWith(source)) {
+      if (baseName.toLower().startsWith(source.toLower())) {
         return account->name();
       }
     }
   }
-  return {};
+  return baseName;
 }
 
 int BudgetData::accountIndex(Account* account) const {

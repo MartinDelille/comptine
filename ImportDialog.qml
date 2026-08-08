@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import QtCore
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -26,44 +27,16 @@ BaseDialog {
     onOpened: {
         fileEntries.clear();
         for (var i = 0; i < filePaths.length; i++) {
-            var url = filePaths[i].toString();
-            var fileName = url.substring(url.lastIndexOf("/") + 1);
-            // Remove query/fragment if present
-            var qIdx = fileName.indexOf("?");
-            if (qIdx >= 0)
-                fileName = fileName.substring(0, qIdx);
-            fileName = decodeURIComponent(fileName);
-
-            // Try auto-suggestion based on stored import sources
-            var suggested = BudgetData.suggestedAccountForFile(fileName);
-            var isNew = true;
-            var existingIndex = -1;
-
-            if (suggested !== "") {
-                // Check if the suggested account exists
-                var account = BudgetData.accountByName(suggested);
-                if (account) {
-                    isNew = false;
-                    existingIndex = BudgetData.accountIndex(account);
-                }
-            } else {
-                // Fall back to filename without extension
-                var dotIdx = fileName.lastIndexOf(".");
-                suggested = dotIdx > 0 ? fileName.substring(0, dotIdx) : fileName;
-                // Check if this name matches an existing account
-                var existing = BudgetData.accountByName(suggested);
-                if (existing) {
-                    isNew = false;
-                    existingIndex = BudgetData.accountIndex(existing);
-                }
-            }
+            var fileUrl = filePaths[i].toString();
+            var suggestedAccountName = BudgetData.suggestedAccountForUrl(fileUrl);
+            var account = BudgetData.accountByName(suggestedAccountName);
+            var isNew = account === null;
 
             fileEntries.append({
-                url: filePaths[i],
-                fileName: fileName,
-                accountName: suggested,
+                url: fileUrl,
+                accountName: suggestedAccountName,
                 isNewAccount: isNew,
-                existingAccountIndex: existingIndex >= 0 ? existingIndex : 0
+                existingAccountIndex: account ? BudgetData.accountIndex(account) : 0
             });
         }
         useCategoriesCheckBox.checked = false;
@@ -72,7 +45,8 @@ BaseDialog {
     onAccepted: {
         for (var i = 0; i < fileEntries.count; i++) {
             var entry = fileEntries.get(i);
-            FileController.importFromCsv(entry.url, entry.accountName.trim(), useCategoriesCheckBox.checked);
+            var accountName = entry.isNewAccount ? entry.accountName.trim() : BudgetData.accountAt(entry.existingAccountIndex).name;
+            FileController.importFromCsv(entry.url, accountName, useCategoriesCheckBox.checked);
         }
         BudgetData.currentTabIndex = 0;
     }
@@ -103,7 +77,8 @@ BaseDialog {
 
                 RowLayout {
                     Label {
-                        text: fileDelegate.model.fileName
+                        property string home: StandardPaths.writableLocation(StandardPaths.HomeLocation)
+                        text: fileDelegate.model.url.toString().replace(home, "~").replace(/^file:\/\//, "")
                         font.pixelSize: Theme.fontSizeNormal
                         font.bold: true
                         elide: Text.ElideMiddle
