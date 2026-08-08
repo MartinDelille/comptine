@@ -41,7 +41,7 @@ BaseDialog {
     }
     readonly property double remainingAmount: editedAmount - allocatedAmount
 
-    okEnabled: labelField.text.trim() !== "" && amountField.value != 0
+    okEnabled: labelField.text.trim() !== "" && (amountField.value != 0 || allocationModel.count > 0)
 
     onOpened: {
         // Refresh category list when dialog opens
