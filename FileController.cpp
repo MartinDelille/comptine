@@ -480,6 +480,16 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   _budgetData.set_budgetDate(loadedBudgetDate);
   _budgetData.set_currentTabIndex(loadedTabIndex);
+  auto currentAccount = _budgetData.currentAccount();
+  if (currentAccount == nullptr) {
+    currentAccount = _budgetData.accountAt(0);
+    _budgetData.set_currentAccount(currentAccount);
+  }
+  if (currentAccount) {
+    if (currentAccount->currentOperation() == nullptr) {
+      currentAccount->select(currentAccount->operationAt(0));
+    }
+  }
 
   set_currentFilePath(filePath);
   _undoStack.clear();
