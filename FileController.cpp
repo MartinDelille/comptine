@@ -744,37 +744,37 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   }
 
   // Add operations and categories via undo command (if any were imported)
-  if (!importedOperations.isEmpty()) {
-    // Add account command first (if new account)
-    if (isNewAccount) {
-      new AddAccountCommand(account, &_budgetData, macroCommand);
-    }
-
-    // Add operations command
-    new ImportOperationsCommand(*account, importedOperations, macroCommand);
-
-    // Set text based on what was imported
-    if (isNewAccount && newCategories.count()) {
-      macroCommand->setText(QObject::tr("Import %n operation(s) to new account with %1 category(ies)", "", importedOperations.size())
-                                .arg(newCategories.count()));
-    } else if (isNewAccount) {
-      macroCommand->setText(QObject::tr("Import %n operation(s) to new account", "", importedOperations.size()));
-    } else if (newCategories.count()) {
-      macroCommand->setText(QObject::tr("Import %n operation(s) with %1 category(ies)", "", importedOperations.size())
-                                .arg(newCategories.count()));
-    } else {
-      macroCommand->setText(QObject::tr("Import %n operation(s)", "", importedOperations.size()));
-    }
-
-    _undoStack.push(macroCommand);
-  } else {
+  if (importedOperations.isEmpty()) {
     delete macroCommand;
     // No operations imported, clean up
     qDeleteAll(newCategories);
     if (isNewAccount) {
       delete account;
     }
+    return false;
   }
+  // Add account command first (if new account)
+  if (isNewAccount) {
+    new AddAccountCommand(account, &_budgetData, macroCommand);
+  }
+
+  // Add operations command
+  new ImportOperationsCommand(*account, importedOperations, macroCommand);
+
+  // Set text based on what was imported
+  if (isNewAccount && newCategories.count()) {
+    macroCommand->setText(QObject::tr("Import %n operation(s) to new account with %1 category(ies)", "", importedOperations.size())
+                              .arg(newCategories.count()));
+  } else if (isNewAccount) {
+    macroCommand->setText(QObject::tr("Import %n operation(s) to new account", "", importedOperations.size()));
+  } else if (newCategories.count()) {
+    macroCommand->setText(QObject::tr("Import %n operation(s) with %1 category(ies)", "", importedOperations.size())
+                              .arg(newCategories.count()));
+  } else {
+    macroCommand->setText(QObject::tr("Import %n operation(s)", "", importedOperations.size()));
+  }
+
+  _undoStack.push(macroCommand);
 
   // Set as current account
   _budgetData.set_currentAccount(account);
@@ -789,14 +789,12 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   account->addImportSourcePrefix(baseFilename);
 
   // Select all imported operations
-  if (!importedOperations.isEmpty()) {
-    account->clearSelection();
-    for (Operation* op : importedOperations) {
-      account->select(op, true);  // Extend selection to include all imported operations
-    }
-    // Set the first imported operation as the current operation
-    account->select(importedOperations.first());
+  account->clearSelection();
+  for (Operation* op : importedOperations) {
+    account->select(op, true);  // Extend selection to include all imported operations
   }
+  // Set the first imported operation as the current operation
+  account->select(importedOperations.first());
 
   emit dataLoaded();
 

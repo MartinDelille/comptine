@@ -166,7 +166,7 @@ ApplicationWindow {
         fileMode: FileDialog.OpenFiles
         nameFilters: ["CSV files (*.csv)", "All files (*)"]
         onAccepted: {
-            importDialog.filePaths = selectedFiles;
+            importDialog.fileUrls = selectedFiles;
             importDialog.open();
         }
     }

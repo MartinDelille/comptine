@@ -10,14 +10,13 @@ import commonui
 import operations
 
 BaseDialog {
-    id: importDialog
     title: qsTr("Import CSV Files")
     acceptButtonText: qsTr("Import All")
     width: 600
 
-    property var filePaths: []
+    property var fileUrls: []
 
-    // Model built from filePaths with per-file account info
+    // Model built from fileUrls with per-file account info
     ListModel {
         id: fileEntries
     }
@@ -26,8 +25,8 @@ BaseDialog {
 
     onOpened: {
         fileEntries.clear();
-        for (var i = 0; i < filePaths.length; i++) {
-            var fileUrl = filePaths[i].toString();
+        for (var i = 0; i < fileUrls.length; i++) {
+            var fileUrl = fileUrls[i];
             var suggestedAccountName = BudgetData.suggestedAccountForUrl(fileUrl);
             var account = BudgetData.accountByName(suggestedAccountName);
             var isNew = account === null;
@@ -36,7 +35,7 @@ BaseDialog {
                 url: fileUrl,
                 accountName: suggestedAccountName,
                 isNewAccount: isNew,
-                existingAccountIndex: account ? BudgetData.accountIndex(account) : 0
+                existingAccountIndex: account ? BudgetData.accountIndex(account) : -1
             });
         }
         useCategoriesCheckBox.checked = false;
@@ -45,7 +44,11 @@ BaseDialog {
     onAccepted: {
         for (var i = 0; i < fileEntries.count; i++) {
             var entry = fileEntries.get(i);
-            var accountName = entry.isNewAccount ? entry.accountName.trim() : BudgetData.accountAt(entry.existingAccountIndex).name;
+            var account = BudgetData.accountAt(entry.existingAccountIndex);
+            if (!entry.isNewAccount && account === null) {
+                continue;
+            }
+            var accountName = entry.isNewAccount ? entry.accountName.trim() : account.name;
             FileController.importFromCsv(entry.url, accountName, useCategoriesCheckBox.checked);
         }
         BudgetData.currentTabIndex = 0;
@@ -72,7 +75,7 @@ BaseDialog {
                 id: fileDelegate
                 required property var model
                 required property int index
-                width: parent.width
+                width: parent?.width || 0
                 spacing: Theme.spacingSmall
 
                 RowLayout {
@@ -106,6 +109,9 @@ BaseDialog {
 
                         onCheckedChanged: {
                             fileDelegate.model.isNewAccount = checked;
+                            if (!checked) {
+                                accountCombo.currentIndex = BudgetData.accountCount > 0 ? 0 : -1;
+                            }
                         }
                     }
 
@@ -114,7 +120,6 @@ BaseDialog {
                         Layout.fillWidth: true
                         visible: !newAccountCheck.checked
                         currentIndex: fileDelegate.model.existingAccountIndex
-
                         onCurrentIndexChanged: fileDelegate.model.existingAccountIndex = currentIndex
                     }
 
