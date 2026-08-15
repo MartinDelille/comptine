@@ -5,6 +5,7 @@
 
 #include "Account.h"
 #include "BudgetData.h"
+#include "Category.h"
 #include "CategoryController.h"
 #include "Operation.h"
 #include "UndoCommands.h"
@@ -226,14 +227,14 @@ void CategoryController::deleteCategory(Category* category) {
   _undoStack.push(macroCommand);
 }
 
-void CategoryController::addCategory(Category* category) {
+Category* CategoryController::addCategory(Category* category) {
   if (category == nullptr) {
-    return;
+    return nullptr;
   }
   // Skip if category with same name already exists
   if (getCategoryByName(category->name())) {
     delete category;
-    return;
+    return nullptr;
   }
   category->setParent(this);
 
@@ -254,6 +255,7 @@ void CategoryController::addCategory(Category* category) {
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
+  return category;
 }
 
 void CategoryController::clear() {

@@ -497,6 +497,15 @@ private slots:
     undoStack->undo();
     QCOMPARE(cat->name(), QString("Food"));
   }
+
+  void testCountOperationsWithCategory() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto transport = categoryController->addCategory(new Category("Transport", -50));
+    auto account = budgetData->addAccount(new Account("Account"));
+    auto bread = account->addOperation(new Operation(account, QDate(2026, 8, 15), 1., "Bread", "", { new Allocation(food, 1) }));
+    QCOMPARE(budgetData->countOperationsWithCategory(food), 1);
+    QCOMPARE(budgetData->countOperationsWithCategory(transport), 0);
+  }
 };
 
 QTEST_GUILESS_MAIN(CategoryTest)

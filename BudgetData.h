@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUndoStack>
 #include "Account.h"
+#include "Category.h"
 #include "PropertyMacros.h"
 
 class BudgetData : public QAbstractListModel {
@@ -48,7 +49,7 @@ public:
   Q_INVOKABLE QString suggestedAccountForUrl(const QUrl& url) const;
   Q_INVOKABLE int accountIndex(Account* account) const;
   Q_INVOKABLE void renameCurrentAccount(const QString& newName);
-  void addAccount(Account* account);
+  Account* addAccount(Account* account);
   void removeAccount(int index);
   Account* takeAccount(Account* account);  // Remove without deleting, returns nullptr if not found
   void clearAccounts();
@@ -63,6 +64,7 @@ public:
   Q_INVOKABLE void setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations);
   Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName);
   Q_INVOKABLE void deleteSelectedOperations();
+  Q_INVOKABLE int countOperationsWithCategory(const Category* category) const;
 
   // Clear all data (called by FileController)
   void clear();

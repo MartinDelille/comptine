@@ -65,7 +65,7 @@ public:
   Q_INVOKABLE void previousOperation(bool extendSelection = false);
   Q_INVOKABLE void nextOperation(bool extendSelection = false);
 
-  void addOperation(Operation* operation, bool sort = true);
+  Operation* addOperation(Operation* operation, bool sort = true);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
   void clearOperations();
   void sortOperations();  // Re-sort operations by date (most recent first)
@@ -89,6 +89,7 @@ public:
   double selectedTotal() const;
   QSet<Operation*> selectedOperations() const;
   QString selectedOperationsAsCsv() const;
+  int countOperationsWithCategory(const Category* category) const;
 
   double currentBalance() const;
 

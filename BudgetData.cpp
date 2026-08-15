@@ -127,18 +127,20 @@ void BudgetData::renameCurrentAccount(const QString& newName) {
   }
 }
 
-void BudgetData::addAccount(Account* account) {
-  if (account) {
-    connect(account, &Account::nameChanged, this, [this, account] {
-      auto index = createIndex(this->accountIndex(account), 0);
-      emit dataChanged(index, index);
-    });
-    beginInsertRows(QModelIndex(), _accounts.size(), _accounts.size());
-    account->setParent(this);
-    _accounts.append(account);
-    endInsertRows();
-    emit accountCountChanged();
+Account* BudgetData::addAccount(Account* account) {
+  if (account == nullptr) {
+    return nullptr;
   }
+  connect(account, &Account::nameChanged, this, [this, account] {
+    auto index = createIndex(this->accountIndex(account), 0);
+    emit dataChanged(index, index);
+  });
+  beginInsertRows(QModelIndex(), _accounts.size(), _accounts.size());
+  account->setParent(this);
+  _accounts.append(account);
+  endInsertRows();
+  emit accountCountChanged();
+  return account;
 }
 
 void BudgetData::removeAccount(int index) {
@@ -275,6 +277,14 @@ void BudgetData::deleteSelectedOperations() {
     new DeleteOperationCommand(op, *account, macroCommand);
   }
   _undoStack.push(macroCommand);
+}
+
+int BudgetData::countOperationsWithCategory(const Category* category) const {
+  int count = 0;
+  for (auto account : _accounts) {
+    count += account->countOperationsWithCategory(category);
+  }
+  return count;
 }
 
 void BudgetData::clear() {

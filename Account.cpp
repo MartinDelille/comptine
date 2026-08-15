@@ -1,5 +1,7 @@
+#include <algorithm>
+
 #include "Account.h"
-#include <QtCore/qabstractitemmodel.h>
+#include "Operation.h"
 
 Account::Account(const QString& name) :
     _name(name) {
@@ -118,29 +120,31 @@ QList<Operation*> Account::operations() const {
   return _operations;
 }
 
-void Account::addOperation(Operation* operation, bool sort) {
-  if (operation) {
-    operation->setParent(this);
-    int insertIndex = _operations.size();
-    if (sort) {
-      insertIndex = 0;
-      // Insert in sorted order (most recent first)
-      // For same-date operations, insert at the END of the same-date group to preserve order
-      while (insertIndex < _operations.size() && _operations[insertIndex]->date() > operation->date()) {
-        insertIndex++;
-      }
-      // Skip past any operations with the same date (insert after them)
-      while (insertIndex < _operations.size() && _operations[insertIndex]->date() == operation->date()) {
-        insertIndex++;
-      }
-    }
-    beginInsertRows(QModelIndex(), insertIndex, insertIndex);
-    _operations.insert(insertIndex, operation);
-    endInsertRows();
-    recalculateBalances();
-    connect(operation, &Operation::amountChanged, this, &Account::recalculateBalances);
-    emit countChanged();
+Operation* Account::addOperation(Operation* operation, bool sort) {
+  if (operation == nullptr) {
+    return nullptr;
   }
+  operation->setParent(this);
+  int insertIndex = _operations.size();
+  if (sort) {
+    insertIndex = 0;
+    // Insert in sorted order (most recent first)
+    // For same-date operations, insert at the END of the same-date group to preserve order
+    while (insertIndex < _operations.size() && _operations[insertIndex]->date() > operation->date()) {
+      insertIndex++;
+    }
+    // Skip past any operations with the same date (insert after them)
+    while (insertIndex < _operations.size() && _operations[insertIndex]->date() == operation->date()) {
+      insertIndex++;
+    }
+  }
+  beginInsertRows(QModelIndex(), insertIndex, insertIndex);
+  _operations.insert(insertIndex, operation);
+  endInsertRows();
+  recalculateBalances();
+  connect(operation, &Operation::amountChanged, this, &Account::recalculateBalances);
+  emit countChanged();
+  return operation;
 }
 
 bool Account::removeOperation(Operation* operation) {
@@ -344,6 +348,13 @@ QString Account::selectedOperationsAsCsv() const {
   }
 
   return csv;
+}
+
+int Account::countOperationsWithCategory(const Category* category) const {
+  auto hasCategory = [category](const Operation* operation) {
+    return operation->amountForCategory(category);
+  };
+  return std::count_if(_operations.begin(), _operations.end(), hasCategory);
 }
 
 double Account::currentBalance() const {

@@ -199,8 +199,11 @@ ApplicationWindow {
         title: qsTr("Delete Category")
         width: 400
         Label {
-            property string _categoryName: CategoryController.current ? CategoryController.current.name : ""
-            text: qsTr(`Are you sure you want to delete ${_categoryName} ?`)
+            text: {
+                var categoryName = CategoryController.current ? CategoryController.current.name : "";
+                var count = BudgetData.countOperationsWithCategory(CategoryController.current);
+                return (count > 0) ? qsTr(`Are you sure you want to delete ${categoryName} with ${count} allocations ?`) : qsTr(`Are you sure you want to delete ${categoryName} ?`);
+            }
         }
         acceptButtonText: qsTr("Delete")
         onAccepted: CategoryController.deleteCategory(CategoryController.current)

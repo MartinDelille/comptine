@@ -73,7 +73,7 @@ public:
   Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
   Q_INVOKABLE Category* editCategory(const QString& name, double budgetLimit, Category* category = nullptr, QDate budgetDate = QDate());
   Q_INVOKABLE void deleteCategory(Category* category);
-  void addCategory(Category* category);
+  Category* addCategory(Category* category);
   void clear();
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
 
