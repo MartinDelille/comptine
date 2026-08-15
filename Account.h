@@ -52,7 +52,7 @@ public:
 
   // Import source management
   QStringList importSourcePrefixes() const;
-  void addImportSourcePrefix(const QString& filename);
+  Q_INVOKABLE void addImportSourcePrefix(const QString& filename);
   void setImportSourcePrefixes(const QStringList& sources);
 
   // Current operation index (computed from currentOperation pointer)

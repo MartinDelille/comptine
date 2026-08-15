@@ -50,6 +50,9 @@ BaseDialog {
             }
             var accountName = entry.isNewAccount ? entry.accountName.trim() : account.name;
             FileController.importFromCsv(entry.url, accountName, useCategoriesCheckBox.checked);
+            if (account) {
+                account.addImportSourcePrefix(entry.accountName);
+            }
         }
         BudgetData.currentTabIndex = 0;
     }
@@ -126,7 +129,6 @@ BaseDialog {
                     TextField {
                         id: newAccountField
                         Layout.fillWidth: true
-                        visible: newAccountCheck.checked
                         placeholderText: qsTr("Account name")
                         text: fileDelegate.model.accountName
 
