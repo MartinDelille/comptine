@@ -239,6 +239,12 @@ BaseDialog {
                 Layout.fillWidth: true
                 placeholderText: qsTr("Enter label")
             }
+
+            Button {
+                icon.name: "globe"
+                enabled: labelField.text.length > 0
+                onClicked: Qt.openUrlExternally("https://www.google.com/search?q=" + encodeURIComponent(labelField.text))
+            }
         }
 
         // Details section
