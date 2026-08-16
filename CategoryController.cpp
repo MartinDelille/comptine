@@ -20,7 +20,6 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
-  // maybe move setter to category controller
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
@@ -201,7 +200,10 @@ Category* CategoryController::editCategory(const QString& name, double budgetLim
 }
 
 void CategoryController::deleteCategory(Category* category) {
-  if (!category) return;
+  if (category == nullptr) {
+    return;
+  }
+  int previousIndex = currentIndex();
 
   QUndoCommand* macroCommand = new QUndoCommand();
 
@@ -225,6 +227,9 @@ void CategoryController::deleteCategory(Category* category) {
 
   _undoStack.push(new DeleteCategoryCommand(this, category));
   _undoStack.push(macroCommand);
+  if (category == _current) {
+    set_currentIndex(previousIndex);
+  }
 }
 
 Category* CategoryController::addCategory(Category* category) {
