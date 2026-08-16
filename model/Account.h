@@ -99,6 +99,7 @@ public:
 
 signals:
   void countChanged();
+  void operationDataChanged();
   void selectionChanged();
   void balanceChanged();
   void importSourcePrefixesChanged();

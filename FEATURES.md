@@ -74,6 +74,16 @@ Manage unspent budget at the end of each month with flexible options:
 - **Undoable**: All leftover decisions support undo/redo
 - **Persistence**: Leftover decisions are saved in the YAML file per category
 
+## Evolution View
+
+- **Allocated Budget Grid**: View effective category budget limits across the model-driven contiguous range of recorded history
+- **Selectable Metric**: Switch the grid between budget, spent, leftover, saved, reported, and accumulated leftover values
+- **Historical Limits**: Per-month budget overrides are shown in their effective month
+- **Month Navigation**: Navigate the shared budget month with bounded buttons or Left/Right keys
+- **Responsive Layout**: Shows as many historical month columns as fit the available width without horizontal scrolling
+- **Current Month Highlight**: Highlights the selected budget month with the same accent treatment used by Budget View
+- **Centered Current Month**: Keeps the selected month centered when the available range permits, moving it toward the edges at the history boundaries
+
 ## Undo/Redo
 
 - **Undo**: Undo the last action (Edit > Undo or Cmd+Z)

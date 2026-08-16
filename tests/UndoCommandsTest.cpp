@@ -38,6 +38,20 @@ private slots:
     QCOMPARE(account->operations().size(), 2);
   }
 
+  void addOperationCommandIsClearedBeforeAccountDestruction() {
+    QUndoStack undoStack;
+    {
+      BudgetData budgetData(undoStack);
+      auto* account = budgetData.createAccount("Fictional Checking");
+      auto* operation = new Operation(account, QDate(2026, 1, 1), -10.0,
+                                      "Fictional Operation");
+      undoStack.push(new AddOperationCommand(operation, *account));
+      QCOMPARE(account->operations().size(), 1);
+    }
+
+    QVERIFY(true);
+  }
+
   void categoryCommandRestoresHistoricalBudgetLimit() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);

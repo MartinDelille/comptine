@@ -148,7 +148,10 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   endInsertRows();
   recalculateBalances();
   connect(operation, &Operation::amountChanged, this, &Account::recalculateBalances);
+  connect(operation, &Operation::dateChanged, this, &Account::operationDataChanged);
+  connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
   emit countChanged();
+  emit operationDataChanged();
   return operation;
 }
 
@@ -176,6 +179,7 @@ bool Account::removeOperation(Operation* operation) {
   if (wasSelected) {
     emit selectionChanged();
   }
+  emit operationDataChanged();
   return true;
 }
 
@@ -194,6 +198,7 @@ void Account::clear() {
   if (hadSelection) {
     emit selectionChanged();
   }
+  emit operationDataChanged();
 }
 
 void Account::sortOperations() {

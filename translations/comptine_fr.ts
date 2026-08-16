@@ -244,6 +244,53 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>EvolutionView</name>
+    <message>
+        <source>Evolution</source>
+        <translation>Évolution</translation>
+    </message>
+    <message>
+        <source>Budget</source>
+        <translation>Budget</translation>
+    </message>
+    <message>
+        <source>Spent</source>
+        <translation>Dépensé</translation>
+    </message>
+    <message>
+        <source>Leftover</source>
+        <translation>Reliquat</translation>
+    </message>
+    <message>
+        <source>Saved</source>
+        <translation>Épargné</translation>
+    </message>
+    <message>
+        <source>Reported</source>
+        <translation>Reporté</translation>
+    </message>
+    <message>
+        <source>Accumulated Leftover</source>
+        <translation>Reliquat cumulé</translation>
+    </message>
+    <message>
+        <source>Evolution metric</source>
+        <translation>Indicateur d&apos;évolution</translation>
+    </message>
+    <message>
+        <source>%1 months from %2 to %3</source>
+        <translation>%1 mois du %2 au %3</translation>
+    </message>
+    <message>
+        <source>Category</source>
+        <translation>Catégorie</translation>
+    </message>
+    <message>
+        <source>No categories defined</source>
+        <translation>Aucune catégorie définie</translation>
+    </message>
+</context>
+<context>
     <name>FileController</name>
     <message>
         <source>Could not open file: %1</source>
@@ -408,6 +455,10 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Budget</source>
         <translation>Budget</translation>
+    </message>
+    <message>
+        <source>Evolution</source>
+        <translation>Évolution</translation>
     </message>
     <message>
         <source>File Error</source>
@@ -956,12 +1007,32 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Budget</translation>
     </message>
     <message>
+        <source>&amp;Evolution</source>
+        <translation>&amp;Évolution</translation>
+    </message>
+    <message>
         <source>&amp;Previous Month</source>
         <translation>Mois précédent</translation>
     </message>
     <message>
         <source>&amp;Next Month</source>
         <translation>Mois suivant</translation>
+    </message>
+    <message>
+        <source>Previous Category</source>
+        <translation>Catégorie précédente</translation>
+    </message>
+    <message>
+        <source>Next Category</source>
+        <translation>Catégorie suivante</translation>
+    </message>
+    <message>
+        <source>First Category</source>
+        <translation>Première catégorie</translation>
+    </message>
+    <message>
+        <source>Last Category</source>
+        <translation>Dernière catégorie</translation>
     </message>
 </context>
 </TS>
