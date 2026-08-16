@@ -93,6 +93,7 @@ signals:
   void countChanged();
   void budgetDataChanged();
   void monthHistoryChanged();
+  void evolutionDataChanged();
 
 private:
   QList<Category*> _categories;

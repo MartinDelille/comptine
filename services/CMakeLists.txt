@@ -17,6 +17,7 @@ qt_add_qml_module(services
         CategoryController.cpp CategoryController.h
         ClipboardController.cpp ClipboardController.h
         CsvParser.h
+        EvolutionController.cpp EvolutionController.h
         FileController.cpp FileController.h
         FileCoordinator.h ${FILE_COORDINATOR_SOURCE}
         RuleController.cpp RuleController.h

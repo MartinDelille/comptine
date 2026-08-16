@@ -5,6 +5,7 @@ MenuBar {
     id: root
 
     required property bool anyDialogOpen
+    required property bool metricSelectorFocused
     required property var window
 
     signal newFileAction
@@ -43,6 +44,7 @@ MenuBar {
     }
     ViewMenu {
         anyDialogOpen: root.anyDialogOpen
+        metricSelectorFocused: root.metricSelectorFocused
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()
