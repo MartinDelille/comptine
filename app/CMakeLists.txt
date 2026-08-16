@@ -17,6 +17,7 @@ qt_add_qml_module(Comptine
         TARGET services
         TARGET editor
         TARGET model
+        TARGET evolution
     QML_FILES
         Main.qml
         ApplicationMenuBar.qml
@@ -49,6 +50,7 @@ target_link_libraries(
         common
         operations
         rules
+        evolution
 )
 
 qt_add_translations(Comptine TS_FILES ${PROJECT_SOURCE_DIR}/translations/comptine_fr.ts

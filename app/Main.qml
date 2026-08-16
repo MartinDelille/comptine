@@ -7,6 +7,7 @@ import QtQuick.Layouts
 
 import ui.common
 import ui.budget
+import ui.evolution
 import ui.operations
 import ui.rules
 import services
@@ -334,6 +335,10 @@ ApplicationWindow {
                 text: qsTr("Budget")
                 focusPolicy: Qt.NoFocus
             }
+            TabButton {
+                text: qsTr("Evolution")
+                focusPolicy: Qt.NoFocus
+            }
         }
 
         StackLayout {
@@ -352,6 +357,12 @@ ApplicationWindow {
             // Budget view
             BudgetView {
                 id: budgetView
+                focus: StackLayout.isCurrentItem
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            EvolutionView {
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true

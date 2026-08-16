@@ -59,6 +59,7 @@ int main(int argc, char* argv[]) {
   UpdateController updateController(settings);
   BudgetData budgetData(undoStack);
   CategoryController categories(budgetData, undoStack);
+  EvolutionController evolution(budgetData, categories);
   RuleController rules(budgetData, undoStack);
   FileController file(settings, budgetData, categories, rules, undoStack);
   AccountEditor accountEditor(budgetData, undoStack);
@@ -75,6 +76,7 @@ int main(int argc, char* argv[]) {
   AppStateForeign::instance = &appState;
   BudgetDataForeign::instance = &budgetData;
   CategoryControllerForeign::instance = &categories;
+  EvolutionControllerForeign::instance = &evolution;
   RuleControllerForeign::instance = &rules;
   FileControllerForeign::instance = &file;
   AccountEditorForeign::instance = &accountEditor;

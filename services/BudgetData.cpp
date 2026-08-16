@@ -132,6 +132,9 @@ Account* BudgetData::addAccount(Account* account) {
   _accounts.append(account);
   endInsertRows();
   emit accountCountChanged();
+  connect(account, &Account::operationDataChanged,
+          this, &BudgetData::operationDataChanged);
+  emit operationDataChanged();
   return account;
 }
 
@@ -146,6 +149,7 @@ void BudgetData::removeAccount(int index) {
     delete _accounts.takeAt(index);
     endRemoveRows();
     emit accountCountChanged();
+    emit operationDataChanged();
   }
 }
 
@@ -178,6 +182,7 @@ void BudgetData::clearAccounts() {
   _accounts.clear();
   endResetModel();
   emit accountCountChanged();
+  emit operationDataChanged();
 }
 
 int BudgetData::countOperationsWithCategory(const Category* category) const {

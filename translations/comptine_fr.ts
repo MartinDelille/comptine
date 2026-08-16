@@ -2,6 +2,41 @@
 <!DOCTYPE TS>
 <TS version="2.1" language="fr_FR">
 <context>
+    <name>EvolutionView</name>
+    <message>
+        <source>Evolution</source>
+        <translation>Évolution</translation>
+    </message>
+    <message>
+        <source>Budget</source>
+        <translation>Budget</translation>
+    </message>
+    <message>
+        <source>Spent</source>
+        <translation>Dépensé</translation>
+    </message>
+    <message>
+        <source>Leftover</source>
+        <translation>Reste</translation>
+    </message>
+    <message>
+        <source>Saved</source>
+        <translation>Épargné</translation>
+    </message>
+    <message>
+        <source>Reported</source>
+        <translation>Reporté</translation>
+    </message>
+    <message>
+        <source>Accumulated Leftover</source>
+        <translation>Reste cumulé</translation>
+    </message>
+    <message>
+        <source>Evolution metric</source>
+        <translation>Indicateur d&apos;évolution</translation>
+    </message>
+</context>
+<context>
     <name>AboutDialog</name>
     <message>
         <source>About Comptine</source>
@@ -246,6 +281,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Budget</translation>
     </message>
     <message>
+        <source>Evolution</source>
+        <translation>Évolution</translation>
+    </message>
+    <message>
         <source>File Error</source>
         <translation>Erreur de fichier</translation>
     </message>
@@ -485,12 +524,24 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Budget</translation>
     </message>
     <message>
+        <source>&amp;Evolution</source>
+        <translation>&amp;Évolution</translation>
+    </message>
+    <message>
         <source>&amp;Previous Month</source>
         <translation>Mois précédent</translation>
     </message>
     <message>
         <source>&amp;Next Month</source>
         <translation>Mois suivant</translation>
+    </message>
+    <message>
+        <source>Previous Category</source>
+        <translation>Catégorie précédente</translation>
+    </message>
+    <message>
+        <source>Next Category</source>
+        <translation>Catégorie suivante</translation>
     </message>
 </context>
 </TS>
