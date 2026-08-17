@@ -153,17 +153,19 @@ bool FileController::saveToYamlFile(const QString& filePath) {
       out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(op->amount(), 'f', 2));
       out << YAML::Key << "label" << YAML::Value << toStdString(op->label());
 
-      // Handle split operations
-      out << YAML::Key << "allocations" << YAML::Value << YAML::BeginSeq;
-      for (const auto& alloc : op->allocations()) {
-        out << YAML::BeginMap;
-        if (alloc->category()) {
-          out << YAML::Key << "category" << YAML::Value << toStdString(alloc->category()->name());
+      if (!op->allocations().isEmpty()) {
+        // Handle split operations
+        out << YAML::Key << "allocations" << YAML::Value << YAML::BeginSeq;
+        for (const auto& alloc : op->allocations()) {
+          out << YAML::BeginMap;
+          if (alloc->category()) {
+            out << YAML::Key << "category" << YAML::Value << toStdString(alloc->category()->name());
+          }
+          out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(alloc->amount(), 'f', 2));
+          out << YAML::EndMap;
         }
-        out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(alloc->amount(), 'f', 2));
-        out << YAML::EndMap;
+        out << YAML::EndSeq;
       }
-      out << YAML::EndSeq;
 
       // Only save budget_date if explicitly set (different from operation date)
       if (op->budgetDate() != op->date()) {
