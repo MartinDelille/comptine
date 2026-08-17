@@ -341,8 +341,8 @@ QString Account::selectedOperationsAsCsv() const {
 
   for (Operation* op : sortedSelected) {
     csv += QString("%0,\"%1\",%2,%3\n")
-               .arg(op->date().toString("yyyy-MM-dd"))
-               .arg(op->label().replace("\"", "\"\""))
+               .arg(op->date().toString("yyyy-MM-dd"),
+                    op->label().replace("\"", "\"\""))
                .arg(op->amount(), 0, 'f', 2)
                .arg((op->categoryDisplay()));
   }
