@@ -12,7 +12,6 @@
 #include "../Category.h"
 #include "../CategoryController.h"
 #include "../FileController.h"
-#include "../NavigationController.h"
 #include "../Operation.h"
 #include "../Rule.h"
 #include "../RuleController.h"
@@ -35,22 +34,15 @@ private slots:
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
     appSettings = new AppSettings();
-    navController = new NavigationController(*budgetData);
-    categoryController = new CategoryController(*budgetData, *navController, *undoStack);
+    categoryController = new CategoryController(*budgetData, *undoStack);
     ruleController = new RuleController(*budgetData, *undoStack);
-
-    // Wire up cross-references
-    budgetData->setNavigationController(navController);
-    budgetData->setCategoryController(categoryController);
-
-    fileController = new FileController(*appSettings, *budgetData, *categoryController, *navController, *ruleController, *undoStack);
+    fileController = new FileController(*appSettings, *budgetData, *categoryController, *ruleController, *undoStack);
   }
 
   void cleanup() {
     delete fileController;
     delete ruleController;
     delete categoryController;
-    delete navController;
     delete budgetData;
     delete appSettings;
     delete undoStack;
@@ -69,18 +61,18 @@ private slots:
 
   void testClear() {
     // First just check we can access things
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
 
     // Try adding an account
     Account* account = new Account("Test Account");
     budgetData->addAccount(account);
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
 
     // Now try clear
     fileController->clear();
 
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
     QCOMPARE(fileController->currentFilePath(), QString());
   }
@@ -112,7 +104,7 @@ private slots:
     fileController->clear();
     QVERIFY(fileController->loadFromYamlFile(filePath));
 
-    QCOMPARE(budgetData->accountCount(), 0);
+    QCOMPARE(budgetData->rowCount(), 0);
     QCOMPARE(categoryController->rowCount(), 0);
   }
 
@@ -135,7 +127,7 @@ private slots:
     fileController->clear();
     QUrl fileUrl = QUrl::fromLocalFile(filePath);
     QVERIFY(fileController->loadFromYamlUrl(fileUrl));
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
   }
 
   // Save/Load with Accounts and Operations
@@ -150,7 +142,7 @@ private slots:
     op->set_amount(-50.0);
     op->set_label("Grocery Store");
     op->setAllocations({ new Allocation(new Category("Food"), -50) });
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     categoryController->editCategory("Food", 200.0);
 
@@ -163,7 +155,7 @@ private slots:
     QVERIFY(fileController->loadFromYamlFile(filePath));
 
     // Verify data was restored
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     QCOMPARE(categoryController->rowCount(), 1);
 
     Account* loadedAccount = budgetData->accountAt(0);
@@ -192,13 +184,13 @@ private slots:
     op1->set_date(QDate(2025, 1, 10));
     op1->set_amount(-100.0);
     op1->set_label("Purchase 1");
-    checking->appendOperation(op1);
+    checking->addOperation(op1, false);
 
     Operation* op2 = new Operation(savings);
     op2->set_date(QDate(2025, 1, 20));
     op2->set_amount(500.0);
     op2->set_label("Deposit");
-    savings->appendOperation(op2);
+    savings->addOperation(op2, false);
 
     // Save and reload
     QString filePath = tempDir->filePath("multiple_accounts.comptine");
@@ -207,7 +199,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     QCOMPARE(budgetData->accountAt(0)->name(), QString("Checking"));
     QCOMPARE(budgetData->accountAt(1)->name(), QString("Savings"));
     QCOMPARE(budgetData->accountAt(0)->operations().size(), 1);
@@ -234,7 +226,7 @@ private slots:
     allocations.append(new Allocation{ transport, -50.0 });
     op->setAllocations(allocations);
 
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     // Save and reload
     QString filePath = tempDir->filePath("split_operation.comptine");
@@ -267,7 +259,7 @@ private slots:
     op->set_label("Late Month Purchase");
     op->setAllocations({ new Allocation(new Category("Shopping"), -75.0) });
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     categoryController->editCategory("Shopping", 150.0);
 
@@ -295,7 +287,7 @@ private slots:
     op->set_label("Normal Purchase");
     op->setAllocations({ new Allocation(food, -30.0) });
     // budgetDate defaults to date, so it should not be saved
-    account->appendOperation(op);
+    account->addOperation(op, false);
 
     // Save and check file content doesn't have budget_date
     QString filePath = tempDir->filePath("no_budget_date.comptine");
@@ -526,55 +518,7 @@ private slots:
     QList<Rule*> rules = ruleController->rules();
     QCOMPARE(rules.size(), 2);
     QCOMPARE(rules[0]->category()->name(), QString("Groceries"));
-    QCOMPARE(rules[0]->labelPrefix(), QString("SUPERMARKET"));
-  }
-
-  // Save/Load Navigation State
-
-  void testSaveAndLoadNavigationState() {
-    // Create accounts and categories
-    Account* account1 = new Account("Account 1");
-    Account* account2 = new Account("Account 2");
-    budgetData->addAccount(account1);
-    budgetData->addAccount(account2);
-
-    Operation* op = new Operation(account2);
-    op->set_date(QDate(2025, 3, 10));
-    op->set_amount(-25.0);
-    op->set_label("Test Op");
-    account2->appendOperation(op);
-
-    categoryController->editCategory("Cat 1", 100.0);
-    categoryController->editCategory("Cat 2", 200.0);
-
-    // Set navigation state
-    navController->set_currentTabIndex(1);  // Budget view
-    navController->set_budgetDate(QDate(2024, 12, 1));
-    navController->set_currentAccountIndex(1);   // Account 2
-    navController->set_currentCategoryIndex(1);  // Cat 2
-    account2->set_currentOperation(op);
-
-    // Save and reload
-    QString filePath = tempDir->filePath("nav_state.comptine");
-    fileController->saveToYamlFile(filePath);
-
-    // Reset navigation state
-    navController->set_currentTabIndex(0);
-    navController->set_budgetDate(QDate(2025, 1, 1));
-    navController->set_currentAccountIndex(0);
-    navController->set_currentCategoryIndex(0);
-
-    // Reload - navigation state should be restored via signal
-    QSignalSpy navSpy(fileController, &FileController::navigationStateLoaded);
-    fileController->loadFromYamlFile(filePath);
-
-    QCOMPARE(navSpy.count(), 1);
-    QList<QVariant> args = navSpy.takeFirst();
-    QCOMPARE(args[0].toInt(), 1);                    // tabIndex
-    QCOMPARE(args[1].toDate(), QDate(2024, 12, 1));  // budgetDate
-    QCOMPARE(args[2].toInt(), 1);                    // accountIndex
-    QCOMPARE(args[3].toInt(), 1);                    // categoryIndex
-    QCOMPARE(args[4].toInt(), 0);                    // operationIndex
+    QCOMPARE(rules[0]->labelMatch(), QString("SUPERMARKET"));
   }
 
   // Error Handling
@@ -664,7 +608,7 @@ private slots:
     QVERIFY(fileController->loadFromYamlUrl(QUrl("file::/tests/example.comptine")));
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
@@ -709,7 +653,7 @@ private slots:
     QVERIFY(loisirs != nullptr);
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 2);
+    QCOMPARE(budgetData->rowCount(), 2);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
@@ -751,7 +695,7 @@ private slots:
     auto energie = categoryController->getCategoryByName("Energie eau, gaz, electricite, fioul");
     QVERIFY(energie != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
@@ -782,7 +726,7 @@ private slots:
     // Verify import
     QCOMPARE(categoryController->rowCount(), 0);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
@@ -802,7 +746,7 @@ private slots:
     auto telephone = categoryController->getCategoryByName("Téléphone : Internet");
     QVERIFY(telephone != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
@@ -826,7 +770,7 @@ private slots:
     auto ameublement = categoryController->getCategoryByName("Factures : Ameublement");
     QVERIFY(ameublement != nullptr);
 
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 3);
@@ -858,7 +802,7 @@ private slots:
     QVERIFY(fileController->importFromCsv(csvUrl, "Bank Account", true));
 
     // Verify import
-    QCOMPARE(budgetData->accountCount(), 1);
+    QCOMPARE(budgetData->rowCount(), 1);
     Account* account = budgetData->accountAt(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
@@ -925,7 +869,6 @@ private:
   AppSettings* appSettings;
   BudgetData* budgetData;
   CategoryController* categoryController;
-  NavigationController* navController;
   RuleController* ruleController;
   FileController* fileController;
 };

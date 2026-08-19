@@ -14,24 +14,17 @@ class CategoryTest : public QObject {
   QUndoStack* undoStack;
   BudgetData* budgetData;
   CategoryController* categoryController;
-  NavigationController* navController;
 
 private slots:
   void init() {
     // Create fresh instances before each test
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
-    navController = new NavigationController(*budgetData);
-    categoryController = new CategoryController(*budgetData, *navController, *undoStack);
-
-    // Wire up cross-references
-    budgetData->setNavigationController(navController);
-    budgetData->setCategoryController(categoryController);
+    categoryController = new CategoryController(*budgetData, *undoStack);
   }
 
   void cleanup() {
     delete categoryController;
-    delete navController;
     delete budgetData;
     delete undoStack;
   }
@@ -503,6 +496,15 @@ private slots:
 
     undoStack->undo();
     QCOMPARE(cat->name(), QString("Food"));
+  }
+
+  void testCountOperationsWithCategory() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto transport = categoryController->addCategory(new Category("Transport", -50));
+    auto account = budgetData->addAccount(new Account("Account"));
+    auto bread = account->addOperation(new Operation(account, QDate(2026, 8, 15), 1., "Bread", "", { new Allocation(food, 1) }));
+    QCOMPARE(budgetData->countOperationsWithCategory(food), 1);
+    QCOMPARE(budgetData->countOperationsWithCategory(transport), 0);
   }
 };
 

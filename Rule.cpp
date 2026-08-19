@@ -7,20 +7,12 @@ Rule::Rule(QObject* parent) :
 }
 
 Rule::Rule(const Category* category,
-           const QString& labelPrefix,
-           QObject* parent) :
-    QObject(parent) {
-  _category = category;
-  _labelPrefix = labelPrefix;
-}
-
-Rule::Rule(const Category* category,
-           const QString& labelPrefix,
+           const QString& labelMatch,
            double amountFilter,
            QObject* parent) :
     QObject(parent) {
   _category = category;
-  _labelPrefix = labelPrefix;
+  _labelMatch = labelMatch;
   _amountFilter = amountFilter;
 }
 
@@ -28,11 +20,11 @@ bool Rule::matches(Operation* operation) const {
   if (!operation) {
     return false;
   }
-  if (_labelPrefix.isEmpty()) {
+  if (_labelMatch.isEmpty()) {
     return false;
   }
   // Case-insensitive prefix match
-  if (!operation->label().startsWith(_labelPrefix, Qt::CaseInsensitive)) {
+  if (!operation->label().contains(_labelMatch, Qt::CaseInsensitive)) {
     return false;
   }
   // If amount filter is set, check it matches

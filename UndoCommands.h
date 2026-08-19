@@ -16,7 +16,6 @@ class BudgetData;
 class Category;
 class Rule;
 class CategoryController;
-class OperationListModel;
 class RuleController;
 
 class UndoStack : public QUndoStack {
@@ -46,7 +45,7 @@ private:
 // Command for renaming an account
 class RenameAccountCommand : public QUndoCommand {
 public:
-  RenameAccountCommand(Account& account, AccountListModel* accountModel,
+  RenameAccountCommand(Account& account,
                        const QString& oldName, const QString& newName,
                        QUndoCommand* parent = nullptr);
 
@@ -55,7 +54,6 @@ public:
 
 private:
   Account& _account;
-  AccountListModel* _accountModel;
   QString _oldName;
   QString _newName;
 };
@@ -126,7 +124,6 @@ private:
 class ImportOperationsCommand : public QUndoCommand {
 public:
   ImportOperationsCommand(Account& account,
-                          OperationListModel& operationModel,
                           const QList<Operation*>& operations,
                           QUndoCommand* parent = nullptr);
   ~ImportOperationsCommand();
@@ -136,7 +133,6 @@ public:
 
 private:
   Account& _account;
-  OperationListModel& _operationModel;
   QList<Operation*> _operations;
   bool _ownsOperations;  // True when operations are not in the account (after undo)
 };
@@ -146,7 +142,6 @@ class AddOperationCommand : public QUndoCommand {
 public:
   AddOperationCommand(Operation* operation,
                       Account& account,
-                      OperationListModel& operationModel,
                       QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -155,7 +150,6 @@ public:
 private:
   Operation* _operation;
   Account& _account;
-  OperationListModel& _operationModel;
 };
 
 // Command for deleting an operation
@@ -163,7 +157,6 @@ class DeleteOperationCommand : public QUndoCommand {
 public:
   DeleteOperationCommand(Operation* operation,
                          Account& account,
-                         OperationListModel& operationModel,
                          QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -172,14 +165,12 @@ public:
 private:
   Operation* _operation;
   Account& _account;
-  OperationListModel& _operationModel;
 };
 
 // Command for setting an operation's budget date
 class SetOperationBudgetDateCommand : public QUndoCommand {
 public:
   SetOperationBudgetDateCommand(Operation& operation,
-                                OperationListModel* operationModel,
                                 const QDate& oldBudgetDate,
                                 const QDate& newBudgetDate,
                                 QUndoCommand* parent = nullptr);
@@ -189,7 +180,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   QDate _oldBudgetDate;
   QDate _newBudgetDate;
 };
@@ -198,7 +188,6 @@ private:
 class SplitOperationCommand : public QUndoCommand {
 public:
   SplitOperationCommand(Operation& operation,
-                        OperationListModel* operationModel,
                         const QList<Allocation*>& newAllocations,
                         QUndoCommand* parent = nullptr);
 
@@ -207,7 +196,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   QList<Allocation*> _oldAllocations, _newAllocations;
 };
 
@@ -215,7 +203,6 @@ private:
 class SetOperationAmountCommand : public QUndoCommand {
 public:
   SetOperationAmountCommand(Operation& operation,
-                            OperationListModel* operationModel,
                             double oldAmount, double newAmount,
                             QUndoCommand* parent = nullptr);
 
@@ -224,7 +211,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   double _oldAmount;
   double _newAmount;
 };
@@ -233,7 +219,6 @@ private:
 class SetOperationDateCommand : public QUndoCommand {
 public:
   SetOperationDateCommand(Operation& operation,
-                          OperationListModel* operationModel,
                           const QDate& oldDate, const QDate& newDate,
                           QUndoCommand* parent = nullptr);
 
@@ -242,7 +227,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   QDate _oldDate;
   QDate _newDate;
 };
@@ -251,7 +235,6 @@ private:
 class SetOperationLabelCommand : public QUndoCommand {
 public:
   SetOperationLabelCommand(Operation& operation,
-                           OperationListModel* operationModel,
                            const QString& oldLabel,
                            const QString& newLabel,
                            QUndoCommand* parent = nullptr);
@@ -261,7 +244,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   QString _oldLabel;
   QString _newLabel;
 };
@@ -270,7 +252,6 @@ private:
 class SetOperationDetailsCommand : public QUndoCommand {
 public:
   SetOperationDetailsCommand(Operation& operation,
-                             OperationListModel* operationModel,
                              const QString& oldDetails,
                              const QString& newDetails,
                              QUndoCommand* parent = nullptr);
@@ -280,7 +261,6 @@ public:
 
 private:
   Operation& _operation;
-  OperationListModel* _operationModel;
   QString _oldDetails;
   QString _newDetails;
 };
@@ -346,7 +326,7 @@ class EditRuleCommand : public QUndoCommand {
 public:
   EditRuleCommand(RuleController* ruleController, int index,
                   const Category* oldCategory, const Category* newCategory,
-                  const QString& oldLabelPrefix, const QString& newLabelPrefix,
+                  const QString& oldLabelMatch, const QString& newLabelMatch,
                   double oldAmountFilter, double newAmountFilter,
                   QUndoCommand* parent = nullptr);
 
@@ -358,8 +338,8 @@ private:
   int _index;
   const Category* _oldCategory;
   const Category* _newCategory;
-  QString _oldLabelPrefix;
-  QString _newLabelPrefix;
+  QString _oldLabelMatch;
+  QString _newLabelMatch;
   double _oldAmountFilter;
   double _newAmountFilter;
 };

@@ -2,17 +2,17 @@ import QtQuick
 import QtQuick.Controls
 
 import commonui
+import Comptine
 
 BaseDialog {
     id: renameDialog
     title: qsTr("Rename Account")
 
-    required property var budgetData
     property string originalName: ""
     okEnabled: renameField.text.trim() !== "" && renameField.text.trim() !== originalName
 
     onOpened: {
-        originalName = budgetData.currentAccount?.name ?? "";
+        originalName = BudgetData.currentAccount?.name ?? "";
         renameField.text = originalName;
         renameField.selectAll();
         renameField.forceActiveFocus();
@@ -20,7 +20,7 @@ BaseDialog {
 
     onAccepted: {
         if (renameField.text.trim() !== "") {
-            budgetData.renameCurrentAccount(renameField.text.trim());
+            BudgetData.renameCurrentAccount(renameField.text.trim());
         }
     }
 

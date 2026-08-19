@@ -5,51 +5,54 @@
 #include <QString>
 #include <QUndoStack>
 #include "Account.h"
-#include "AccountListModel.h"
-#include "OperationListModel.h"
+#include "Category.h"
 #include "PropertyMacros.h"
 
-class CategoryController;
-class NavigationController;
-
-class BudgetData : public QObject {
+class BudgetData : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
 
-  // Read-only computed properties (macro-generated, implemented in .cpp)
-  PROPERTY_RO(int, accountCount)
+  PROPERTY_RW(int, currentTabIndex, 0)
+  PROPERTY_RW(Account*, currentAccount, nullptr)
+  PROPERTY_RW(QDate, budgetDate, QDate::currentDate())
 
-  // Models exposed to QML
-  Q_PROPERTY(OperationListModel* operationModel READ operationModel CONSTANT)
-  Q_PROPERTY(AccountListModel* accountModel READ accountModel CONSTANT)
-
-  Q_PROPERTY(Account* currentAccount READ currentAccount NOTIFY currentAccountChanged)
+  Q_PROPERTY(int accountCount READ rowCount NOTIFY accountCountChanged)
+  Q_PROPERTY(int currentAccountIndex READ currentAccountIndex WRITE set_currentAccountIndex NOTIFY currentAccountChanged)
 
 public:
+  enum Roles {
+    NameRole = Qt::UserRole + 1,
+    OperationCountRole,
+    AccountRole
+  };
+  Q_ENUM(Roles)
+
   explicit BudgetData(QUndoStack& undoStack);
   ~BudgetData();
 
-  // Model accessors
-  OperationListModel* operationModel() const { return _operationModel; }
-  AccountListModel* accountModel() const { return _accountModel; }
+  // Navigation
+  int currentAccountIndex() const;
+  void set_currentAccountIndex(int index);
+  Q_INVOKABLE void previousMonth();
+  Q_INVOKABLE void nextMonth();
+  Q_INVOKABLE void navigateToOperation(Operation* operation);
 
-  Account* currentAccount() const;
+  // QAbstractListModel interface
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  QHash<int, QByteArray> roleNames() const override;
 
   // Account management
   QList<Account*> accounts() const;
   Q_INVOKABLE Account* accountAt(int index) const;
   Q_INVOKABLE Account* accountByName(const QString& name) const;
-  Q_INVOKABLE QString suggestedAccountForFile(const QString& filename) const;
+  Q_INVOKABLE QString suggestedAccountForUrl(const QUrl& url) const;
   Q_INVOKABLE int accountIndex(Account* account) const;
   Q_INVOKABLE void renameCurrentAccount(const QString& newName);
-  void addAccount(Account* account);
+  Account* addAccount(Account* account);
   void removeAccount(int index);
   Account* takeAccount(Account* account);  // Remove without deleting, returns nullptr if not found
-  void selectAccount(int index);           // Select account by index (updates navigation)
   void clearAccounts();
-
-  // Allocation factory (for QML)
-  Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
 
   // Operation editing
   Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations);
@@ -61,29 +64,19 @@ public:
   Q_INVOKABLE void setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations);
   Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName);
   Q_INVOKABLE void deleteSelectedOperations();
+  Q_INVOKABLE int countOperationsWithCategory(const Category* category) const;
 
   // Clear all data (called by FileController)
   void clear();
 
-  // Undo/Redo
-  Q_INVOKABLE void undo();
-  Q_INVOKABLE void redo();
-
-  // Set reference to NavigationController (for current account access)
-  void setNavigationController(NavigationController* navController);
-
-  // Set reference to CategoryController (for clearing categories)
-  void setCategoryController(CategoryController* categoryController);
+  // Copy selected operations to system clipboard as CSV
+  Q_INVOKABLE void copySelectedOperations() const;
 
 signals:
-  void operationDataChanged();   // Emitted when operation data changes (e.g., category edit)
-  void currentAccountChanged();  // Emitted when current account changes (for QML binding)
+  void accountCountChanged();
+  void operationDataChanged();  // Emitted when operation data changes (e.g., category edit)
 
 private:
   QUndoStack& _undoStack;
   QList<Account*> _accounts;
-  OperationListModel* _operationModel;
-  AccountListModel* _accountModel;
-  NavigationController* _navController = nullptr;
-  CategoryController* _categoryController = nullptr;
 };

@@ -3,11 +3,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import commonui
+import Comptine
 
 BaseDialog {
     id: root
 
-    required property var update
     title: qsTr("Update Available")
     rejectButtonText: ""
     width: 400
@@ -30,12 +30,12 @@ BaseDialog {
             }
 
             Label {
-                text: qsTr("Current version: %1").arg(root.update.currentVersion())
+                text: qsTr("Current version: %1").arg(UpdateController.currentVersion())
                 opacity: 0.7
             }
 
             Label {
-                text: qsTr("Latest version: %1").arg(root.update.latestVersion)
+                text: qsTr("Latest version: %1").arg(UpdateController.latestVersion)
                 font.bold: true
                 color: Theme.accent
             }
@@ -46,14 +46,14 @@ BaseDialog {
             title: qsTr("Release Notes")
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: root.update.releaseNotes.length > 0
+            visible: UpdateController.releaseNotes.length > 0
 
             ScrollView {
                 anchors.fill: parent
                 clip: true
 
                 TextArea {
-                    text: root.update.releaseNotes
+                    text: UpdateController.releaseNotes
                     textFormat: TextEdit.MarkdownText
                     readOnly: true
                     background: null
@@ -67,7 +67,7 @@ BaseDialog {
             Layout.alignment: Qt.AlignHCenter
             highlighted: true
             onClicked: {
-                root.update.openDownloadPage();
+                UpdateController.openDownloadPage();
             }
         }
     }

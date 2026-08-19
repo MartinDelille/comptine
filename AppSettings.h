@@ -11,7 +11,6 @@
 
 class AppSettings : public QObject {
   Q_OBJECT
-  QML_ELEMENT
 
   PROPERTY_RW_CUSTOM(int, windowX, 200)
   PROPERTY_RW_CUSTOM(int, windowY, 200)

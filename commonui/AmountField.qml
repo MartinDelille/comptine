@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+
 import Comptine
 
 // Reusable text field for entering monetary amounts.
@@ -28,10 +29,11 @@ TextField {
 
             if (isUndo || isRedo) {
                 focus = false;
-                if (isUndo)
-                    AppState.undoStack.undo();
-                else
-                    AppState.undoStack.redo();
+                if (isUndo) {
+                    UndoStack.undo();
+                } else {
+                    UndoStack.redo();
+                }
                 event.accepted = true;
             }
         }

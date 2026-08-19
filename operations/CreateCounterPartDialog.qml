@@ -8,12 +8,11 @@ BaseDialog {
     id: root
     title: qsTr("Create Counter Part")
 
-    required property var budgetData
     required property var operation
 
     signal createCounterPart(account: var, category: string)
 
-    okEnabled: accountComboBox.currentIndex >= 0 && operation.account !== accountComboBox.currentAccount
+    okEnabled: accountComboBox.currentIndex >= 0 && operation && operation.account !== accountComboBox.currentAccount
 
     onAccepted: {
         createCounterPart(accountComboBox.currentAccount, allocationCheckBox.checked ? allocationComboBox.currentText : "");
@@ -35,7 +34,6 @@ BaseDialog {
         }
         AccountComboBox {
             id: accountComboBox
-            budgetData: root.budgetData
             Layout.fillWidth: true
             focus: true
         }

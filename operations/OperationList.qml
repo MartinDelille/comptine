@@ -6,11 +6,10 @@ import QtQuick.Controls
 ListView {
     id: root
 
-    signal previousOperation(bool shift)
-    signal nextOperation(bool shift)
-    signal toggleSelectionAt(int index)
-    signal selectAt(int index, bool extend)
+    required property var account
 
+    model: account
+    currentIndex: account?.currentOperationIndex ?? -1
     activeFocusOnTab: true
     clip: true
     focus: true
@@ -21,15 +20,17 @@ ListView {
         id: scrollBar
     }
     onCurrentIndexChanged: {
-        root.positionViewAtIndex(currentIndex, ListView.Contain);
+        Qt.callLater(() => {
+            positionViewAtIndex(currentIndex, ListView.Contain);
+        });
     }
 
     Keys.onUpPressed: event => {
-        previousOperation(event.modifiers & Qt.ShiftModifier);
+        account.previousOperation(event.modifiers & Qt.ShiftModifier);
     }
 
     Keys.onDownPressed: event => {
-        nextOperation(event.modifiers & Qt.ShiftModifier);
+        account.nextOperation(event.modifiers & Qt.ShiftModifier);
     }
 
     delegate: OperationDelegate {
@@ -39,27 +40,18 @@ ListView {
         operation: model.operation
         balance: model.balance
         selected: model.selected
-        focused: root.activeFocus && root.currentIndex === index
+        focused: root.currentIndex === index
         alternate: index % 2 === 0
 
         MouseArea {
             anchors.fill: parent
             onClicked: mouse => {
-                root.forceActiveFocus();
-
                 if (mouse.modifiers & Qt.ControlModifier) {
                     // Cmd/Ctrl+click: toggle selection
-                    root.toggleSelectionAt(parent.index);
-                } else if (mouse.modifiers & Qt.ShiftModifier) {
-                    // Shift+click: range selection from current operation
-                    root.selectAt(parent.index, true);
+                    root.account.toggleSelectionAt(parent.index);
                 } else {
-                    // Plain click: single selection (clear others)
-                    root.selectAt(parent.index, false);
+                    root.account.selectAt(parent.index, mouse.modifiers & Qt.ShiftModifier);
                 }
-
-                // Update cursor (current operation) after selection handling
-                root.currentIndex = parent.index;
             }
         }
     }

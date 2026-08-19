@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QAbstractListModel>
 #include <QList>
 #include <QObject>
 #include <QSet>
@@ -9,31 +10,49 @@
 #include "Operation.h"
 #include "PropertyMacros.h"
 
-class Account : public QObject {
+class Account : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
+
+  Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
   PROPERTY_RW(QString, name, QString())
-  PROPERTY_RO(int, operationCount)
-  PROPERTY_RW(Operation*, currentOperation, nullptr)
 
   // Filenames (base name only) of CSV files previously imported into this account
   Q_PROPERTY(QStringList importSourcePrefixes READ importSourcePrefixes NOTIFY importSourcePrefixesChanged)
 
-  // Computed property: index of currentOperation in operations list
-  // Uses currentOperationChanged signal since it changes when currentOperation changes
+  PROPERTY_RO(Operation*, currentOperation)
   Q_PROPERTY(int currentOperationIndex READ currentOperationIndex WRITE set_currentOperationIndex
                  NOTIFY currentOperationChanged)
 
   // Selection properties (pointer-based, survives sorting)
   Q_PROPERTY(int selectionCount READ selectionCount NOTIFY selectionChanged)
   Q_PROPERTY(double selectedTotal READ selectedTotal NOTIFY selectionChanged)
+  Q_PROPERTY(double currentBalance READ currentBalance NOTIFY balanceChanged)
 
 public:
-  explicit Account(const QString& name = "", QObject* parent = nullptr);
+  enum Roles {
+    DateRole = Qt::UserRole + 1,
+    AmountRole,
+    LabelRole,
+    BalanceRole,
+    SelectedRole,
+    OperationRole,
+  };
+  Q_ENUM(Roles)
+
+  explicit Account(const QString& name);
+
+  // QAbstractListModel interface
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  bool setData(const QModelIndex& index, const QVariant& value, int role) override;
+  QHash<int, QByteArray> roleNames() const override;
+
+  void refresh();  // Recalculate balances and emit dataChanged for all rows
 
   // Import source management
   QStringList importSourcePrefixes() const;
-  void addImportSourcePrefix(const QString& filename);
+  Q_INVOKABLE void addImportSourcePrefix(const QString& filename);
   void setImportSourcePrefixes(const QStringList& sources);
 
   // Current operation index (computed from currentOperation pointer)
@@ -42,16 +61,18 @@ public:
 
   QList<Operation*> operations() const;
 
-  void addOperation(Operation* operation);
-  void appendOperation(Operation* operation);  // Append without sorting (for file loading)
-  void removeOperation(int index);
+  // Operation navigation
+  Q_INVOKABLE void previousOperation(bool extendSelection = false);
+  Q_INVOKABLE void nextOperation(bool extendSelection = false);
+
+  Operation* addOperation(Operation* operation, bool sort = true);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
   void clearOperations();
   void sortOperations();  // Re-sort operations by date (most recent first)
   bool hasOperation(const QDate& date, double amount, const QString& label) const;
 
-  Q_INVOKABLE Operation* getOperation(int index) const;
-  Q_INVOKABLE int operationIndex(Operation* operation) const;
+  Operation* operationAt(int index) const;
+  int operationIndex(Operation* operation) const;
 
   // Selection management (Excel-like behavior)
   // Uses currentOperation as anchor for range selection
@@ -68,13 +89,24 @@ public:
   double selectedTotal() const;
   QSet<Operation*> selectedOperations() const;
   QString selectedOperationsAsCsv() const;
+  int countOperationsWithCategory(const Category* category) const;
+
+  double currentBalance() const;
+
+  Q_INVOKABLE double balanceAt(int index) const;
 
 signals:
+  void countChanged();
   void selectionChanged();
+  void balanceChanged();
   void importSourcePrefixesChanged();
 
 private:
+  void recalculateBalances();
+
+  Operation* _currentOperation = nullptr;
   QList<Operation*> _operations;
   QSet<Operation*> _selectedOperations;
   QStringList _importSources;
+  QVector<double> _balances;
 };

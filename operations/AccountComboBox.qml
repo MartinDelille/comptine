@@ -1,9 +1,10 @@
 import QtQuick.Controls
 
+import Comptine
+
 ComboBox {
-    required property var budgetData
-    model: budgetData.accountModel
-    enabled: budgetData.accountCount > 0
+    model: BudgetData
+    enabled: BudgetData.accountCount > 0
     textRole: "name"
-    property var currentAccount: budgetData.accountModel.accountAt(currentIndex)
+    property var currentAccount: BudgetData.accountAt(currentIndex)
 }

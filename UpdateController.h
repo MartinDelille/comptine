@@ -14,7 +14,6 @@ class AppSettings;
 
 class UpdateController : public QObject {
   Q_OBJECT
-  QML_ELEMENT
 
   // Current state
   PROPERTY_RW(bool, checking, false)

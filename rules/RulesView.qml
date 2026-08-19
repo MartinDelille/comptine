@@ -5,12 +5,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import commonui
+import Comptine
 
 BaseDialog {
     id: root
-
-    required property var categories
-    required property var rules
 
     title: qsTr("Categorization Rules")
     width: 600
@@ -19,8 +17,6 @@ BaseDialog {
 
     RuleEditDialog {
         id: ruleEditDialog
-        categories: root.categories
-        rules: root.rules
         onClosed: ruleListView.forceActiveFocus()
     }
 
@@ -45,7 +41,7 @@ BaseDialog {
                 text: qsTr("Add Rule...")
                 onClicked: {
                     ruleEditDialog.isNewRule = true;
-                    ruleEditDialog.suggestedPrefix = "";
+                    ruleEditDialog.suggestedMatch = "";
                     ruleEditDialog.open();
                 }
             }
@@ -64,7 +60,7 @@ BaseDialog {
                 id: ruleListView
                 anchors.fill: parent
                 anchors.margins: Theme.spacingSmall
-                model: root.rules.ruleModel
+                model: RuleController.ruleModel
                 clip: true
                 focus: true
                 spacing: Theme.spacingSmall
@@ -73,7 +69,7 @@ BaseDialog {
                     id: ruleDelegate
                     required property int index
                     required property string category
-                    required property string labelPrefix
+                    required property string labelMatch
                     required property double amountFilter
 
                     width: ListView.view.width
@@ -92,7 +88,7 @@ BaseDialog {
                             ruleEditDialog.isNewRule = false;
                             ruleEditDialog.ruleIndex = ruleDelegate.index;
                             ruleEditDialog.originalCategory = ruleDelegate.category;
-                            ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                            ruleEditDialog.originalLabelMatch = ruleDelegate.labelMatch;
                             ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                             ruleEditDialog.open();
                         }
@@ -119,7 +115,7 @@ BaseDialog {
                             spacing: 2
 
                             Label {
-                                text: qsTr("Prefix: \"%1\"").arg(ruleDelegate.labelPrefix)
+                                text: qsTr("Prefix: \"%1\"").arg(ruleDelegate.labelMatch)
                                 font.pixelSize: Theme.fontSizeNormal
                                 color: Theme.textPrimary
                                 elide: Text.ElideRight
@@ -140,7 +136,7 @@ BaseDialog {
                             enabled: ruleDelegate.index > 0
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: root.rules.moveRule(ruleDelegate.index, ruleDelegate.index - 1)
+                            onClicked: RuleController.moveRule(ruleDelegate.index, ruleDelegate.index - 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move up (higher priority)")
                         }
@@ -149,10 +145,10 @@ BaseDialog {
                         ToolButton {
                             text: "\u2193"
                             font.pixelSize: Theme.fontSizeNormal
-                            enabled: ruleDelegate.index < root.rules.ruleCount - 1
+                            enabled: ruleDelegate.index < RuleController.ruleCount - 1
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: root.rules.moveRule(ruleDelegate.index, ruleDelegate.index + 1)
+                            onClicked: RuleController.moveRule(ruleDelegate.index, ruleDelegate.index + 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move down (lower priority)")
                         }
@@ -167,7 +163,7 @@ BaseDialog {
                                 ruleEditDialog.isNewRule = false;
                                 ruleEditDialog.ruleIndex = ruleDelegate.index;
                                 ruleEditDialog.originalCategory = ruleDelegate.category;
-                                ruleEditDialog.originalLabelPrefix = ruleDelegate.labelPrefix;
+                                ruleEditDialog.originalLabelMatch = ruleDelegate.labelMatch;
                                 ruleEditDialog.originalAmountFilter = ruleDelegate.amountFilter;
                                 ruleEditDialog.open();
                             }
@@ -181,7 +177,7 @@ BaseDialog {
                             font.pixelSize: Theme.fontSizeNormal
                             focusPolicy: Qt.NoFocus
                             opacity: hovered ? 1.0 : 0.5
-                            onClicked: root.rules.removeRule(ruleDelegate.index)
+                            onClicked: RuleController.removeRule(ruleDelegate.index)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Delete rule")
                         }
@@ -192,7 +188,7 @@ BaseDialog {
             // Empty state
             Label {
                 anchors.centerIn: parent
-                visible: root.rules.ruleCount === 0
+                visible: RuleController.ruleCount === 0
                 text: qsTr("No rules defined.\nClick \"Add Rule...\" to create one.")
                 horizontalAlignment: Text.AlignHCenter
                 font.pixelSize: Theme.fontSizeNormal
@@ -206,7 +202,7 @@ BaseDialog {
             spacing: Theme.spacingNormal
 
             Label {
-                text: qsTr("%1 rule(s)").arg(root.rules.ruleCount)
+                text: qsTr("%1 rule(s)").arg(RuleController.ruleCount)
                 font.pixelSize: Theme.fontSizeSmall
                 color: Theme.textSecondary
             }

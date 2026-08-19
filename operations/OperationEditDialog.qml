@@ -4,16 +4,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import Comptine
 import commonui
 import rules
 
 BaseDialog {
     id: root
-
-    required property var budgetData
-    required property var categories
-    required property var navigation
-    required property var rules
 
     property var _operation: null
 
@@ -45,11 +41,11 @@ BaseDialog {
     }
     readonly property double remainingAmount: editedAmount - allocatedAmount
 
-    okEnabled: labelField.text.trim() !== "" && amountField.value != 0
+    okEnabled: labelField.text.trim() !== "" && (amountField.value != 0 || allocationModel.count > 0)
 
     onOpened: {
         // Refresh category list when dialog opens
-        root.categoryList = [""].concat(root.categories.categoryNames());
+        root.categoryList = [""].concat(CategoryController.categoryNames());
     }
 
     ListModel {
@@ -58,8 +54,6 @@ BaseDialog {
 
     RuleEditDialog {
         id: ruleEditDialog
-        categories: root.categories
-        rules: root.rules
     }
 
     // React to external changes to the operation's allocations
@@ -73,12 +67,10 @@ BaseDialog {
 
     CreateCounterPartDialog {
         id: counterPartDialog
-        budgetData: root.budgetData
         operation: root._operation
         onCreateCounterPart: function (account, category) {
-            let newOperation = root.budgetData.createCounterPart(operation, account, category);
-            root.navigation.currentOperation = newOperation;
-            root.navigation.navigateToOperation(newOperation);
+            let newOperation = BudgetData.createCounterPart(operation, account, category);
+            BudgetData.navigateToOperation(newOperation);
             root.initialize(newOperation);
         }
     }
@@ -111,7 +103,7 @@ BaseDialog {
         }
     }
 
-    function initialize(operation) {
+    function initialize(operation, advanced) {
         _unaffectedCategoryComboBox = null;
 
         _operation = operation;
@@ -126,6 +118,7 @@ BaseDialog {
         detailsField.text = originalDetails = operation?.details || "";
 
         dateInput.selectedDate = originalDate;
+        dateInput.readOnly = !advanced;
         budgetDateInput.selectedDate = originalBudgetDate;
 
         refreshAllocations();
@@ -161,31 +154,31 @@ BaseDialog {
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
             if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push(root.budgetData.createAllocation(item.category, item.amount));
+                allocations.push(CategoryController.createAllocation(item.category, item.amount));
             }
         }
 
         if (_operation === null) {
-            root.budgetData.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
+            BudgetData.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
             return;
         }
 
         if (newLabel !== originalLabel) {
-            root.budgetData.setOperationLabel(_operation, newLabel);
+            BudgetData.setOperationLabel(_operation, newLabel);
         }
 
         if (newDetails !== originalDetails) {
-            root.budgetData.setOperationDetails(_operation, newDetails);
+            BudgetData.setOperationDetails(_operation, newDetails);
         }
 
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
-            root.budgetData.setOperationAmount(_operation, editedAmount);
+            BudgetData.setOperationAmount(_operation, editedAmount);
         }
 
         // Apply budget date change if different
         if (budgetDateInput.selectedDate.getTime() !== originalBudgetDate.getTime()) {
-            root.budgetData.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
+            BudgetData.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
         }
 
         if (allocations.length > 0) {
@@ -203,31 +196,21 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                root.budgetData.setOperationAllocations(_operation, allocations);
+                BudgetData.setOperationAllocations(_operation, allocations);
             }
         }
 
         // Apply date change LAST (since it sorts and changes the operation's index)
         if (dateInput.selectedDate.getTime() !== originalDate.getTime()) {
-            root.budgetData.setOperationDate(_operation, dateInput.selectedDate);
+            BudgetData.setOperationDate(_operation, dateInput.selectedDate);
         }
     }
 
-    // Navigate to previous uncategorized operation
-    function goToPreviousUncategorized() {
-        let prevOp = root.rules.previousUncategorizedOperation(_operation);
-        if (prevOp) {
+    function goToOperation(operation) {
+        if (operation) {
             applyChanges();
-            initialize(prevOp);
-        }
-    }
-
-    // Navigate to next uncategorized operation
-    function goToNextUncategorized() {
-        let nextOp = root.rules.nextUncategorizedOperation(_operation);
-        if (nextOp) {
-            applyChanges();
-            initialize(nextOp);
+            initialize(operation);
+            BudgetData.navigateToOperation(operation);
         }
     }
 
@@ -255,6 +238,12 @@ BaseDialog {
                 id: labelField
                 Layout.fillWidth: true
                 placeholderText: qsTr("Enter label")
+            }
+
+            Button {
+                icon.name: "globe"
+                enabled: labelField.text.length > 0
+                onClicked: Qt.openUrlExternally("https://www.google.com/search?q=" + encodeURIComponent(labelField.text))
             }
         }
 
@@ -318,7 +307,6 @@ BaseDialog {
 
             DateInput {
                 id: dateInput
-                readOnly: true
             }
         }
 
@@ -353,8 +341,8 @@ BaseDialog {
 
             Button {
                 text: qsTr("Previous Uncategorized")
-                enabled: root._operation && root.rules.previousUncategorizedOperation(root._operation) !== null
-                onClicked: root.goToPreviousUncategorized()
+                enabled: root._operation && RuleController.previousUncategorizedOperation(root._operation) !== null
+                onClicked: root.goToOperation(RuleController.previousUncategorizedOperation(root._operation))
             }
 
             Item {
@@ -363,8 +351,8 @@ BaseDialog {
 
             Button {
                 text: qsTr("Next Uncategorized")
-                enabled: root._operation && root.rules.nextUncategorizedOperation(root._operation) !== null
-                onClicked: root.goToNextUncategorized()
+                enabled: root._operation && RuleController.nextUncategorizedOperation(root._operation) !== null
+                onClicked: root.goToOperation(RuleController.nextUncategorizedOperation(root._operation))
             }
         }
 
@@ -412,7 +400,7 @@ BaseDialog {
 
             delegate: RowLayout {
                 id: allocationDelegate
-                width: parent.width
+                width: parent?.width || 0
                 spacing: Theme.spacingNormal
 
                 required property int index
@@ -490,7 +478,7 @@ BaseDialog {
                 onClicked: {
                     if (root._operation) {
                         ruleEditDialog.isNewRule = true;
-                        ruleEditDialog.suggestedPrefix = labelField.text.trim();
+                        ruleEditDialog.suggestedMatch = labelField.text.trim();
                         ruleEditDialog.suggestedAmount = root.editedAmount;
                         if (allocationModel.count > 0 && allocationModel.get(0).category !== "") {
                             ruleEditDialog.suggestedCategory = allocationModel.get(0).category;

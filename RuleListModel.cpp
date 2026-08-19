@@ -39,8 +39,8 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
         return rule->category()->name();
       }
       break;
-    case LabelPrefixRole:
-      return rule->labelPrefix();
+    case LabelMatchRole:
+      return rule->labelMatch();
     case AmountFilterRole:
       return rule->amountFilter();
   }
@@ -50,7 +50,7 @@ QVariant RuleListModel::data(const QModelIndex& index, int role) const {
 QHash<int, QByteArray> RuleListModel::roleNames() const {
   QHash<int, QByteArray> roles;
   roles[CategoryRole] = "category";
-  roles[LabelPrefixRole] = "labelPrefix";
+  roles[LabelMatchRole] = "labelMatch";
   roles[AmountFilterRole] = "amountFilter";
   return roles;
 }

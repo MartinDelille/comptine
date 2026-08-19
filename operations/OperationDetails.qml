@@ -7,17 +7,14 @@ import commonui
 Rectangle {
     id: root
 
-    required property var budgetData
-    required property int currentIndex
+    required property var account
+    required property var operation
 
     // Signal to request opening edit dialog (handled by parent)
     signal editRequested(var operation)
 
-    // Get operation from the model using helper methods
-    readonly property var operation: currentIndex >= 0 ? budgetData.operationModel.operationAt(currentIndex) : null
-
     // Multi-selection state
-    readonly property bool multipleSelected: budgetData.operationModel.selectionCount > 1
+    readonly property bool multipleSelected: account?.selectionCount > 1
 
     radius: Theme.cardRadius
     border.width: Theme.cardBorderWidth
@@ -82,7 +79,7 @@ Rectangle {
 
             Label {
                 Layout.fillWidth: true
-                text: qsTr("%n operation(s)", "", root.budgetData.operationModel.selectionCount)
+                text: qsTr("%1 operation(s)").arg(root.account?.selectionCount)
                 font.pixelSize: Theme.fontSizeNormal
                 color: Theme.textPrimary
             }
@@ -96,17 +93,16 @@ Rectangle {
             }
 
             AmountLabel {
-                amount: root.budgetData.operationModel.selectedTotal
+                amount: root.account?.selectedTotal || 0
                 Layout.fillWidth: true
                 font.pixelSize: Theme.fontSizeLarge
             }
         }
 
         // Single operation details
-        GridLayout {
+        ColumnLayout {
             Layout.fillWidth: true
-            columns: 1
-            rowSpacing: Theme.spacingNormal
+            spacing: Theme.spacingNormal
             visible: root.operation !== null && !root.multipleSelected
 
             Label {

@@ -2,6 +2,8 @@ qt_add_qml_module(
   Rules
   URI
   rules
+  STATIC
+  NO_PLUGIN
   DEPENDENCIES
   CommonUI
   QML_FILES

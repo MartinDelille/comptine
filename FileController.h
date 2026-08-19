@@ -10,9 +10,10 @@
 #include "PropertyMacros.h"
 
 class AppSettings;
+class Account;
 class BudgetData;
+class Category;
 class CategoryController;
-class NavigationController;
 class RuleController;
 
 class FileController : public QObject {
@@ -32,7 +33,6 @@ public:
   FileController(AppSettings& appSettings,
                  BudgetData& budgetData,
                  CategoryController& categoryController,
-                 NavigationController& navController,
                  RuleController& ruleController,
                  QUndoStack& undoStack);
 
@@ -58,15 +58,10 @@ signals:
   void dataSaved();
   void externalChangeDetected();  // Emitted when QFileSystemWatcher detects external modification
 
-  // Navigation state signals for file load/save coordination
-  void navigationStateLoaded(int tabIndex, const QDate& budgetDate,
-                             int accountIndex, int categoryIndex, int operationIndex);
-
 private:
   AppSettings& _appSettings;
   BudgetData& _budgetData;
   CategoryController& _categoryController;
-  NavigationController& _navController;
   RuleController& _ruleController;
   QUndoStack& _undoStack;
   QFileSystemWatcher _fileWatcher;

@@ -36,11 +36,11 @@ void RuleController::addRule(Rule* rule) {
     return;
   }
 
-  // Check for duplicate (same prefix + same amount filter)
+  // Check for duplicate (same match + same amount filter)
   for (const Rule* existing : _rules) {
-    if (existing->labelPrefix().compare(rule->labelPrefix(), Qt::CaseInsensitive) == 0
+    if (existing->labelMatch().compare(rule->labelMatch(), Qt::CaseInsensitive) == 0
         && qFuzzyCompare(existing->amountFilter(), rule->amountFilter())) {
-      qWarning() << "Rule with same prefix and amount already exists:" << rule->labelPrefix();
+      qWarning() << "Rule with same match and amount already exists:" << rule->labelMatch();
       return;
     }
   }
@@ -52,12 +52,12 @@ void RuleController::addRule(Rule* rule) {
   emit rulesChanged();
 }
 
-void RuleController::addRule(const Category* category, const QString& labelPrefix, double amountFilter) {
-  if (category == nullptr || labelPrefix.isEmpty()) {
+void RuleController::addRule(const Category* category, const QString& labelMatch, double amountFilter) {
+  if (category == nullptr || labelMatch.isEmpty()) {
     return;
   }
 
-  auto* rule = new Rule(category, labelPrefix, amountFilter, this);
+  auto* rule = new Rule(category, labelMatch, amountFilter, this);
   _undoStack.push(new AddRuleCommand(this, rule));
 }
 
@@ -69,30 +69,30 @@ void RuleController::removeRule(int index) {
   _undoStack.push(new RemoveRuleCommand(this, index));
 }
 
-void RuleController::editRule(int index, const Category* category, const QString& labelPrefix, double amountFilter) {
+void RuleController::editRule(int index, const Category* category, const QString& labelMatch, double amountFilter) {
   if (index < 0 || index >= _rules.size()) {
     return;
   }
 
   Rule* rule = _rules[index];
-  if (rule->category() == category && rule->labelPrefix() == labelPrefix
+  if (rule->category() == category && rule->labelMatch() == labelMatch
       && qFuzzyCompare(rule->amountFilter(), amountFilter)) {
     return;  // No change
   }
 
-  // Check for duplicate (same prefix + same amount filter), excluding the rule being edited
+  // Check for duplicate (same match + same amount filter), excluding the rule being edited
   for (int i = 0; i < _rules.size(); i++) {
     if (i != index
-        && _rules[i]->labelPrefix().compare(labelPrefix, Qt::CaseInsensitive) == 0
+        && _rules[i]->labelMatch().compare(labelMatch, Qt::CaseInsensitive) == 0
         && qFuzzyCompare(_rules[i]->amountFilter(), amountFilter)) {
-      qWarning() << "Rule with same prefix and amount already exists:" << labelPrefix;
+      qWarning() << "Rule with same match and amount already exists:" << labelMatch;
       return;
     }
   }
 
   _undoStack.push(new EditRuleCommand(this, index,
                                       rule->category(), category,
-                                      rule->labelPrefix(), labelPrefix,
+                                      rule->labelMatch(), labelMatch,
                                       rule->amountFilter(), amountFilter));
 }
 
@@ -173,15 +173,15 @@ int RuleController::applyRulesToOperation(Operation* operation) {
   return 0;
 }
 
-int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelPrefix, double amountFilter) {
-  if (!category || labelPrefix.isEmpty()) {
+int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelMatch, double amountFilter) {
+  if (!category || labelMatch.isEmpty()) {
     return 0;
   }
 
   // Create a temporary rule for matching
   Rule tempRule;
   tempRule.set_category(category);
-  tempRule.set_labelPrefix(labelPrefix);
+  tempRule.set_labelMatch(labelMatch);
   tempRule.set_amountFilter(amountFilter);
 
   QUndoCommand* macroCommand = new QUndoCommand();
@@ -192,7 +192,7 @@ int RuleController::applyRuleToUncategorized(const Category* category, const QSt
       if (!op->isCategorized() && tempRule.matches(op)) {
         QList<Allocation*> newAllocations;
         newAllocations.append(new Allocation(category, op->amount()));
-        new SplitOperationCommand(*op, _budgetData.operationModel(),
+        new SplitOperationCommand(*op,
                                   newAllocations, macroCommand);
         count++;
       }

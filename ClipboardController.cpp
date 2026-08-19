@@ -1,15 +1,15 @@
-#include "ClipboardController.h"
 #include <QClipboard>
 #include <QGuiApplication>
 
-#include "OperationListModel.h"
+#include "Account.h"
+#include "ClipboardController.h"
 
-ClipboardController::ClipboardController(OperationListModel& operationModel) :
-    _operationModel(operationModel) {
+ClipboardController2::ClipboardController2(Account& account) :
+    _account(account) {
 }
 
-void ClipboardController::copySelectedOperations() const {
-  QString csv = _operationModel.selectedOperationsAsCsv();
+void ClipboardController2::copySelectedOperations() const {
+  QString csv = _account.selectedOperationsAsCsv();
   if (!csv.isEmpty()) {
     QGuiApplication::clipboard()->setText(csv);
   }

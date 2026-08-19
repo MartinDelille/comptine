@@ -3,38 +3,36 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import commonui
+import Comptine
 
 BaseDialog {
     id: root
     title: isNewRule ? qsTr("Add Rule") : qsTr("Edit Rule")
     width: 450
 
-    required property var categories
-    required property var rules
-
     property bool isNewRule: true
     property int ruleIndex: -1
     property string originalCategory: ""
-    property string originalLabelPrefix: ""
+    property string originalLabelMatch: ""
     property double originalAmountFilter: 0
 
     // For use when creating rule from OperationEditDialog
-    property string suggestedPrefix: ""
+    property string suggestedMatch: ""
     property string suggestedCategory: ""
     property double suggestedAmount: 0
 
     // Category list - refreshed on open
     property var categoryList: []
 
-    okEnabled: categoryCombo.currentText.length > 0 && descriptionPrefixField.text.length > 0 && (!amountCheckBox.checked || amountFilterField.value !== 0)
+    okEnabled: categoryCombo.currentText.length > 0 && descriptionMatchField.text.length > 0 && (!amountCheckBox.checked || amountFilterField.value !== 0)
 
     onOpened: {
         // Refresh category list when dialog opens
-        root.categoryList = categories.categoryNames();
+        root.categoryList = CategoryController.categoryNames();
 
         if (isNewRule) {
             categoryCombo.currentIndex = -1;
-            descriptionPrefixField.text = suggestedPrefix;
+            descriptionMatchField.text = suggestedMatch;
             if (suggestedCategory.length > 0) {
                 let catIndex = categoryModel.findCategoryIndex(suggestedCategory);
                 if (catIndex >= 0) {
@@ -47,7 +45,7 @@ BaseDialog {
             // Find and select the category
             let catIndex = categoryModel.findCategoryIndex(originalCategory);
             categoryCombo.currentIndex = catIndex;
-            descriptionPrefixField.text = originalLabelPrefix;
+            descriptionMatchField.text = originalLabelMatch;
             // Restore amount filter state
             if (originalAmountFilter !== 0) {
                 amountCheckBox.checked = true;
@@ -57,24 +55,24 @@ BaseDialog {
                 amountFilterField.value = 0;
             }
         }
-        descriptionPrefixField.forceActiveFocus();
+        descriptionMatchField.forceActiveFocus();
     }
 
     onAccepted: {
-        let category = categories.getCategoryByName(categoryCombo.currentText);
-        let prefix = descriptionPrefixField.text.trim();
+        let category = CategoryController.getCategoryByName(categoryCombo.currentText);
+        let match = descriptionMatchField.text.trim();
         let amount = amountCheckBox.checked ? amountFilterField.value : 0;
 
         if (isNewRule) {
-            rules.addRule(category, prefix, amount);
+            RuleController.addRule(category, match, amount);
             if (applyToExistingCheckBox.checked) {
-                let count = rules.applyRuleToUncategorized(category, prefix, amount);
+                let count = RuleController.applyRuleToUncategorized(category, match, amount);
                 if (count > 0) {
                     console.log("Applied rule to", count, "uncategorized operation(s)");
                 }
             }
         } else {
-            rules.editRule(ruleIndex, category, prefix, amount);
+            RuleController.editRule(ruleIndex, category, match, amount);
         }
     }
 
@@ -97,13 +95,13 @@ BaseDialog {
         spacing: Theme.spacingNormal
 
         Label {
-            text: qsTr("Label Prefix")
+            text: qsTr("Label Match")
             font.pixelSize: Theme.fontSizeNormal
             color: Theme.textPrimary
         }
 
         TextField {
-            id: descriptionPrefixField
+            id: descriptionMatchField
             Layout.fillWidth: true
             placeholderText: qsTr("Operations starting with this text will match")
             font.pixelSize: Theme.fontSizeNormal

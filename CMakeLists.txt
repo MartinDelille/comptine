@@ -111,18 +111,16 @@ qt_add_library(libComptine STATIC)
 qt_add_qml_module(libComptine
   URI ComptineLib
   OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ComptineLib
+  NO_PLUGIN
   SOURCES
     AppSettings.cpp AppSettings.h
     Operation.cpp Operation.h
     Account.cpp Account.h
     Category.cpp Category.h
     BudgetData.cpp BudgetData.h
-    OperationListModel.cpp OperationListModel.h
-    AccountListModel.cpp AccountListModel.h
     RuleListModel.cpp RuleListModel.h
     CategoryController.cpp CategoryController.h
     ClipboardController.cpp ClipboardController.h
-    NavigationController.cpp NavigationController.h
     Rule.cpp Rule.h
     RuleController.cpp RuleController.h
     FileController.cpp FileController.h
@@ -226,12 +224,17 @@ qt_add_qml_module(
   QML_FILES
   Main.qml
   ApplicationMenuBar.qml
+  FileMenu.qml
+  EditMenu.qml
+  ViewMenu.qml
+  HelpMenu.qml
   AboutDialog.qml
   ImportDialog.qml
   PreferencesDialog.qml
   UpdateDialog.qml
   SOURCES
-  AppState.cpp AppState.h
+  AppState.h
+  Foreigners.h
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1. If
@@ -263,7 +266,6 @@ target_link_libraries(
         Qt6::Network
         yaml-cpp::yaml-cpp
         libComptine
-        libComptineplugin
         Budget
         CommonUI
         Operations

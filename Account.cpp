@@ -1,13 +1,89 @@
-#include "Account.h"
+#include <algorithm>
 
-Account::Account(const QString& name, QObject* parent) :
-    QObject(parent), _name(name) {
-  connect(this, &Account::currentOperationChanged, this, [this]() {
-    if (_currentOperation) {
-      _selectedOperations.insert(_currentOperation);
-      emit selectionChanged();
-    }
-  });
+#include "Account.h"
+#include "Operation.h"
+
+Account::Account(const QString& name) :
+    _name(name) {
+  connect(this, &Account::selectionChanged,
+          this, [this]() {
+            emit dataChanged(createIndex(0, 0),
+                             createIndex(rowCount() - 1, 0),
+                             { SelectedRole });
+          });
+}
+
+Operation* Account::currentOperation() const {
+  return _currentOperation;
+}
+
+int Account::rowCount(const QModelIndex& parent) const {
+  if (parent.isValid())
+    return 0;
+  return _operations.size();
+}
+
+QVariant Account::data(const QModelIndex& index, int role) const {
+  if (!index.isValid()) {
+    return QVariant();
+  }
+
+  int row = index.row();
+  auto op = operationAt(row);
+
+  if (!op) {
+    return QVariant();
+  }
+
+  switch (static_cast<Roles>(role)) {
+    case DateRole:
+      return op->date();
+    case AmountRole:
+      return op->amount();
+    case LabelRole:
+      return op->label();
+    case BalanceRole:
+      return (row >= 0 && row < _balances.size()) ? _balances[row] : 0.0;
+    case SelectedRole:
+      return isSelectedAt(row);
+    case OperationRole:
+      return QVariant::fromValue(op);
+  }
+  return QVariant();
+}
+
+bool Account::setData(const QModelIndex& index, const QVariant& value,
+                      int role) {
+  if (!index.isValid() || role != SelectedRole)
+    return false;
+
+  const int row = index.row();
+  bool selected = value.toBool();
+
+  if (selected) {
+    selectAt(row, false);
+  } else {
+    toggleSelectionAt(row);  // Toggle off if already selected
+  }
+
+  return true;
+}
+
+QHash<int, QByteArray> Account::roleNames() const {
+  return {
+    { DateRole, "date" },
+    { AmountRole, "amount" },
+    { LabelRole, "label" },
+    { BalanceRole, "balance" },
+    { SelectedRole, "selected" },
+    { OperationRole, "operation" },
+  };
+}
+
+void Account::refresh() {
+  beginResetModel();
+  recalculateBalances();
+  endResetModel();
 }
 
 QStringList Account::importSourcePrefixes() const {
@@ -32,7 +108,7 @@ int Account::currentOperationIndex() const {
 }
 
 void Account::set_currentOperationIndex(int index) {
-  set_currentOperation(getOperation(index));
+  select(operationAt(index));
 }
 
 int Account::operationIndex(Operation* operation) const {
@@ -40,20 +116,20 @@ int Account::operationIndex(Operation* operation) const {
   return _operations.indexOf(operation);
 }
 
-int Account::operationCount() const {
-  return _operations.size();
-}
-
 QList<Operation*> Account::operations() const {
   return _operations;
 }
 
-void Account::addOperation(Operation* operation) {
-  if (operation) {
-    operation->setParent(this);
+Operation* Account::addOperation(Operation* operation, bool sort) {
+  if (operation == nullptr) {
+    return nullptr;
+  }
+  operation->setParent(this);
+  int insertIndex = _operations.size();
+  if (sort) {
+    insertIndex = 0;
     // Insert in sorted order (most recent first)
     // For same-date operations, insert at the END of the same-date group to preserve order
-    int insertIndex = 0;
     while (insertIndex < _operations.size() && _operations[insertIndex]->date() > operation->date()) {
       insertIndex++;
     }
@@ -61,65 +137,51 @@ void Account::addOperation(Operation* operation) {
     while (insertIndex < _operations.size() && _operations[insertIndex]->date() == operation->date()) {
       insertIndex++;
     }
-    _operations.insert(insertIndex, operation);
-    emit operationCountChanged();
   }
-}
-
-void Account::appendOperation(Operation* operation) {
-  if (operation) {
-    operation->setParent(this);
-    // Append without sorting - preserves file order when loading
-    _operations.append(operation);
-    emit operationCountChanged();
-  }
-}
-
-void Account::removeOperation(int index) {
-  if (index >= 0 && index < _operations.size()) {
-    Operation* op = _operations.takeAt(index);
-    // Clear from selection if present
-    bool wasSelected = _selectedOperations.remove(op);
-    // Clear currentOperation if it was the deleted one
-    if (_currentOperation == op) {
-      set_currentOperation(nullptr);
-    }
-    delete op;
-    emit operationCountChanged();
-    if (wasSelected) {
-      emit selectionChanged();
-    }
-  }
+  beginInsertRows(QModelIndex(), insertIndex, insertIndex);
+  _operations.insert(insertIndex, operation);
+  endInsertRows();
+  recalculateBalances();
+  connect(operation, &Operation::amountChanged, this, &Account::recalculateBalances);
+  emit countChanged();
+  return operation;
 }
 
 bool Account::removeOperation(Operation* operation) {
-  int index = _operations.indexOf(operation);
-  if (index >= 0) {
-    _operations.removeAt(index);
-    // Clear from selection if present
-    bool wasSelected = _selectedOperations.remove(operation);
-    // Clear currentOperation if it was the removed one
-    if (_currentOperation == operation) {
-      set_currentOperation(nullptr);
-    }
-    emit operationCountChanged();
-    if (wasSelected) {
-      emit selectionChanged();
-    }
-    return true;
+  if (operation == nullptr) {
+    return false;
   }
-  return false;
+  int index = _operations.indexOf(operation);
+  bool wasSelected = _selectedOperations.remove(operation);
+  beginRemoveRows(QModelIndex(), index, index);
+  _operations.removeOne(operation);
+  // Clear from selection if present
+  // Clear currentOperation if it was the removed one
+  if (_currentOperation == operation) {
+    _currentOperation = nullptr;
+    emit currentOperationChanged();
+  }
+  endRemoveRows();
+  recalculateBalances();
+  emit countChanged();
+  if (wasSelected) {
+    emit selectionChanged();
+  }
+  return true;
 }
 
 void Account::clearOperations() {
   bool hadSelection = !_selectedOperations.isEmpty();
+  beginResetModel();
   _selectedOperations.clear();
   qDeleteAll(_operations);
   _operations.clear();
   if (_currentOperation) {
-    set_currentOperation(nullptr);
+    _currentOperation = nullptr;
+    emit currentOperationChanged();
   }
-  emit operationCountChanged();
+  endResetModel();
+  emit countChanged();
   if (hadSelection) {
     emit selectionChanged();
   }
@@ -149,7 +211,7 @@ bool Account::hasOperation(const QDate& date, double amount, const QString& labe
   return false;
 }
 
-Operation* Account::getOperation(int index) const {
+Operation* Account::operationAt(int index) const {
   if (index >= 0 && index < _operations.size()) {
     return _operations[index];
   }
@@ -163,7 +225,7 @@ bool Account::isSelected(Operation* operation) const {
 }
 
 bool Account::isSelectedAt(int index) const {
-  return isSelected(getOperation(index));
+  return isSelected(operationAt(index));
 }
 
 void Account::select(Operation* operation, bool extend) {
@@ -189,11 +251,21 @@ void Account::select(Operation* operation, bool extend) {
     }
   }
 
+  _currentOperation = operation;
+  emit currentOperationChanged();
   emit selectionChanged();
 }
 
+void Account::previousOperation(bool extendSelection) {
+  select(operationAt(currentOperationIndex() - 1), extendSelection);
+}
+
+void Account::nextOperation(bool extendSelection) {
+  select(operationAt(currentOperationIndex() + 1), extendSelection);
+}
+
 void Account::selectAt(int index, bool extend) {
-  select(getOperation(index), extend);
+  select(operationAt(index), extend);
 }
 
 void Account::toggleSelection(Operation* operation) {
@@ -210,7 +282,7 @@ void Account::toggleSelection(Operation* operation) {
 }
 
 void Account::toggleSelectionAt(int index) {
-  toggleSelection(getOperation(index));
+  toggleSelection(operationAt(index));
 }
 
 void Account::selectRange(int fromIndex, int toIndex) {
@@ -269,11 +341,54 @@ QString Account::selectedOperationsAsCsv() const {
 
   for (Operation* op : sortedSelected) {
     csv += QString("%0,\"%1\",%2,%3\n")
-               .arg(op->date().toString("yyyy-MM-dd"))
-               .arg(op->label().replace("\"", "\"\""))
+               .arg(op->date().toString("yyyy-MM-dd"),
+                    op->label().replace("\"", "\"\""))
                .arg(op->amount(), 0, 'f', 2)
                .arg((op->categoryDisplay()));
   }
 
   return csv;
+}
+
+int Account::countOperationsWithCategory(const Category* category) const {
+  auto hasCategory = [category](const Operation* operation) {
+    return operation->amountForCategory(category);
+  };
+  return std::count_if(_operations.begin(), _operations.end(), hasCategory);
+}
+
+double Account::currentBalance() const {
+  if (_balances.isEmpty())
+    return 0.0;
+  return _balances.first();
+}
+
+double Account::balanceAt(int index) const {
+  if (index < 0 || index >= _balances.size())
+    return 0.0;
+  return _balances[index];
+}
+
+void Account::recalculateBalances() {
+  _balances.clear();
+
+  const int count = rowCount();
+
+  if (count == 0)
+    return;
+
+  _balances.resize(count);
+
+  // Operations are sorted most recent first
+  // Calculate cumulative balance from oldest to newest
+  double balance = 0.0;
+  for (int i = count - 1; i >= 0; --i) {
+    Operation* op = operationAt(i);
+    if (op) {
+      balance += op->amount();
+    }
+    _balances[i] = balance;
+  }
+  emit dataChanged(createIndex(0, 0), createIndex(count - 1, 0), { BalanceRole });
+  emit balanceChanged();
 }

@@ -1,8 +1,12 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "AppSettings.h"
 #include "AppState.h"
+#include "BudgetData.h"
+#include "Foreigners.h"
 #include "TranslationManager.h"
+#include "UpdateController.h"
 
 void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
   QByteArray localMsg = msg.toLocal8Bit();
@@ -49,29 +53,36 @@ int main(int argc, char* argv[]) {
   app.setOrganizationDomain("martin.delille.org");
   app.setApplicationName("Comptine");
 
+  QUndoStack undoStack;
+  AppSettings settings;
+  UpdateController updateController(settings);
+  BudgetData budgetData(undoStack);
+  CategoryController categories(budgetData, undoStack);
+  RuleController rules(budgetData, undoStack);
+  FileController file(settings, budgetData, categories, rules, undoStack);
+
+  AppState appState;
+
+  UndoStackForeign::instance = &undoStack;
+  AppSettingsForeign::instance = &settings;
+  UpdateControllerForeign::instance = &updateController;
+  AppStateForeign::instance = &appState;
+  BudgetDataForeign::instance = &budgetData;
+  CategoryControllerForeign::instance = &categories;
+  RuleControllerForeign::instance = &rules;
+  FileControllerForeign::instance = &file;
+
+  file.loadInitialFile(QCoreApplication::arguments());
+
   QQmlApplicationEngine engine;
 
-  // Get the AppState singleton created by QML engine
-  auto* appState = engine.singletonInstance<AppState*>("Comptine", "AppState");
-  Q_ASSERT(appState);
-
   // Setup translation manager (handles initial load and live switching)
-  TranslationManager translationManager(app, engine, *appState->settings());
+  TranslationManager translationManager(app, engine, settings);
 
   // Handle QML creation failure
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
       []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-
-  // Load initial file after QML engine is fully initialized
-  QObject::connect(
-      &engine, &QQmlApplicationEngine::objectCreated, &app,
-      [appState](QObject* obj, const QUrl&) {
-        if (obj) {
-          appState->file()->loadInitialFile(QCoreApplication::arguments());
-        }
-      },
-      Qt::QueuedConnection);
 
   engine.loadFromModule("Comptine", "Main");
 

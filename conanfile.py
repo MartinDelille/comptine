@@ -1,7 +1,7 @@
 import os
 
 from conan import ConanFile
-from conan.tools.cmake import CMakeToolchain
+from conan.tools.cmake import CMakeToolchain, cmake_layout
 
 
 class ComptineConan(ConanFile):
@@ -10,6 +10,9 @@ class ComptineConan(ConanFile):
 
     def requirements(self):
         self.requires("yaml-cpp/0.8.0")
+
+    def layout(self):
+        cmake_layout(self)
 
     def generate(self):
         generator = "Ninja"

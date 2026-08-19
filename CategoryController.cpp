@@ -5,6 +5,7 @@
 
 #include "Account.h"
 #include "BudgetData.h"
+#include "Category.h"
 #include "CategoryController.h"
 #include "Operation.h"
 #include "UndoCommands.h"
@@ -14,22 +15,23 @@ bool isSameMonth(const QDate& d1, const QDate& d2) {
 }
 
 CategoryController::CategoryController(BudgetData& budgetData,
-                                       const NavigationController& navigation,
                                        QUndoStack& undoStack) :
     _budgetData(budgetData),
-    _navigation(navigation),
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
-  connect(&_navigation, &NavigationController::currentCategoryIndexChanged, this, &CategoryController::currentChanged);
-  connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::refresh);
-  connect(&_navigation, &NavigationController::budgetDateChanged, this, &CategoryController::budgetDataChanged);
+  connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
+  connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
   connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
 
-Category* CategoryController::current() const {
-  return at(_navigation.currentCategoryIndex());
+int CategoryController::currentIndex() const {
+  return _categories.indexOf(_current);
+}
+
+void CategoryController::set_currentIndex(int index) {
+  set_current(at(index));
 }
 
 int CategoryController::rowCount(const QModelIndex& parent) const {
@@ -41,10 +43,10 @@ int CategoryController::rowCount(const QModelIndex& parent) const {
 
 int CategoryController::balancedCount() const {
   int result = 0;
-  int year = _navigation.budgetDate().year();
-  int month = _navigation.budgetDate().month();
+  int year = _budgetData.budgetDate().year();
+  int month = _budgetData.budgetDate().month();
   for (const Category* category : _categories) {
-    if (qAbs(category->budgetLimitForMonth(_navigation.budgetDate()) - spentInCategory(category, _navigation.budgetDate()) + category->leftoverDecision(year, month).leftoverTotal()) < 0.01) {
+    if (qAbs(category->budgetLimitForMonth(_budgetData.budgetDate()) - spentInCategory(category, _budgetData.budgetDate()) + category->leftoverDecision(year, month).leftoverTotal()) < 0.01) {
       result++;
     }
   }
@@ -63,21 +65,21 @@ QVariant CategoryController::data(const QModelIndex& index, int role) const {
       case CategoryRole:
         return QVariant::fromValue(category);
       case AmountRole:
-        return spentInCategory(category, _navigation.budgetDate());
+        return spentInCategory(category, _budgetData.budgetDate());
       case AccumulatedRole:
-        return category->accumulatedLeftoverBefore(_navigation.budgetDate());
+        return category->accumulatedLeftoverBefore(_budgetData.budgetDate());
       case LeftoverRole:
-        return leftoverForCategory(category, _navigation.budgetDate());
+        return leftoverForCategory(category, _budgetData.budgetDate());
       case SaveAmountRole: {
-        MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
         return record.saveAmount;
       }
       case ReportAmountRole: {
-        MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+        MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
         return record.reportAmount;
       }
       case BudgetLimitRole:
-        return category->budgetLimitForMonth(_navigation.budgetDate());
+        return category->budgetLimitForMonth(_budgetData.budgetDate());
     }
   }
   return QVariant();
@@ -98,7 +100,7 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
 double CategoryController::totalIncome() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    double budgetLimit = category->budgetLimitForMonth(_navigation.budgetDate());
+    double budgetLimit = category->budgetLimitForMonth(_budgetData.budgetDate());
     if (budgetLimit > 0) {
       total += budgetLimit;
     }
@@ -109,7 +111,7 @@ double CategoryController::totalIncome() const {
 double CategoryController::totalExpense() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    double budgetLimit = category->budgetLimitForMonth(_navigation.budgetDate());
+    double budgetLimit = category->budgetLimitForMonth(_budgetData.budgetDate());
     if (budgetLimit < 0) {
       total += -budgetLimit;  // Show expenses as positive
     }
@@ -120,7 +122,7 @@ double CategoryController::totalExpense() const {
 double CategoryController::totalToSave() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     total += record.saveAmount;
   }
   return total;
@@ -129,7 +131,7 @@ double CategoryController::totalToSave() const {
 double CategoryController::totalToReport() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     if (record.reportAmount > 0) {
       total += record.reportAmount;
     }
@@ -140,7 +142,7 @@ double CategoryController::totalToReport() const {
 double CategoryController::totalFromReport() const {
   double total = 0.0;
   for (const Category* category : _categories) {
-    MonthRecord record = category->monthRecord(_navigation.budgetDate().year(), _navigation.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     if (record.reportAmount < 0) {
       total += -record.reportAmount;
     }
@@ -163,6 +165,10 @@ Category* CategoryController::at(int index) const {
   return nullptr;
 }
 
+int CategoryController::categoryIndex(const Category* category) const {
+  return _categories.indexOf(const_cast<Category*>(category));
+}
+
 Category* CategoryController::getCategoryByName(const QString& name) const {
   for (Category* category : _categories) {
     if (category->name() == name) {
@@ -170,6 +176,11 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
     }
   }
   return nullptr;
+}
+
+Allocation* CategoryController::createAllocation(const QString& categoryName, double amount) {
+  const Category* category = getCategoryByName(categoryName);
+  return new Allocation(category, amount);
 }
 
 Category* CategoryController::editCategory(const QString& name, double budgetLimit, Category* category, QDate budgetDate) {
@@ -189,8 +200,10 @@ Category* CategoryController::editCategory(const QString& name, double budgetLim
 }
 
 void CategoryController::deleteCategory(Category* category) {
-  if (!category) return;
-  if (!_budgetData.operationModel()) return;
+  if (category == nullptr) {
+    return;
+  }
+  int previousIndex = currentIndex();
 
   QUndoCommand* macroCommand = new QUndoCommand();
 
@@ -206,7 +219,7 @@ void CategoryController::deleteCategory(Category* category) {
       }
       // Only create a command if the allocations actually changed
       if (newAllocations.size() != op->allocations().size()) {
-        new SplitOperationCommand(*op, _budgetData.operationModel(),
+        new SplitOperationCommand(*op,
                                   newAllocations, macroCommand);
       }
     }
@@ -214,16 +227,19 @@ void CategoryController::deleteCategory(Category* category) {
 
   _undoStack.push(new DeleteCategoryCommand(this, category));
   _undoStack.push(macroCommand);
+  if (category == _current) {
+    set_currentIndex(previousIndex);
+  }
 }
 
-void CategoryController::addCategory(Category* category) {
+Category* CategoryController::addCategory(Category* category) {
   if (category == nullptr) {
-    return;
+    return nullptr;
   }
   // Skip if category with same name already exists
   if (getCategoryByName(category->name())) {
     delete category;
-    return;
+    return nullptr;
   }
   category->setParent(this);
 
@@ -244,6 +260,7 @@ void CategoryController::addCategory(Category* category) {
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
+  return category;
 }
 
 void CategoryController::clear() {

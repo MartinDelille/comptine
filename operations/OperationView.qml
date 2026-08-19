@@ -2,16 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import Comptine
 import commonui
 
 FocusScope {
     id: root
     objectName: "OperationView"
-
-    required property var budgetData
-    required property var categories
-    required property var navigation
-    required property var rules
 
     onActiveFocusChanged: {
         if (activeFocus) {
@@ -23,25 +19,16 @@ FocusScope {
         operationEditDialog.initialize(null);
     }
 
-    function editCurrentOperation() {
-        let operation = budgetData.operationModel.operationAt(operationList.currentIndex);
-
-        if (operation) {
-            operationEditDialog.initialize(operation);
-        }
+    function editCurrentOperation(advanced) {
+        operationEditDialog.initialize(BudgetData.currentAccount.currentOperation, advanced);
     }
 
     RenameAccountDialog {
         id: renameDialog
-        budgetData: root.budgetData
     }
 
     OperationEditDialog {
         id: operationEditDialog
-        budgetData: root.budgetData
-        categories: root.categories
-        navigation: root.navigation
-        rules: root.rules
         onClosed: operationList.forceActiveFocus()
     }
 
@@ -54,25 +41,23 @@ FocusScope {
             spacing: Theme.spacingNormal
 
             AccountComboBox {
-                budgetData: root.budgetData
                 Layout.preferredWidth: 200
-                currentIndex: root.navigation.currentAccountIndex
+                currentIndex: BudgetData.currentAccountIndex
                 onActivated: function (index) {
-                    root.navigation.currentAccountIndex = index;
-                    operationList.forceActiveFocus();
+                    BudgetData.currentAccountIndex = index;
                 }
             }
 
             Button {
                 text: qsTr("Rename")
-                enabled: root.budgetData.accountCount > 0
+                enabled: BudgetData.accountCount > 0
                 onClicked: renameDialog.open()
             }
 
             BalanceHeader {
                 Layout.fillWidth: true
-                balance: root.budgetData.operationModel.count > 0 ? root.budgetData.operationModel.balanceAt(0) : 0
-                operationCount: root.budgetData.operationModel.count
+                balance: BudgetData.currentAccount?.currentBalance || 0
+                operationCount: BudgetData.currentAccount?.count || 0
             }
         }
 
@@ -83,32 +68,19 @@ FocusScope {
 
             OperationList {
                 id: operationList
-                currentIndex: root.navigation.currentAccount ? root.navigation.currentAccount.currentOperationIndex : -1
-                model: root.budgetData.operationModel
+                account: BudgetData.currentAccount
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                onPreviousOperation: shift => {
-                    root.navigation.previousOperation(shift);
-                }
-                onNextOperation: shift => {
-                    root.navigation.nextOperation(shift);
-                }
-                onToggleSelectionAt: index => {
-                    root.navigation.currentAccount.toggleSelectionAt(index);
-                }
-                onSelectAt: (index, extend) => {
-                    root.navigation.currentAccount.selectAt(index, extend);
-                }
             }
 
             OperationDetails {
                 id: operationDetails
-                budgetData: root.budgetData
+                account: BudgetData.currentAccount
                 Layout.preferredWidth: parent.width * 0.3
                 Layout.minimumWidth: 200
                 Layout.maximumWidth: 400
                 Layout.fillHeight: true
-                currentIndex: operationList.currentIndex
+                operation: BudgetData.currentAccount?.currentOperation
                 onEditRequested: operation => {
                     operationEditDialog.initialize(operation);
                 }
