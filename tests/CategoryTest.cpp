@@ -414,7 +414,7 @@ private slots:
   // EditCategoryCommand undo/redo with budget limit history
 
   void testEditCategoryCommandUndoRedo() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     QDate budgetDate(2025, 6, 1);  // Changing budget while viewing June
@@ -451,7 +451,7 @@ private slots:
   }
 
   void testEditCategoryCommandPreservesExistingHistory() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     // Pre-existing budget limit in history for May (e.g., from a previous change)
@@ -480,7 +480,7 @@ private slots:
   }
 
   void testEditCategoryNameOnlyNoHistoryChange() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     QDate budgetDate(2025, 6, 1);
@@ -501,10 +501,34 @@ private slots:
   void testCountOperationsWithCategory() {
     auto food = categoryController->addCategory(new Category("Food", -250));
     auto transport = categoryController->addCategory(new Category("Transport", -50));
-    auto account = budgetData->addAccount(new Account("Account"));
+    auto account = budgetData->createAccount("Account");
     auto bread = account->addOperation(new Operation(account, QDate(2026, 8, 15), 1., "Bread", "", { new Allocation(food, 1) }));
     QCOMPARE(budgetData->countOperationsWithCategory(food), 1);
     QCOMPARE(budgetData->countOperationsWithCategory(transport), 0);
+  }
+
+  void testSplitOperationUndoRedoPreservesAllocations() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto transport = categoryController->addCategory(new Category("Transport", -50));
+    auto account = budgetData->createAccount("Account");
+    auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
+
+    budgetData->setOperationAllocations(operation, { new Allocation(food, -60.),
+                                                     new Allocation(transport, -40.) });
+    QCOMPARE(operation->allocations().size(), 2);
+    QCOMPARE(operation->amountForCategory(food), -60.);
+    QCOMPARE(operation->amountForCategory(transport), -40.);
+
+    undoStack->undo();
+    QVERIFY(operation->allocations().isEmpty());
+
+    undoStack->redo();
+    QCOMPARE(operation->allocations().size(), 2);
+    QCOMPARE(operation->amountForCategory(food), -60.);
+    QCOMPARE(operation->amountForCategory(transport), -40.);
+
+    undoStack->undo();
+    QVERIFY(operation->allocations().isEmpty());
   }
 };
 

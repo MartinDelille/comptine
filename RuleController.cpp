@@ -37,7 +37,7 @@ void RuleController::addRule(Rule* rule) {
   }
 
   // Check for duplicate (same match + same amount filter)
-  for (const Rule* existing : _rules) {
+  for (auto existing : _rules) {
     if (existing->labelMatch().compare(rule->labelMatch(), Qt::CaseInsensitive) == 0
         && qFuzzyCompare(existing->amountFilter(), rule->amountFilter())) {
       qWarning() << "Rule with same match and amount already exists:" << rule->labelMatch();
@@ -81,13 +81,14 @@ void RuleController::editRule(int index, const Category* category, const QString
   }
 
   // Check for duplicate (same match + same amount filter), excluding the rule being edited
-  for (int i = 0; i < _rules.size(); i++) {
-    if (i != index
-        && _rules[i]->labelMatch().compare(labelMatch, Qt::CaseInsensitive) == 0
-        && qFuzzyCompare(_rules[i]->amountFilter(), amountFilter)) {
-      qWarning() << "Rule with same match and amount already exists:" << labelMatch;
-      return;
-    }
+  auto isDuplicate = [editedRule, &labelMatch, amountFilter](auto rule) {
+    return rule != editedRule
+           && rule->labelMatch().compare(labelMatch, Qt::CaseInsensitive) == 0
+           && qFuzzyCompare(rule->amountFilter(), amountFilter);
+  };
+  if (std::any_of(_rules.begin(), _rules.end(), isDuplicate)) {
+    qWarning() << "Rule with same match and amount already exists:" << labelMatch;
+    return;
   }
 
   _undoStack.push(new EditRuleCommand(this, index,
@@ -153,7 +154,7 @@ const Category* RuleController::matchingCategory(Operation* operation) const {
     return nullptr;
   }
   // Use full matching (label + optional amount) so amount-filtered rules work
-  for (const Rule* rule : _rules) {
+  for (auto rule : _rules) {
     if (rule->matches(operation)) {
       return rule->category();
     }
@@ -187,8 +188,8 @@ int RuleController::applyRuleToUncategorized(const Category* category, const QSt
   QUndoCommand* macroCommand = new QUndoCommand();
   int count = 0;
 
-  for (Account* account : _budgetData.accounts()) {
-    for (Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       if (!op->isCategorized() && tempRule.matches(op)) {
         QList<Allocation*> newAllocations;
         newAllocations.append(new Allocation(category, op->amount()));
@@ -210,8 +211,8 @@ int RuleController::applyRuleToUncategorized(const Category* category, const QSt
 
 Operation* RuleController::nextUncategorizedOperation(Operation* current) const {
   bool foundCurrent = current == nullptr;
-  for (Account* account : _budgetData.accounts()) {
-    for (Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       if (op == current) {
         foundCurrent = true;
         continue;
@@ -230,8 +231,8 @@ Operation* RuleController::previousUncategorizedOperation(Operation* current) co
   }
 
   Operation* previousUncategorized = nullptr;
-  for (Account* account : _budgetData.accounts()) {
-    for (Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       if (op == current) {
         return previousUncategorized;
       }

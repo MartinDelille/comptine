@@ -65,8 +65,7 @@ private slots:
     QCOMPARE(categoryController->rowCount(), 0);
 
     // Try adding an account
-    Account* account = new Account("Test Account");
-    budgetData->addAccount(account);
+    auto account = budgetData->createAccount("Test Account");
     QCOMPARE(budgetData->rowCount(), 1);
 
     // Now try clear
@@ -120,7 +119,7 @@ private slots:
   void testLoadFromYamlUrl() {
     // Create a test file
     QString filePath = tempDir->filePath("url_load.comptine");
-    budgetData->addAccount(new Account("Test Account"));
+    budgetData->createAccount("Test Account");
     fileController->saveToYamlFile(filePath);
 
     // Load using QUrl
@@ -134,15 +133,16 @@ private slots:
 
   void testSaveAndLoadWithSingleAccount() {
     // Create test data
-    Account* account = new Account("Checking Account");
-    budgetData->addAccount(account);
-
-    Operation* op = new Operation(account);
-    op->set_date(QDate(2025, 1, 15));
-    op->set_amount(-50.0);
-    op->set_label("Grocery Store");
-    op->setAllocations({ new Allocation(new Category("Food"), -50) });
-    account->addOperation(op, false);
+    auto account = budgetData->createAccount("Checking Account");
+    auto food = categoryController->addCategory(new Category("Food"));
+    auto op = account->addOperation(
+        new Operation(account,
+                      QDate(2025, 1, 15),
+                      -50.0,
+                      "Grocery Store",
+                      {},
+                      { new Allocation(food, -50) }),
+        false);
 
     categoryController->editCategory("Food", 200.0);
 
@@ -158,11 +158,11 @@ private slots:
     QCOMPARE(budgetData->rowCount(), 1);
     QCOMPARE(categoryController->rowCount(), 1);
 
-    Account* loadedAccount = budgetData->accountAt(0);
+    auto loadedAccount = budgetData->at(0);
     QCOMPARE(loadedAccount->name(), QString("Checking Account"));
     QCOMPARE(loadedAccount->operations().size(), 1);
 
-    Operation* loadedOp = loadedAccount->operations()[0];
+    auto loadedOp = loadedAccount->operations()[0];
     QCOMPARE(loadedOp->date(), QDate(2025, 1, 15));
     QCOMPARE(loadedOp->amount(), -50.0);
     QCOMPARE(loadedOp->label(), QString("Grocery Store"));
@@ -174,23 +174,16 @@ private slots:
 
   void testSaveAndLoadWithMultipleAccounts() {
     // Create multiple accounts
-    Account* checking = new Account("Checking");
-    Account* savings = new Account("Savings");
-    budgetData->addAccount(checking);
-    budgetData->addAccount(savings);
+    auto checking = budgetData->createAccount("Checking");
+    auto savings = budgetData->createAccount("Savings");
 
     // Add operations to each
-    Operation* op1 = new Operation(checking);
-    op1->set_date(QDate(2025, 1, 10));
-    op1->set_amount(-100.0);
-    op1->set_label("Purchase 1");
-    checking->addOperation(op1, false);
+    auto op1 = checking->addOperation(
+        new Operation(checking,
+                      QDate(2025, 1, 10), -100, "Purchase 1"),
+        false);
 
-    Operation* op2 = new Operation(savings);
-    op2->set_date(QDate(2025, 1, 20));
-    op2->set_amount(500.0);
-    op2->set_label("Deposit");
-    savings->addOperation(op2, false);
+    auto op2 = savings->addOperation(new Operation(savings, QDate(2025, 1, 20), 500, "Deposit"), false);
 
     // Save and reload
     QString filePath = tempDir->filePath("multiple_accounts.comptine");
@@ -200,33 +193,32 @@ private slots:
 
     // Verify
     QCOMPARE(budgetData->rowCount(), 2);
-    QCOMPARE(budgetData->accountAt(0)->name(), QString("Checking"));
-    QCOMPARE(budgetData->accountAt(1)->name(), QString("Savings"));
-    QCOMPARE(budgetData->accountAt(0)->operations().size(), 1);
-    QCOMPARE(budgetData->accountAt(1)->operations().size(), 1);
+    QCOMPARE(budgetData->at(0)->name(), QString("Checking"));
+    QCOMPARE(budgetData->at(1)->name(), QString("Savings"));
+    QCOMPARE(budgetData->at(0)->operations().size(), 1);
+    QCOMPARE(budgetData->at(1)->operations().size(), 1);
   }
 
   // Save/Load with Split Operations
 
   void testSaveAndLoadSplitOperation() {
-    Account* account = new Account("Test Account");
-    budgetData->addAccount(account);
+    auto account = budgetData->createAccount("Test Account");
 
     // Create split operation
-    Operation* op = new Operation(account);
-    op->set_date(QDate(2025, 2, 1));
-    op->set_amount(-150.0);
-    op->set_label("Mixed Purchase");
 
     auto food = categoryController->editCategory("Food", 200.0);
     auto transport = categoryController->editCategory("Transport", 100.0);
 
+    auto op = account->addOperation(
+        new Operation(account,
+                      QDate(2025, 2, 1),
+                      -150.0,
+                      "Mixed Purchase"),
+        false);
     QList<Allocation*> allocations;
-    allocations.append(new Allocation{ food, -100.0 });
-    allocations.append(new Allocation{ transport, -50.0 });
+    allocations.append(new Allocation(food, -100.0));
+    allocations.append(new Allocation(transport, -50.0));
     op->setAllocations(allocations);
-
-    account->addOperation(op, false);
 
     // Save and reload
     QString filePath = tempDir->filePath("split_operation.comptine");
@@ -235,8 +227,8 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify split operation
-    Account* loadedAccount = budgetData->accountAt(0);
-    Operation* loadedOp = loadedAccount->operations()[0];
+    auto loadedAccount = budgetData->at(0);
+    auto loadedOp = loadedAccount->operations()[0];
     QVERIFY(loadedOp->isCategorized());
 
     auto loadedAllocs = loadedOp->allocations();
@@ -250,16 +242,16 @@ private slots:
   // Save/Load with Budget Dates
 
   void testSaveAndLoadWithBudgetDate() {
-    Account* account = new Account("Test Account");
-    budgetData->addAccount(account);
-
-    Operation* op = new Operation(account);
-    op->set_date(QDate(2025, 1, 31));
-    op->set_amount(-75.0);
-    op->set_label("Late Month Purchase");
-    op->setAllocations({ new Allocation(new Category("Shopping"), -75.0) });
+    auto account = budgetData->createAccount("Test Account");
+    auto op = account->addOperation(new Operation(
+                                        account,
+                                        QDate(2025, 1, 31),
+                                        -75.0,
+                                        "Late Month Purchase"),
+                                    false);
+    auto shopping = categoryController->addCategory(new Category("Shopping"));
+    op->setAllocations({ new Allocation(shopping, -75.0) });
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
-    account->addOperation(op, false);
 
     categoryController->editCategory("Shopping", 150.0);
 
@@ -270,24 +262,23 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify budget date is preserved
-    Operation* loadedOp = budgetData->accountAt(0)->operations()[0];
+    auto loadedOp = budgetData->at(0)->operations()[0];
     QCOMPARE(loadedOp->date(), QDate(2025, 1, 31));
     QCOMPARE(loadedOp->budgetDate(), QDate(2025, 2, 1));
   }
 
   void testBudgetDateNotSavedWhenSameAsDate() {
-    Account* account = new Account("Test Account");
-    budgetData->addAccount(account);
-
+    auto account = budgetData->createAccount("Test Account");
     auto food = categoryController->editCategory("Food", 200.0);
 
-    Operation* op = new Operation(account);
-    op->set_date(QDate(2025, 3, 15));
-    op->set_amount(-30.0);
-    op->set_label("Normal Purchase");
-    op->setAllocations({ new Allocation(food, -30.0) });
     // budgetDate defaults to date, so it should not be saved
-    account->addOperation(op, false);
+    auto op = account->addOperation(new Operation(
+                                        account,
+                                        QDate(2025, 3, 15),
+                                        -30.0,
+                                        "Normal Purchase"),
+                                    false);
+    op->setAllocations({ new Allocation(food, -30.0) });
 
     // Save and check file content doesn't have budget_date
     QString filePath = tempDir->filePath("no_budget_date.comptine");
@@ -317,7 +308,7 @@ private slots:
 
     // Verify categories
     QCOMPARE(categoryController->rowCount(), 3);
-    Category* food = categoryController->getCategoryByName("Food");
+    auto food = categoryController->getCategoryByName("Food");
     QVERIFY(food != nullptr);
     QCOMPARE(food->budgetLimit(), 500.0);
   }
@@ -325,7 +316,7 @@ private slots:
   // Save/Load with Leftover Decisions
 
   void testSaveAndLoadLeftoverDecisions() {
-    Category* cat = new Category("Savings", 300.0);
+    auto cat = new Category("Savings", 300.0);
     categoryController->addCategory(cat);
 
     // Set leftover decision for January 2025
@@ -338,7 +329,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify leftover decision
-    Category* loadedCat = categoryController->getCategoryByName("Savings");
+    auto loadedCat = categoryController->getCategoryByName("Savings");
     QVERIFY(loadedCat != nullptr);
     LeftoverDecision decision = loadedCat->leftoverDecision(2025, 1);
     QCOMPARE(decision.saveAmount, 100.0);
@@ -364,7 +355,7 @@ private slots:
 
     // Load and verify conversion
     fileController->loadFromYamlFile(filePath);
-    Category* cat = categoryController->getCategoryByName("Food");
+    auto cat = categoryController->getCategoryByName("Food");
     QVERIFY(cat != nullptr);
     LeftoverDecision decision = cat->leftoverDecision(2025, 1);
     QCOMPARE(decision.saveAmount, 50.0);
@@ -374,7 +365,7 @@ private slots:
   // Save/Load with Month History and Budget Limit Overrides
 
   void testSaveAndLoadMonthHistoryWithBudgetLimit() {
-    Category* cat = new Category("Groceries", -300.0);
+    auto cat = new Category("Groceries", -300.0);
     categoryController->addCategory(cat);
 
     // Record that budget was 250 until June (old limit stored in history)
@@ -390,7 +381,7 @@ private slots:
     fileController->loadFromYamlFile(filePath);
 
     // Verify
-    Category* loaded = categoryController->getCategoryByName("Groceries");
+    auto loaded = categoryController->getCategoryByName("Groceries");
     QVERIFY(loaded != nullptr);
     QCOMPARE(loaded->budgetLimit(), -300.0);
 
@@ -408,7 +399,7 @@ private slots:
   }
 
   void testSaveAndLoadMonthHistoryBudgetLimitOnly() {
-    Category* cat = new Category("Transport", -150.0);
+    auto cat = new Category("Transport", -150.0);
     categoryController->addCategory(cat);
 
     // Only budget limit in history, no leftover data
@@ -419,7 +410,7 @@ private slots:
     fileController->clear();
     fileController->loadFromYamlFile(filePath);
 
-    Category* loaded = categoryController->getCategoryByName("Transport");
+    auto loaded = categoryController->getCategoryByName("Transport");
     QVERIFY(loaded != nullptr);
 
     MonthRecord record = loaded->monthRecord(2025, 3);
@@ -430,7 +421,7 @@ private slots:
   }
 
   void testSaveAndLoadMultipleBudgetLimitChanges() {
-    Category* cat = new Category("Food", -400.0);
+    auto cat = new Category("Food", -400.0);
     categoryController->addCategory(cat);
 
     // Multiple historical budget limit changes
@@ -443,7 +434,7 @@ private slots:
     fileController->clear();
     fileController->loadFromYamlFile(filePath);
 
-    Category* loaded = categoryController->getCategoryByName("Food");
+    auto loaded = categoryController->getCategoryByName("Food");
     QVERIFY(loaded != nullptr);
     QCOMPARE(loaded->budgetLimit(), -400.0);
 
@@ -473,7 +464,7 @@ private slots:
     file.close();
 
     fileController->loadFromYamlFile(filePath);
-    Category* cat = categoryController->getCategoryByName("Shopping");
+    auto cat = categoryController->getCategoryByName("Shopping");
     QVERIFY(cat != nullptr);
 
     LeftoverDecision decision = cat->leftoverDecision(2025, 1);
@@ -483,7 +474,7 @@ private slots:
 
   void testSaveUsesMonthHistoryKey() {
     // Verify that saving uses the new "month_history" key
-    Category* cat = new Category("Test", -100.0);
+    auto cat = new Category("Test", -100.0);
     categoryController->addCategory(cat);
     cat->setLeftoverDecision(2025, 1, { 10.0, 5.0 });
 
@@ -609,11 +600,11 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->rowCount(), 2);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
 
-    auto operation = account->operations().at(0);
+    auto operation = account->operationAt(0);
     QCOMPARE(operation->date(), QDate(2025, 10, 8));
     QCOMPARE(operation->amount(), -45.0);
     QCOMPARE(operation->label(), "Supermarche Carrefour");
@@ -627,7 +618,7 @@ private slots:
     QCOMPARE(allocation->category()->name(), "Loisirs");
     QCOMPARE(allocation->amount(), -5.0);
 
-    operation = account->operations().at(1);
+    operation = account->operationAt(1);
     QCOMPARE(operation->date(), QDate(2025, 10, 7));
     QCOMPARE(operation->amount(), -9.99);
     QCOMPARE(operation->label(), QString("Abonnement Libération"));
@@ -654,11 +645,11 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->rowCount(), 2);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Compte Courant"));
     QCOMPARE(account->operations().size(), 5);
 
-    auto operation = account->operations().at(0);
+    auto operation = account->operationAt(0);
     QCOMPARE(operation->date(), QDate(2025, 10, 8));
     QCOMPARE(operation->amount(), -45.0);
     QCOMPARE(operation->label(), "Supermarche Carrefour");
@@ -672,7 +663,7 @@ private slots:
     QCOMPARE(allocation->category(), loisirs);
     QCOMPARE(allocation->amount(), -5.0);
 
-    operation = account->operations().at(1);
+    operation = account->operationAt(1);
     QCOMPARE(operation->date(), QDate(2025, 10, 7));
     QCOMPARE(operation->amount(), -9.99);
     QCOMPARE(operation->label(), QString("Abonnement Libération"));
@@ -696,7 +687,7 @@ private slots:
     QVERIFY(energie != nullptr);
 
     QCOMPARE(budgetData->rowCount(), 1);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
 
@@ -727,7 +718,7 @@ private slots:
     QCOMPARE(categoryController->rowCount(), 0);
 
     QCOMPARE(budgetData->rowCount(), 1);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
 
@@ -747,7 +738,7 @@ private slots:
     QVERIFY(telephone != nullptr);
 
     QCOMPARE(budgetData->rowCount(), 1);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 1);
 
@@ -771,7 +762,7 @@ private slots:
     QVERIFY(ameublement != nullptr);
 
     QCOMPARE(budgetData->rowCount(), 1);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 3);
 
@@ -803,7 +794,7 @@ private slots:
 
     // Verify import
     QCOMPARE(budgetData->rowCount(), 1);
-    Account* account = budgetData->accountAt(0);
+    auto account = budgetData->at(0);
     QCOMPARE(account->name(), QString("Bank Account"));
     QCOMPARE(account->operations().size(), 2);
 
@@ -827,8 +818,8 @@ private slots:
     QVERIFY(fileController->importFromCsv(csvUrl, "Cash", false));
 
     // Verify operation was imported but category was ignored
-    Account* account = budgetData->accountAt(0);
-    Operation* op = account->operations()[0];
+    auto account = budgetData->at(0);
+    auto op = account->operations()[0];
     QCOMPARE(op->allocations().count(), 0);  // Empty category
 
     // No categories should be created
@@ -854,7 +845,7 @@ private slots:
     fileController->importFromCsv(csvUrl, "Account");
 
     // Rule should have been applied
-    Operation* op = budgetData->accountAt(0)->operations()[0];
+    auto op = budgetData->at(0)->operations()[0];
     QVERIFY(op);
     QCOMPARE(op->label(), "SUPERMARKET PURCHASE");
     QCOMPARE(op->allocations().size(), 1);

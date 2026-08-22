@@ -27,7 +27,7 @@ class UndoStack : public QUndoStack {
 // Note: This command manages account lifecycle in BudgetData
 class AddAccountCommand : public QUndoCommand {
 public:
-  AddAccountCommand(Account* account, BudgetData* budgetData,
+  AddAccountCommand(Account* account, BudgetData& budgetData,
                     QUndoCommand* parent = nullptr);
   ~AddAccountCommand();
 
@@ -38,7 +38,7 @@ public:
 
 private:
   Account* _account;
-  BudgetData* _budgetData;
+  BudgetData& _budgetData;
   bool _ownsAccount;  // True when account is not in BudgetData (after undo)
 };
 
@@ -143,6 +143,7 @@ public:
   AddOperationCommand(Operation* operation,
                       Account& account,
                       QUndoCommand* parent = nullptr);
+  ~AddOperationCommand();
 
   void undo() override;
   void redo() override;
@@ -150,6 +151,7 @@ public:
 private:
   Operation* _operation;
   Account& _account;
+  bool _ownsOperation = true;
 };
 
 // Command for deleting an operation
@@ -158,6 +160,7 @@ public:
   DeleteOperationCommand(Operation* operation,
                          Account& account,
                          QUndoCommand* parent = nullptr);
+  ~DeleteOperationCommand();
 
   void undo() override;
   void redo() override;
@@ -165,6 +168,7 @@ public:
 private:
   Operation* _operation;
   Account& _account;
+  bool _ownsOperation = false;
 };
 
 // Command for setting an operation's budget date
@@ -190,6 +194,7 @@ public:
   SplitOperationCommand(Operation& operation,
                         const QList<Allocation*>& newAllocations,
                         QUndoCommand* parent = nullptr);
+  ~SplitOperationCommand();
 
   void undo() override;
   void redo() override;
@@ -197,6 +202,8 @@ public:
 private:
   Operation& _operation;
   QList<Allocation*> _oldAllocations, _newAllocations;
+
+  static QList<Allocation*> cloneAllocations(const QList<Allocation*>& allocations);
 };
 
 // Command for setting an operation's amount

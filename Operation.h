@@ -60,6 +60,7 @@ public:
             const QString& label = {},
             const QString& details = {},
             const QList<Allocation*>& allocations = {});
+  ~Operation();
 
   // Split allocations methods
   QList<Allocation*> allocations() const { return _allocations; }

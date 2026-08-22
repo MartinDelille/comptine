@@ -10,7 +10,7 @@
 
 // AddAccountCommand implementation
 
-AddAccountCommand::AddAccountCommand(Account* account, BudgetData* budgetData,
+AddAccountCommand::AddAccountCommand(Account* account, BudgetData& budgetData,
                                      QUndoCommand* parent) :
     QUndoCommand(parent),
     _account(account),
@@ -26,20 +26,16 @@ AddAccountCommand::~AddAccountCommand() {
 }
 
 void AddAccountCommand::undo() {
-  if (_budgetData) {
-    _budgetData->takeAccount(_account);
-    _ownsAccount = true;
-  }
+  _budgetData.takeAccount(_account);
+  _ownsAccount = true;
 }
 
 void AddAccountCommand::redo() {
-  if (_budgetData) {
-    _budgetData->addAccount(_account);
-    _ownsAccount = false;
+  _budgetData.addAccount(_account);
+  _ownsAccount = false;
 
-    // Select the newly added account
-    _budgetData->set_currentAccount(_account);
-  }
+  // Select the newly added account
+  _budgetData.set_currentAccount(_account);
 }
 
 // RenameAccountCommand implementation
@@ -202,9 +198,8 @@ ImportOperationsCommand::~ImportOperationsCommand() {
 void ImportOperationsCommand::undo() {
   // Remove operations from account and detach Qt parent to prevent double-delete
   // (when AddAccountCommand deletes the account, it would also delete child operations)
-  for (Operation* op : _operations) {
+  for (auto op : _operations) {
     _account.removeOperation(op);
-    op->setParent(nullptr);
   }
   _ownsOperations = true;
 
@@ -213,7 +208,7 @@ void ImportOperationsCommand::undo() {
 
 void ImportOperationsCommand::redo() {
   // Re-add operations to account
-  for (Operation* op : _operations) {
+  for (auto op : _operations) {
     _account.addOperation(op);
   }
   _ownsOperations = false;
@@ -229,14 +224,19 @@ AddOperationCommand::AddOperationCommand(Operation* operation,
   setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
 }
 
+AddOperationCommand::~AddOperationCommand() {
+  if (_ownsOperation) delete _operation;
+}
+
 void AddOperationCommand::undo() {
   _account.removeOperation(_operation);
-  _operation->setParent(nullptr);
+  _ownsOperation = true;
   _account.refresh();
 }
 
 void AddOperationCommand::redo() {
   _account.addOperation(_operation);
+  _ownsOperation = false;
 }
 
 DeleteOperationCommand::DeleteOperationCommand(Operation* operation,
@@ -248,13 +248,18 @@ DeleteOperationCommand::DeleteOperationCommand(Operation* operation,
   setText(QObject::tr("Add operation: \"%0\"").arg(_operation->label()));
 }
 
+DeleteOperationCommand::~DeleteOperationCommand() {
+  if (_ownsOperation) delete _operation;
+}
+
 void DeleteOperationCommand::undo() {
   _account.addOperation(_operation);
+  _ownsOperation = false;
 }
 
 void DeleteOperationCommand::redo() {
   _account.removeOperation(_operation);
-  _operation->setParent(nullptr);
+  _ownsOperation = true;
   _account.refresh();
 }
 
@@ -282,8 +287,9 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldAllocations(operation.allocations()),
-    _newAllocations(newAllocations) {
+    _oldAllocations(cloneAllocations(operation.allocations())),
+    _newAllocations(cloneAllocations(newAllocations)) {
+  qDeleteAll(newAllocations);
   if (newAllocations.size() > 1) {
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
   } else if (newAllocations.size() == 1) {
@@ -295,12 +301,25 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
   }
 }
 
+SplitOperationCommand::~SplitOperationCommand() {
+  qDeleteAll(_oldAllocations);
+  qDeleteAll(_newAllocations);
+}
+
+QList<Allocation*> SplitOperationCommand::cloneAllocations(const QList<Allocation*>& allocations) {
+  QList<Allocation*> result;
+  for (auto* allocation : allocations) {
+    if (allocation) result.append(new Allocation(allocation->category(), allocation->amount()));
+  }
+  return result;
+}
+
 void SplitOperationCommand::undo() {
-  _operation.setAllocations(_oldAllocations);
+  _operation.setAllocations(cloneAllocations(_oldAllocations));
 }
 
 void SplitOperationCommand::redo() {
-  _operation.setAllocations(_newAllocations);
+  _operation.setAllocations(cloneAllocations(_newAllocations));
 }
 
 SetOperationAmountCommand::SetOperationAmountCommand(Operation& operation,

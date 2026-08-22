@@ -26,6 +26,22 @@ CategoryController::CategoryController(BudgetData& budgetData,
   connect(this, &CategoryController::monthHistoryChanged, this, &CategoryController::refresh);
 }
 
+CategoryController::~CategoryController() {
+  clear();
+}
+
+void CategoryController::clear() {
+  if (_categories.isEmpty()) {
+    return;
+  }
+  beginRemoveRows(QModelIndex(), 0, _categories.size() - 1);
+  for (auto* category : _categories) category->setParent(nullptr);
+  qDeleteAll(_categories);
+  _categories.clear();
+  endRemoveRows();
+  emit countChanged();
+}
+
 int CategoryController::currentIndex() const {
   return _categories.indexOf(_current);
 }
@@ -45,7 +61,7 @@ int CategoryController::balancedCount() const {
   int result = 0;
   int year = _budgetData.budgetDate().year();
   int month = _budgetData.budgetDate().month();
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     if (qAbs(category->budgetLimitForMonth(_budgetData.budgetDate()) - spentInCategory(category, _budgetData.budgetDate()) + category->leftoverDecision(year, month).leftoverTotal()) < 0.01) {
       result++;
     }
@@ -99,7 +115,7 @@ QHash<int, QByteArray> CategoryController::roleNames() const {
 
 double CategoryController::totalIncome() const {
   double total = 0.0;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     double budgetLimit = category->budgetLimitForMonth(_budgetData.budgetDate());
     if (budgetLimit > 0) {
       total += budgetLimit;
@@ -110,7 +126,7 @@ double CategoryController::totalIncome() const {
 
 double CategoryController::totalExpense() const {
   double total = 0.0;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     double budgetLimit = category->budgetLimitForMonth(_budgetData.budgetDate());
     if (budgetLimit < 0) {
       total += -budgetLimit;  // Show expenses as positive
@@ -121,7 +137,7 @@ double CategoryController::totalExpense() const {
 
 double CategoryController::totalToSave() const {
   double total = 0.0;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     total += record.saveAmount;
   }
@@ -130,7 +146,7 @@ double CategoryController::totalToSave() const {
 
 double CategoryController::totalToReport() const {
   double total = 0.0;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     if (record.reportAmount > 0) {
       total += record.reportAmount;
@@ -141,7 +157,7 @@ double CategoryController::totalToReport() const {
 
 double CategoryController::totalFromReport() const {
   double total = 0.0;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
     if (record.reportAmount < 0) {
       total += -record.reportAmount;
@@ -208,8 +224,8 @@ void CategoryController::deleteCategory(Category* category) {
   QUndoCommand* macroCommand = new QUndoCommand();
 
   // Update all operations that reference this category to remove it from their allocations
-  for (Account* account : _budgetData.accounts()) {
-    for (Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       // Create a new allocations list without the deleted category
       QList<Allocation*> newAllocations;
       for (auto alloc : op->allocations()) {
@@ -241,7 +257,6 @@ Category* CategoryController::addCategory(Category* category) {
     delete category;
     return nullptr;
   }
-  category->setParent(this);
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
   connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
@@ -257,26 +272,19 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   beginInsertRows(QModelIndex(), insertRow, insertRow);
+  category->setParent(this);
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
   return category;
 }
 
-void CategoryController::clear() {
-  beginRemoveRows(QModelIndex(), 0, _categories.size() - 1);
-  endRemoveRows();
-  qDeleteAll(_categories);
-  _categories.clear();
-  emit countChanged();
-}
-
 Category* CategoryController::takeCategoryByName(const QString& name) {
   for (int index = 0; index < _categories.size(); index++) {
     if (_categories[index]->name().compare(name, Qt::CaseInsensitive) == 0) {
       beginRemoveRows(QModelIndex(), index, index);
-      Category* cat = _categories.takeAt(index);
-      cat->setParent(nullptr);  // Release Qt ownership
+      auto cat = _categories.takeAt(index);
+      cat->setParent(nullptr);
       endRemoveRows();
       emit countChanged();
       return cat;
@@ -287,7 +295,7 @@ Category* CategoryController::takeCategoryByName(const QString& name) {
 
 QStringList CategoryController::categoryNames() const {
   QStringList names;
-  for (const Category* category : _categories) {
+  for (auto category : _categories) {
     names.append(category->name());
   }
   return names;
@@ -295,8 +303,8 @@ QStringList CategoryController::categoryNames() const {
 
 double CategoryController::spentInCategory(const Category* category, const QDate& budgetDate) const {
   double total = 0.0;
-  for (const Account* account : _budgetData.accounts()) {
-    for (const Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       if (isSameMonth(op->budgetDate(), budgetDate)) {
         // Use amountForCategory which handles both split and non-split operations
         total += op->amountForCategory(category);
@@ -308,8 +316,8 @@ double CategoryController::spentInCategory(const Category* category, const QDate
 
 QVariantList CategoryController::operationsForCategory(const Category* category, const QDate& date) const {
   QVariantList result;
-  for (const Account* account : _budgetData.accounts()) {
-    for (const Operation* op : account->operations()) {
+  for (auto account : _budgetData.accounts()) {
+    for (auto op : account->operations()) {
       if (isSameMonth(op->budgetDate(), date)) {
         // Check if this operation contributes to this category
         double categoryAmount = op->amountForCategory(category);
@@ -361,7 +369,7 @@ double CategoryController::leftoverForCategory(const Category* category, const Q
 }
 
 double CategoryController::accumulatedLeftover(const QString& categoryName, const QDate& date) const {
-  Category* category = getCategoryByName(categoryName);
+  auto category = getCategoryByName(categoryName);
   if (!category) return 0.0;
   return category->accumulatedLeftoverBefore(date);
 }

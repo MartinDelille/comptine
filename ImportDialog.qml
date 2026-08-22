@@ -44,7 +44,7 @@ BaseDialog {
     onAccepted: {
         for (var i = 0; i < fileEntries.count; i++) {
             var entry = fileEntries.get(i);
-            var account = BudgetData.accountAt(entry.existingAccountIndex);
+            var account = BudgetData.at(entry.existingAccountIndex);
             if (!entry.isNewAccount && account === null) {
                 continue;
             }

@@ -37,6 +37,8 @@ bool readFile(const QString &filePath, QByteArray &content, QString &errorMessag
       content = QByteArray();
     }
 
+    [coordinator release];
+
     return true;
   }
 }

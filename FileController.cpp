@@ -147,7 +147,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     out << YAML::Key << "operations" << YAML::Value << YAML::BeginSeq;
     const auto& ops = account->operations();
     for (int opIdx = 0; opIdx < ops.size(); opIdx++) {
-      const Operation* op = ops[opIdx];
+      auto op = ops[opIdx];
       out << YAML::BeginMap;
       out << YAML::Key << "date" << YAML::Value << toStdString(op->date().toString("yyyy-MM-dd"));
       out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(op->amount(), 'f', 2));
@@ -188,7 +188,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   QList<Rule*> rulesList = _ruleController.rules();
   if (!rulesList.isEmpty()) {
     out << YAML::Key << "rules" << YAML::Value << YAML::BeginSeq;
-    for (const Rule* rule : rulesList) {
+    for (auto rule : rulesList) {
       out << YAML::BeginMap;
       if (rule->category()) {
         out << YAML::Key << "category" << YAML::Value << toStdString(rule->category()->name());
@@ -375,7 +375,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         if (acc["name"]) {
           name = yamlString(acc["name"]);
         }
-        auto account = new Account(name);
+        auto account = _budgetData.createAccount(name);
         // Load import source prefix
         YAML::Node importSourcePrefixes;
         if (acc["import_source_prefixes"]) {
@@ -437,7 +437,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           }
         }
         account->sortOperations();
-        _budgetData.addAccount(account);
         if (acc["current"]) {
           if (yamlString(acc["current"]).toLower() == "true") {
             _budgetData.set_currentAccount(account);
@@ -484,7 +483,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   _budgetData.set_currentTabIndex(loadedTabIndex);
   auto currentAccount = _budgetData.currentAccount();
   if (currentAccount == nullptr) {
-    currentAccount = _budgetData.accountAt(0);
+    currentAccount = _budgetData.at(0);
     _budgetData.set_currentAccount(currentAccount);
   }
   if (currentAccount) {
@@ -518,7 +517,7 @@ void FileController::reloadCurrentFile() {
     auto account = _budgetData.currentAccount();
     int operationIndex = account ? account->currentOperationIndex() : -1;
     loadFromYamlFile(currentFilePath());
-    account = _budgetData.accountAt(accountIndex);
+    account = _budgetData.at(accountIndex);
     _budgetData.set_currentAccount(account);
     _categoryController.set_currentIndex(categoryIndex);
     account->selectAt(operationIndex);
@@ -615,11 +614,12 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Create or get account
   QString name = accountName.isEmpty() ? "Imported Account" : accountName;
-  Account* account = _budgetData.accountByName(name);
+  auto account = _budgetData.accountByName(name);
   bool isNewAccount = false;
-  if (!account) {
+  if (account == nullptr) {
     // New account - will be added to BudgetData via AddAccountCommand when undo stack is pushed
-    account = new Account(name);
+    // The undo command owns the account until it is inserted into BudgetData.
+    account = new Account(name, nullptr);
     isNewAccount = true;
   }
 
@@ -710,7 +710,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     // If useCategories is false or category is empty, leave category empty
 
     // Create operation
-    Operation* operation = new Operation(account);
+    auto operation = new Operation();
     operation->set_date(date);
     operation->set_amount(amount);
     operation->set_label(label);
@@ -757,7 +757,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   }
   // Add account command first (if new account)
   if (isNewAccount) {
-    new AddAccountCommand(account, &_budgetData, macroCommand);
+    new AddAccountCommand(account, _budgetData, macroCommand);
   }
 
   // Add operations command
@@ -782,7 +782,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   _budgetData.set_currentAccount(account);
 
   // Apply categorization rules to imported operations
-  for (Operation* op : importedOperations) {
+  for (auto op : importedOperations) {
     _ruleController.applyRulesToOperation(op);
   }
 
@@ -792,7 +792,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Select all imported operations
   account->clearSelection();
-  for (Operation* op : importedOperations) {
+  for (auto op : importedOperations) {
     account->select(op, true);  // Extend selection to include all imported operations
   }
   // Set the first imported operation as the current operation

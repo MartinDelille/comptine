@@ -44,6 +44,9 @@ public:
 
   explicit CategoryController(BudgetData& budgetData,
                               QUndoStack& undoStack);
+  ~CategoryController();
+
+  void clear();
 
   int currentIndex() const;
   void set_currentIndex(int index);
@@ -74,7 +77,6 @@ public:
   Q_INVOKABLE Category* editCategory(const QString& name, double budgetLimit, Category* category = nullptr, QDate budgetDate = QDate());
   Q_INVOKABLE void deleteCategory(Category* category);
   Category* addCategory(Category* category);
-  void clear();
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
 
   // Budget calculations (aggregates across all accounts)

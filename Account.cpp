@@ -3,7 +3,8 @@
 #include "Account.h"
 #include "Operation.h"
 
-Account::Account(const QString& name) :
+Account::Account(const QString& name, QObject* parent) :
+    QAbstractListModel(parent),
     _name(name) {
   connect(this, &Account::selectionChanged,
           this, [this]() {
@@ -11,6 +12,10 @@ Account::Account(const QString& name) :
                              createIndex(rowCount() - 1, 0),
                              { SelectedRole });
           });
+}
+
+Account::~Account() {
+  clear();
 }
 
 Operation* Account::currentOperation() const {
@@ -124,7 +129,6 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   if (operation == nullptr) {
     return nullptr;
   }
-  operation->setParent(this);
   int insertIndex = _operations.size();
   if (sort) {
     insertIndex = 0;
@@ -139,6 +143,7 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
     }
   }
   beginInsertRows(QModelIndex(), insertIndex, insertIndex);
+  operation->setParent(this);
   _operations.insert(insertIndex, operation);
   endInsertRows();
   recalculateBalances();
@@ -152,9 +157,13 @@ bool Account::removeOperation(Operation* operation) {
     return false;
   }
   int index = _operations.indexOf(operation);
+  if (index < 0) {
+    return false;
+  }
   bool wasSelected = _selectedOperations.remove(operation);
   beginRemoveRows(QModelIndex(), index, index);
   _operations.removeOne(operation);
+  operation->setParent(nullptr);
   // Clear from selection if present
   // Clear currentOperation if it was the removed one
   if (_currentOperation == operation) {
@@ -170,7 +179,7 @@ bool Account::removeOperation(Operation* operation) {
   return true;
 }
 
-void Account::clearOperations() {
+void Account::clear() {
   bool hadSelection = !_selectedOperations.isEmpty();
   beginResetModel();
   _selectedOperations.clear();
@@ -203,7 +212,7 @@ void Account::sortOperations() {
 }
 
 bool Account::hasOperation(const QDate& date, double amount, const QString& label) const {
-  for (Operation* op : _operations) {
+  for (auto op : _operations) {
     if (op->date() == date && op->amount() == amount && op->label() == label) {
       return true;
     }
@@ -314,7 +323,7 @@ int Account::selectionCount() const {
 
 double Account::selectedTotal() const {
   double total = 0.0;
-  for (Operation* op : _selectedOperations) {
+  for (auto op : _selectedOperations) {
     total += op->amount();
   }
   return total;
@@ -330,7 +339,7 @@ QString Account::selectedOperationsAsCsv() const {
 
   // Collect selected operations in sorted order (by their index in _operations)
   QList<Operation*> sortedSelected;
-  for (Operation* op : _operations) {
+  for (auto op : _operations) {
     if (_selectedOperations.contains(op)) {
       sortedSelected.append(op);
     }
@@ -339,7 +348,7 @@ QString Account::selectedOperationsAsCsv() const {
   QString csv;
   csv += "Date,Label,Amount,Category\n";
 
-  for (Operation* op : sortedSelected) {
+  for (auto op : sortedSelected) {
     csv += QString("%0,\"%1\",%2,%3\n")
                .arg(op->date().toString("yyyy-MM-dd"),
                     op->label().replace("\"", "\"\""))
@@ -383,7 +392,7 @@ void Account::recalculateBalances() {
   // Calculate cumulative balance from oldest to newest
   double balance = 0.0;
   for (int i = count - 1; i >= 0; --i) {
-    Operation* op = operationAt(i);
+    auto op = operationAt(i);
     if (op) {
       balance += op->amount();
     }

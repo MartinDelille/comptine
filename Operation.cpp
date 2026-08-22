@@ -7,15 +7,19 @@ Operation::Operation(Account* account,
                      const QString& label,
                      const QString& details,
                      const QList<Allocation*>& allocations) :
-    QObject(account),
     _account(account),
     _date(date),
     _amount(amount),
     _label(label),
     _details(details),
     _allocations(allocations) {
-  for (auto alloc : _allocations)
-    alloc->setParent(this);
+  for (auto* allocation : _allocations) {
+    if (allocation) allocation->setParent(this);
+  }
+}
+
+Operation::~Operation() {
+  clearAllocations();
 }
 
 QDate Operation::budgetDate() const {
@@ -42,9 +46,11 @@ QStringList Operation::allocatedCategoryNames() const {
 
 void Operation::setAllocations(const QList<Allocation*>& allocations) {
   if (!sameAllocations(allocations)) {
+    qDeleteAll(_allocations);
     _allocations = allocations;
-    for (auto alloc : _allocations)
-      alloc->setParent(this);
+    for (auto* allocation : _allocations) {
+      if (allocation) allocation->setParent(this);
+    }
     emit allocationsChanged();
   }
 }
@@ -72,7 +78,7 @@ bool Operation::sameAllocations(const QList<Allocation*>& otherAllocations) cons
 bool Operation::isCategorized() const {
   double totalAmount = 0.0;
   for (auto allocation : _allocations) {
-    totalAmount += allocation->amount();
+    if (allocation) totalAmount += allocation->amount();
   }
   return qFuzzyCompare(totalAmount, _amount);
 }
@@ -83,12 +89,12 @@ QString Operation::categoryDisplay() const {
   // Return comma-separated list of categories
   QSet<const Category*> uniqueCategories;
   for (const auto& alloc : _allocations) {
-    if (!uniqueCategories.contains(alloc->category())) {
+    if (alloc && alloc->category() && !uniqueCategories.contains(alloc->category())) {
       uniqueCategories.insert(alloc->category());
     }
   }
   QStringList displayNames;
-  for (const Category* category : uniqueCategories) {
+  for (auto category : uniqueCategories) {
     displayNames.append(category->name());
   }
   return displayNames.join(", ");

@@ -22,7 +22,7 @@ int BudgetData::currentAccountIndex() const {
 }
 
 void BudgetData::set_currentAccountIndex(int index) {
-  set_currentAccount(accountAt(index));
+  set_currentAccount(at(index));
 }
 
 void BudgetData::previousMonth() {
@@ -36,7 +36,7 @@ void BudgetData::nextMonth() {
 }
 
 void BudgetData::navigateToOperation(Operation* operation) {
-  Account* account = operation->account();
+  auto account = operation->account();
   // Switch to the account
   set_currentAccount(account);
 
@@ -56,7 +56,7 @@ QVariant BudgetData::data(const QModelIndex& index, int role) const {
   if (!index.isValid())
     return QVariant();
 
-  Account* account = accountAt(index.row());
+  auto account = at(index.row());
   if (account == nullptr)
     return QVariant();
 
@@ -84,7 +84,7 @@ QList<Account*> BudgetData::accounts() const {
   return _accounts;
 }
 
-Account* BudgetData::accountAt(int index) const {
+Account* BudgetData::at(int index) const {
   if (index >= 0 && index < _accounts.size()) {
     return _accounts[index];
   }
@@ -92,7 +92,7 @@ Account* BudgetData::accountAt(int index) const {
 }
 
 Account* BudgetData::accountByName(const QString& name) const {
-  for (Account* account : _accounts) {
+  for (auto account : _accounts) {
     if (account->name() == name) {
       return account;
     }
@@ -102,7 +102,7 @@ Account* BudgetData::accountByName(const QString& name) const {
 
 QString BudgetData::suggestedAccountForUrl(const QUrl& url) const {
   auto baseName = QFileInfo(url.toLocalFile()).baseName();
-  for (Account* account : _accounts) {
+  for (auto account : _accounts) {
     if (account->name().compare(baseName, Qt::CaseInsensitive) == 0) {
       return account->name();
     }
@@ -120,7 +120,7 @@ int BudgetData::accountIndex(Account* account) const {
 }
 
 void BudgetData::renameCurrentAccount(const QString& newName) {
-  Account* account = currentAccount();
+  auto account = currentAccount();
   if (account && !newName.isEmpty() && account->name() != newName) {
     _undoStack.push(new RenameAccountCommand(*account,
                                              account->name(), newName));
@@ -143,9 +143,16 @@ Account* BudgetData::addAccount(Account* account) {
   return account;
 }
 
+Account* BudgetData::createAccount(const QString& name) {
+  Q_ASSERT(accountByName(name) == nullptr);
+  return addAccount(new Account(name, this));
+}
+
 void BudgetData::removeAccount(int index) {
   if (index >= 0 && index < _accounts.size()) {
+    beginRemoveRows(QModelIndex(), index, index);
     delete _accounts.takeAt(index);
+    endRemoveRows();
     emit accountCountChanged();
   }
 }
@@ -154,7 +161,7 @@ Account* BudgetData::takeAccount(Account* account) {
   int index = _accounts.indexOf(account);
   if (index >= 0) {
     // If this is the current account, update navigation before removing
-    if (account == currentAccount()) {
+    if (account == _currentAccount) {
       // Select previous account, or -1 if this was the only account
       set_currentAccount(account);
     } else if (currentAccountIndex() > index) {
@@ -162,8 +169,8 @@ Account* BudgetData::takeAccount(Account* account) {
       set_currentAccountIndex(currentAccountIndex() - 1);
     }
 
-    Account* acc = _accounts.takeAt(index);
-    acc->setParent(nullptr);  // Release Qt ownership
+    auto acc = _accounts.takeAt(index);
+    acc->setParent(nullptr);
     emit accountCountChanged();
     return acc;
   }
@@ -171,6 +178,9 @@ Account* BudgetData::takeAccount(Account* account) {
 }
 
 void BudgetData::clearAccounts() {
+  if (_accounts.empty()) {
+    return;
+  }
   beginResetModel();
   qDeleteAll(_accounts);
   _accounts.clear();
@@ -179,7 +189,7 @@ void BudgetData::clearAccounts() {
 }
 
 void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations) {
-  Account* account = currentAccount();
+  auto account = _currentAccount;
   if (!account) return;
 
   auto operation = new Operation(account, date, amount, label, details, allocations);
@@ -268,12 +278,12 @@ Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAc
 }
 
 void BudgetData::deleteSelectedOperations() {
-  Account* account = currentAccount();
+  auto account = currentAccount();
   if (!account) return;
 
   QUndoCommand* macroCommand = new QUndoCommand();
 
-  for (Operation* op : account->selectedOperations()) {
+  for (auto op : account->selectedOperations()) {
     new DeleteOperationCommand(op, *account, macroCommand);
   }
   _undoStack.push(macroCommand);
@@ -294,7 +304,7 @@ void BudgetData::clear() {
 }
 
 void BudgetData::copySelectedOperations() const {
-  Account* account = currentAccount();
+  auto account = currentAccount();
   if (!account) return;
 
   QString csv = account->selectedOperationsAsCsv();

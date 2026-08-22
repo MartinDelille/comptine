@@ -44,12 +44,13 @@ public:
 
   // Account management
   QList<Account*> accounts() const;
-  Q_INVOKABLE Account* accountAt(int index) const;
+  Q_INVOKABLE Account* at(int index) const;
   Q_INVOKABLE Account* accountByName(const QString& name) const;
   Q_INVOKABLE QString suggestedAccountForUrl(const QUrl& url) const;
   Q_INVOKABLE int accountIndex(Account* account) const;
   Q_INVOKABLE void renameCurrentAccount(const QString& newName);
   Account* addAccount(Account* account);
+  Account* createAccount(const QString& name);
   void removeAccount(int index);
   Account* takeAccount(Account* account);  // Remove without deleting, returns nullptr if not found
   void clearAccounts();

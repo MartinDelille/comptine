@@ -40,7 +40,8 @@ public:
   };
   Q_ENUM(Roles)
 
-  explicit Account(const QString& name);
+  explicit Account(const QString& name, QObject* parent);
+  ~Account();
 
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -67,7 +68,7 @@ public:
 
   Operation* addOperation(Operation* operation, bool sort = true);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
-  void clearOperations();
+  void clear();
   void sortOperations();  // Re-sort operations by date (most recent first)
   bool hasOperation(const QDate& date, double amount, const QString& label) const;
 
