@@ -157,6 +157,23 @@ else()
     )
 endif()
 
+qt_add_library(libFileCoordinatorFallback STATIC
+FileCoordinator.h FileCoordinator_fallback.cpp
+)
+
+target_link_libraries(libFileCoordinatorFallback PUBLIC Qt6::Core)
+
+if(APPLE)
+    add_library(FileCoordinatorApp STATIC FileCoordinator.h FileCoordinator.mm)
+    target_link_libraries(
+        FileCoordinatorApp
+        PRIVATE Qt6::Core "-framework Foundation"
+    )
+    set(APP_FILE_COORDINATOR FileCoordinatorApp)
+else()
+    set(APP_FILE_COORDINATOR libFileCoordinatorFallback)
+endif()
+
 # Generate platform-specific icons from SVG at build time
 set(APP_ICON_SVG ${CMAKE_CURRENT_SOURCE_DIR}/comptine.svg)
 set(APP_ICON_SMALL_SVG
@@ -274,21 +291,8 @@ target_link_libraries(
 
 # Platform-specific file coordination for cloud storage support (Dropbox,
 # iCloud, etc.)
-if(APPLE)
-    target_sources(libComptine PRIVATE FileCoordinator.h FileCoordinator.mm)
-    target_sources(Comptine PRIVATE FileCoordinator.h FileCoordinator.mm)
-    target_link_libraries(libComptine PUBLIC "-framework Foundation")
-    target_link_libraries(Comptine PRIVATE "-framework Foundation")
-else()
-    target_sources(
-        libComptine
-        PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp
-    )
-    target_sources(
-        Comptine
-        PRIVATE FileCoordinator.h FileCoordinator_fallback.cpp
-    )
-endif()
+# The macOS implementation is kept out of libComptine and test targets.
+target_link_libraries(Comptine PRIVATE ${APP_FILE_COORDINATOR})
 
 # Translations
 qt_add_translations(Comptine TS_FILES translations/comptine_fr.ts
@@ -312,37 +316,8 @@ if(WIN32)
     install(SCRIPT ${deploy_script})
 endif()
 
-# Unit tests
-enable_testing()
-find_package(Qt6 REQUIRED COMPONENTS Test)
-
-# CsvParserTest - header-only library test
-qt_add_executable(CsvParserTest tests/CsvParserTest.cpp)
-target_link_libraries(CsvParserTest PRIVATE Qt6::Test libComptine)
-add_test(NAME CsvParserTest COMMAND CsvParserTest)
-
-# CategoryTest - unit tests for Category class
-qt_add_executable(CategoryTest tests/CategoryTest.cpp)
-target_link_libraries(CategoryTest PRIVATE Qt6::Test libComptine)
-add_test(NAME CategoryTest COMMAND CategoryTest)
-
-# FileControllerTest - integration test with all dependencies
-qt_add_executable(FileControllerTest tests/FileControllerTest.cpp FileCoordinator.h FileCoordinator_fallback.cpp)
-
-qt_add_resources(
-  FileControllerTest
-  FileControllerTestResources
-  FILES
-  tests/example.comptine
-  tests/old.comptine
-  tests/import1.csv
-  tests/import2.csv
-  tests/money.csv
-  tests/money2.csv
-)
-
-target_link_libraries(FileControllerTest PRIVATE Qt6::Test libComptine)
-add_test(NAME FileControllerTest COMMAND FileControllerTest)
+include(CTest)
+add_subdirectory(tests)
 
 # CPack Installer Configuration
 set(CPACK_PACKAGE_NAME "Comptine")

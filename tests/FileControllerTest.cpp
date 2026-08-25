@@ -515,7 +515,9 @@ private slots:
   // Error Handling
 
   void testSaveToInvalidPath() {
-    QString filePath = "/nonexistent/directory/file.comptine";
+    // Keep the failure deterministic without relying on a system path that
+    // could exist on a particular machine.
+    QString filePath = tempDir->filePath("missing-directory/file.comptine");
     QVERIFY(!fileController->saveToYamlFile(filePath));
     QVERIFY(!fileController->errorMessage().isEmpty());
   }
