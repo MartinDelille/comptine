@@ -2,6 +2,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include <QFile>
+
 namespace FileCoordinator {
 
 bool readFile(const QString &filePath, QByteArray &content, QString &errorMessage) {
@@ -21,25 +23,30 @@ bool readFile(const QString &filePath, QByteArray &content, QString &errorMessag
                                    data = [NSData dataWithContentsOfURL:newURL options:0 error:&readError];
                                  }];
 
-    if (coordinationError) {
-      errorMessage = QString::fromNSString(coordinationError.localizedDescription);
-      return false;
-    }
-
-    if (readError) {
-      errorMessage = QString::fromNSString(readError.localizedDescription);
-      return false;
-    }
-
     if (data) {
       content = QByteArray::fromNSData(data);
-    } else {
-      content = QByteArray();
+      [coordinator release];
+      return true;
     }
 
     [coordinator release];
 
-    return true;
+    // Fall back to Qt's native reader when coordinated access does not return
+    // data.
+    QFile file(filePath);
+    if (file.open(QIODevice::ReadOnly)) {
+      content = file.readAll();
+      return true;
+    }
+
+    if (readError) {
+      errorMessage = QString::fromNSString(readError.localizedDescription);
+    } else if (coordinationError) {
+      errorMessage = QString::fromNSString(coordinationError.localizedDescription);
+    } else {
+      errorMessage = file.errorString();
+    }
+    return false;
   }
 }
 
