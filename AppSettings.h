@@ -7,7 +7,7 @@
 #include <QString>
 #include <QStringListModel>
 
-#include "PropertyMacros.h"
+#include "model/PropertyMacros.h"
 
 class AppSettings : public QObject {
   Q_OBJECT

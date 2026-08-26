@@ -9,18 +9,18 @@
 #include <QUrl>
 #include <string>
 
-#include "Account.h"
 #include "AppSettings.h"
 #include "BudgetData.h"
-#include "Category.h"
 #include "CategoryController.h"
 #include "CsvParser.h"
 #include "FileController.h"
 #include "FileCoordinator.h"
-#include "Operation.h"
-#include "Rule.h"
 #include "RuleController.h"
 #include "UndoCommands.h"
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "model/Rule.h"
 
 using namespace CsvParser;
 

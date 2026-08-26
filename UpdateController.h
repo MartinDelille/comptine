@@ -7,7 +7,7 @@
 #include <QQmlEngine>
 #include <QString>
 
-#include "PropertyMacros.h"
+#include "model/PropertyMacros.h"
 
 class QNetworkAccessManager;
 class AppSettings;

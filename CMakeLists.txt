@@ -100,6 +100,10 @@ find_package(Qt6 REQUIRED COMPONENTS Quick LinguistTools Network)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+# Core domain model library. Keep the model sources independent from the
+# application-facing controllers, while allowing the latter to consume them.
+add_subdirectory(model)
+
 # libComptine - Core Business Logic Library
 # Static library containing all business logic, models, and controllers.
 # Declared as a QML module so that classes with QML_ELEMENT are properly
@@ -114,27 +118,22 @@ qt_add_qml_module(libComptine
   NO_PLUGIN
   SOURCES
     AppSettings.cpp AppSettings.h
-    Operation.cpp Operation.h
-    Account.cpp Account.h
-    Category.cpp Category.h
     BudgetData.cpp BudgetData.h
     RuleListModel.cpp RuleListModel.h
     CategoryController.cpp CategoryController.h
     ClipboardController.cpp ClipboardController.h
-    Rule.cpp Rule.h
     RuleController.cpp RuleController.h
     FileController.cpp FileController.h
     TranslationManager.cpp TranslationManager.h
     UpdateController.cpp UpdateController.h
     UndoCommands.cpp UndoCommands.h
     CsvParser.h
-    PropertyMacros.h
 )
 
 # Link Qt dependencies
 target_link_libraries(
     libComptine
-    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Network yaml-cpp::yaml-cpp
+    PUBLIC Qt6::Core Qt6::Gui Qt6::Qml Qt6::Network yaml-cpp::yaml-cpp model
 )
 
 # Include generated Version.h
@@ -233,8 +232,9 @@ qt_add_qml_module(
   URI
   Comptine
   DEPENDENCIES
-  ComptineLib
-  Budget
+    ComptineLib
+    Comptine.Model
+    Budget
   CommonUI
   Operations
   Rules

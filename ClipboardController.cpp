@@ -1,8 +1,8 @@
 #include <QClipboard>
 #include <QGuiApplication>
 
-#include "Account.h"
 #include "ClipboardController.h"
+#include "model/Account.h"
 
 ClipboardController2::ClipboardController2(Account& account) :
     _account(account) {

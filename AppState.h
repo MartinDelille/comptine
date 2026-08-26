@@ -2,8 +2,8 @@
 
 #include <QObject>
 
-#include "PropertyMacros.h"
 #include "Version.h"
+#include "model/PropertyMacros.h"
 
 class AppState : public QObject {
   Q_OBJECT

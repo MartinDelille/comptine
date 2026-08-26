@@ -6,16 +6,16 @@
 #include <QTest>
 #include <QUrl>
 
-#include "../Account.h"
 #include "../AppSettings.h"
 #include "../BudgetData.h"
-#include "../Category.h"
 #include "../CategoryController.h"
 #include "../FileController.h"
-#include "../Operation.h"
-#include "../Rule.h"
 #include "../RuleController.h"
 #include "../UndoCommands.h"
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "model/Rule.h"
 
 Q_DECLARE_METATYPE(QDate)
 

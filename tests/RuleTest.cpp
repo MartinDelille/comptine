@@ -2,10 +2,10 @@
 #include <QUndoStack>
 
 #include "../BudgetData.h"
-#include "../Category.h"
-#include "../Operation.h"
-#include "../Rule.h"
 #include "../RuleController.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "model/Rule.h"
 
 class RuleTest : public QObject {
   Q_OBJECT

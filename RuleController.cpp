@@ -1,12 +1,11 @@
 #include <QUndoStack>
 
-#include "Account.h"
 #include "BudgetData.h"
-#include "Operation.h"
-#include "Rule.h"
 #include "RuleController.h"
 #include "RuleListModel.h"
 #include "UndoCommands.h"
+#include "model/Operation.h"
+#include "model/Rule.h"
 
 RuleController::RuleController(BudgetData& budgetData,
                                QUndoStack& undoStack) :

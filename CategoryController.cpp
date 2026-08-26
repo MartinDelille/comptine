@@ -3,12 +3,12 @@
 #include <QtMath>
 #include <algorithm>
 
-#include "Account.h"
 #include "BudgetData.h"
-#include "Category.h"
 #include "CategoryController.h"
-#include "Operation.h"
 #include "UndoCommands.h"
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/Operation.h"
 
 bool isSameMonth(const QDate& d1, const QDate& d2) {
   return (d1.year() == d2.year()) && (d1.month() == d2.month());

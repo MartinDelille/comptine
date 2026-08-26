@@ -7,8 +7,8 @@
 
 #include <optional>
 
-#include "Category.h"   // For MonthRecord
-#include "Operation.h"  // For Allocation
+#include "model/Category.h"   // For MonthRecord
+#include "model/Operation.h"  // For Allocation
 
 class Account;
 class AccountListModel;

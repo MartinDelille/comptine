@@ -7,7 +7,7 @@
 #include <QUndoStack>
 #include <QUrl>
 
-#include "PropertyMacros.h"
+#include "model/PropertyMacros.h"
 
 class AppSettings;
 class Account;

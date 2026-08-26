@@ -1,7 +1,7 @@
 #include "RuleListModel.h"
 
-#include "Rule.h"
 #include "RuleController.h"
+#include "model/Rule.h"
 
 RuleListModel::RuleListModel(QObject* parent) :
     QAbstractListModel(parent) {

@@ -4,9 +4,10 @@
 #include <QObject>
 #include <QString>
 #include <QUndoStack>
-#include "Account.h"
-#include "Category.h"
-#include "PropertyMacros.h"
+
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/PropertyMacros.h"
 
 class BudgetData : public QAbstractListModel {
   Q_OBJECT

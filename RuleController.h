@@ -3,13 +3,13 @@
 #include <QtQml/qqml.h>
 #include <QList>
 
-#include "Category.h"
-#include "PropertyMacros.h"
 #include "RuleListModel.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "model/PropertyMacros.h"
+#include "model/Rule.h"
 
 class BudgetData;
-class Rule;
-class Operation;
 class QUndoStack;
 
 class RuleController : public QObject {

@@ -4,9 +4,9 @@
 #include <QFileInfo>
 #include <QGuiApplication>
 
-#include "Account.h"
 #include "BudgetData.h"
 #include "UndoCommands.h"
+#include "model/Account.h"
 
 BudgetData::BudgetData(QUndoStack& undoStack) :
     _budgetDate(QDate::currentDate()),

@@ -8,8 +8,8 @@
 #include <QUndoStack>
 #include <QVariant>
 
-#include "Category.h"
-#include "PropertyMacros.h"
+#include "model/Category.h"
+#include "model/PropertyMacros.h"
 
 class Account;
 class Allocation;

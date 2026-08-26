@@ -1,12 +1,12 @@
 #include "UndoCommands.h"
-#include "Account.h"
 #include "BudgetData.h"
-#include "Category.h"
 #include "CategoryController.h"
-#include "Operation.h"
-#include "Rule.h"
 #include "RuleController.h"
 #include "RuleListModel.h"
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "model/Rule.h"
 
 // AddAccountCommand implementation
 

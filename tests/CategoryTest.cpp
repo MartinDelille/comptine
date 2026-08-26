@@ -4,9 +4,9 @@
 #include <QTest>
 
 #include "../BudgetData.h"
-#include "../Category.h"
 #include "../CategoryController.h"
 #include "../UndoCommands.h"
+#include "model/Category.h"
 
 class CategoryTest : public QObject {
   Q_OBJECT
