@@ -123,7 +123,7 @@ void BudgetData::renameCurrentAccount(const QString& newName) {
   auto account = currentAccount();
   if (account && !newName.isEmpty() && account->name() != newName) {
     _undoStack.push(new RenameAccountCommand(*account,
-                                             account->name(), newName));
+                                             newName));
   }
 }
 
@@ -199,50 +199,45 @@ void BudgetData::addOperation(const QDate& date, double amount, const QString& l
 void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate) {
   if (!operation) return;
 
-  QDate oldBudgetDate = operation->budgetDate();
-  if (oldBudgetDate != newBudgetDate) {
+  if (operation->budgetDate() != newBudgetDate) {
     _undoStack.push(new SetOperationBudgetDateCommand(*operation,
-                                                      oldBudgetDate, newBudgetDate));
+                                                      newBudgetDate));
   }
 }
 
 void BudgetData::setOperationAmount(Operation* operation, double newAmount) {
   if (!operation) return;
 
-  double oldAmount = operation->amount();
-  if (!qFuzzyCompare(oldAmount, newAmount)) {
+  if (!qFuzzyCompare(operation->amount(), newAmount)) {
     _undoStack.push(new SetOperationAmountCommand(*operation,
-                                                  oldAmount, newAmount));
+                                                  newAmount));
   }
 }
 
 void BudgetData::setOperationDate(Operation* operation, const QDate& newDate) {
   if (!operation) return;
 
-  QDate oldDate = operation->date();
-  if (oldDate != newDate) {
+  if (operation->date() != newDate) {
     _undoStack.push(new SetOperationDateCommand(*operation,
-                                                oldDate, newDate));
+                                                newDate));
   }
 }
 
 void BudgetData::setOperationLabel(Operation* operation, const QString& newLabel) {
   if (!operation) return;
 
-  QString oldLabel = operation->label();
-  if (oldLabel != newLabel) {
+  if (operation->label() != newLabel) {
     _undoStack.push(new SetOperationLabelCommand(*operation,
-                                                 oldLabel, newLabel));
+                                                 newLabel));
   }
 }
 
 void BudgetData::setOperationDetails(Operation* operation, const QString& newDetails) {
   if (!operation) return;
 
-  QString oldDetails = operation->details();
-  if (oldDetails != newDetails) {
+  if (operation->details() != newDetails) {
     _undoStack.push(new SetOperationDetailsCommand(*operation,
-                                                   oldDetails, newDetails));
+                                                   newDetails));
   }
 }
 

@@ -24,7 +24,7 @@ int RuleController::ruleCount() const {
   return _rules.size();
 }
 
-Rule* RuleController::getRule(int index) const {
+Rule* RuleController::at(int index) const {
   if (index < 0 || index >= _rules.size()) {
     return nullptr;
   }
@@ -70,13 +70,13 @@ void RuleController::removeRule(int index) {
 }
 
 void RuleController::editRule(int index, const Category* category, const QString& labelMatch, double amountFilter) {
-  if (index < 0 || index >= _rules.size()) {
+  auto editedRule = at(index);
+  if (editedRule == nullptr) {
     return;
   }
 
-  Rule* rule = _rules[index];
-  if (rule->category() == category && rule->labelMatch() == labelMatch
-      && qFuzzyCompare(rule->amountFilter(), amountFilter)) {
+  if (editedRule->category() == category && editedRule->labelMatch() == labelMatch
+      && qFuzzyCompare(editedRule->amountFilter(), amountFilter)) {
     return;  // No change
   }
 
@@ -91,10 +91,10 @@ void RuleController::editRule(int index, const Category* category, const QString
     return;
   }
 
-  _undoStack.push(new EditRuleCommand(this, index,
-                                      rule->category(), category,
-                                      rule->labelMatch(), labelMatch,
-                                      rule->amountFilter(), amountFilter));
+  _undoStack.push(new EditRuleCommand(*this, editedRule,
+                                      category,
+                                      labelMatch,
+                                      amountFilter));
 }
 
 void RuleController::moveRule(int fromIndex, int toIndex) {
@@ -108,7 +108,7 @@ void RuleController::moveRule(int fromIndex, int toIndex) {
     return;
   }
 
-  _undoStack.push(new MoveRuleCommand(this, fromIndex, toIndex));
+  _undoStack.push(new MoveRuleCommand(*this, fromIndex, toIndex));
 }
 
 void RuleController::moveRuleDirect(int fromIndex, int toIndex) {

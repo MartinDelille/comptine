@@ -46,7 +46,7 @@ private:
 class RenameAccountCommand : public QUndoCommand {
 public:
   RenameAccountCommand(Account& account,
-                       const QString& oldName, const QString& newName,
+                       const QString& newName,
                        QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -175,7 +175,6 @@ private:
 class SetOperationBudgetDateCommand : public QUndoCommand {
 public:
   SetOperationBudgetDateCommand(Operation& operation,
-                                const QDate& oldBudgetDate,
                                 const QDate& newBudgetDate,
                                 QUndoCommand* parent = nullptr);
 
@@ -210,7 +209,7 @@ private:
 class SetOperationAmountCommand : public QUndoCommand {
 public:
   SetOperationAmountCommand(Operation& operation,
-                            double oldAmount, double newAmount,
+                            double newAmount,
                             QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -226,7 +225,7 @@ private:
 class SetOperationDateCommand : public QUndoCommand {
 public:
   SetOperationDateCommand(Operation& operation,
-                          const QDate& oldDate, const QDate& newDate,
+                          const QDate& newDate,
                           QUndoCommand* parent = nullptr);
 
   void undo() override;
@@ -242,7 +241,6 @@ private:
 class SetOperationLabelCommand : public QUndoCommand {
 public:
   SetOperationLabelCommand(Operation& operation,
-                           const QString& oldLabel,
                            const QString& newLabel,
                            QUndoCommand* parent = nullptr);
 
@@ -259,7 +257,6 @@ private:
 class SetOperationDetailsCommand : public QUndoCommand {
 public:
   SetOperationDetailsCommand(Operation& operation,
-                             const QString& oldDetails,
                              const QString& newDetails,
                              QUndoCommand* parent = nullptr);
 
@@ -278,7 +275,6 @@ public:
   SetLeftoverDecisionCommand(Category& category,
                              CategoryController* categoryController,
                              const QDate& date,
-                             const LeftoverDecision& oldDecision,
                              const LeftoverDecision& newDecision,
                              QUndoCommand* parent = nullptr);
 
@@ -331,18 +327,19 @@ private:
 // Command for editing a categorization rule
 class EditRuleCommand : public QUndoCommand {
 public:
-  EditRuleCommand(RuleController* ruleController, int index,
-                  const Category* oldCategory, const Category* newCategory,
-                  const QString& oldLabelMatch, const QString& newLabelMatch,
-                  double oldAmountFilter, double newAmountFilter,
+  EditRuleCommand(RuleController& ruleController,
+                  Rule* rule,
+                  const Category* newCategory,
+                  const QString& newLabelMatch,
+                  double newAmountFilter,
                   QUndoCommand* parent = nullptr);
 
   void undo() override;
   void redo() override;
 
 private:
-  RuleController* _ruleController;
-  int _index;
+  RuleController& _ruleController;
+  Rule* _rule;
   const Category* _oldCategory;
   const Category* _newCategory;
   QString _oldLabelMatch;
@@ -354,14 +351,14 @@ private:
 // Command for moving a categorization rule (reordering priority)
 class MoveRuleCommand : public QUndoCommand {
 public:
-  MoveRuleCommand(RuleController* ruleController, int fromIndex, int toIndex,
+  MoveRuleCommand(RuleController& ruleController, int fromIndex, int toIndex,
                   QUndoCommand* parent = nullptr);
 
   void undo() override;
   void redo() override;
 
 private:
-  RuleController* _ruleController;
+  RuleController& _ruleController;
   int _fromIndex;
   int _toIndex;
 };

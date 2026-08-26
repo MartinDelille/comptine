@@ -383,7 +383,7 @@ void CategoryController::setSaveAmount(Category* category, const QDate& date, do
 
   // Only create undo command if something changed
   if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount)) {
-    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, oldRecord, newRecord));
+    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, newRecord));
   }
 }
 
@@ -398,7 +398,7 @@ void CategoryController::setReportAmount(Category* category,
 
   // Only create undo command if something changed
   if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount) || !qFuzzyCompare(oldRecord.reportAmount, newRecord.reportAmount)) {
-    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, oldRecord, newRecord));
+    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, newRecord));
   }
 }
 

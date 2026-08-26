@@ -27,7 +27,7 @@ public:
 
   // Rule access
   QList<Rule*> rules() const { return _rules; }
-  Q_INVOKABLE Rule* getRule(int index) const;
+  Q_INVOKABLE Rule* at(int index) const;
   RuleListModel* ruleModel() { return _ruleModel; }
 
   // Rule management

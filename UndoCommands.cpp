@@ -41,12 +41,11 @@ void AddAccountCommand::redo() {
 // RenameAccountCommand implementation
 
 RenameAccountCommand::RenameAccountCommand(Account& account,
-                                           const QString& oldName,
                                            const QString& newName,
                                            QUndoCommand* parent) :
     QUndoCommand(parent),
     _account(account),
-    _oldName(oldName),
+    _oldName(account.name()),
     _newName(newName) {
   setText(QObject::tr("Rename account to \"%1\"").arg(newName));
 }
@@ -264,12 +263,11 @@ void DeleteOperationCommand::redo() {
 }
 
 SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operation,
-                                                             const QDate& oldBudgetDate,
                                                              const QDate& newBudgetDate,
                                                              QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldBudgetDate(oldBudgetDate),
+    _oldBudgetDate(operation.budgetDate()),
     _newBudgetDate(newBudgetDate) {
   setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy")));
 }
@@ -323,12 +321,11 @@ void SplitOperationCommand::redo() {
 }
 
 SetOperationAmountCommand::SetOperationAmountCommand(Operation& operation,
-                                                     double oldAmount,
                                                      double newAmount,
                                                      QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldAmount(oldAmount),
+    _oldAmount(operation.amount()),
     _newAmount(newAmount) {
   setText(QObject::tr("Set operation amount to %1").arg(newAmount, 0, 'f', 2));
 }
@@ -342,12 +339,11 @@ void SetOperationAmountCommand::redo() {
 }
 
 SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
-                                                 const QDate& oldDate,
                                                  const QDate& newDate,
                                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldDate(oldDate),
+    _oldDate(operation.date()),
     _newDate(newDate) {
   setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy")));
 }
@@ -361,12 +357,11 @@ void SetOperationDateCommand::redo() {
 }
 
 SetOperationLabelCommand::SetOperationLabelCommand(Operation& operation,
-                                                   const QString& oldLabel,
                                                    const QString& newLabel,
                                                    QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldLabel(oldLabel),
+    _oldLabel(operation.label()),
     _newLabel(newLabel) {
   setText(QObject::tr("Set operation label"));
 }
@@ -380,12 +375,11 @@ void SetOperationLabelCommand::redo() {
 }
 
 SetOperationDetailsCommand::SetOperationDetailsCommand(Operation& operation,
-                                                       const QString& oldDetails,
                                                        const QString& newDetails,
                                                        QUndoCommand* parent) :
     QUndoCommand(parent),
     _operation(operation),
-    _oldDetails(oldDetails),
+    _oldDetails(operation.details()),
     _newDetails(newDetails) {
   setText(QObject::tr("Set operation details"));
 }
@@ -403,14 +397,13 @@ void SetOperationDetailsCommand::redo() {
 SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
                                                        CategoryController* categoryController,
                                                        const QDate& date,
-                                                       const LeftoverDecision& oldDecision,
                                                        const LeftoverDecision& newDecision,
                                                        QUndoCommand* parent) :
     QUndoCommand(parent),
     _category(category),
     _categoryController(categoryController),
     _date(date),
-    _oldDecision(oldDecision),
+    _oldDecision(category.leftoverDecision(date.year(), date.month())),
     _newDecision(newDecision) {
   QString actionStr;
   if (newDecision.saveAmount > 0 && newDecision.reportAmount > 0) {
@@ -565,51 +558,41 @@ void RemoveRuleCommand::redo() {
 
 // EditRuleCommand implementation
 
-EditRuleCommand::EditRuleCommand(RuleController* ruleController, int index,
-                                 const Category* oldCategory, const Category* newCategory,
-                                 const QString& oldLabelMatch, const QString& newLabelMatch,
-                                 double oldAmountFilter, double newAmountFilter,
+EditRuleCommand::EditRuleCommand(RuleController& ruleController, Rule* rule,
+                                 const Category* newCategory,
+                                 const QString& newLabelMatch,
+                                 double newAmountFilter,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
-    _index(index),
-    _oldCategory(oldCategory),
+    _rule(rule),
+    _oldCategory(rule->category()),
     _newCategory(newCategory),
-    _oldLabelMatch(oldLabelMatch),
+    _oldLabelMatch(rule->labelMatch()),
     _newLabelMatch(newLabelMatch),
-    _oldAmountFilter(oldAmountFilter),
+    _oldAmountFilter(rule->amountFilter()),
     _newAmountFilter(newAmountFilter) {
   setText(QObject::tr("Edit rule for \"%1\"").arg(newLabelMatch));
 }
 
 void EditRuleCommand::undo() {
-  if (_ruleController) {
-    Rule* rule = _ruleController->getRule(_index);
-    if (rule) {
-      rule->set_category(_oldCategory);
-      rule->set_labelMatch(_oldLabelMatch);
-      rule->set_amountFilter(_oldAmountFilter);
-      _ruleController->ruleModel()->refresh();
-      emit _ruleController->rulesChanged();
-    }
-  }
+  _rule->set_category(_oldCategory);
+  _rule->set_labelMatch(_oldLabelMatch);
+  _rule->set_amountFilter(_oldAmountFilter);
+  _ruleController.ruleModel()->refresh();
+  emit _ruleController.rulesChanged();
 }
 
 void EditRuleCommand::redo() {
-  if (_ruleController) {
-    Rule* rule = _ruleController->getRule(_index);
-    if (rule) {
-      rule->set_category(_newCategory);
-      rule->set_labelMatch(_newLabelMatch);
-      rule->set_amountFilter(_newAmountFilter);
-      _ruleController->ruleModel()->refresh();
-      emit _ruleController->rulesChanged();
-    }
-  }
+  _rule->set_category(_newCategory);
+  _rule->set_labelMatch(_newLabelMatch);
+  _rule->set_amountFilter(_newAmountFilter);
+  _ruleController.ruleModel()->refresh();
+  emit _ruleController.rulesChanged();
 }
 
 // MoveRuleCommand implementation
-MoveRuleCommand::MoveRuleCommand(RuleController* ruleController, int fromIndex, int toIndex,
+MoveRuleCommand::MoveRuleCommand(RuleController& ruleController, int fromIndex, int toIndex,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
@@ -619,13 +602,9 @@ MoveRuleCommand::MoveRuleCommand(RuleController* ruleController, int fromIndex, 
 }
 
 void MoveRuleCommand::undo() {
-  if (_ruleController) {
-    _ruleController->moveRuleDirect(_toIndex, _fromIndex);
-  }
+  _ruleController.moveRuleDirect(_toIndex, _fromIndex);
 }
 
 void MoveRuleCommand::redo() {
-  if (_ruleController) {
-    _ruleController->moveRuleDirect(_fromIndex, _toIndex);
-  }
+  _ruleController.moveRuleDirect(_fromIndex, _toIndex);
 }
