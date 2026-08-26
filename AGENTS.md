@@ -7,11 +7,11 @@ Use exact commands below to configure, build, run, and clean the project. If you
 ### MacOS
 
 - The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
-- **Install dependencies**: `conan install . --output-folder=build/agent --build=missing`
-- **Configure**: `qt-cmake -B build/agent -S . --preset=conan-release`
-- **Build**: `cmake --build build/agent`
-- **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine`
-- **Clean**: `rm -rf build/agent` (run it only if you need a full clean)
+- **Install dependencies**: `conan install . --build=missing`
+- **Configure**: `qt-cmake --preset=conan-debug`
+- **Build**: `cmake --build --preset=conan-debug`
+- **Run**: `./build/Comptine.app/Contents/MacOS/Comptine`
+- **Clean**: `rm -rf build` (run it only if you need a full clean)
 
 When done, you can run the application as shown above to show the progress.
 
