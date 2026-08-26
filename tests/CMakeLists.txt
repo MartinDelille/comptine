@@ -24,6 +24,14 @@ target_link_libraries(
 )
 add_test(NAME CategoryTest COMMAND CategoryTest)
 
+# RuleTest - unit tests for categorization rules
+qt_add_executable(RuleTest RuleTest.cpp)
+target_link_libraries(
+    RuleTest
+    PRIVATE Qt6::Test libComptine FileCoordinatorTestSupport
+)
+add_test(NAME RuleTest COMMAND RuleTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
