@@ -27,7 +27,7 @@ FocusScope {
         id: categoryEditDialog
         date: BudgetData.budgetDate
         onCategoryEdited: function (category, newName, newBudgetLimit) {
-            CategoryController.editCategory(newName, newBudgetLimit, category, date);
+            CategoryEditor.edit(newName, newBudgetLimit, category, date);
         }
     }
 
@@ -184,6 +184,7 @@ FocusScope {
             delegate: MonthCategoryItem {
                 categories: CategoryController
                 budgetData: BudgetData
+                categoryEditor: CategoryEditor
                 width: ListView.view.width - scrollBar.width
                 isCurrentItem: categoryListView.currentIndex === index
 

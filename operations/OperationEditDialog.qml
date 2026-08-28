@@ -69,7 +69,7 @@ BaseDialog {
         id: counterPartDialog
         operation: root._operation
         onCreateCounterPart: function (account, category) {
-            let newOperation = BudgetData.createCounterPart(operation, account, category);
+            let newOperation = OperationEditor.createCounterpart(operation, account, category);
             BudgetData.navigateToOperation(newOperation);
             root.initialize(newOperation);
         }
@@ -154,31 +154,31 @@ BaseDialog {
         for (let i = 0; i < allocationModel.count; i++) {
             let item = allocationModel.get(i);
             if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push(CategoryController.createAllocation(item.category, item.amount));
+                allocations.push(CategoryEditor.createAllocation(item.category, item.amount));
             }
         }
 
         if (_operation === null) {
-            BudgetData.addOperation(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
+            OperationEditor.add(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
             return;
         }
 
         if (newLabel !== originalLabel) {
-            BudgetData.setOperationLabel(_operation, newLabel);
+            OperationEditor.setLabel(_operation, newLabel);
         }
 
         if (newDetails !== originalDetails) {
-            BudgetData.setOperationDetails(_operation, newDetails);
+            OperationEditor.setDetails(_operation, newDetails);
         }
 
         // Apply amount change if different
         if (Math.abs(editedAmount - originalAmount) > 0.001) {
-            BudgetData.setOperationAmount(_operation, editedAmount);
+            OperationEditor.setAmount(_operation, editedAmount);
         }
 
         // Apply budget date change if different
         if (budgetDateInput.selectedDate.getTime() !== originalBudgetDate.getTime()) {
-            BudgetData.setOperationBudgetDate(_operation, budgetDateInput.selectedDate);
+            OperationEditor.setBudgetDate(_operation, budgetDateInput.selectedDate);
         }
 
         if (allocations.length > 0) {
@@ -196,13 +196,13 @@ BaseDialog {
                 }
             }
             if (allocationsChanged) {
-                BudgetData.setOperationAllocations(_operation, allocations);
+                OperationEditor.setAllocations(_operation, allocations);
             }
         }
 
         // Apply date change LAST (since it sorts and changes the operation's index)
         if (dateInput.selectedDate.getTime() !== originalDate.getTime()) {
-            BudgetData.setOperationDate(_operation, dateInput.selectedDate);
+            OperationEditor.setDate(_operation, dateInput.selectedDate);
         }
     }
 

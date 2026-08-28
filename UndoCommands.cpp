@@ -540,7 +540,7 @@ void RemoveRuleCommand::undo() {
     // Move it to the original position if needed
     int currentIndex = _ruleController->rules().indexOf(_rule);
     if (currentIndex != _index && currentIndex >= 0) {
-      _ruleController->moveRule(currentIndex, _index);
+      _ruleController->moveRuleDirect(currentIndex, _index);
     }
     _ownsRule = false;
   }

@@ -49,7 +49,7 @@ BaseDialog {
                 continue;
             }
             var accountName = entry.isNewAccount ? entry.accountName.trim() : account.name;
-            FileController.importFromCsv(entry.url, accountName, useCategoriesCheckBox.checked);
+            ImportEditor.importCsv(entry.url, accountName, useCategoriesCheckBox.checked);
             if (account) {
                 account.addImportSourcePrefix(entry.accountName);
             }

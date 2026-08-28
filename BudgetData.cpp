@@ -119,14 +119,6 @@ int BudgetData::accountIndex(Account* account) const {
   return _accounts.indexOf(account);
 }
 
-void BudgetData::renameCurrentAccount(const QString& newName) {
-  auto account = currentAccount();
-  if (account && !newName.isEmpty() && account->name() != newName) {
-    _undoStack.push(new RenameAccountCommand(*account,
-                                             newName));
-  }
-}
-
 Account* BudgetData::addAccount(Account* account) {
   if (account == nullptr) {
     return nullptr;
@@ -186,102 +178,6 @@ void BudgetData::clearAccounts() {
   _accounts.clear();
   endResetModel();
   emit accountCountChanged();
-}
-
-void BudgetData::addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations) {
-  auto account = _currentAccount;
-  if (!account) return;
-
-  auto operation = new Operation(account, date, amount, label, details, allocations);
-  _undoStack.push(new AddOperationCommand(operation, *account));
-}
-
-void BudgetData::setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate) {
-  if (!operation) return;
-
-  if (operation->budgetDate() != newBudgetDate) {
-    _undoStack.push(new SetOperationBudgetDateCommand(*operation,
-                                                      newBudgetDate));
-  }
-}
-
-void BudgetData::setOperationAmount(Operation* operation, double newAmount) {
-  if (!operation) return;
-
-  if (!qFuzzyCompare(operation->amount(), newAmount)) {
-    _undoStack.push(new SetOperationAmountCommand(*operation,
-                                                  newAmount));
-  }
-}
-
-void BudgetData::setOperationDate(Operation* operation, const QDate& newDate) {
-  if (!operation) return;
-
-  if (operation->date() != newDate) {
-    _undoStack.push(new SetOperationDateCommand(*operation,
-                                                newDate));
-  }
-}
-
-void BudgetData::setOperationLabel(Operation* operation, const QString& newLabel) {
-  if (!operation) return;
-
-  if (operation->label() != newLabel) {
-    _undoStack.push(new SetOperationLabelCommand(*operation,
-                                                 newLabel));
-  }
-}
-
-void BudgetData::setOperationDetails(Operation* operation, const QString& newDetails) {
-  if (!operation) return;
-
-  if (operation->details() != newDetails) {
-    _undoStack.push(new SetOperationDetailsCommand(*operation,
-                                                   newDetails));
-  }
-}
-
-void BudgetData::setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations) {
-  if (!operation) return;
-
-  // Only create command if something changed
-  if (!operation->sameAllocations(allocations)) {
-    _undoStack.push(new SplitOperationCommand(*operation,
-                                              allocations));
-  } else {
-    qDeleteAll(allocations);
-  }
-}
-
-Operation* BudgetData::createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName) {
-  if (!operation || !targetAccount) return nullptr;
-
-  QList<Allocation*> newAllocations;
-  double amount = 0;
-  for (auto allocation : operation->allocations()) {
-    if (categoryName.isEmpty() || (allocation->category() && allocation->category()->name() == categoryName)) {
-      amount -= allocation->amount();
-      newAllocations.append(new Allocation(allocation->category(), -allocation->amount()));
-    }
-  }
-
-  auto newOperation = new Operation(targetAccount, operation->date(), amount,
-                                    operation->label(), operation->details(), newAllocations);
-
-  _undoStack.push(new AddOperationCommand(newOperation, *targetAccount));
-  return newOperation;
-}
-
-void BudgetData::deleteSelectedOperations() {
-  auto account = currentAccount();
-  if (!account) return;
-
-  QUndoCommand* macroCommand = new QUndoCommand();
-
-  for (auto op : account->selectedOperations()) {
-    new DeleteOperationCommand(op, *account, macroCommand);
-  }
-  _undoStack.push(macroCommand);
 }
 
 int BudgetData::countOperationsWithCategory(const Category* category) const {

@@ -12,6 +12,7 @@
 #include "../FileController.h"
 #include "../RuleController.h"
 #include "../UndoCommands.h"
+#include "../editors/CategoryEditor.h"
 #include "model/Account.h"
 #include "model/Category.h"
 #include "model/Operation.h"
@@ -35,12 +36,14 @@ private slots:
     budgetData = new BudgetData(*undoStack);
     appSettings = new AppSettings();
     categoryController = new CategoryController(*budgetData, *undoStack);
+    categoryEditor = new CategoryEditor(*categoryController, *budgetData, *undoStack);
     ruleController = new RuleController(*budgetData, *undoStack);
     fileController = new FileController(*appSettings, *budgetData, *categoryController, *ruleController, *undoStack);
   }
 
   void cleanup() {
     delete fileController;
+    delete categoryEditor;
     delete ruleController;
     delete categoryController;
     delete budgetData;
@@ -144,7 +147,7 @@ private slots:
                       { new Allocation(food, -50) }),
         false);
 
-    categoryController->editCategory("Food", 200.0);
+    categoryEditor->edit("Food", 200.0);
 
     // Save to file
     QString filePath = tempDir->filePath("single_account.comptine");
@@ -206,8 +209,8 @@ private slots:
 
     // Create split operation
 
-    auto food = categoryController->editCategory("Food", 200.0);
-    auto transport = categoryController->editCategory("Transport", 100.0);
+    auto food = categoryEditor->edit("Food", 200.0);
+    auto transport = categoryEditor->edit("Transport", 100.0);
 
     auto op = account->addOperation(
         new Operation(account,
@@ -253,7 +256,7 @@ private slots:
     op->setAllocations({ new Allocation(shopping, -75.0) });
     op->set_budgetDate(QDate(2025, 2, 1));  // Budget to next month
 
-    categoryController->editCategory("Shopping", 150.0);
+    categoryEditor->edit("Shopping", 150.0);
 
     // Save and reload
     QString filePath = tempDir->filePath("budget_date.comptine");
@@ -269,7 +272,7 @@ private slots:
 
   void testBudgetDateNotSavedWhenSameAsDate() {
     auto account = budgetData->createAccount("Test Account");
-    auto food = categoryController->editCategory("Food", 200.0);
+    auto food = categoryEditor->edit("Food", 200.0);
 
     // budgetDate defaults to date, so it should not be saved
     auto op = account->addOperation(new Operation(
@@ -493,8 +496,8 @@ private slots:
   // Save/Load with Categorization Rules
 
   void testSaveAndLoadCategorizationRules() {
-    auto groceries = categoryController->editCategory("Groceries", 300.0);
-    auto fuel = categoryController->editCategory("Fuel", 150.0);
+    auto groceries = categoryEditor->edit("Groceries", 300.0);
+    auto fuel = categoryEditor->edit("Fuel", 150.0);
 
     ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
     ruleController->addRule(new Rule(fuel, "PETROL"));
@@ -830,7 +833,7 @@ private slots:
 
   void testImportAppliesCategorizationRules() {
     // Create categorization rule
-    auto groceries = categoryController->editCategory("Groceries", 300.0);
+    auto groceries = categoryEditor->edit("Groceries", 300.0);
     ruleController->addRule(new Rule(groceries, "SUPERMARKET"));
 
     // Create CSV without category column
@@ -862,6 +865,7 @@ private:
   AppSettings* appSettings;
   BudgetData* budgetData;
   CategoryController* categoryController;
+  CategoryEditor* categoryEditor;
   RuleController* ruleController;
   FileController* fileController;
 };

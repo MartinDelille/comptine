@@ -136,7 +136,7 @@ BaseDialog {
                             enabled: ruleDelegate.index > 0
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: RuleController.moveRule(ruleDelegate.index, ruleDelegate.index - 1)
+                            onClicked: RuleEditor.move(ruleDelegate.index, ruleDelegate.index - 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move up (higher priority)")
                         }
@@ -148,7 +148,7 @@ BaseDialog {
                             enabled: ruleDelegate.index < RuleController.ruleCount - 1
                             opacity: enabled ? (hovered ? 1.0 : 0.5) : 0.2
                             focusPolicy: Qt.NoFocus
-                            onClicked: RuleController.moveRule(ruleDelegate.index, ruleDelegate.index + 1)
+                            onClicked: RuleEditor.move(ruleDelegate.index, ruleDelegate.index + 1)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Move down (lower priority)")
                         }
@@ -177,7 +177,7 @@ BaseDialog {
                             font.pixelSize: Theme.fontSizeNormal
                             focusPolicy: Qt.NoFocus
                             opacity: hovered ? 1.0 : 0.5
-                            onClicked: RuleController.removeRule(ruleDelegate.index)
+                            onClicked: RuleEditor.remove(ruleDelegate.index)
                             ToolTip.visible: hovered
                             ToolTip.text: qsTr("Delete rule")
                         }

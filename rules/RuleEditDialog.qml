@@ -64,15 +64,15 @@ BaseDialog {
         let amount = amountCheckBox.checked ? amountFilterField.value : 0;
 
         if (isNewRule) {
-            RuleController.addRule(category, match, amount);
+            RuleEditor.add(category, match, amount);
             if (applyToExistingCheckBox.checked) {
-                let count = RuleController.applyRuleToUncategorized(category, match, amount);
+                let count = RuleEditor.applyToUncategorized(category, match, amount);
                 if (count > 0) {
                     console.log("Applied rule to", count, "uncategorized operation(s)");
                 }
             }
         } else {
-            RuleController.editRule(ruleIndex, category, match, amount);
+            RuleEditor.edit(ruleIndex, category, match, amount);
         }
     }
 

@@ -20,7 +20,7 @@ BaseDialog {
 
     onAccepted: {
         if (renameField.text.trim() !== "") {
-            BudgetData.renameCurrentAccount(renameField.text.trim());
+            AccountEditor.renameCurrentAccount(renameField.text.trim());
         }
     }
 

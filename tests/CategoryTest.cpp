@@ -6,6 +6,7 @@
 #include "../BudgetData.h"
 #include "../CategoryController.h"
 #include "../UndoCommands.h"
+#include "../editors/OperationEditor.h"
 #include "model/Category.h"
 
 class CategoryTest : public QObject {
@@ -14,6 +15,7 @@ class CategoryTest : public QObject {
   QUndoStack* undoStack;
   BudgetData* budgetData;
   CategoryController* categoryController;
+  OperationEditor* operationEditor;
 
 private slots:
   void init() {
@@ -21,10 +23,12 @@ private slots:
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
     categoryController = new CategoryController(*budgetData, *undoStack);
+    operationEditor = new OperationEditor(*budgetData, *undoStack);
   }
 
   void cleanup() {
     delete categoryController;
+    delete operationEditor;
     delete budgetData;
     delete undoStack;
   }
@@ -513,8 +517,8 @@ private slots:
     auto account = budgetData->createAccount("Account");
     auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
 
-    budgetData->setOperationAllocations(operation, { new Allocation(food, -60.),
-                                                     new Allocation(transport, -40.) });
+    operationEditor->setAllocations(operation, { new Allocation(food, -60.),
+                                                 new Allocation(transport, -40.) });
     QCOMPARE(operation->allocations().size(), 2);
     QCOMPARE(operation->amountForCategory(food), -60.);
     QCOMPARE(operation->amountForCategory(transport), -40.);

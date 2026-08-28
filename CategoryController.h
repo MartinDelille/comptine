@@ -73,9 +73,6 @@ public:
   Q_INVOKABLE QStringList categoryNames() const;
 
   // Category management
-  Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
-  Q_INVOKABLE Category* editCategory(const QString& name, double budgetLimit, Category* category = nullptr, QDate budgetDate = QDate());
-  Q_INVOKABLE void deleteCategory(Category* category);
   Category* addCategory(Category* category);
   Category* takeCategoryByName(const QString& name);  // Remove without deleting
 
@@ -89,9 +86,6 @@ public:
 
   // Get accumulated leftover from previous months (sum of all "report" decisions before this month)
   Q_INVOKABLE double accumulatedLeftover(const QString& categoryName, const QDate& date) const;
-
-  Q_INVOKABLE void setSaveAmount(Category* category, const QDate& date, double saveAmount);
-  Q_INVOKABLE void setReportAmount(Category* category, const QDate& date, double reportAmount);
 
 public slots:
   void refresh();

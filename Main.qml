@@ -191,7 +191,7 @@ ApplicationWindow {
             text: qsTr("Are you sure you want to delete the selected operations?")
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: BudgetData.deleteSelectedOperations()
+        onAccepted: OperationEditor.deleteSelected()
     }
 
     BaseDialog {
@@ -206,7 +206,7 @@ ApplicationWindow {
             }
         }
         acceptButtonText: qsTr("Delete")
-        onAccepted: CategoryController.deleteCategory(CategoryController.current)
+        onAccepted: CategoryEditor.remove(CategoryController.current)
     }
 
     RulesView {

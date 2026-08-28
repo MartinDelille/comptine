@@ -126,6 +126,11 @@ qt_add_qml_module(libComptine
     FileController.cpp FileController.h
     TranslationManager.cpp TranslationManager.h
     UpdateController.cpp UpdateController.h
+    editors/AccountEditor.cpp editors/AccountEditor.h
+    editors/CategoryEditor.cpp editors/CategoryEditor.h
+    editors/OperationEditor.cpp editors/OperationEditor.h
+    editors/RuleEditor.cpp editors/RuleEditor.h
+    editors/ImportEditor.cpp editors/ImportEditor.h
     UndoCommands.cpp UndoCommands.h
     CsvParser.h
 )

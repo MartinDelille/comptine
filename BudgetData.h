@@ -49,7 +49,6 @@ public:
   Q_INVOKABLE Account* accountByName(const QString& name) const;
   Q_INVOKABLE QString suggestedAccountForUrl(const QUrl& url) const;
   Q_INVOKABLE int accountIndex(Account* account) const;
-  Q_INVOKABLE void renameCurrentAccount(const QString& newName);
   Account* addAccount(Account* account);
   Account* createAccount(const QString& name);
   void removeAccount(int index);
@@ -57,15 +56,6 @@ public:
   void clearAccounts();
 
   // Operation editing
-  Q_INVOKABLE void addOperation(const QDate& date, double amount, const QString& label, const QString& details, const QList<Allocation*>& allocations);
-  Q_INVOKABLE void setOperationBudgetDate(Operation* operation, const QDate& newBudgetDate);
-  Q_INVOKABLE void setOperationAmount(Operation* operation, double newAmount);
-  Q_INVOKABLE void setOperationDate(Operation* operation, const QDate& newDate);
-  Q_INVOKABLE void setOperationLabel(Operation* operation, const QString& newLabel);
-  Q_INVOKABLE void setOperationDetails(Operation* operation, const QString& newDetails);
-  Q_INVOKABLE void setOperationAllocations(Operation* operation, const QList<Allocation*>& allocations);
-  Q_INVOKABLE Operation* createCounterPart(Operation* operation, Account* targetAccount, const QString& categoryName);
-  Q_INVOKABLE void deleteSelectedOperations();
   Q_INVOKABLE int countOperationsWithCategory(const Category* category) const;
 
   // Clear all data (called by FileController)

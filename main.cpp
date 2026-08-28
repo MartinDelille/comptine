@@ -60,6 +60,11 @@ int main(int argc, char* argv[]) {
   CategoryController categories(budgetData, undoStack);
   RuleController rules(budgetData, undoStack);
   FileController file(settings, budgetData, categories, rules, undoStack);
+  AccountEditor accountEditor(budgetData, undoStack);
+  CategoryEditor categoryEditor(categories, budgetData, undoStack);
+  OperationEditor operationEditor(budgetData, undoStack);
+  RuleEditor ruleEditor(rules, budgetData, undoStack);
+  ImportEditor importEditor(file);
 
   AppState appState;
 
@@ -71,6 +76,11 @@ int main(int argc, char* argv[]) {
   CategoryControllerForeign::instance = &categories;
   RuleControllerForeign::instance = &rules;
   FileControllerForeign::instance = &file;
+  AccountEditorForeign::instance = &accountEditor;
+  CategoryEditorForeign::instance = &categoryEditor;
+  OperationEditorForeign::instance = &operationEditor;
+  RuleEditorForeign::instance = &ruleEditor;
+  ImportEditorForeign::instance = &importEditor;
 
   file.loadInitialFile(QCoreApplication::arguments());
 

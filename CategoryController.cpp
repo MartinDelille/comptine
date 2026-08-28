@@ -194,60 +194,6 @@ Category* CategoryController::getCategoryByName(const QString& name) const {
   return nullptr;
 }
 
-Allocation* CategoryController::createAllocation(const QString& categoryName, double amount) {
-  const Category* category = getCategoryByName(categoryName);
-  return new Allocation(category, amount);
-}
-
-Category* CategoryController::editCategory(const QString& name, double budgetLimit, Category* category, QDate budgetDate) {
-  if (category) {
-    // Only create undo command if something changed
-    if (category->name() != name || category->budgetLimitForMonth(budgetDate) != budgetLimit) {
-      _undoStack.push(new EditCategoryCommand(*category,
-                                              name,
-                                              budgetLimit,
-                                              budgetDate));
-    }
-  } else {
-    category = new Category(name, budgetLimit);
-    _undoStack.push(new AddCategoryCommand(this, category));
-  }
-  return category;
-}
-
-void CategoryController::deleteCategory(Category* category) {
-  if (category == nullptr) {
-    return;
-  }
-  int previousIndex = currentIndex();
-
-  QUndoCommand* macroCommand = new QUndoCommand();
-
-  // Update all operations that reference this category to remove it from their allocations
-  for (auto account : _budgetData.accounts()) {
-    for (auto op : account->operations()) {
-      // Create a new allocations list without the deleted category
-      QList<Allocation*> newAllocations;
-      for (auto alloc : op->allocations()) {
-        if (alloc->category() != category) {
-          newAllocations.append(new Allocation(alloc->category(), alloc->amount()));
-        }
-      }
-      // Only create a command if the allocations actually changed
-      if (newAllocations.size() != op->allocations().size()) {
-        new SplitOperationCommand(*op,
-                                  newAllocations, macroCommand);
-      }
-    }
-  }
-
-  _undoStack.push(new DeleteCategoryCommand(this, category));
-  _undoStack.push(macroCommand);
-  if (category == _current) {
-    set_currentIndex(previousIndex);
-  }
-}
-
 Category* CategoryController::addCategory(Category* category) {
   if (category == nullptr) {
     return nullptr;
@@ -372,34 +318,6 @@ double CategoryController::accumulatedLeftover(const QString& categoryName, cons
   auto category = getCategoryByName(categoryName);
   if (!category) return 0.0;
   return category->accumulatedLeftoverBefore(date);
-}
-
-void CategoryController::setSaveAmount(Category* category, const QDate& date, double saveAmount) {
-  if (!category) return;
-
-  MonthRecord oldRecord = category->monthRecord(date.year(), date.month());
-  MonthRecord newRecord = oldRecord;  // Preserve budgetLimit if set
-  newRecord.saveAmount = saveAmount;
-
-  // Only create undo command if something changed
-  if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount)) {
-    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, newRecord));
-  }
-}
-
-void CategoryController::setReportAmount(Category* category,
-                                         const QDate& date,
-                                         double reportAmount) {
-  if (!category) return;
-
-  MonthRecord oldRecord = category->monthRecord(date.year(), date.month());
-  MonthRecord newRecord = oldRecord;  // Preserve budgetLimit if set
-  newRecord.reportAmount = reportAmount;
-
-  // Only create undo command if something changed
-  if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount) || !qFuzzyCompare(oldRecord.reportAmount, newRecord.reportAmount)) {
-    _undoStack.push(new SetLeftoverDecisionCommand(*category, this, date, newRecord));
-  }
 }
 
 void CategoryController::refresh() {

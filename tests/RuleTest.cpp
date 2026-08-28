@@ -3,6 +3,7 @@
 
 #include "../BudgetData.h"
 #include "../RuleController.h"
+#include "../editors/RuleEditor.h"
 #include "model/Category.h"
 #include "model/Operation.h"
 #include "model/Rule.h"
@@ -48,12 +49,13 @@ private slots:
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     RuleController controller(budgetData, undoStack);
+    RuleEditor editor(controller, budgetData, undoStack);
     Category broad("Broad");
     Category specific("Specific");
     Operation operation(nullptr, {}, -10.0, "ACME STORE");
 
-    controller.addRule(&broad, "ACME");
-    controller.addRule(&specific, "STORE");
+    editor.add(&broad, "ACME");
+    editor.add(&specific, "STORE");
 
     QCOMPARE(controller.matchingCategory(&operation), &broad);
   }
@@ -62,27 +64,29 @@ private slots:
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     RuleController controller(budgetData, undoStack);
+    RuleEditor editor(controller, budgetData, undoStack);
     Category category("Bills");
     Account* account = budgetData.createAccount("Fictional Checking");
     auto* operation = account->addOperation(
         new Operation(account, {}, -25.0, "Fictional Utility"), false);
 
-    QCOMPARE(controller.applyRuleToUncategorized(&category, "Utility"), 1);
+    QCOMPARE(editor.applyToUncategorized(&category, "Utility"), 1);
     QVERIFY(operation->isCategorized());
     QCOMPARE(operation->allocations().size(), 1);
     QCOMPARE(operation->allocations().at(0)->category(), &category);
     QCOMPARE(operation->allocations().at(0)->amount(), -25.0);
 
-    QCOMPARE(controller.applyRuleToUncategorized(&category, "Utility"), 0);
+    QCOMPARE(editor.applyToUncategorized(&category, "Utility"), 0);
   }
 
   void testAddingRuleCanBeUndone() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     RuleController controller(budgetData, undoStack);
+    RuleEditor editor(controller, budgetData, undoStack);
     Category category("Transport");
 
-    controller.addRule(&category, "Fictional Rail");
+    editor.add(&category, "Fictional Rail");
     QCOMPARE(controller.ruleCount(), 1);
     undoStack.undo();
     QCOMPARE(controller.ruleCount(), 0);
@@ -94,10 +98,11 @@ private slots:
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     RuleController controller(budgetData, undoStack);
+    RuleEditor editor(controller, budgetData, undoStack);
     Category category("Transport");
 
-    controller.addRule(&category, "Fictional Bus");
-    controller.editRule(0, &category, "Fictional Train", -12.50);
+    editor.add(&category, "Fictional Bus");
+    editor.edit(0, &category, "Fictional Train", -12.50);
 
     QCOMPARE(controller.at(0)->labelMatch(), QString("Fictional Train"));
     QCOMPARE(controller.at(0)->amountFilter(), -12.50);
@@ -107,14 +112,15 @@ private slots:
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     RuleController controller(budgetData, undoStack);
+    RuleEditor editor(controller, budgetData, undoStack);
     Category category("Transport");
     Category otherCategory("Other");
 
-    controller.addRule(&category, "Fictional Bus", -12.50);
-    controller.addRule(&otherCategory, "Fictional Train", -25.00);
+    editor.add(&category, "Fictional Bus", -12.50);
+    editor.add(&otherCategory, "Fictional Train", -25.00);
     const int undoCountBeforeDuplicateEdit = undoStack.count();
 
-    controller.editRule(0, &category, "fictional train", -25.00);
+    editor.edit(0, &category, "fictional train", -25.00);
 
     QCOMPARE(controller.at(0)->labelMatch(), QString("Fictional Bus"));
     QCOMPARE(controller.at(0)->amountFilter(), -12.50);

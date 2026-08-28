@@ -51,65 +51,6 @@ void RuleController::addRule(Rule* rule) {
   emit rulesChanged();
 }
 
-void RuleController::addRule(const Category* category, const QString& labelMatch, double amountFilter) {
-  if (category == nullptr || labelMatch.isEmpty()) {
-    return;
-  }
-
-  auto* rule = new Rule(category, labelMatch, amountFilter, this);
-  _undoStack.push(new AddRuleCommand(this, rule));
-}
-
-void RuleController::removeRule(int index) {
-  if (index < 0 || index >= _rules.size()) {
-    return;
-  }
-
-  _undoStack.push(new RemoveRuleCommand(this, index));
-}
-
-void RuleController::editRule(int index, const Category* category, const QString& labelMatch, double amountFilter) {
-  auto editedRule = at(index);
-  if (editedRule == nullptr) {
-    return;
-  }
-
-  if (editedRule->category() == category && editedRule->labelMatch() == labelMatch
-      && qFuzzyCompare(editedRule->amountFilter(), amountFilter)) {
-    return;  // No change
-  }
-
-  // Check for duplicate (same match + same amount filter), excluding the rule being edited
-  auto isDuplicate = [editedRule, &labelMatch, amountFilter](auto rule) {
-    return rule != editedRule
-           && rule->labelMatch().compare(labelMatch, Qt::CaseInsensitive) == 0
-           && qFuzzyCompare(rule->amountFilter(), amountFilter);
-  };
-  if (std::any_of(_rules.begin(), _rules.end(), isDuplicate)) {
-    qWarning() << "Rule with same match and amount already exists:" << labelMatch;
-    return;
-  }
-
-  _undoStack.push(new EditRuleCommand(*this, editedRule,
-                                      category,
-                                      labelMatch,
-                                      amountFilter));
-}
-
-void RuleController::moveRule(int fromIndex, int toIndex) {
-  if (fromIndex < 0 || fromIndex >= _rules.size()) {
-    return;
-  }
-  if (toIndex < 0 || toIndex >= _rules.size()) {
-    return;
-  }
-  if (fromIndex == toIndex) {
-    return;
-  }
-
-  _undoStack.push(new MoveRuleCommand(*this, fromIndex, toIndex));
-}
-
 void RuleController::moveRuleDirect(int fromIndex, int toIndex) {
   if (fromIndex < 0 || fromIndex >= _rules.size()) {
     return;
@@ -171,41 +112,6 @@ int RuleController::applyRulesToOperation(Operation* operation) {
     return 1;
   }
   return 0;
-}
-
-int RuleController::applyRuleToUncategorized(const Category* category, const QString& labelMatch, double amountFilter) {
-  if (!category || labelMatch.isEmpty()) {
-    return 0;
-  }
-
-  // Create a temporary rule for matching
-  Rule tempRule;
-  tempRule.set_category(category);
-  tempRule.set_labelMatch(labelMatch);
-  tempRule.set_amountFilter(amountFilter);
-
-  QUndoCommand* macroCommand = new QUndoCommand();
-  int count = 0;
-
-  for (auto account : _budgetData.accounts()) {
-    for (auto op : account->operations()) {
-      if (!op->isCategorized() && tempRule.matches(op)) {
-        QList<Allocation*> newAllocations;
-        newAllocations.append(new Allocation(category, op->amount()));
-        new SplitOperationCommand(*op,
-                                  newAllocations, macroCommand);
-        count++;
-      }
-    }
-  }
-
-  if (count > 0) {
-    _undoStack.push(macroCommand);
-  } else {
-    delete macroCommand;
-  }
-
-  return count;
 }
 
 Operation* RuleController::nextUncategorizedOperation(Operation* current) const {
