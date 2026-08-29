@@ -108,14 +108,14 @@ jobs:
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
-          macdeployqt build/Release/Comptine.app -qmldir=.
-          codesign --force --deep --sign - build/Release/Comptine.app
+          macdeployqt build/Release/app/Comptine.app -qmldir=.
+          codesign --force --deep --sign - build/Release/app/Comptine.app
 
       - name: Capture screenshots (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
           ./scripts/capture-screenshots.sh \
-            build/Release/Comptine.app \
+            build/Release/app/Comptine.app \
             long_example.comptine \
             screenshots
 
@@ -149,7 +149,7 @@ jobs:
           export QML_SOURCES_PATHS="${{ github.workspace }}"
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
-            --executable Release/comptine \
+            --executable Release/app/Comptine \
             --icon-file ../comptine.svg \
             --desktop-file ../comptine.desktop \
             --plugin qt \

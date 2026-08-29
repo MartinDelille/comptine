@@ -1,12 +1,12 @@
 #include <QTest>
 #include <QUndoStack>
 
-#include "../BudgetData.h"
-#include "../RuleController.h"
-#include "../editors/RuleEditor.h"
+#include "editor/RuleEditor.h"
 #include "model/Category.h"
 #include "model/Operation.h"
 #include "model/Rule.h"
+#include "services/BudgetData.h"
+#include "services/RuleController.h"
 
 class RuleTest : public QObject {
   Q_OBJECT

@@ -8,7 +8,7 @@
 #include <QVariantList>
 
 #include "Category.h"
-#include "PropertyMacros.h"
+#include "utils/PropertyMacros.h"
 
 class Account;
 
@@ -37,6 +37,7 @@ public:
 class Operation : public QObject {
   Q_OBJECT
   QML_ELEMENT
+  QML_UNCREATABLE("Operations are created by the backend")
 
   PROPERTY_CONSTANT(Account*, account, nullptr)
   PROPERTY_RW(QDate, date, {})

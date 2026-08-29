@@ -2,12 +2,13 @@
 #include <QDate>
 #include <QSignalSpy>
 #include <QTest>
+#include <QVariant>
 
-#include "../BudgetData.h"
-#include "../CategoryController.h"
-#include "../UndoCommands.h"
-#include "../editors/OperationEditor.h"
+#include "editor/OperationEditor.h"
 #include "model/Category.h"
+#include "services/BudgetData.h"
+#include "services/CategoryController.h"
+#include "services/UndoCommands.h"
 
 class CategoryTest : public QObject {
   Q_OBJECT
@@ -517,8 +518,9 @@ private slots:
     auto account = budgetData->createAccount("Account");
     auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
 
-    operationEditor->setAllocations(operation, { new Allocation(food, -60.),
-                                                 new Allocation(transport, -40.) });
+    operationEditor->setAllocations(
+        operation, { QVariant::fromValue(static_cast<QObject*>(new Allocation(food, -60.))),
+                     QVariant::fromValue(static_cast<QObject*>(new Allocation(transport, -40.))) });
     QCOMPARE(operation->allocations().size(), 2);
     QCOMPARE(operation->amountForCategory(food), -60.);
     QCOMPARE(operation->amountForCategory(transport), -40.);

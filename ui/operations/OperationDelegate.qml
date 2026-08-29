@@ -1,0 +1,78 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+
+import ui.common
+
+Rectangle {
+    id: root
+
+    required property var operation
+    required property double balance
+    required property bool selected
+    required property bool focused
+    required property bool alternate
+
+    width: parent ? parent.width : 0
+    height: 50
+    radius: 4
+    border.width: root.focused ? 2 : 1
+    border.color: root.focused ? Theme.accent : Theme.border
+
+    color: {
+        if (selected)
+            return Theme.backgroundSelected;
+        if (root.alternate)
+            return Theme.backgroundAlt;
+        return Theme.background;
+    }
+
+    RowLayout {
+        anchors.fill: parent
+        anchors.margins: Theme.spacingNormal
+        spacing: Theme.spacingNormal
+
+        Label {
+            text: root.operation?.date ? root.operation.date.toLocaleDateString(Qt.locale(), Locale.ShortFormat) : ""
+            verticalAlignment: Text.AlignVCenter
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.textPrimary
+            Layout.preferredWidth: 100
+        }
+
+        Label {
+            Layout.fillWidth: true
+            text: root.operation?.label ?? ""
+            verticalAlignment: Text.AlignVCenter
+            elide: Text.ElideRight
+            font.pixelSize: Theme.fontSizeNormal
+            color: Theme.textPrimary
+        }
+
+        Label {
+            text: root.operation?.categoryDisplay || ""
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignLeft
+            elide: Text.ElideRight
+            font.pixelSize: Theme.fontSizeSmall
+            color: Theme.textSecondary
+            Layout.preferredWidth: 120
+        }
+
+        AmountLabel {
+            amount: root.operation?.amount ?? 0
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignRight
+            font.pixelSize: Theme.fontSizeNormal
+            Layout.preferredWidth: 100
+        }
+
+        AmountLabel {
+            amount: root.balance
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignRight
+            font.pixelSize: Theme.fontSizeNormal
+            Layout.preferredWidth: 100
+        }
+    }
+}

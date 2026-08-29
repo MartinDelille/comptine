@@ -1,7 +1,7 @@
 // Unit tests for CSV parsing functions
 #include <QTest>
 
-#include "../CsvParser.h"
+#include "services/CsvParser.h"
 
 using namespace CsvParser;
 

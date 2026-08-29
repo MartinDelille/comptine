@@ -6,17 +6,17 @@
 #include <QTest>
 #include <QUrl>
 
-#include "../AppSettings.h"
-#include "../BudgetData.h"
-#include "../CategoryController.h"
-#include "../FileController.h"
-#include "../RuleController.h"
-#include "../UndoCommands.h"
-#include "../editors/CategoryEditor.h"
+#include "editor/CategoryEditor.h"
 #include "model/Account.h"
 #include "model/Category.h"
 #include "model/Operation.h"
 #include "model/Rule.h"
+#include "services/AppSettings.h"
+#include "services/BudgetData.h"
+#include "services/CategoryController.h"
+#include "services/FileController.h"
+#include "services/RuleController.h"
+#include "services/UndoCommands.h"
 
 Q_DECLARE_METATYPE(QDate)
 

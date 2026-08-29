@@ -5,7 +5,7 @@
 #include <QString>
 
 #include "Category.h"
-#include "PropertyMacros.h"
+#include "utils/PropertyMacros.h"
 
 class Operation;
 

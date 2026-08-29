@@ -2,7 +2,7 @@
 Type=Application
 Name=Comptine
 Comment=La Compta qui Chante !
-Exec=comptine
+Exec=Comptine
 Icon=comptine
 Categories=Office;Finance;
 Terminal=false

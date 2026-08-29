@@ -8,7 +8,7 @@
 
 #include <optional>
 
-#include "PropertyMacros.h"
+#include "utils/PropertyMacros.h"
 
 // Key for storing per-month data by year-month
 struct YearMonth {
@@ -56,6 +56,7 @@ using LeftoverDecision = MonthRecord;
 class Category : public QObject {
   Q_OBJECT
   QML_ELEMENT
+  QML_UNCREATABLE("Categories are created by the backend")
   PROPERTY_RW(QString, name, QString())
   PROPERTY_RW(double, budgetLimit, 0.0)
 

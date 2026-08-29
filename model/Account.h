@@ -8,11 +8,12 @@
 #include <QStringList>
 
 #include "Operation.h"
-#include "PropertyMacros.h"
+#include "utils/PropertyMacros.h"
 
 class Account : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
+  QML_UNCREATABLE("Accounts are created by BudgetData")
 
   Q_PROPERTY(int count READ rowCount NOTIFY countChanged)
   PROPERTY_RW(QString, name, QString())
