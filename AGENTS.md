@@ -23,6 +23,13 @@ When done, you can run the application as shown above to show the progress.
 
 ## Code Style
 
+### Architecture and implementation quality
+
+- For implementation requests, use the project’s native framework abstractions and established architecture directly. Avoid temporary or “cheap” representations when the requirements call for a structured, typed, or reusable design.
+- Keep domain calculations and data contracts in the appropriate backend/model layer, and let the UI consume them through the framework’s intended view and binding mechanisms.
+- Before creating a custom workaround, check the project’s configured framework version and its official documentation for existing facilities that match the required behavior.
+- Prefer a clean, extensible implementation on the first pass. Use provisional structures only when the data is genuinely small and static, or when the user explicitly requests a prototype.
+
 ### C++ (Qt Style)
 
 - **Includes**: Qt headers first (`<QObject>`, `<QString>`), then local headers (`"Transaction.h"`)
