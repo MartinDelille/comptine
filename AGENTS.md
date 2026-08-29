@@ -67,3 +67,10 @@ When done, you can run the application as shown above to show the progress.
 
 - **Undoable Actions**: When adding new actions that modify data (e.g., adding/removing operations, renaming, importing), make them undoable using `QUndoCommand` subclasses in `UndoCommands.h/.cpp`.
 - **When in doubt**: Ask if an action should be undoable. Generally, any action that modifies user data should support undo/redo.
+
+## Change Management
+
+- Use `git mv` when moving tracked files so their history remains visible.
+- Never create commits. Leave all changes in the working tree for the user to review and commit.
+- Preserve unrelated working-tree changes and do not overwrite them.
+- Do not use destructive Git commands such as `git reset --hard` or `git checkout --` unless the user explicitly requests them.
