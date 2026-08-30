@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 
 import services
+import editor
 
 Menu {
     id: root
@@ -17,14 +18,14 @@ Menu {
     Action {
         text: qsTr("&Undo")
         shortcut: StandardKey.Undo
-        enabled: UndoStack.canUndo
-        onTriggered: UndoStack.undo()
+        enabled: OperationEditor.canUndo
+        onTriggered: OperationEditor.undo()
     }
     Action {
         text: qsTr("&Redo")
         shortcut: StandardKey.Redo
-        enabled: UndoStack.canRedo
-        onTriggered: UndoStack.redo()
+        enabled: OperationEditor.canRedo
+        onTriggered: OperationEditor.redo()
     }
     MenuSeparator {}
     Action {

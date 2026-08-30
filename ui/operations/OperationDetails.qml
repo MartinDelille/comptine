@@ -184,25 +184,26 @@ Rectangle {
                 spacing: Theme.spacingSmall
 
                 Repeater {
-                    model: root.operation?.allocations
+                    model: root.operation
 
                     RowLayout {
                         id: allocationRow
                         Layout.fillWidth: true
                         spacing: Theme.spacingSmall
 
-                        required property var modelData
+                        required property var category
+                        required property double amount
 
                         Label {
                             Layout.fillWidth: true
-                            text: allocationRow.modelData.category ? allocationRow.modelData.category.name : qsTr("Uncategorized")
+                            text: allocationRow.category ? allocationRow.category.name : qsTr("Uncategorized")
                             font.pixelSize: Theme.fontSizeSmall
                             color: Theme.textPrimary
                             elide: Text.ElideRight
                         }
 
                         AmountLabel {
-                            amount: allocationRow.modelData.amount
+                            amount: allocationRow.amount
                             font.pixelSize: Theme.fontSizeSmall
                         }
                     }
@@ -212,7 +213,7 @@ Rectangle {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Theme.spacingSmall
-                    visible: !root.operation?.allocations.length
+                    visible: (root.operation?.allocationCount ?? 0) === 0
 
                     Label {
                         Layout.fillWidth: true

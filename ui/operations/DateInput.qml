@@ -10,12 +10,20 @@ Item {
     id: root
     property date selectedDate: new Date()
     property bool readOnly: false
+    property bool unlockOnModifierClick: false
+    property bool _modifierUnlocked: false
     width: textField.width
     height: textField.height
     TextField {
         id: textField
         text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
-        readOnly: root.readOnly
+        readOnly: root.readOnly && !root._modifierUnlocked
+        onPressed: function (event) {
+            if (root.unlockOnModifierClick && readOnly && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) {
+                root._modifierUnlocked = true;
+                popup.doSelectDate(root.selectedDate);
+            }
+        }
         onActiveFocusChanged: {
             if (activeFocus) {
                 if (!readOnly) {
@@ -27,6 +35,10 @@ Item {
         }
 
         horizontalAlignment: Text.AlignHCenter
+    }
+
+    function resetModifierUnlock() {
+        _modifierUnlocked = false;
     }
     Popup {
         id: popup

@@ -104,7 +104,7 @@ ApplicationWindow {
         }
         onEditAction: {
             if (BudgetData.currentTabIndex === 0) {
-                operationView.editCurrentOperation(false);
+                operationView.editCurrentOperation();
             } else {
                 budgetView.editCurrentCategory();
             }
@@ -125,12 +125,6 @@ ApplicationWindow {
         }
         onProjectPageAction: Qt.openUrlExternally("https://martin.delille.org/comptine/")
         onAboutAction: aboutDialog.open()
-    }
-
-    Action {
-        shortcut: "Ctrl+Shift+E"
-        enabled: BudgetData.currentTabIndex === 0 && BudgetData.currentAccount?.selectionCount === 1
-        onTriggered: operationView.editCurrentOperation(true)
     }
 
     FileDialog {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QtQml/qqml.h>
+#include <QAbstractListModel>
 #include <QDate>
 #include <QList>
 #include <QObject>
@@ -34,11 +35,12 @@ public:
   bool operator!=(const Allocation& other) const { return !(*this == other); }
 };
 
-class Operation : public QObject {
+class Operation : public QAbstractListModel {
   Q_OBJECT
   QML_ELEMENT
   QML_UNCREATABLE("Operations are created by the backend")
 
+  Q_PROPERTY(int allocationCount READ rowCount NOTIFY allocationsChanged)
   PROPERTY_CONSTANT(Account*, account, nullptr)
   PROPERTY_RW(QDate, date, {})
   PROPERTY_RW(double, amount, 0.0)
@@ -49,12 +51,18 @@ class Operation : public QObject {
   PROPERTY_RW_CUSTOM(QDate, budgetDate, {})
 
   // Split allocations support
-  Q_PROPERTY(QList<Allocation*> allocations READ allocations NOTIFY allocationsChanged)
+  Q_PROPERTY(double allocatedAmount READ allocatedAmount NOTIFY allocationsChanged)
   Q_PROPERTY(bool isCategorized READ isCategorized NOTIFY allocationsChanged)
   Q_PROPERTY(QString categoryDisplay READ categoryDisplay NOTIFY allocationsChanged)
   Q_PROPERTY(QStringList allocatedCategoryNames READ allocatedCategoryNames NOTIFY allocationsChanged)
 
 public:
+  enum Roles {
+    CategoryRole = Qt::UserRole + 1,
+    AmountRole,
+  };
+  Q_ENUM(Roles)
+
   Operation(Account* account = nullptr,
             const QDate& date = {},
             double amount = 0.0,
@@ -65,11 +73,15 @@ public:
 
   // Split allocations methods
   QList<Allocation*> allocations() const { return _allocations; }
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role) const override;
+  QHash<int, QByteArray> roleNames() const override;
   QStringList allocatedCategoryNames() const;
   void setAllocations(const QList<Allocation*>& allocations);
   void clearAllocations();
   bool sameAllocations(const QList<Allocation*>& otherAllocations) const;
   bool isCategorized() const;
+  double allocatedAmount() const;
   QString categoryDisplay() const;
 
   // Get amount allocated to a specific category (for budget calculations)

@@ -13,14 +13,6 @@ BaseDialog {
     id: root
 
     property var _operation: null
-
-    // Original values (for tracking changes)
-    property double originalAmount: 0
-    property date originalDate: new Date()
-    property date originalBudgetDate: new Date()
-    property string originalLabel: ""
-    property string originalDetails: ""
-    property var originalAllocations: []
     property var _unaffectedCategoryComboBox: null
 
     // Category list for ComboBoxes - refreshed on open
@@ -30,113 +22,55 @@ BaseDialog {
     width: Math.min(500, parent.width - 40)
 
     // Current edited amount (from AmountField)
-    property double editedAmount: originalAmount
+    property double editedAmount: _operation?.amount ?? 0
 
     // Calculate remaining amount for allocations
-    readonly property double allocatedAmount: {
-        let sum = 0;
-        for (let i = 0; i < allocationModel.count; i++) {
-            sum += allocationModel.get(i).amount;
-        }
-        return sum;
-    }
-    readonly property double remainingAmount: editedAmount - allocatedAmount
+    readonly property double remainingAmount: editedAmount - (_operation?.allocatedAmount ?? 0)
 
-    okEnabled: labelField.text.trim() !== "" && (amountField.value != 0 || allocationModel.count > 0)
+    okEnabled: labelField.text.trim() !== "" && amountField.value != 0
 
     onOpened: {
         // Refresh category list when dialog opens
-        root.categoryList = [""].concat(CategoryController.categoryNames());
-    }
-
-    ListModel {
-        id: allocationModel
+        root.categoryList = CategoryController.categoryNames();
     }
 
     RuleEditDialog {
         id: ruleEditDialog
     }
 
-    // React to external changes to the operation's allocations
-    // (e.g. when a rule is applied from RuleEditDialog)
-    Connections {
-        target: root._operation
-        function onAllocationsChanged() {
-            root.refreshAllocations();
-        }
-    }
-
     CreateCounterPartDialog {
         id: counterPartDialog
         operation: root._operation
         onCreateCounterPart: function (account, category) {
-            let newOperation = OperationEditor.createCounterpart(operation, account, category);
+            root.applyChanges();
+            OperationEditor.endEditing(true);
+            let newOperation = OperationEditor.createCounterpart(root._operation, account, category);
             BudgetData.navigateToOperation(newOperation);
             root.initialize(newOperation);
         }
     }
 
-    function refreshAllocations() {
-        if (!_operation)
-            return;
-
-        originalAllocations = [];
-        allocationModel.clear();
-
-        if (_operation.allocations && _operation.allocations.length > 0) {
-            for (let i = 0; i < _operation.allocations.length; i++) {
-                let catName = _operation.allocations[i].category ? _operation.allocations[i].category.name : "";
-                let amt = _operation.allocations[i].amount;
-                originalAllocations.push({
-                    category: catName,
-                    amount: amt
-                });
-                allocationModel.append({
-                    category: catName,
-                    amount: amt
-                });
-            }
-        } else {
-            allocationModel.append({
-                category: _operation.category?.name ?? "",
-                amount: _operation.amount || 0
-            });
-        }
-    }
-
-    function initialize(operation, advanced) {
+    function initialize(operation) {
+        const isNewOperation = operation === null;
         _unaffectedCategoryComboBox = null;
 
-        _operation = operation;
+        _operation = isNewOperation ? OperationEditor.beginNew(new Date(), 0, "", "") : operation;
 
-        originalAmount = editedAmount = operation?.amount || 0;
-        originalDate = operation?.date || new Date();
-        originalBudgetDate = operation?.budgetDate || new Date();
-        labelField.text = originalLabel = operation?.label || "";
-        if (originalLabel === "") {
+        editedAmount = _operation?.amount || 0;
+        labelField.text = _operation?.label || "";
+        if (labelField.text === "") {
             labelField.forceActiveFocus();
         }
-        detailsField.text = originalDetails = operation?.details || "";
+        detailsField.text = _operation?.details || "";
 
-        dateInput.selectedDate = originalDate;
-        dateInput.readOnly = !advanced;
-        budgetDateInput.selectedDate = originalBudgetDate;
+        dateInput.selectedDate = _operation?.date || new Date();
+        dateInput.resetModifierUnlock();
+        dateInput.readOnly = true;
+        budgetDateInput.selectedDate = _operation?.budgetDate || dateInput.selectedDate;
 
-        refreshAllocations();
+        if (!isNewOperation)
+            OperationEditor.beginEditing(_operation);
         open();
-    }
-
-    function addAllocation() {
-        allocationModel.append({
-            category: "",
-            amount: remainingAmount
-        });
-    }
-
-    function removeAllocation(index) {
-        if (allocationModel.count > 1) {
-            allocationModel.remove(index);
-        }
     }
 
     function focusUnaffectedComboBox() {
@@ -150,73 +84,37 @@ BaseDialog {
         let newLabel = labelField.text.trim();
         let newDetails = detailsField.text.trim();
 
-        // Build allocations array
-        let allocations = [];
-        for (let i = 0; i < allocationModel.count; i++) {
-            let item = allocationModel.get(i);
-            if (item.category !== "" && Math.abs(item.amount) > 0.001) {
-                allocations.push(CategoryEditor.createAllocation(item.category, item.amount));
-            }
-        }
+        OperationEditor.setLabel(_operation, newLabel);
+        OperationEditor.setDetails(_operation, newDetails);
+        OperationEditor.setAmount(_operation, editedAmount);
+        OperationEditor.setBudgetDate(_operation, budgetDateInput.selectedDate);
+        OperationEditor.normalizeAllocations(_operation);
 
-        if (_operation === null) {
-            OperationEditor.add(dateInput.selectedDate, editedAmount, newLabel, newDetails, allocations);
-            return;
-        }
-
-        if (newLabel !== originalLabel) {
-            OperationEditor.setLabel(_operation, newLabel);
-        }
-
-        if (newDetails !== originalDetails) {
-            OperationEditor.setDetails(_operation, newDetails);
-        }
-
-        // Apply amount change if different
-        if (Math.abs(editedAmount - originalAmount) > 0.001) {
-            OperationEditor.setAmount(_operation, editedAmount);
-        }
-
-        // Apply budget date change if different
-        if (budgetDateInput.selectedDate.getTime() !== originalBudgetDate.getTime()) {
-            OperationEditor.setBudgetDate(_operation, budgetDateInput.selectedDate);
-        }
-
-        if (allocations.length > 0) {
-            // Check if allocations changed
-            let allocationsChanged = false;
-            if (originalAllocations.length !== allocations.length) {
-                allocationsChanged = true;
-            } else {
-                // Compare allocations
-                for (let i = 0; i < allocations.length; i++) {
-                    if (allocations[i].category !== originalAllocations[i].category || Math.abs(allocations[i].amount - originalAllocations[i].amount) > 0.001) {
-                        allocationsChanged = true;
-                        break;
-                    }
-                }
-            }
-            if (allocationsChanged) {
-                OperationEditor.setAllocations(_operation, allocations);
-            }
-        }
-
-        // Apply date change LAST (since it sorts and changes the operation's index)
-        if (dateInput.selectedDate.getTime() !== originalDate.getTime()) {
-            OperationEditor.setDate(_operation, dateInput.selectedDate);
-        }
+        // Apply date change LAST since it sorts and changes the operation's index.
+        OperationEditor.setDate(_operation, dateInput.selectedDate);
     }
 
     function goToOperation(operation) {
         if (operation) {
             applyChanges();
-            initialize(operation);
+            OperationEditor.endEditing(true);
             BudgetData.navigateToOperation(operation);
+            initialize(operation);
         }
     }
 
     onAccepted: {
         applyChanges();
+        OperationEditor.endEditing(true);
+    }
+
+    onRejected: {
+        OperationEditor.endEditing(false);
+    }
+
+    onClosed: {
+        if (OperationEditor.editing)
+            OperationEditor.endEditing(false);
     }
 
     ColumnLayout {
@@ -285,11 +183,6 @@ BaseDialog {
                 value: root.editedAmount
                 onEdited: newValue => {
                     root.editedAmount = newValue;
-                    // When there's only one allocation (single category operation),
-                    // automatically update its amount to match the total
-                    if (allocationModel.count === 1) {
-                        allocationModel.setProperty(0, "amount", newValue);
-                    }
                 }
             }
         }
@@ -308,6 +201,7 @@ BaseDialog {
 
             DateInput {
                 id: dateInput
+                unlockOnModifierClick: true
             }
         }
 
@@ -392,7 +286,7 @@ BaseDialog {
             // Maximum height: leave room for other dialog content (about 60% of window)
             readonly property real maxListHeight: root.parent ? root.parent.height * 0.4 : 300
 
-            model: allocationModel
+            model: root._operation
             spacing: Theme.spacingSmall
 
             ScrollBar.vertical: ScrollBar {
@@ -405,7 +299,7 @@ BaseDialog {
                 spacing: Theme.spacingNormal
 
                 required property int index
-                required property string category
+                required property var category
                 required property double amount
 
                 ComboBox {
@@ -413,17 +307,21 @@ BaseDialog {
                     Layout.fillWidth: true
                     model: root.categoryList
                     currentIndex: {
-                        if (allocationDelegate.category === "")
-                            return 0;
-                        let idx = root.categoryList.indexOf(allocationDelegate.category);
-                        return idx >= 0 ? idx : 0;
+                        if (!allocationDelegate.category)
+                            return -1;
+                        let idx = root.categoryList.indexOf(allocationDelegate.category.name);
+                        return idx >= 0 ? idx : -1;
                     }
-                    displayText: currentIndex === 0 ? qsTr("Select category...") : currentText
+                    displayText: {
+                        if (!allocationDelegate.category)
+                            return qsTr("Select category...");
+                        return currentIndex < 0 ? qsTr("Deleted category") : currentText;
+                    }
                     onActivated: idx => {
-                        allocationModel.setProperty(allocationDelegate.index, "category", idx === 0 ? "" : root.categoryList[idx]);
+                        OperationEditor.setAllocationCategory(root._operation, allocationDelegate.index, CategoryController.getCategoryByName(root.categoryList[idx]));
                     }
                     Component.onCompleted: {
-                        if (allocationDelegate.category === "") {
+                        if (!allocationDelegate.category) {
                             root._unaffectedCategoryComboBox = categoryCombo;
                         }
                     }
@@ -434,7 +332,7 @@ BaseDialog {
                     Layout.preferredWidth: 120
                     value: allocationDelegate.amount
                     onEdited: newValue => {
-                        allocationModel.setProperty(allocationDelegate.index, "amount", newValue);
+                        OperationEditor.setAllocationAmount(root._operation, allocationDelegate.index, newValue);
                     }
                 }
 
@@ -446,18 +344,18 @@ BaseDialog {
                     onClicked: {
                         // Add the remaining amount to this allocation's amount
                         let newAmount = allocationDelegate.amount + root.remainingAmount;
-                        allocationModel.setProperty(allocationDelegate.index, "amount", newAmount);
+                        OperationEditor.setAllocationAmount(root._operation, allocationDelegate.index, newAmount);
                     }
                 }
 
                 ToolButton {
                     text: "🗑️"
-                    enabled: allocationModel.count > 1
+                    enabled: root._operation?.allocationCount > 0
                     opacity: enabled ? 1.0 : 0.3
                     focusPolicy: Qt.NoFocus
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("Remove category")
-                    onClicked: root.removeAllocation(allocationDelegate.index)
+                    onClicked: OperationEditor.removeAllocation(root._operation, allocationDelegate.index)
                 }
             }
         }
@@ -466,7 +364,7 @@ BaseDialog {
         Button {
             Layout.alignment: Qt.AlignLeft
             text: qsTr("+ Add Category")
-            onClicked: root.addAllocation()
+            onClicked: OperationEditor.addAllocation(root._operation, null, root.remainingAmount)
         }
 
         RowLayout {
@@ -481,8 +379,8 @@ BaseDialog {
                         ruleEditDialog.isNewRule = true;
                         ruleEditDialog.suggestedMatch = labelField.text.trim();
                         ruleEditDialog.suggestedAmount = root.editedAmount;
-                        if (allocationModel.count > 0 && allocationModel.get(0).category !== "") {
-                            ruleEditDialog.suggestedCategory = allocationModel.get(0).category;
+                        if (root._operation.allocatedCategoryNames.length > 0) {
+                            ruleEditDialog.suggestedCategory = root._operation.allocatedCategoryNames[0];
                         } else {
                             ruleEditDialog.suggestedCategory = "";
                         }

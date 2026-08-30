@@ -14,8 +14,31 @@ Operation::Operation(Account* account,
     _details(details),
     _allocations(allocations) {
   for (auto* allocation : _allocations) {
-    if (allocation) allocation->setParent(this);
+    if (!allocation) continue;
+    allocation->setParent(this);
   }
+}
+
+int Operation::rowCount(const QModelIndex& parent) const {
+  return parent.isValid() ? 0 : _allocations.size();
+}
+
+QVariant Operation::data(const QModelIndex& modelIndex, int role) const {
+  if (!modelIndex.isValid() || modelIndex.row() < 0 || modelIndex.row() >= _allocations.size())
+    return {};
+  const auto* allocation = _allocations.at(modelIndex.row());
+  if (!allocation) return {};
+  switch (role) {
+    case CategoryRole:
+      return QVariant::fromValue(allocation->category());
+    case AmountRole:
+      return allocation->amount();
+  }
+  return {};
+}
+
+QHash<int, QByteArray> Operation::roleNames() const {
+  return { { CategoryRole, "category" }, { AmountRole, "amount" } };
 }
 
 Operation::~Operation() {
@@ -46,19 +69,23 @@ QStringList Operation::allocatedCategoryNames() const {
 
 void Operation::setAllocations(const QList<Allocation*>& allocations) {
   if (!sameAllocations(allocations)) {
+    beginResetModel();
     qDeleteAll(_allocations);
     _allocations = allocations;
     for (auto* allocation : _allocations) {
       if (allocation) allocation->setParent(this);
     }
+    endResetModel();
     emit allocationsChanged();
   }
 }
 
 void Operation::clearAllocations() {
   if (!_allocations.isEmpty()) {
+    beginResetModel();
     qDeleteAll(_allocations);
     _allocations.clear();
+    endResetModel();
     emit allocationsChanged();
   }
 }
@@ -81,6 +108,14 @@ bool Operation::isCategorized() const {
     if (allocation) totalAmount += allocation->amount();
   }
   return qFuzzyCompare(totalAmount, _amount);
+}
+
+double Operation::allocatedAmount() const {
+  double totalAmount = 0.0;
+  for (auto* allocation : _allocations) {
+    if (allocation) totalAmount += allocation->amount();
+  }
+  return totalAmount;
 }
 
 QString Operation::categoryDisplay() const {

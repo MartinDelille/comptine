@@ -350,10 +350,12 @@ SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
 
 void SetOperationDateCommand::undo() {
   _operation.set_date(_oldDate);
+  if (_operation.account()) _operation.account()->sortOperations();
 }
 
 void SetOperationDateCommand::redo() {
   _operation.set_date(_newDate);
+  if (_operation.account()) _operation.account()->sortOperations();
 }
 
 SetOperationLabelCommand::SetOperationLabelCommand(Operation& operation,

@@ -197,9 +197,12 @@ void Account::clear() {
 }
 
 void Account::sortOperations() {
+  beginResetModel();
   std::stable_sort(_operations.begin(), _operations.end(), [](Operation* a, Operation* b) {
     return a->date() > b->date();  // Most recent first, preserve relative order for same date
   });
+  endResetModel();
+  recalculateBalances();
   // The index of currentOperation may have changed after sorting
   // Selection is pointer-based so no update needed, but we need to notify
   // so that the model can update SelectedRole for affected indices
