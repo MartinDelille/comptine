@@ -25,167 +25,58 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
-    <name>BalanceHeader</name>
+    <name>EditMenu</name>
     <message>
-        <source>Balance:</source>
-        <translation>Solde :</translation>
+        <source>&amp;Edit</source>
+        <translation>Édition</translation>
     </message>
     <message>
-        <source>%1 operations</source>
-        <translation>%1 opérations</translation>
-    </message>
-</context>
-<context>
-    <name>BaseDialog</name>
-    <message>
-        <source>Ok</source>
-        <translation>Ok</translation>
-    </message>
-    <message>
-        <source></source>
-        <translation></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
+        <source>&amp;Undo</source>
         <translation>Annuler</translation>
     </message>
-</context>
-<context>
-    <name>BudgetView</name>
     <message>
-        <source>Total Budget:</source>
-        <translation>Budget Total:</translation>
+        <source>&amp;Redo</source>
+        <translation>Rétablir</translation>
     </message>
     <message>
-        <source>To Save:</source>
-        <translation>Vers l&apos;épargne :</translation>
+        <source>&amp;Copy</source>
+        <translation>Copier</translation>
     </message>
     <message>
-        <source>To Leftover:</source>
-        <translation>Vers le report :</translation>
+        <source>Select &amp;All</source>
+        <translation>Tout sélectionner</translation>
     </message>
     <message>
-        <source>From Leftover:</source>
-        <translation>Du report :</translation>
+        <source>Add New Operation...</source>
+        <translation>Ajouter une nouvelle opération...</translation>
     </message>
     <message>
-        <source>Net:</source>
-        <translation>Net :</translation>
+        <source>Add New Category...</source>
+        <translation>Ajouter une nouvelle catégorie...</translation>
     </message>
     <message>
-        <source>Balanced:</source>
-        <translation>Équilibré:</translation>
+        <source>Edit &amp;Operation...</source>
+        <translation>Modifier l&apos;&amp;opération...</translation>
     </message>
     <message>
-        <source>No categories defined</source>
-        <translation>Aucune catégorie définie</translation>
-    </message>
-</context>
-<context>
-    <name>CategoryDetailView</name>
-    <message>
-        <source>Total: %1</source>
-        <translation>Total : %1</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n operation(s)</source>
-        <translation>
-            <numerusform>%n opération</numerusform>
-            <numerusform>%n opérations</numerusform>
-        </translation>
+        <source>Edit &amp;Category...</source>
+        <translation>Modifier la &amp;catégorie...</translation>
     </message>
     <message>
-        <source>No operations for this category</source>
-        <translation>Aucune opération pour cette catégorie</translation>
-    </message>
-</context>
-<context>
-    <name>CategoryEditDialog</name>
-    <message>
-        <source>Edit Category</source>
-        <translation>Modifier la catégorie</translation>
+        <source>Delete Operation</source>
+        <translation>Supprimer une opération</translation>
     </message>
     <message>
-        <source>Name</source>
-        <translation>Nom</translation>
+        <source>Delete Category</source>
+        <translation>Supprimer une catégorie</translation>
     </message>
     <message>
-        <source>Category name</source>
-        <translation>Nom de la catégorie</translation>
+        <source>Categorization &amp;Rules...</source>
+        <translation>&amp;Règles de catégorisation...</translation>
     </message>
     <message>
-        <source>This is an income category</source>
-        <translation>Ceci est une catégorie de revenu</translation>
-    </message>
-    <message>
-        <source>Budget Limit</source>
-        <translation>Limite de budget</translation>
-    </message>
-</context>
-<context>
-    <name>CreateCounterPartDialog</name>
-    <message>
-        <source>Create Counter Part</source>
-        <translation>Créer une opération inverse</translation>
-    </message>
-    <message>
-        <source>Account:</source>
-        <translation>Compte:</translation>
-    </message>
-    <message>
-        <source>On one allocation</source>
-        <translation>Sur une allocation</translation>
-    </message>
-</context>
-<context>
-    <name>DateLabel</name>
-    <message>
-        <source>January</source>
-        <translation>Janvier</translation>
-    </message>
-    <message>
-        <source>February</source>
-        <translation>Février</translation>
-    </message>
-    <message>
-        <source>March</source>
-        <translation>Mars</translation>
-    </message>
-    <message>
-        <source>April</source>
-        <translation>Avril</translation>
-    </message>
-    <message>
-        <source>May</source>
-        <translation>Mai</translation>
-    </message>
-    <message>
-        <source>June</source>
-        <translation>Juin</translation>
-    </message>
-    <message>
-        <source>July</source>
-        <translation>Juillet</translation>
-    </message>
-    <message>
-        <source>August</source>
-        <translation>Août</translation>
-    </message>
-    <message>
-        <source>September</source>
-        <translation>Septembre</translation>
-    </message>
-    <message>
-        <source>October</source>
-        <translation>Octobre</translation>
-    </message>
-    <message>
-        <source>November</source>
-        <translation>Novembre</translation>
-    </message>
-    <message>
-        <source>December</source>
-        <translation>Décembre</translation>
+        <source>&amp;Preferences...</source>
+        <translation>Préférences...</translation>
     </message>
 </context>
 <context>
@@ -216,38 +107,7 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
-    <name>ImportDialog</name>
-    <message>
-        <source>Import CSV Files</source>
-        <translation>Importer des fichiers CSV</translation>
-    </message>
-    <message>
-        <source>Import All</source>
-        <translation>Tout importer</translation>
-    </message>
-    <message>
-        <source>Assign each file to an account:</source>
-        <translation>Assigner chaque fichier à un compte :</translation>
-    </message>
-    <message>
-        <source>Use categories from CSV</source>
-        <translation>Utiliser les catégories du CSV</translation>
-    </message>
-    <message>
-        <source>New account</source>
-        <translation>Nouveau compte</translation>
-    </message>
-    <message>
-        <source>Account name</source>
-        <translation>Nom du compte</translation>
-    </message>
-</context>
-<context>
-    <name>Main</name>
-    <message>
-        <source>Add New Category...</source>
-        <translation>Ajouter une nouvelle catégorie...</translation>
-    </message>
+    <name>FileMenu</name>
     <message>
         <source>&amp;File</source>
         <translation>Fichier</translation>
@@ -284,58 +144,9 @@ Importez et gérez vos données bancaires.</translation>
         <source>&amp;Quit</source>
         <translation>Quitter</translation>
     </message>
-    <message>
-        <source>&amp;View</source>
-        <translation>Affichage</translation>
-    </message>
-    <message>
-        <source>&amp;Undo</source>
-        <translation>Annuler</translation>
-    </message>
-    <message>
-        <source>&amp;Redo</source>
-        <translation>Rétablir</translation>
-    </message>
-    <message>
-        <source>Add New Operation...</source>
-        <translation>Ajouter une nouvelle opération...</translation>
-    </message>
-    <message>
-        <source>Edit &amp;Operation...</source>
-        <translation>Modifier l&apos;&amp;opération...</translation>
-    </message>
-    <message>
-        <source>Edit &amp;Category...</source>
-        <translation>Modifier la &amp;catégorie...</translation>
-    </message>
-    <message>
-        <source>Delete Operation</source>
-        <translation>Supprimer une opération</translation>
-    </message>
-    <message>
-        <source>Delete Category</source>
-        <translation>Supprimer une catégorie</translation>
-    </message>
-    <message>
-        <source>Categorization &amp;Rules...</source>
-        <translation>&amp;Règles de catégorisation...</translation>
-    </message>
-    <message>
-        <source>&amp;Operations</source>
-        <translation>Opérations</translation>
-    </message>
-    <message>
-        <source>&amp;Budget</source>
-        <translation>Budget</translation>
-    </message>
-    <message>
-        <source>&amp;Previous Month</source>
-        <translation>Mois précédent</translation>
-    </message>
-    <message>
-        <source>&amp;Next Month</source>
-        <translation>Mois suivant</translation>
-    </message>
+</context>
+<context>
+    <name>HelpMenu</name>
     <message>
         <source>&amp;Help</source>
         <translation>&amp;Aide</translation>
@@ -351,6 +162,40 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>&amp;About Comptine</source>
         <translation>À &amp;propos de Comptine</translation>
+    </message>
+</context>
+<context>
+    <name>ImportDialog</name>
+    <message>
+        <source>Import CSV Files</source>
+        <translation>Importer des fichiers CSV</translation>
+    </message>
+    <message>
+        <source>Import All</source>
+        <translation>Tout importer</translation>
+    </message>
+    <message>
+        <source>Assign each file to an account:</source>
+        <translation>Assigner chaque fichier à un compte :</translation>
+    </message>
+    <message>
+        <source>Use categories from CSV</source>
+        <translation>Utiliser les catégories du CSV</translation>
+    </message>
+    <message>
+        <source>New account</source>
+        <translation>Nouveau compte</translation>
+    </message>
+    <message>
+        <source>Account name</source>
+        <translation>Nom du compte</translation>
+    </message>
+</context>
+<context>
+    <name>Main</name>
+    <message>
+        <source>Delete Category</source>
+        <translation>Supprimer une catégorie</translation>
     </message>
     <message>
         <source>Open Budget File</source>
@@ -401,18 +246,6 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Budget</translation>
     </message>
     <message>
-        <source>&amp;Edit</source>
-        <translation>Édition</translation>
-    </message>
-    <message>
-        <source>&amp;Copy</source>
-        <translation>Copier</translation>
-    </message>
-    <message>
-        <source>&amp;Preferences...</source>
-        <translation>Préférences...</translation>
-    </message>
-    <message>
         <source>File Error</source>
         <translation>Erreur de fichier</translation>
     </message>
@@ -427,209 +260,6 @@ Importez et gérez vos données bancaires.</translation>
     <message>
         <source>Update Check Failed</source>
         <translation>Échec de la vérification des mises à jour</translation>
-    </message>
-</context>
-<context>
-    <name>MonthCategoryItem</name>
-    <message>
-        <source>EXCEEDED</source>
-        <translation>DÉPASSÉ</translation>
-    </message>
-    <message>
-        <source>Remaining: %1</source>
-        <translation>Reste : %1</translation>
-    </message>
-    <message>
-        <source>Clear report</source>
-        <translation>Réinitialiser le report</translation>
-    </message>
-    <message>
-        <source>Exceeded: %1</source>
-        <translation>Dépassement : %1</translation>
-    </message>
-    <message>
-        <source>(income)</source>
-        <translation>(revenu)</translation>
-    </message>
-    <message>
-        <source>PENDING</source>
-        <translation>EN ATTENTE</translation>
-    </message>
-    <message>
-        <source>Expected: %1</source>
-        <translation>Attendu : %1</translation>
-    </message>
-    <message>
-        <source>Received: %1 extra</source>
-        <translation>Reçu : %1 en plus</translation>
-    </message>
-    <message>
-        <source>Save:</source>
-        <translation>Épargner :</translation>
-    </message>
-    <message>
-        <source>Report:</source>
-        <translation>Reporter :</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Save</source>
-        <translation>Allouer le reste à l&apos;épargne</translation>
-    </message>
-    <message>
-        <source>Discard</source>
-        <translation>Remettre à zéro</translation>
-    </message>
-    <message>
-        <source>Allocate remaining to Report</source>
-        <translation>Allouer le reste au report</translation>
-    </message>
-    <message>
-        <source>Carry forward deficit</source>
-        <translation>Reporter le déficit</translation>
-    </message>
-</context>
-<context>
-    <name>OperationDetails</name>
-    <message>
-        <source>Operation Details</source>
-        <translation>Détails de l&apos;opération</translation>
-    </message>
-    <message>
-        <source>Multiple Operations</source>
-        <translation>Opérations multiples</translation>
-    </message>
-    <message>
-        <source>Selected:</source>
-        <translation>Sélectionnées :</translation>
-    </message>
-    <message numerus="yes">
-        <source>%n operation(s)</source>
-        <translation>
-            <numerusform>%n opération</numerusform>
-            <numerusform>%n opérations</numerusform>
-        </translation>
-    </message>
-    <message>
-        <source>Total Amount:</source>
-        <translation>Montant total :</translation>
-    </message>
-    <message>
-        <source>Budget Date:</source>
-        <translation>Date budget :</translation>
-    </message>
-    <message>
-        <source>Details:</source>
-        <translation>Détails :</translation>
-    </message>
-    <message>
-        <source>Allocations:</source>
-        <translation>Allocations :</translation>
-    </message>
-    <message>
-        <source>Select an operation to view details</source>
-        <translation>Sélectionnez une opération pour voir les détails</translation>
-    </message>
-    <message>
-        <source>Date:</source>
-        <translation>Date :</translation>
-    </message>
-    <message>
-        <source>Amount:</source>
-        <translation>Montant :</translation>
-    </message>
-    <message>
-        <source>Uncategorized</source>
-        <translation>Non catégorisé</translation>
-    </message>
-    <message>
-        <source>Label:</source>
-        <translation>Libellé :</translation>
-    </message>
-    <message>
-        <source>Edit operation...</source>
-        <translation>Modifier l&apos;opération...</translation>
-    </message>
-</context>
-<context>
-    <name>OperationEditDialog</name>
-    <message>
-        <source>Edit Operation</source>
-        <translation>Modifier l&apos;opération</translation>
-    </message>
-    <message>
-        <source>Amount:</source>
-        <translation>Montant :</translation>
-    </message>
-    <message>
-        <source>Label:</source>
-        <translation>Libellé :</translation>
-    </message>
-    <message>
-        <source>Enter label</source>
-        <translation>Entrez un libellé</translation>
-    </message>
-    <message>
-        <source>Details:</source>
-        <translation>Détails :</translation>
-    </message>
-    <message>
-        <source>Enter details</source>
-        <translation>Entrez les détails</translation>
-    </message>
-    <message>
-        <source>Date:</source>
-        <translation>Date :</translation>
-    </message>
-    <message>
-        <source>Budget Date:</source>
-        <translation>Date budget :</translation>
-    </message>
-    <message>
-        <source>Previous Uncategorized</source>
-        <translation>Précédente non catégorisée</translation>
-    </message>
-    <message>
-        <source>Next Uncategorized</source>
-        <translation>Suivante non catégorisée</translation>
-    </message>
-    <message>
-        <source>Categories:</source>
-        <translation>Catégories :</translation>
-    </message>
-    <message>
-        <source>Remaining:</source>
-        <translation>Restant :</translation>
-    </message>
-    <message>
-        <source>Select category...</source>
-        <translation>Sélectionner une catégorie...</translation>
-    </message>
-    <message>
-        <source>+ Add Category</source>
-        <translation>+ Ajouter une catégorie</translation>
-    </message>
-    <message>
-        <source>Create Rule...</source>
-        <translation>Créer une règle...</translation>
-    </message>
-    <message>
-        <source>Create counter part...</source>
-        <translation>Créer un opération inverse...</translation>
-    </message>
-    <message>
-        <source>Balance to remaining amount</source>
-        <translation>Équilibrer avec le montant restant</translation>
-    </message>
-    <message>
-        <source>Remove category</source>
-        <translation>Supprimer la catégorie</translation>
-    </message>
-</context>
-<context>
-    <name>OperationView</name>
-    <message>
-        <source>Rename</source>
-        <translation>Renommer</translation>
     </message>
 </context>
 <context>
@@ -797,108 +427,13 @@ Importez et gérez vos données bancaires.</translation>
         <source>clear</source>
         <translation>effacer</translation>
     </message>
-</context>
-<context>
-    <name>RenameAccountDialog</name>
     <message>
-        <source>Rename Account</source>
-        <translation>Renommer le compte</translation>
+        <source>Edit operation</source>
+        <translation>Modifier l&apos;opération</translation>
     </message>
     <message>
-        <source>Account name:</source>
-        <translation>Nom du compte :</translation>
-    </message>
-    <message>
-        <source>Enter account name</source>
-        <translation>Entrez le nom du compte</translation>
-    </message>
-</context>
-<context>
-    <name>RuleEditDialog</name>
-    <message>
-        <source>Add Rule</source>
-        <translation>Ajouter une règle</translation>
-    </message>
-    <message>
-        <source>Edit Rule</source>
-        <translation>Modifier la règle</translation>
-    </message>
-    <message>
-        <source>Label Prefix</source>
-        <translation>Préfixe de libellé</translation>
-    </message>
-    <message>
-        <source>Operations starting with this text will match</source>
-        <translation>Les opérations commençant par ce texte seront associées</translation>
-    </message>
-    <message>
-        <source>Assign Category</source>
-        <translation>Assigner une catégorie</translation>
-    </message>
-    <message>
-        <source>Rules are matched in order. The first matching rule wins.</source>
-        <translation>Les règles sont appliquées dans l&apos;ordre. La première règle correspondante est utilisée.</translation>
-    </message>
-    <message>
-        <source>Apply to existing uncategorized operations</source>
-        <translation>Appliquer aux opérations non catégorisées existantes</translation>
-    </message>
-    <message>
-        <source>Match specific amount</source>
-        <translation>Correspondre à un montant spécifique</translation>
-    </message>
-</context>
-<context>
-    <name>RulesView</name>
-    <message>
-        <source>Categorization Rules</source>
-        <translation>Règles de catégorisation</translation>
-    </message>
-    <message>
-        <source>Rules are matched in order. The first matching rule wins.</source>
-        <translation>Les règles sont appliquées dans l&apos;ordre. La première règle correspondante est utilisée.</translation>
-    </message>
-    <message>
-        <source>Add Rule...</source>
-        <translation>Ajouter une règle...</translation>
-    </message>
-    <message>
-        <source>Prefix: &quot;%1&quot;</source>
-        <translation>Préfixe : « %1 »</translation>
-    </message>
-    <message>
-        <source>Assign to: %1</source>
-        <translation>Assigner à : %1</translation>
-    </message>
-    <message>
-        <source>Assign to: %1 (amount: %2)</source>
-        <translation>Assigner à : %1 (montant : %2)</translation>
-    </message>
-    <message>
-        <source>Move up (higher priority)</source>
-        <translation>Monter (priorité plus haute)</translation>
-    </message>
-    <message>
-        <source>Move down (lower priority)</source>
-        <translation>Descendre (priorité plus basse)</translation>
-    </message>
-    <message>
-        <source>Edit rule</source>
-        <translation>Modifier la règle</translation>
-    </message>
-    <message>
-        <source>Delete rule</source>
-        <translation>Supprimer la règle</translation>
-    </message>
-    <message>
-        <source>No rules defined.
-Click &quot;Add Rule...&quot; to create one.</source>
-        <translation>Aucune règle définie.
-Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
-    </message>
-    <message>
-        <source>%1 rule(s)</source>
-        <translation>%1 règle(s)</translation>
+        <source>Add operation</source>
+        <translation>Ajouter une opération</translation>
     </message>
 </context>
 <context>
@@ -933,6 +468,29 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
     <message>
         <source>Download Update</source>
         <translation>Télécharger la mise à jour</translation>
+    </message>
+</context>
+<context>
+    <name>ViewMenu</name>
+    <message>
+        <source>&amp;View</source>
+        <translation>Affichage</translation>
+    </message>
+    <message>
+        <source>&amp;Operations</source>
+        <translation>Opérations</translation>
+    </message>
+    <message>
+        <source>&amp;Budget</source>
+        <translation>Budget</translation>
+    </message>
+    <message>
+        <source>&amp;Previous Month</source>
+        <translation>Mois précédent</translation>
+    </message>
+    <message>
+        <source>&amp;Next Month</source>
+        <translation>Mois suivant</translation>
     </message>
 </context>
 </TS>
