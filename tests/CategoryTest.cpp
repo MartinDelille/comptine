@@ -486,6 +486,23 @@ private slots:
     QCOMPARE(record.budgetLimit.value(), -200.0);
   }
 
+  void testEditCategoryCommandPreservesLaterBudgetLimit() {
+    auto cat = new Category("Food", -250.0);
+    categoryController->addCategory(cat);
+
+    undoStack->push(new EditCategoryCommand(*cat, "Food", -300.0,
+                                            QDate(2025, 4, 1)));
+    undoStack->push(new EditCategoryCommand(*cat, "Food", -400.0,
+                                            QDate(2025, 3, 1)));
+
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 3, 1)), -400.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 4, 1)), -300.0);
+
+    undoStack->undo();
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 3, 1)), -250.0);
+    QCOMPARE(cat->budgetLimitForMonth(QDate(2025, 4, 1)), -300.0);
+  }
+
   void testEditCategoryNameOnlyNoHistoryChange() {
     auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
