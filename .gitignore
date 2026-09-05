@@ -82,7 +82,7 @@ CMakeLists.txt.user*
 /build*/
 
 .envrc
-.venv
+.venv*
 docs/assets/screenshots
 compile_commands.json
 .cache
