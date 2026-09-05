@@ -25,6 +25,17 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Quick LinguistTools Network)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
+option(COMPTINE_ENABLE_COVERAGE "Enable C++ code coverage instrumentation" OFF)
+
+if(COMPTINE_ENABLE_COVERAGE)
+    if(MSVC)
+        message(FATAL_ERROR "COMPTINE_ENABLE_COVERAGE requires GCC or Clang")
+    endif()
+
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()
+
 add_library(project_warnings INTERFACE)
 
 if(MSVC)
