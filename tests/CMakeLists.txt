@@ -17,6 +17,11 @@ qt_add_executable(RuleTest RuleTest.cpp)
 target_link_libraries(RuleTest PRIVATE Qt6::Test services editor)
 add_test(NAME RuleTest COMMAND RuleTest)
 
+# AccountEditorTest - account rename editing and undo behavior
+qt_add_executable(AccountEditorTest AccountEditorTest.cpp)
+target_link_libraries(AccountEditorTest PRIVATE Qt6::Test services editor)
+add_test(NAME AccountEditorTest COMMAND AccountEditorTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
