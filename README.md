@@ -46,6 +46,21 @@ cmake --build build --config Release
 .\build\Release\Comptine.exe
 ```
 
+### Code coverage
+
+Coverage is generated in GitHub Actions for Linux builds and reported by Codecov on
+pull requests. To generate it locally, install `lcov`, install dependencies, and use
+the debug preset with coverage enabled:
+
+```bash
+uv run conan install . --build=missing -pr:h=conan/profiles/linux -pr:b=conan/profiles/linux -s:h build_type=Debug -s:b build_type=Debug
+qt-cmake --preset=conan-debug -DCOMPTINE_ENABLE_COVERAGE=ON
+cmake --build --preset=conan-debug
+ctest --test-dir build/Debug --output-on-failure
+lcov --capture --directory build/Debug --output-file coverage.info
+lcov --list coverage.info
+```
+
 ## Creating Installers
 
 ### MacOS (DMG)

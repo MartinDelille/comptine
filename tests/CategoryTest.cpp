@@ -2,11 +2,15 @@
 #include <QDate>
 #include <QSignalSpy>
 #include <QTest>
+#include <QVariant>
 
-#include "../BudgetData.h"
-#include "../Category.h"
-#include "../CategoryController.h"
-#include "../UndoCommands.h"
+#include "editor/OperationEditor.h"
+#include "model/Account.h"
+#include "model/Category.h"
+#include "model/Operation.h"
+#include "services/BudgetData.h"
+#include "services/CategoryController.h"
+#include "services/UndoCommands.h"
 
 class CategoryTest : public QObject {
   Q_OBJECT
@@ -14,6 +18,7 @@ class CategoryTest : public QObject {
   QUndoStack* undoStack;
   BudgetData* budgetData;
   CategoryController* categoryController;
+  OperationEditor* operationEditor;
 
 private slots:
   void init() {
@@ -21,10 +26,12 @@ private slots:
     undoStack = new QUndoStack();  // No parent - we'll delete manually
     budgetData = new BudgetData(*undoStack);
     categoryController = new CategoryController(*budgetData, *undoStack);
+    operationEditor = new OperationEditor(*budgetData, *undoStack);
   }
 
   void cleanup() {
     delete categoryController;
+    delete operationEditor;
     delete budgetData;
     delete undoStack;
   }
@@ -414,7 +421,7 @@ private slots:
   // EditCategoryCommand undo/redo with budget limit history
 
   void testEditCategoryCommandUndoRedo() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     QDate budgetDate(2025, 6, 1);  // Changing budget while viewing June
@@ -451,7 +458,7 @@ private slots:
   }
 
   void testEditCategoryCommandPreservesExistingHistory() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     // Pre-existing budget limit in history for May (e.g., from a previous change)
@@ -480,7 +487,7 @@ private slots:
   }
 
   void testEditCategoryNameOnlyNoHistoryChange() {
-    Category* cat = new Category("Food", -250.0);
+    auto cat = new Category("Food", -250.0);
     categoryController->addCategory(cat);
 
     QDate budgetDate(2025, 6, 1);
@@ -501,10 +508,93 @@ private slots:
   void testCountOperationsWithCategory() {
     auto food = categoryController->addCategory(new Category("Food", -250));
     auto transport = categoryController->addCategory(new Category("Transport", -50));
-    auto account = budgetData->addAccount(new Account("Account"));
+    auto account = budgetData->createAccount("Account");
     auto bread = account->addOperation(new Operation(account, QDate(2026, 8, 15), 1., "Bread", "", { new Allocation(food, 1) }));
     QCOMPARE(budgetData->countOperationsWithCategory(food), 1);
     QCOMPARE(budgetData->countOperationsWithCategory(transport), 0);
+  }
+
+  void testSplitOperationUndoRedoPreservesAllocations() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto transport = categoryController->addCategory(new Category("Transport", -50));
+    auto account = budgetData->createAccount("Account");
+    auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
+
+    QVERIFY(operationEditor->beginEditing(operation));
+    operationEditor->addAllocation(operation, food, -60.);
+    operationEditor->addAllocation(operation, transport, -40.);
+    operationEditor->endEditing(true);
+    QCOMPARE(operation->allocations().size(), 2);
+    QCOMPARE(operation->amountForCategory(food), -60.);
+    QCOMPARE(operation->amountForCategory(transport), -40.);
+
+    undoStack->undo();
+    QVERIFY(operation->allocations().isEmpty());
+
+    undoStack->redo();
+    QCOMPARE(operation->allocations().size(), 2);
+    QCOMPARE(operation->amountForCategory(food), -60.);
+    QCOMPARE(operation->amountForCategory(transport), -40.);
+
+    undoStack->undo();
+    QVERIFY(operation->allocations().isEmpty());
+  }
+
+  void testOperationAllocationModelAndTransactionalCancel() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto account = budgetData->createAccount("Account");
+    auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
+
+    QVERIFY(operationEditor->beginEditing(operation));
+    operationEditor->addAllocation(operation, food, -100.);
+    QCOMPARE(operation->rowCount(), 1);
+    QCOMPARE(operation->data(operation->index(0, 0), Operation::CategoryRole).value<Category*>(), food);
+    QCOMPARE(operation->data(operation->index(0, 0), Operation::AmountRole).toDouble(), -100.);
+    QCOMPARE(operation->allocatedAmount(), -100.);
+    operationEditor->endEditing(false);
+
+    QVERIFY(operation->allocations().isEmpty());
+    QVERIFY(!operationEditor->isEditing());
+  }
+
+  void testAcceptedAllocationNormalizationIsOneUndoStep() {
+    auto food = categoryController->addCategory(new Category("Food", -250));
+    auto account = budgetData->createAccount("Account");
+    auto operation = account->addOperation(new Operation(account, QDate(2026, 8, 15), -100., "Purchase"));
+    operation->setAllocations({ new Allocation(food, -40.),
+                                new Allocation(food, -20.),
+                                new Allocation(food, 0.0001) });
+
+    QVERIFY(operationEditor->beginEditing(operation));
+    operationEditor->normalizeAllocations(operation);
+    operationEditor->endEditing(true);
+
+    QCOMPARE(operation->rowCount(), 1);
+    QCOMPARE(operation->amountForCategory(food), -60.);
+    undoStack->undo();
+    QCOMPARE(operation->allocations().size(), 3);
+    QCOMPARE(operation->amountForCategory(food), -59.9999);
+  }
+
+  void testChangingOperationDateResortsAccount() {
+    auto account = budgetData->createAccount("Account");
+    auto older = account->addOperation(new Operation(account, QDate(2026, 8, 15), -10., "Older"));
+    auto newer = account->addOperation(new Operation(account, QDate(2026, 8, 20), -20., "Newer"));
+
+    QCOMPARE(account->operationAt(0), newer);
+    QCOMPARE(account->operationAt(1), older);
+
+    operationEditor->setDate(older, QDate(2026, 8, 25));
+    QCOMPARE(account->operationAt(0), older);
+    QCOMPARE(account->operationAt(1), newer);
+
+    undoStack->undo();
+    QCOMPARE(account->operationAt(0), newer);
+    QCOMPARE(account->operationAt(1), older);
+
+    undoStack->redo();
+    QCOMPARE(account->operationAt(0), older);
+    QCOMPARE(account->operationAt(1), newer);
   }
 };
 

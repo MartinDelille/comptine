@@ -1,0 +1,19 @@
+set(CPACK_PACKAGE_NAME "Comptine")
+set(CPACK_PACKAGE_VENDOR "Martin Delille")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Personal budget management application")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "Comptine")
+
+if(EXISTS "${PROJECT_SOURCE_DIR}/LICENSE")
+    set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE")
+endif()
+
+if(APPLE)
+    include(${PROJECT_SOURCE_DIR}/cmake/packaging/macos.cmake)
+elseif(WIN32)
+    include(${PROJECT_SOURCE_DIR}/cmake/packaging/windows.cmake)
+endif()
+
+include(CPack)

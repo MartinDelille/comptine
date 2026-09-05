@@ -7,11 +7,11 @@ Use exact commands below to configure, build, run, and clean the project. If you
 ### MacOS
 
 - The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
-- **Install dependencies**: `conan install . --output-folder=build/agent --build=missing`
-- **Configure**: `qt-cmake -B build/agent -S . --preset=conan-release`
-- **Build**: `cmake --build build/agent`
-- **Run**: `./build/agent/Comptine.app/Contents/MacOS/Comptine`
-- **Clean**: `rm -rf build/agent` (run it only if you need a full clean)
+- **Install dependencies**: `conan install . --build=missing`
+- **Configure**: `qt-cmake --preset=conan-debug`
+- **Build**: `cmake --build --preset=conan-debug`
+- **Run**: `./build/Comptine.app/Contents/MacOS/Comptine`
+- **Clean**: `rm -rf build` (run it only if you need a full clean)
 
 When done, you can run the application as shown above to show the progress.
 
@@ -22,6 +22,13 @@ When done, you can run the application as shown above to show the progress.
 - Main files: `main.cpp`, `Operation.{h,cpp}`, `BudgetData.{h,cpp}`, `Main.qml`
 
 ## Code Style
+
+### Architecture and implementation quality
+
+- For implementation requests, use the project’s native framework abstractions and established architecture directly. Avoid temporary or “cheap” representations when the requirements call for a structured, typed, or reusable design.
+- Keep domain calculations and data contracts in the appropriate backend/model layer, and let the UI consume them through the framework’s intended view and binding mechanisms.
+- Before creating a custom workaround, check the project’s configured framework version and its official documentation for existing facilities that match the required behavior.
+- Prefer a clean, extensible implementation on the first pass. Use provisional structures only when the data is genuinely small and static, or when the user explicitly requests a prototype.
 
 ### C++ (Qt Style)
 
@@ -60,3 +67,10 @@ When done, you can run the application as shown above to show the progress.
 
 - **Undoable Actions**: When adding new actions that modify data (e.g., adding/removing operations, renaming, importing), make them undoable using `QUndoCommand` subclasses in `UndoCommands.h/.cpp`.
 - **When in doubt**: Ask if an action should be undoable. Generally, any action that modifies user data should support undo/redo.
+
+## Change Management
+
+- Use `git mv` when moving tracked files so their history remains visible.
+- Never create commits. Leave all changes in the working tree for the user to review and commit.
+- Preserve unrelated working-tree changes and do not overwrite them.
+- Do not use destructive Git commands such as `git reset --hard` or `git checkout --` unless the user explicitly requests them.
