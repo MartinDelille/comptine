@@ -9,6 +9,7 @@
 #include "AppState.h"
 #include "BudgetData.h"
 #include "CategoryController.h"
+#include "EvolutionController.h"
 #include "FileController.h"
 #include "RuleController.h"
 #include "UpdateController.h"
@@ -40,6 +41,13 @@ struct CategoryControllerForeign : ForeignBase<CategoryController> {
   QML_FOREIGN(CategoryController)
   QML_SINGLETON
   QML_NAMED_ELEMENT(CategoryController)
+};
+
+struct EvolutionControllerForeign : ForeignBase<EvolutionController> {
+  Q_GADGET
+  QML_FOREIGN(EvolutionController)
+  QML_SINGLETON
+  QML_NAMED_ELEMENT(EvolutionController)
 };
 
 struct FileControllerForeign : ForeignBase<FileController> {

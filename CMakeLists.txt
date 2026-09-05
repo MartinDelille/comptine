@@ -65,6 +65,7 @@ add_subdirectory(ui/common)
 add_subdirectory(ui/rules)
 add_subdirectory(ui/budget)
 add_subdirectory(ui/operations)
+add_subdirectory(ui/evolution)
 
 add_subdirectory(app)
 
