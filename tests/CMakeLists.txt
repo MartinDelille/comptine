@@ -32,6 +32,11 @@ qt_add_executable(CategoryEditorTest CategoryEditorTest.cpp)
 target_link_libraries(CategoryEditorTest PRIVATE Qt6::Test services editor)
 add_test(NAME CategoryEditorTest COMMAND CategoryEditorTest)
 
+# RuleControllerTest - rule management, matching, and operation navigation
+qt_add_executable(RuleControllerTest RuleControllerTest.cpp)
+target_link_libraries(RuleControllerTest PRIVATE Qt6::Test services editor)
+add_test(NAME RuleControllerTest COMMAND RuleControllerTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 

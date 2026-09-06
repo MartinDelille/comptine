@@ -2,6 +2,7 @@
 #include <QUndoStack>
 
 #include "editor/RuleEditor.h"
+#include "model/Account.h"
 #include "model/Category.h"
 #include "model/Operation.h"
 #include "model/Rule.h"
@@ -58,6 +59,28 @@ private slots:
     editor.add(&specific, "STORE");
 
     QCOMPARE(controller.matchingCategory(&operation), &broad);
+  }
+
+  void testControllerAppliesRulesToOperations() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    RuleController controller(budgetData, undoStack);
+    Category category("Fictional Bills");
+    controller.addRule(new Rule(&category, "Utility", -25.0));
+
+    Operation matching(nullptr, {}, -25.0, "Fictional Utility bill");
+    Operation wrongAmount(nullptr, {}, -30.0, "Fictional Utility bill");
+    Operation unmatched(nullptr, {}, -25.0, "Fictional Grocery");
+    QVERIFY(controller.matchingCategory(nullptr) == nullptr);
+    QCOMPARE(controller.matchingCategory(&matching), &category);
+    QVERIFY(controller.matchingCategory(&wrongAmount) == nullptr);
+    QVERIFY(controller.matchingCategory(&unmatched) == nullptr);
+
+    QCOMPARE(controller.applyRulesToOperation(nullptr), 0);
+    QCOMPARE(controller.applyRulesToOperation(&unmatched), 0);
+    QCOMPARE(controller.applyRulesToOperation(&matching), 1);
+    QVERIFY(matching.isCategorized());
+    QCOMPARE(controller.applyRulesToOperation(&matching), 0);
   }
 
   void testApplyRuleCategorizesUncategorizedOperation() {
