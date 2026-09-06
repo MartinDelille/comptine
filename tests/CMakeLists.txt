@@ -67,6 +67,11 @@ qt_add_executable(AccountTest AccountTest.cpp)
 target_link_libraries(AccountTest PRIVATE Qt6::Test services editor)
 add_test(NAME AccountTest COMMAND AccountTest)
 
+# OperationTest - operation allocations, budget dates, and model behavior
+qt_add_executable(OperationTest OperationTest.cpp)
+target_link_libraries(OperationTest PRIVATE Qt6::Test services editor)
+add_test(NAME OperationTest COMMAND OperationTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
