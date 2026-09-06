@@ -27,6 +27,11 @@ qt_add_executable(OperationEditorTest OperationEditorTest.cpp)
 target_link_libraries(OperationEditorTest PRIVATE Qt6::Test services editor)
 add_test(NAME OperationEditorTest COMMAND OperationEditorTest)
 
+# CategoryEditorTest - category editing, monthly amounts, and removal behavior
+qt_add_executable(CategoryEditorTest CategoryEditorTest.cpp)
+target_link_libraries(CategoryEditorTest PRIVATE Qt6::Test services editor)
+add_test(NAME CategoryEditorTest COMMAND CategoryEditorTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
