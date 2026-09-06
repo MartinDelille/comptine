@@ -7,6 +7,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QUrl>
+#include <iterator>
 #include <string>
 
 #include "AppSettings.h"
@@ -73,6 +74,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
   YAML::Emitter out;
   out << YAML::BeginMap;
+  out << YAML::Key << "budget_limit_history_version" << YAML::Value << 2;
 
   // Get navigation state from NavigationController
   int currentTabIndex = _budgetData.currentTabIndex();
@@ -277,6 +279,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   try {
     YAML::Node root = YAML::Load(std::string(data.constData(), data.size()));
+    const int budgetLimitHistoryVersion = root["budget_limit_history_version"]
+                                              ? root["budget_limit_history_version"].as<int>()
+                                              : 1;
 
     // Load state section
     if (root["state"]) {
@@ -313,6 +318,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         }
 
         // Load month history (new format) or leftover decisions (legacy format)
+        QMap<YearMonth, MonthRecord> loadedHistory;
         auto loadMonthEntries = [&](const YAML::Node& entriesNode) {
           for (const auto& entryNode : entriesNode) {
             int year = 0, month = 0;
@@ -347,7 +353,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
 
             if (year > 0 && month > 0 && !record.isEmpty()) {
-              category->setMonthRecord(year, month, record);
+              loadedHistory.insert({ year, month }, record);
             }
           }
         };
@@ -356,6 +362,58 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           loadMonthEntries(cat["month_history"]);
         } else if (cat["leftover_decisions"]) {
           loadMonthEntries(cat["leftover_decisions"]);
+        }
+
+        if (budgetLimitHistoryVersion >= 2) {
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            category->setMonthRecord(it.key().year, it.key().month, it.value());
+          }
+        } else {
+          // Before version 2, a budget-limit entry stored the old value in the
+          // last month where it was effective. Convert each boundary into an
+          // override starting in the following month.
+          const double legacyCurrentLimit = category->budgetLimit();
+          QMap<YearMonth, MonthRecord> convertedHistory;
+          std::optional<double> legacyBaseLimit;
+
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            MonthRecord record = it.value();
+            if (record.budgetLimit.has_value() && !legacyBaseLimit.has_value()) {
+              legacyBaseLimit = record.budgetLimit;
+            }
+            record.budgetLimit.reset();
+            if (!record.isEmpty()) {
+              convertedHistory.insert(it.key(), record);
+            }
+          }
+
+          if (legacyBaseLimit.has_value()) {
+            category->set_budgetLimit(legacyBaseLimit.value());
+          }
+
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            if (!it.value().budgetLimit.has_value()) {
+              continue;
+            }
+
+            double effectiveLimit = legacyCurrentLimit;
+            for (auto next = std::next(it); next != loadedHistory.constEnd(); ++next) {
+              if (next.value().budgetLimit.has_value()) {
+                effectiveLimit = next.value().budgetLimit.value();
+                break;
+              }
+            }
+
+            const QDate month(it.key().year, it.key().month, 1);
+            const YearMonth effectiveMonth = YearMonth::fromDate(month.addMonths(1));
+            MonthRecord record = convertedHistory.value(effectiveMonth, MonthRecord{});
+            record.budgetLimit = effectiveLimit;
+            convertedHistory.insert(effectiveMonth, record);
+          }
+
+          for (auto it = convertedHistory.constBegin(); it != convertedHistory.constEnd(); ++it) {
+            category->setMonthRecord(it.key().year, it.key().month, it.value());
+          }
         }
 
         _categoryController.addCategory(category);

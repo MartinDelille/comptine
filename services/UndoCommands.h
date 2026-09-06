@@ -58,10 +58,8 @@ private:
 };
 
 // Command for editing a category (name and/or budget limit)
-// When the budget limit changes, the old limit is recorded in month_history
-// for the month BEFORE the budget month. If a later budget-limit history entry
-// already exists, the edited month is stored as a historical override so that
-// later changes remain intact.
+// Budget-limit changes are stored in month_history at the month where they
+// become effective.
 class EditCategoryCommand : public QUndoCommand {
 public:
   EditCategoryCommand(Category& category,
@@ -79,11 +77,8 @@ private:
   QString _newName;
   double _oldBudgetLimit;
   double _newBudgetLimit;
-  QDate _budgetDate;                                  // The budget month when the change was made
-  QDate _historyDate;                                 // The month before budgetDate (where old limit is stored)
-  std::optional<double> _previousHistoryBudgetLimit;  // What was in month_history before (to restore on undo)
-  std::optional<double> _previousBudgetDateLimit;     // Historical limit at budgetDate, if any
-  bool _updatesCurrentBudgetLimit = true;
+  QDate _budgetDate;
+  std::optional<double> _previousBudgetDateLimit;
 };
 
 // Command for adding a single category

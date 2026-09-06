@@ -36,7 +36,8 @@ private slots:
 
     editor.edit("Fictional Groceries", -300.0, category, QDate(2026, 1, 1));
     QCOMPARE(category->name(), QString("Fictional Groceries"));
-    QCOMPARE(category->budgetLimit(), -300.0);
+    QCOMPARE(category->budgetLimit(), -250.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2026, 1, 1)), -300.0);
     QCOMPARE(undoStack.count(), commandCount + 1);
     undoStack.undo();
     QCOMPARE(category->name(), QString("Fictional Food"));
