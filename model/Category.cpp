@@ -68,22 +68,19 @@ void Category::clearLeftoverDecision(int year, int month) {
   }
 }
 
-// Budget limit for a specific month
-// Algorithm: walk forward from the requested month to find the first entry
-// with a budgetLimit set. That entry marks the last month of a previous limit.
-// If found at or after the requested month, return that limit.
-// If no entry found, return the current Category::budgetLimit().
+// Budget limit for a specific month. History entries are effective from their
+// own month until the next budget-limit entry.
 double Category::budgetLimitForMonth(const QDate& date) const {
   YearMonth target = YearMonth::fromDate(date);
 
-  // Walk from the requested month forward through month_history
-  for (auto it = _monthHistory.lowerBound(target); it != _monthHistory.end(); ++it) {
+  for (auto it = _monthHistory.upperBound(target); it != _monthHistory.begin();) {
+    --it;
     if (it.value().budgetLimit.has_value()) {
       return it.value().budgetLimit.value();
     }
   }
 
-  // No historical entry found at or after this date → use current limit
+  // No historical entry at or before this date: use the category default.
   return _budgetLimit;
 }
 
