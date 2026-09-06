@@ -52,6 +52,11 @@ qt_add_executable(UpdateControllerTest UpdateControllerTest.cpp)
 target_link_libraries(UpdateControllerTest PRIVATE Qt6::Test services editor)
 add_test(NAME UpdateControllerTest COMMAND UpdateControllerTest)
 
+# TranslationManagerTest - language branch and retranslation behavior
+qt_add_executable(TranslationManagerTest TranslationManagerTest.cpp)
+target_link_libraries(TranslationManagerTest PRIVATE Qt6::Test services editor)
+add_test(NAME TranslationManagerTest COMMAND TranslationManagerTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
