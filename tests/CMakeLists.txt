@@ -62,6 +62,11 @@ qt_add_executable(FileCoordinatorTest FileCoordinatorTest.cpp)
 target_link_libraries(FileCoordinatorTest PRIVATE Qt6::Test services editor)
 add_test(NAME FileCoordinatorTest COMMAND FileCoordinatorTest)
 
+# AccountTest - account model, balances, selection, and navigation
+qt_add_executable(AccountTest AccountTest.cpp)
+target_link_libraries(AccountTest PRIVATE Qt6::Test services editor)
+add_test(NAME AccountTest COMMAND AccountTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
