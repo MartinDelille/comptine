@@ -57,6 +57,11 @@ qt_add_executable(TranslationManagerTest TranslationManagerTest.cpp)
 target_link_libraries(TranslationManagerTest PRIVATE Qt6::Test services editor)
 add_test(NAME TranslationManagerTest COMMAND TranslationManagerTest)
 
+# FileCoordinatorTest - coordinated file read success and error paths
+qt_add_executable(FileCoordinatorTest FileCoordinatorTest.cpp)
+target_link_libraries(FileCoordinatorTest PRIVATE Qt6::Test services editor)
+add_test(NAME FileCoordinatorTest COMMAND FileCoordinatorTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
