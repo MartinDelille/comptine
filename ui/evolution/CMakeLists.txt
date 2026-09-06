@@ -12,5 +12,6 @@ qt_add_qml_module(
   EvolutionCellDelegate.qml
   EvolutionCategoryHeaderDelegate.qml
   EvolutionMonthHeaderDelegate.qml
+  EvolutionSummaryHeaderDelegate.qml
   EvolutionView.qml
 )

@@ -10,14 +10,17 @@ import services
 FocusScope {
     id: root
 
-    property int selectedMetric: 0
-    property alias metricSelectorFocused: metricSelector.activeFocus
+    readonly property bool metricSelectorFocused: metricSelector.activeFocus || summaryStartSelector.activeFocus || summaryEndSelector.activeFocus
 
     readonly property int categoryColumnWidth: 180
     readonly property int monthColumnWidth: 125
+    readonly property int summaryColumnWidth: 125
     readonly property int rowHeight: 36
 
-    readonly property int availableMonthWidth: Math.max(0, tableFrame.width - categoryColumnWidth)
+    readonly property bool averageColumnVisible: averageCheckBox.checked
+    readonly property bool sumColumnVisible: sumCheckBox.checked
+    readonly property int visibleFixedColumnWidth: categoryColumnWidth + (averageColumnVisible ? summaryColumnWidth : 0) + (sumColumnVisible ? summaryColumnWidth : 0)
+    readonly property int availableMonthWidth: Math.max(0, tableFrame.width - visibleFixedColumnWidth)
     readonly property int visibleMonthCount: Math.max(1, Math.min(EvolutionController.monthCount, Math.floor(availableMonthWidth / monthColumnWidth)))
     readonly property int firstVisibleMonth: Math.max(0, Math.min(Math.max(0, EvolutionController.monthCount - visibleMonthCount), EvolutionController.currentMonthIndex - Math.floor(visibleMonthCount / 2)))
 
@@ -42,9 +45,47 @@ FocusScope {
             ComboBox {
                 id: metricSelector
                 model: [qsTr("Budget"), qsTr("Spent"), qsTr("Leftover"), qsTr("Saved"), qsTr("Reported"), qsTr("Accumulated Leftover")]
-                currentIndex: root.selectedMetric
-                onActivated: root.selectedMetric = currentIndex
+                currentIndex: EvolutionController.selectedMetric
+                onActivated: EvolutionController.selectedMetric = currentIndex
                 Accessible.name: qsTr("Evolution metric")
+            }
+
+            CheckBox {
+                id: averageCheckBox
+                text: qsTr("Average")
+                checked: true
+            }
+
+            CheckBox {
+                id: sumCheckBox
+                text: qsTr("Sum")
+                checked: true
+            }
+
+            Label {
+                text: qsTr("From")
+                color: Theme.textSecondary
+            }
+
+            ComboBox {
+                id: summaryStartSelector
+                model: EvolutionController.availableMonthLabels
+                currentIndex: EvolutionController.summaryStartIndex
+                onActivated: EvolutionController.setSummaryStartMonthIndex(currentIndex)
+                Accessible.name: qsTr("Summary start month")
+            }
+
+            Label {
+                text: qsTr("To")
+                color: Theme.textSecondary
+            }
+
+            ComboBox {
+                id: summaryEndSelector
+                model: EvolutionController.availableMonthLabels
+                currentIndex: EvolutionController.summaryEndIndex
+                onActivated: EvolutionController.setSummaryEndMonthIndex(currentIndex)
+                Accessible.name: qsTr("Summary end month")
             }
 
             Item {
@@ -91,44 +132,128 @@ FocusScope {
                 }
             }
 
-            VerticalHeaderView {
-                id: verticalHeader
-                anchors.left: parent.left
-                anchors.top: tableView.top
-                anchors.bottom: parent.bottom
-                width: root.categoryColumnWidth
-                activeFocusOnTab: false
-                syncView: tableView
-                clip: true
-
-                delegate: EvolutionCategoryHeaderDelegate {
-                    categoryColumnWidth: root.categoryColumnWidth
-                    rowHeight: root.rowHeight
-                    onCategorySelected: row => CategoryController.currentIndex = row
-                }
-            }
-
-            Rectangle {
+            Item {
+                id: fixedHeaderArea
                 anchors.left: parent.left
                 anchors.top: parent.top
-                width: root.categoryColumnWidth
-                height: horizontalHeader.height
-                color: Theme.surface
-                border.color: Theme.border
+                anchors.bottom: parent.bottom
+                width: root.visibleFixedColumnWidth
+                z: 1
 
-                Label {
-                    anchors.fill: parent
-                    anchors.leftMargin: Theme.spacingNormal
-                    text: qsTr("Category")
-                    verticalAlignment: Text.AlignVCenter
-                    font.bold: true
-                    color: Theme.textPrimary
+                VerticalHeaderView {
+                    id: categoryHeader
+                    anchors.left: parent.left
+                    anchors.top: parent.top
+                    anchors.topMargin: horizontalHeader.height
+                    anchors.bottom: parent.bottom
+                    width: root.categoryColumnWidth
+                    activeFocusOnTab: false
+                    syncView: tableView
+                    clip: true
+
+                    delegate: EvolutionCategoryHeaderDelegate {
+                        categoryColumnWidth: root.categoryColumnWidth
+                        rowHeight: root.rowHeight
+                        onCategorySelected: row => CategoryController.currentIndex = row
+                    }
+                }
+
+                VerticalHeaderView {
+                    id: averageHeader
+                    x: root.categoryColumnWidth
+                    anchors.top: parent.top
+                    anchors.topMargin: horizontalHeader.height
+                    anchors.bottom: parent.bottom
+                    width: root.summaryColumnWidth
+                    visible: root.averageColumnVisible
+                    activeFocusOnTab: false
+                    syncView: tableView
+                    clip: true
+
+                    delegate: EvolutionSummaryHeaderDelegate {
+                        columnWidth: root.summaryColumnWidth
+                        rowHeight: root.rowHeight
+                        sumMode: false
+                        onCategorySelected: row => CategoryController.currentIndex = row
+                    }
+                }
+
+                VerticalHeaderView {
+                    id: sumHeader
+                    x: root.categoryColumnWidth + (root.averageColumnVisible ? root.summaryColumnWidth : 0)
+                    anchors.top: parent.top
+                    anchors.topMargin: horizontalHeader.height
+                    anchors.bottom: parent.bottom
+                    width: root.summaryColumnWidth
+                    visible: root.sumColumnVisible
+                    activeFocusOnTab: false
+                    syncView: tableView
+                    clip: true
+
+                    delegate: EvolutionSummaryHeaderDelegate {
+                        columnWidth: root.summaryColumnWidth
+                        rowHeight: root.rowHeight
+                        sumMode: true
+                        onCategorySelected: row => CategoryController.currentIndex = row
+                    }
+                }
+
+                Rectangle {
+                    width: root.categoryColumnWidth
+                    height: horizontalHeader.height
+                    color: Theme.surface
+                    border.color: Theme.border
+
+                    Label {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.spacingNormal
+                        text: qsTr("Category")
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+                }
+
+                Rectangle {
+                    x: root.categoryColumnWidth
+                    width: root.summaryColumnWidth
+                    height: horizontalHeader.height
+                    visible: root.averageColumnVisible
+                    color: Theme.surface
+                    border.color: Theme.border
+
+                    Label {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.spacingNormal
+                        text: qsTr("Average")
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+                }
+
+                Rectangle {
+                    x: root.categoryColumnWidth + (root.averageColumnVisible ? root.summaryColumnWidth : 0)
+                    width: root.summaryColumnWidth
+                    height: horizontalHeader.height
+                    visible: root.sumColumnVisible
+                    color: Theme.surface
+                    border.color: Theme.border
+
+                    Label {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.spacingNormal
+                        text: qsTr("Sum")
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
                 }
             }
 
             TableView {
                 id: tableView
-                anchors.left: verticalHeader.right
+                anchors.left: fixedHeaderArea.right
                 anchors.top: horizontalHeader.bottom
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
@@ -148,7 +273,7 @@ FocusScope {
                 delegate: EvolutionCellDelegate {
                     monthColumnWidth: root.monthColumnWidth
                     rowHeight: root.rowHeight
-                    metricIndex: metricSelector.currentIndex
+                    metricIndex: EvolutionController.selectedMetric
                     onActivated: (row, monthDate) => {
                         CategoryController.currentIndex = row;
                         BudgetData.budgetDate = monthDate;
