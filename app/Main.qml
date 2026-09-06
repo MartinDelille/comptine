@@ -326,11 +326,11 @@ ApplicationWindow {
                 color: Theme.surface
             }
 
-            TabButton {
+            AppTabButton {
                 text: qsTr("Operations")
                 focusPolicy: Qt.NoFocus
             }
-            TabButton {
+            AppTabButton {
                 text: qsTr("Budget")
                 focusPolicy: Qt.NoFocus
             }
