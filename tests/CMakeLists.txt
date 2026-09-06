@@ -47,6 +47,11 @@ qt_add_executable(AppSettingsTest AppSettingsTest.cpp)
 target_link_libraries(AppSettingsTest PRIVATE Qt6::Test services editor)
 add_test(NAME AppSettingsTest COMMAND AppSettingsTest)
 
+# UpdateControllerTest - update state, timing, and response handling
+qt_add_executable(UpdateControllerTest UpdateControllerTest.cpp)
+target_link_libraries(UpdateControllerTest PRIVATE Qt6::Test services editor)
+add_test(NAME UpdateControllerTest COMMAND UpdateControllerTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
