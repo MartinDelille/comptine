@@ -42,6 +42,11 @@ qt_add_executable(UndoCommandsTest UndoCommandsTest.cpp)
 target_link_libraries(UndoCommandsTest PRIVATE Qt6::Test services editor)
 add_test(NAME UndoCommandsTest COMMAND UndoCommandsTest)
 
+# AppSettingsTest - persisted preferences and recent file behavior
+qt_add_executable(AppSettingsTest AppSettingsTest.cpp)
+target_link_libraries(AppSettingsTest PRIVATE Qt6::Test services editor)
+add_test(NAME AppSettingsTest COMMAND AppSettingsTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
