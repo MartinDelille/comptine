@@ -37,6 +37,11 @@ qt_add_executable(RuleControllerTest RuleControllerTest.cpp)
 target_link_libraries(RuleControllerTest PRIVATE Qt6::Test services editor)
 add_test(NAME RuleControllerTest COMMAND RuleControllerTest)
 
+# UndoCommandsTest - undo/redo command behavior across backend entities
+qt_add_executable(UndoCommandsTest UndoCommandsTest.cpp)
+target_link_libraries(UndoCommandsTest PRIVATE Qt6::Test services editor)
+add_test(NAME UndoCommandsTest COMMAND UndoCommandsTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
