@@ -175,7 +175,6 @@ FocusScope {
             clip: true
             focus: true
             currentIndex: CategoryController.currentIndex
-            onCurrentIndexChanged: CategoryController.currentIndex = currentIndex
 
             Keys.onReturnPressed: categoryDetailView.open()
             ScrollBar.vertical: ScrollBar {
@@ -190,12 +189,12 @@ FocusScope {
                 isCurrentItem: categoryListView.currentIndex === index
 
                 onClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryDetailView.open();
                 }
 
                 onEditClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryEditDialog.edit(category);
                 }
             }
