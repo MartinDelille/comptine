@@ -15,6 +15,11 @@ Use exact commands below to configure, build, run, and clean the project. If you
 
 When done, you can run the application as shown above to show the progress.
 
+### QML linting
+
+- Run `qmllint` with `--json -` when the JSON report should be written to stdout. The `--json` option requires an output filename; omitting `-` can cause the next option to be created as a file.
+- Full-project command: `~/Qt/$(cat .qt-version)/macos/bin/qmllint --json - --qmldirs app --qmldirs ui --qmldirs services --qmldirs model --qmldirs utils --qmldirs editor $(rg --files -g '*.qml')`
+
 ## Project Structure
 
 - Qt6 QML application with C++ backend (version specified in `.qt-version`)
