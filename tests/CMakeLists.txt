@@ -1,6 +1,35 @@
 # Unit tests
 enable_testing()
-find_package(Qt6 REQUIRED COMPONENTS Test)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Test)
+
+qt_add_executable(tst_qmltests qmltests.cpp)
+
+target_compile_definitions(
+    tst_qmltests
+    PRIVATE QUICK_TEST_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/qml"
+)
+
+target_link_libraries(
+    tst_qmltests
+    PRIVATE
+        Qt6::Gui
+        Qt6::QuickTest
+        common
+        operations
+        services
+        servicesplugin
+        model
+        modelplugin
+        editor
+        editorplugin
+        rules
+)
+
+add_test(NAME tst_qmltests COMMAND tst_qmltests)
+set_tests_properties(
+    tst_qmltests
+    PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+)
 
 # CsvParserTest - header-only library test
 qt_add_executable(CsvParserTest CsvParserTest.cpp)

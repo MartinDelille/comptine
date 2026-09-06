@@ -16,6 +16,7 @@ Item {
     height: textField.height
     TextField {
         id: textField
+        objectName: "textField"
         text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
         readOnly: root.readOnly && !root._modifierUnlocked
         onPressed: function (event) {
@@ -42,6 +43,7 @@ Item {
     }
     Popup {
         id: popup
+        objectName: "popup"
         x: textField.x
         y: textField.y + textField.height + 5
         width: 200
@@ -59,6 +61,7 @@ Item {
                 id: headerRow
                 Layout.fillWidth: true
                 ToolButton {
+                    objectName: "previousMonthButton"
                     text: "<"
                     font.weight: Font.Bold
                     onClicked: {
@@ -77,6 +80,7 @@ Item {
                     Layout.fillWidth: true
                 }
                 ToolButton {
+                    objectName: "nextMonthButton"
                     text: ">"
                     font.weight: Font.Bold
                     onClicked: {
@@ -95,6 +99,7 @@ Item {
             }
             MonthGrid {
                 id: monthGrid
+                objectName: "monthGrid"
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 month: Calendar.December
