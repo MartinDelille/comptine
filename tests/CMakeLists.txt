@@ -72,6 +72,11 @@ qt_add_executable(OperationTest OperationTest.cpp)
 target_link_libraries(OperationTest PRIVATE Qt6::Test services editor)
 add_test(NAME OperationTest COMMAND OperationTest)
 
+# CategoryControllerTest - category aggregates, model roles, and operation lookup
+qt_add_executable(CategoryControllerTest CategoryControllerTest.cpp)
+target_link_libraries(CategoryControllerTest PRIVATE Qt6::Test services editor)
+add_test(NAME CategoryControllerTest COMMAND CategoryControllerTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 
