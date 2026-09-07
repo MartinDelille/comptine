@@ -286,6 +286,10 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Somme</translation>
     </message>
     <message>
+        <source>Monthly Sum</source>
+        <translation>Somme mensuelle</translation>
+    </message>
+    <message>
         <source>From</source>
         <translation>De</translation>
     </message>

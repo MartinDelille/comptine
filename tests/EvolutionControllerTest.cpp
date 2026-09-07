@@ -213,6 +213,14 @@ private slots:
                                   EvolutionController::CategorySumRole)
                  .toDouble(),
              -300.0);
+    QCOMPARE(evolution.headerData(0, Qt::Horizontal,
+                                  EvolutionController::MonthlySumRole)
+                 .toDouble(),
+             -200.0);
+    QCOMPARE(evolution.headerData(1, Qt::Horizontal,
+                                  EvolutionController::MonthlySumRole)
+                 .toDouble(),
+             -100.0);
 
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
                                   EvolutionController::CategoryAverageRole)
@@ -232,6 +240,14 @@ private slots:
                                   EvolutionController::CategorySumRole)
                  .toDouble(),
              -40.0);
+    QCOMPARE(evolution.headerData(0, Qt::Horizontal,
+                                  EvolutionController::MonthlySumRole)
+                 .toDouble(),
+             -10.0);
+    QCOMPARE(evolution.headerData(1, Qt::Horizontal,
+                                  EvolutionController::MonthlySumRole)
+                 .toDouble(),
+             -30.0);
   }
 
   void categorySummaryRangeIsInclusiveAndSelfAdjusting() {

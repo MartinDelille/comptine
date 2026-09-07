@@ -19,6 +19,8 @@ FocusScope {
 
     readonly property bool averageColumnVisible: averageCheckBox.checked
     readonly property bool sumColumnVisible: sumCheckBox.checked
+    readonly property bool monthlySumRowVisible: monthlySumCheckBox.checked
+    readonly property int horizontalHeaderHeight: rowHeight * (monthlySumRowVisible ? 2 : 1)
     readonly property int visibleFixedColumnWidth: categoryColumnWidth + (averageColumnVisible ? summaryColumnWidth : 0) + (sumColumnVisible ? summaryColumnWidth : 0)
     readonly property int availableMonthWidth: Math.max(0, tableFrame.width - visibleFixedColumnWidth)
     readonly property int visibleMonthCount: Math.max(1, Math.min(EvolutionController.monthCount, Math.floor(availableMonthWidth / monthColumnWidth)))
@@ -59,6 +61,12 @@ FocusScope {
             CheckBox {
                 id: sumCheckBox
                 text: qsTr("Sum")
+                checked: true
+            }
+
+            CheckBox {
+                id: monthlySumCheckBox
+                text: qsTr("Monthly Sum")
                 checked: true
             }
 
@@ -132,6 +140,24 @@ FocusScope {
                 }
             }
 
+            HorizontalHeaderView {
+                id: monthlySumHeader
+                anchors.left: tableView.left
+                anchors.top: horizontalHeader.bottom
+                anchors.right: parent.right
+                height: root.rowHeight
+                visible: root.monthlySumRowVisible
+                activeFocusOnTab: false
+                syncView: tableView
+                clip: true
+
+                delegate: EvolutionMonthSumHeaderDelegate {
+                    monthColumnWidth: root.monthColumnWidth
+                    rowHeight: root.rowHeight
+                    onMonthSelected: date => BudgetData.budgetDate = date
+                }
+            }
+
             Item {
                 id: fixedHeaderArea
                 anchors.left: parent.left
@@ -144,7 +170,7 @@ FocusScope {
                     id: categoryHeader
                     anchors.left: parent.left
                     anchors.top: parent.top
-                    anchors.topMargin: horizontalHeader.height
+                    anchors.topMargin: root.horizontalHeaderHeight
                     anchors.bottom: parent.bottom
                     width: root.categoryColumnWidth
                     activeFocusOnTab: false
@@ -162,7 +188,7 @@ FocusScope {
                     id: averageHeader
                     x: root.categoryColumnWidth
                     anchors.top: parent.top
-                    anchors.topMargin: horizontalHeader.height
+                    anchors.topMargin: root.horizontalHeaderHeight
                     anchors.bottom: parent.bottom
                     width: root.summaryColumnWidth
                     visible: root.averageColumnVisible
@@ -182,7 +208,7 @@ FocusScope {
                     id: sumHeader
                     x: root.categoryColumnWidth + (root.averageColumnVisible ? root.summaryColumnWidth : 0)
                     anchors.top: parent.top
-                    anchors.topMargin: horizontalHeader.height
+                    anchors.topMargin: root.horizontalHeaderHeight
                     anchors.bottom: parent.bottom
                     width: root.summaryColumnWidth
                     visible: root.sumColumnVisible
@@ -200,7 +226,7 @@ FocusScope {
 
                 Rectangle {
                     width: root.categoryColumnWidth
-                    height: horizontalHeader.height
+                    height: root.rowHeight
                     color: Theme.surface
                     border.color: Theme.border
 
@@ -217,7 +243,7 @@ FocusScope {
                 Rectangle {
                     x: root.categoryColumnWidth
                     width: root.summaryColumnWidth
-                    height: horizontalHeader.height
+                    height: root.rowHeight
                     visible: root.averageColumnVisible
                     color: Theme.surface
                     border.color: Theme.border
@@ -235,7 +261,7 @@ FocusScope {
                 Rectangle {
                     x: root.categoryColumnWidth + (root.averageColumnVisible ? root.summaryColumnWidth : 0)
                     width: root.summaryColumnWidth
-                    height: horizontalHeader.height
+                    height: root.rowHeight
                     visible: root.sumColumnVisible
                     color: Theme.surface
                     border.color: Theme.border
@@ -249,12 +275,30 @@ FocusScope {
                         color: Theme.textPrimary
                     }
                 }
+
+                Rectangle {
+                    y: root.rowHeight
+                    width: root.categoryColumnWidth
+                    height: root.rowHeight
+                    visible: root.monthlySumRowVisible
+                    color: Theme.surface
+                    border.color: Theme.border
+
+                    Label {
+                        anchors.fill: parent
+                        anchors.leftMargin: Theme.spacingNormal
+                        text: qsTr("Monthly Sum")
+                        verticalAlignment: Text.AlignVCenter
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+                }
             }
 
             TableView {
                 id: tableView
                 anchors.left: fixedHeaderArea.right
-                anchors.top: horizontalHeader.bottom
+                anchors.top: monthlySumHeader.visible ? monthlySumHeader.bottom : horizontalHeader.bottom
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
                 model: EvolutionController
