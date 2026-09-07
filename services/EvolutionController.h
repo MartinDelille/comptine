@@ -39,6 +39,7 @@ public:
     AccumulatedRole,
     CategoryAverageRole,
     CategorySumRole,
+    MonthlySumRole,
     CurrentMonthRole,
     CurrentCategoryRole,
   };
@@ -76,6 +77,7 @@ private:
   double metricValue(const Category* category, const QDate& month,
                      int metric) const;
   double categorySum(const Category* category) const;
+  double monthlySum(const QDate& month) const;
   QDate clampMonth(const QDate& month) const;
   int summaryMonthCount() const;
   QList<QDate> calculateAvailableMonths() const;

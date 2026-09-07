@@ -78,7 +78,7 @@ Manage unspent budget at the end of each month with flexible options:
 
 - **Allocated Budget Grid**: View effective category budget limits across the model-driven contiguous range of recorded history
 - **Selectable Metric**: Switch the grid between budget, spent, leftover, saved, reported, and accumulated leftover values
-- **Category Summaries**: Show each category's average or sum for the selected metric across the Evolution range
+- **Category Summaries**: Show each category's average or sum for the selected metric across the Evolution range, plus an optional monthly sum across all categories
 - **Historical Limits**: Per-month budget overrides are shown in their effective month
 - **Month Navigation**: Navigate the shared budget month with bounded buttons or Left/Right keys
 - **Responsive Layout**: Shows as many historical month columns as fit the available width without horizontal scrolling

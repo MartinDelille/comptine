@@ -264,6 +264,14 @@ double EvolutionController::categorySum(const Category* category) const {
   return total;
 }
 
+double EvolutionController::monthlySum(const QDate& month) const {
+  double total = 0.0;
+  for (const Category* category : _categories.categories()) {
+    total += metricValue(category, month, selectedMetric());
+  }
+  return total;
+}
+
 QVariant EvolutionController::data(const QModelIndex& index, int role) const {
   if (!index.isValid() || index.column() < 0 || index.column() >= columnCount()) {
     return {};
@@ -297,6 +305,8 @@ QVariant EvolutionController::data(const QModelIndex& index, int role) const {
       return summaryMonthCount() == 0 ? 0.0 : categorySum(category) / summaryMonthCount();
     case CategorySumRole:
       return categorySum(category);
+    case MonthlySumRole:
+      return monthlySum(month);
     case CurrentMonthRole: {
       const QDate selected(_budgetData.budgetDate().year(), _budgetData.budgetDate().month(), 1);
       return monthDate(index.column()) == selected;
@@ -319,6 +329,7 @@ QVariant EvolutionController::headerData(int section, Qt::Orientation orientatio
       const QDate selected(_budgetData.budgetDate().year(), _budgetData.budgetDate().month(), 1);
       return month == selected;
     }
+    if (role == MonthlySumRole) return monthlySum(month);
     return {};
   }
   if (orientation == Qt::Vertical) {
@@ -351,6 +362,7 @@ QHash<int, QByteArray> EvolutionController::roleNames() const {
     { AccumulatedRole, "accumulated" },
     { CategoryAverageRole, "categoryAverage" },
     { CategorySumRole, "categorySum" },
+    { MonthlySumRole, "monthlySum" },
     { CurrentMonthRole, "currentMonth" },
     { CurrentCategoryRole, "currentCategory" },
   };
@@ -371,7 +383,7 @@ void EvolutionController::refreshData() {
     emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1),
                      { DisplayRole, CategoryNameRole, BudgetRole, SpentRole,
                        LeftoverRole, SavedRole, ReportedRole, AccumulatedRole,
-                       CategoryAverageRole, CategorySumRole,
+                       CategoryAverageRole, CategorySumRole, MonthlySumRole,
                        CurrentMonthRole, CurrentCategoryRole });
   }
   if (columnCount() > 0) emit headerDataChanged(Qt::Horizontal, 0, columnCount() - 1);
@@ -410,5 +422,8 @@ void EvolutionController::refreshSelection() {
 void EvolutionController::refreshSummary() {
   if (rowCount() > 0) {
     emit headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
+  }
+  if (columnCount() > 0) {
+    emit headerDataChanged(Qt::Horizontal, 0, columnCount() - 1);
   }
 }
