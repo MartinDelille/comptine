@@ -1,5 +1,6 @@
 #include <yaml-cpp/yaml.h>
 
+#include <QCryptographicHash>
 #include <QDate>
 #include <QDebug>
 #include <QFile>
@@ -25,6 +26,16 @@
 
 using namespace CsvParser;
 
+static bool fileHash(const QString& filePath, QByteArray& hash) {
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly)) {
+    return false;
+  }
+
+  hash = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Sha256);
+  return true;
+}
+
 FileController::FileController(AppSettings& appSettings,
                                BudgetData& budgetData,
                                CategoryController& categoryController,
@@ -38,6 +49,12 @@ FileController::FileController(AppSettings& appSettings,
   connect(&_fileWatcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
     qDebug() << "File changed detected by QFileSystemWatcher:" << path;
     if (path == currentFilePath()) {
+      QByteArray currentHash;
+      if (path == _knownFilePath && fileHash(path, currentHash) && currentHash == _knownFileHash) {
+        qDebug() << "Ignoring file watcher notification for unchanged application content:" << path;
+        return;
+      }
+
       if (hasUnsavedChanges()) {
         qDebug() << "Current file was modified externally, but there are unsaved changes.";
         emit externalChangeDetected();
@@ -221,6 +238,11 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   file.close();
 
   qDebug() << "Budget data saved to:" << filePath;
+  QByteArray savedHash;
+  if (fileHash(filePath, savedHash)) {
+    _knownFilePath = filePath;
+    _knownFileHash = savedHash;
+  }
   _undoStack.setClean();
   emit dataSaved();
   set_currentFilePath(filePath);
@@ -563,6 +585,12 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   _fileWatcher.addPath(filePath);
 
+  QByteArray loadedHash;
+  if (fileHash(filePath, loadedHash)) {
+    _knownFilePath = filePath;
+    _knownFileHash = loadedHash;
+  }
+
   return true;
 }
 
@@ -867,6 +895,8 @@ void FileController::clear() {
   if (_fileWatcher.files().contains(currentFilePath())) {
     _fileWatcher.removePath(currentFilePath());
   }
+  _knownFilePath.clear();
+  _knownFileHash.clear();
   set_currentFilePath({});
 }
 
