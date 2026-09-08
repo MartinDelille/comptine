@@ -9,6 +9,10 @@ Menu {
     required property bool anyDialogOpen
     required property bool metricSelectorFocused
 
+    signal findOperationsAction
+    signal previousOperationsPageAction(bool extendSelection)
+    signal nextOperationsPageAction(bool extendSelection)
+
     title: qsTr("&View")
 
     Action {
@@ -25,6 +29,34 @@ Menu {
         text: qsTr("&Evolution")
         shortcut: "Ctrl+3"
         onTriggered: BudgetData.currentTabIndex = 2
+    }
+    Action {
+        text: qsTr("Find Operations")
+        shortcut: StandardKey.Find
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onTriggered: root.findOperationsAction()
+    }
+    Action {
+        text: qsTr("Previous Operations Page")
+        shortcut: "PgUp"
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onTriggered: root.previousOperationsPageAction(false)
+    }
+    Shortcut {
+        sequence: "Shift+PgUp"
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onActivated: root.previousOperationsPageAction(true)
+    }
+    Action {
+        text: qsTr("Next Operations Page")
+        shortcut: "PgDown"
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onTriggered: root.nextOperationsPageAction(false)
+    }
+    Shortcut {
+        sequence: "Shift+PgDown"
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onActivated: root.nextOperationsPageAction(true)
     }
     MenuSeparator {}
     Action {

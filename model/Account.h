@@ -66,6 +66,7 @@ public:
   // Operation navigation
   Q_INVOKABLE void previousOperation(bool extendSelection = false);
   Q_INVOKABLE void nextOperation(bool extendSelection = false);
+  Q_INVOKABLE void clearCurrentOperation();
 
   Operation* addOperation(Operation* operation, bool sort = true);
   // Replace all operations in one model update. Takes ownership of operations.
@@ -83,6 +84,7 @@ public:
   bool isSelected(Operation* operation) const;
   Q_INVOKABLE bool isSelectedAt(int index) const;
   void select(Operation* operation, bool extend = false);
+  void selectOperations(const QList<Operation*>& operations, bool extend = false);
   Q_INVOKABLE void selectAt(int index, bool extend = false);
   void toggleSelection(Operation* operation);
   Q_INVOKABLE void toggleSelectionAt(int index);

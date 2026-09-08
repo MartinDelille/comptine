@@ -18,6 +18,7 @@
 ## Operations
 
 - **Operation List**: View all operations for the current account sorted by date (most recent first)
+- **Operation Search**: Search the current account by label, details, or amount with the inline search field (Ctrl/Cmd+F)
 - **Operation Details**: View detailed information for selected operation(s)
 - **Selection**: Single click, Ctrl+click (toggle), Shift+click (range), Cmd+A (select all)
 - **Keyboard Navigation**: Up/Down arrows to navigate, with Shift for extending selection

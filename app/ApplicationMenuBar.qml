@@ -18,6 +18,9 @@ MenuBar {
     signal deleteAction
     signal rulesAction
     signal preferencesAction
+    signal findOperationsAction
+    signal previousOperationsPageAction(bool extendSelection)
+    signal nextOperationsPageAction(bool extendSelection)
 
     signal checkUpdateAction
     signal projectPageAction
@@ -45,6 +48,9 @@ MenuBar {
     ViewMenu {
         anyDialogOpen: root.anyDialogOpen
         metricSelectorFocused: root.metricSelectorFocused
+        onFindOperationsAction: root.findOperationsAction()
+        onPreviousOperationsPageAction: extendSelection => root.previousOperationsPageAction(extendSelection)
+        onNextOperationsPageAction: extendSelection => root.nextOperationsPageAction(extendSelection)
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()

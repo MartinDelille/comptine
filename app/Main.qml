@@ -120,6 +120,9 @@ ApplicationWindow {
         }
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
+        onFindOperationsAction: operationView.focusSearch()
+        onPreviousOperationsPageAction: extendSelection => operationView.movePage(-1, extendSelection)
+        onNextOperationsPageAction: extendSelection => operationView.movePage(1, extendSelection)
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;
