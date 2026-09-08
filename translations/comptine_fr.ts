@@ -703,10 +703,21 @@ Importez et gérez vos données bancaires.</translation>
     </message>
 </context>
 <context>
+    <name>OperationList</name>
+    <message>
+        <source>No matching operations</source>
+        <translation>Aucune opération correspondante</translation>
+    </message>
+</context>
+<context>
     <name>OperationView</name>
     <message>
         <source>Rename</source>
         <translation>Renommer</translation>
+    </message>
+    <message>
+        <source>Search operations</source>
+        <translation>Rechercher des opérations</translation>
     </message>
 </context>
 <context>
@@ -1037,6 +1048,10 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
     <message>
         <source>&amp;Evolution</source>
         <translation>&amp;Évolution</translation>
+    </message>
+    <message>
+        <source>Find Operations</source>
+        <translation>Rechercher des opérations</translation>
     </message>
     <message>
         <source>&amp;Previous Month</source>

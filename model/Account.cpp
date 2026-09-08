@@ -116,6 +116,14 @@ void Account::set_currentOperationIndex(int index) {
   select(operationAt(index));
 }
 
+void Account::clearCurrentOperation() {
+  if (!_currentOperation)
+    return;
+
+  _currentOperation = nullptr;
+  emit currentOperationChanged();
+}
+
 int Account::operationIndex(Operation* operation) const {
   if (!operation) return -1;
   return _operations.indexOf(operation);
@@ -147,8 +155,13 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   _operations.insert(insertIndex, operation);
   endInsertRows();
   recalculateBalances();
-  connect(operation, &Operation::amountChanged, this, [this]() { recalculateBalances(); });
+  connect(operation, &Operation::amountChanged, this, [this]() {
+    recalculateBalances();
+    emit operationDataChanged();
+  });
   connect(operation, &Operation::dateChanged, this, &Account::operationDataChanged);
+  connect(operation, &Operation::labelChanged, this, &Account::operationDataChanged);
+  connect(operation, &Operation::detailsChanged, this, &Account::operationDataChanged);
   connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
   emit countChanged();
   emit operationDataChanged();
@@ -170,8 +183,13 @@ void Account::replaceOperations(const QList<Operation*>& operations) {
       continue;
     }
     operation->setParent(this);
-    connect(operation, &Operation::amountChanged, this, [this]() { recalculateBalances(); });
+    connect(operation, &Operation::amountChanged, this, [this]() {
+      recalculateBalances();
+      emit operationDataChanged();
+    });
     connect(operation, &Operation::dateChanged, this, &Account::operationDataChanged);
+    connect(operation, &Operation::labelChanged, this, &Account::operationDataChanged);
+    connect(operation, &Operation::detailsChanged, this, &Account::operationDataChanged);
     connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
   }
 
@@ -306,6 +324,39 @@ void Account::select(Operation* operation, bool extend) {
   }
 
   _currentOperation = operation;
+  emit currentOperationChanged();
+  emit selectionChanged();
+}
+
+void Account::selectOperations(const QList<Operation*>& operations, bool extend) {
+  QList<Operation*> validOperations;
+  for (auto* operation : operations) {
+    if (operation && _operations.contains(operation) && !validOperations.contains(operation))
+      validOperations.append(operation);
+  }
+  if (validOperations.isEmpty())
+    return;
+
+  if (!extend) {
+    _selectedOperations.clear();
+    for (auto* operation : validOperations)
+      _selectedOperations.insert(operation);
+  } else if (_currentOperation && _operations.contains(_currentOperation)) {
+    const int fromIndex = _operations.indexOf(_currentOperation);
+    const int toIndex = _operations.indexOf(validOperations.last());
+    const int start = qMin(fromIndex, toIndex);
+    const int end = qMax(fromIndex, toIndex);
+    for (auto* operation : validOperations) {
+      const int index = _operations.indexOf(operation);
+      if (index >= start && index <= end)
+        _selectedOperations.insert(operation);
+    }
+  } else {
+    for (auto* operation : validOperations)
+      _selectedOperations.insert(operation);
+  }
+
+  _currentOperation = validOperations.last();
   emit currentOperationChanged();
   emit selectionChanged();
 }

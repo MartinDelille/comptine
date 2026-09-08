@@ -106,6 +106,14 @@ qt_add_executable(OperationTest OperationTest.cpp)
 target_link_libraries(OperationTest PRIVATE Qt6::Test services editor)
 add_test(NAME OperationTest COMMAND OperationTest)
 
+# OperationFilterModelTest - filtered operation matching and source selection mapping
+qt_add_executable(OperationFilterModelTest OperationFilterModelTest.cpp)
+target_link_libraries(
+    OperationFilterModelTest
+    PRIVATE Qt6::Test services editor
+)
+add_test(NAME OperationFilterModelTest COMMAND OperationFilterModelTest)
+
 # CategoryControllerTest - category aggregates, model roles, and operation lookup
 qt_add_executable(CategoryControllerTest CategoryControllerTest.cpp)
 target_link_libraries(CategoryControllerTest PRIVATE Qt6::Test services editor)

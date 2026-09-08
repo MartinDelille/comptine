@@ -9,6 +9,8 @@ Menu {
     required property bool anyDialogOpen
     required property bool metricSelectorFocused
 
+    signal findOperationsAction
+
     title: qsTr("&View")
 
     Action {
@@ -25,6 +27,12 @@ Menu {
         text: qsTr("&Evolution")
         shortcut: "Ctrl+3"
         onTriggered: BudgetData.currentTabIndex = 2
+    }
+    Action {
+        text: qsTr("Find Operations")
+        shortcut: StandardKey.Find
+        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        onTriggered: root.findOperationsAction()
     }
     MenuSeparator {}
     Action {

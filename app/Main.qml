@@ -120,6 +120,7 @@ ApplicationWindow {
         }
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
+        onFindOperationsAction: operationView.focusSearch()
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;
