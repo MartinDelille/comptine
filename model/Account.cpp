@@ -147,12 +147,49 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   _operations.insert(insertIndex, operation);
   endInsertRows();
   recalculateBalances();
-  connect(operation, &Operation::amountChanged, this, &Account::recalculateBalances);
+  connect(operation, &Operation::amountChanged, this, [this]() { recalculateBalances(); });
   connect(operation, &Operation::dateChanged, this, &Account::operationDataChanged);
   connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
   emit countChanged();
   emit operationDataChanged();
   return operation;
+}
+
+void Account::replaceOperations(const QList<Operation*>& operations) {
+  const bool hadSelection = !_selectedOperations.isEmpty();
+  const bool hadCurrentOperation = _currentOperation != nullptr;
+
+  beginResetModel();
+  _selectedOperations.clear();
+  _currentOperation = nullptr;
+  qDeleteAll(_operations);
+  _operations = operations;
+
+  for (auto* operation : _operations) {
+    if (!operation) {
+      continue;
+    }
+    operation->setParent(this);
+    connect(operation, &Operation::amountChanged, this, [this]() { recalculateBalances(); });
+    connect(operation, &Operation::dateChanged, this, &Account::operationDataChanged);
+    connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
+  }
+
+  std::stable_sort(_operations.begin(), _operations.end(), [](Operation* first, Operation* second) {
+    return first->date() > second->date();
+  });
+  recalculateBalances(false);
+  endResetModel();
+
+  emit countChanged();
+  emit balanceChanged();
+  if (hadCurrentOperation) {
+    emit currentOperationChanged();
+  }
+  if (hadSelection) {
+    emit selectionChanged();
+  }
+  emit operationDataChanged();
 }
 
 bool Account::removeOperation(Operation* operation) {
@@ -386,7 +423,7 @@ double Account::balanceAt(int index) const {
   return _balances[index];
 }
 
-void Account::recalculateBalances() {
+void Account::recalculateBalances(bool notify) {
   _balances.clear();
 
   const int count = rowCount();
@@ -406,6 +443,8 @@ void Account::recalculateBalances() {
     }
     _balances[i] = balance;
   }
-  emit dataChanged(createIndex(0, 0), createIndex(count - 1, 0), { BalanceRole });
-  emit balanceChanged();
+  if (notify) {
+    emit dataChanged(createIndex(0, 0), createIndex(count - 1, 0), { BalanceRole });
+    emit balanceChanged();
+  }
 }

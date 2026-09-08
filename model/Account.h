@@ -68,6 +68,8 @@ public:
   Q_INVOKABLE void nextOperation(bool extendSelection = false);
 
   Operation* addOperation(Operation* operation, bool sort = true);
+  // Replace all operations in one model update. Takes ownership of operations.
+  void replaceOperations(const QList<Operation*>& operations);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
   void clear();
   void sortOperations();  // Re-sort operations by date (most recent first)
@@ -105,7 +107,7 @@ signals:
   void importSourcePrefixesChanged();
 
 private:
-  void recalculateBalances();
+  void recalculateBalances(bool notify = true);
 
   Operation* _currentOperation = nullptr;
   QList<Operation*> _operations;
