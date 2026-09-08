@@ -471,6 +471,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           account->setImportSourcePrefixes(sources);
         }
         // Note: balance field is ignored - balance is calculated from operations
+        QList<Operation*> operations;
+        Operation* currentOperation = nullptr;
         if (acc["operations"]) {
           for (const auto& opNode : acc["operations"]) {
             auto op = new Operation(account);
@@ -507,16 +509,18 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             if (opNode["budget_date"]) {
               op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"));
             }
-            account->addOperation(op, false);  // Preserve file order
+            operations.append(op);
             if (opNode["current"]) {
               if (yamlString(opNode["current"]).toLower() == "true") {
-                // Set this operation as the current operation for this account
-                account->select(op);
+                currentOperation = op;
               }
             }
           }
         }
-        account->sortOperations();
+        account->replaceOperations(operations);
+        if (currentOperation) {
+          account->select(currentOperation);
+        }
         if (acc["current"]) {
           if (yamlString(acc["current"]).toLower() == "true") {
             _budgetData.set_currentAccount(account);

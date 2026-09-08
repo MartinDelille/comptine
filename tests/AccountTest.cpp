@@ -31,6 +31,26 @@ private slots:
     QVERIFY(!account.hasOperation(QDate(2026, 1, 3), -31.0, "Newer"));
   }
 
+  void replacesOperationsInOneModelUpdate() {
+    Account account("Fictional Checking", nullptr);
+    account.addOperation(new Operation(&account, QDate(2026, 1, 1), 100.0, "Old"));
+
+    QSignalSpy resetSpy(&account, &QAbstractItemModel::modelReset);
+    QSignalSpy operationSpy(&account, &Account::operationDataChanged);
+
+    auto* oldest = new Operation(&account, QDate(2026, 2, 1), 100.0, "Oldest");
+    auto* newest = new Operation(&account, QDate(2026, 2, 3), -30.0, "Newest");
+    account.replaceOperations({ oldest, newest });
+
+    QCOMPARE(resetSpy.count(), 1);
+    QCOMPARE(operationSpy.count(), 1);
+    QCOMPARE(account.rowCount(), 2);
+    QCOMPARE(account.operationAt(0), newest);
+    QCOMPARE(account.operationAt(1), oldest);
+    QCOMPARE(account.balanceAt(0), 70.0);
+    QCOMPARE(account.balanceAt(1), 100.0);
+  }
+
   void selectionAndModelRolesExposeOperationState() {
     Account account("Fictional Checking", nullptr);
     auto* first = account.addOperation(
