@@ -18,7 +18,8 @@ public:
 
   Q_INVOKABLE Allocation* createAllocation(const QString& categoryName, double amount);
   Q_INVOKABLE Category* edit(const QString& name, double budgetLimit,
-                             Category* category = nullptr, QDate budgetDate = {});
+                             Category* category = nullptr, QDate budgetDate = {},
+                             bool inheritPrevious = false);
   Q_INVOKABLE void remove(Category* category);
   Q_INVOKABLE void setSaveAmount(Category* category, const QDate& date, double amount);
   Q_INVOKABLE void setReportAmount(Category* category, const QDate& date, double amount);

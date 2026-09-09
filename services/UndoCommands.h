@@ -64,7 +64,7 @@ class EditCategoryCommand : public QUndoCommand {
 public:
   EditCategoryCommand(Category& category,
                       const QString& newName,
-                      double newBudgetLimit,
+                      std::optional<double> newBudgetLimit,
                       const QDate& budgetDate,
                       QUndoCommand* parent = nullptr);
 
@@ -76,7 +76,7 @@ private:
   QString _oldName;
   QString _newName;
   double _oldBudgetLimit;
-  double _newBudgetLimit;
+  std::optional<double> _newBudgetLimit;
   QDate _budgetDate;
   std::optional<double> _previousBudgetDateLimit;
 };

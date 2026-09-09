@@ -19,6 +19,7 @@ Rectangle {
     required property date monthDate
     required property bool currentMonth
     required property bool currentCategory
+    required property bool budgetLimitChange
     required property int metricIndex
     required property real monthColumnWidth
     required property real rowHeight
@@ -63,7 +64,7 @@ Rectangle {
         elide: Text.ElideNone
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
-        font.bold: true
+        font.bold: root.metricIndex === 0 && root.budgetLimitChange
         color: root.cellValue >= 0 ? Theme.positive : Theme.negative
     }
 }

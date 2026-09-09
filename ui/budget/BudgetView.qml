@@ -27,8 +27,8 @@ FocusScope {
     CategoryEditDialog {
         id: categoryEditDialog
         date: BudgetData.budgetDate
-        onCategoryEdited: function (category, newName, newBudgetLimit) {
-            CategoryEditor.edit(newName, newBudgetLimit, category, date);
+        onCategoryEdited: function (category, newName, newBudgetLimit, inheritPrevious) {
+            CategoryEditor.edit(newName, newBudgetLimit, category, date, inheritPrevious);
         }
     }
 

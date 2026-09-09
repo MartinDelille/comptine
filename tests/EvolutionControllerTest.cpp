@@ -124,7 +124,7 @@ private slots:
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 6, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Utilities", -75.0));
+    auto* category = categories.addCategory(new Category("Fictional Utilities"));
     category->setBudgetLimitForMonth(2025, 6, -100.0);
     EvolutionController evolution(budgetData, categories);
 
@@ -159,10 +159,11 @@ private slots:
     const QDate month(2025, 3, 1);
     budgetData.set_budgetDate(month);
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Metrics", -100.0));
+    auto* category = categories.addCategory(new Category("Fictional Metrics"));
     MonthRecord record;
     record.saveAmount = 20.0;
     record.reportAmount = -5.0;
+    record.budgetLimit = -100.0;
     category->setMonthRecord(2025, 3, record);
     auto* account = budgetData.createAccount("Fictional Account");
     auto* operation = new Operation(account, QDate(2025, 3, 10), -30.0);
@@ -184,12 +185,30 @@ private slots:
     QCOMPARE(evolution.data(cell, EvolutionController::AccumulatedRole).toDouble(), -5.0);
   }
 
+  void exposesBudgetLimitChangeRole() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 6, 1));
+    CategoryController categories(budgetData, undoStack);
+    auto* category = categories.addCategory(new Category("Fictional Boundaries"));
+    category->setBudgetLimitForMonth(2025, 1, -200.0);
+    category->setBudgetLimitForMonth(2025, 6, -250.0);
+    EvolutionController evolution(budgetData, categories);
+
+    const QModelIndex january = evolution.index(0, 0);
+    const QModelIndex june = evolution.index(0, 5);
+    QVERIFY(evolution.data(january, EvolutionController::BudgetLimitChangeRole).toBool());
+    QVERIFY(evolution.data(june, EvolutionController::BudgetLimitChangeRole).toBool());
+    QCOMPARE(evolution.data(evolution.index(0, 1), EvolutionController::BudgetLimitChangeRole).toBool(), false);
+    QCOMPARE(evolution.roleNames().value(EvolutionController::BudgetLimitChangeRole), QByteArray("budgetLimitChange"));
+  }
+
   void fixedCategorySummariesUseTheirOwnMetrics() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 2, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Summary", -100.0));
+    auto* category = categories.addCategory(new Category("Fictional Summary"));
     category->setMonthRecord(2025, 1, { 0.0, -7.0 });
     category->setMonthRecord(2025, 2, { 0.0, -9.0 });
     category->setBudgetLimitForMonth(2025, 1, -200.0);
@@ -257,7 +276,7 @@ private slots:
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 3, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Range", -10.0));
+    auto* category = categories.addCategory(new Category("Fictional Range"));
     category->setBudgetLimitForMonth(2025, 1, -10.0);
     category->setBudgetLimitForMonth(2025, 2, -20.0);
     category->setBudgetLimitForMonth(2025, 3, -30.0);

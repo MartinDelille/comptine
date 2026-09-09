@@ -15,13 +15,28 @@ Allocation* CategoryEditor::createAllocation(const QString& categoryName, double
 }
 
 Category* CategoryEditor::edit(const QString& name, double budgetLimit,
-                               Category* category, QDate budgetDate) {
+                               Category* category, QDate budgetDate,
+                               bool inheritPrevious) {
+  if (!budgetDate.isValid()) {
+    budgetDate = _budgetData.budgetDate();
+  }
   if (category) {
-    if (category->name() != name || category->budgetLimitForMonth(budgetDate) != budgetLimit)
-      _undoStack.push(new EditCategoryCommand(*category, name, budgetLimit, budgetDate));
+    const bool hasOverride = budgetDate.isValid() && category->hasBudgetLimitOverrideForMonth(budgetDate);
+    const bool changesBudget = inheritPrevious
+                                   ? hasOverride
+                                   : !hasOverride || category->budgetLimitForMonth(budgetDate) != budgetLimit;
+    if (category->name() != name || changesBudget) {
+      _undoStack.push(new EditCategoryCommand(*category, name,
+                                              inheritPrevious ? std::optional<double>{}
+                                                              : std::optional<double>{ budgetLimit },
+                                              budgetDate));
+    }
     return category;
   }
-  auto* newCategory = new Category(name, budgetLimit);
+  auto* newCategory = new Category(name);
+  if (budgetDate.isValid() && !inheritPrevious) {
+    newCategory->setBudgetLimitForMonth(budgetDate.year(), budgetDate.month(), budgetLimit);
+  }
   _undoStack.push(new AddCategoryCommand(&_controller, newCategory));
   return newCategory;
 }

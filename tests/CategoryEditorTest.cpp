@@ -19,11 +19,11 @@ private slots:
     CategoryController controller(budgetData, undoStack);
     CategoryEditor editor(controller, budgetData, undoStack);
 
-    auto* category = editor.edit("Fictional Food", -250.0);
+    auto* category = editor.edit("Fictional Food", -250.0, nullptr, QDate(2026, 1, 1));
     QVERIFY(category != nullptr);
     QCOMPARE(controller.rowCount(), 1);
     QCOMPARE(category->name(), QString("Fictional Food"));
-    QCOMPARE(category->budgetLimit(), -250.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2026, 1, 1)), -250.0);
 
     undoStack.undo();
     QCOMPARE(controller.rowCount(), 0);
@@ -36,12 +36,37 @@ private slots:
 
     editor.edit("Fictional Groceries", -300.0, category, QDate(2026, 1, 1));
     QCOMPARE(category->name(), QString("Fictional Groceries"));
-    QCOMPARE(category->budgetLimit(), -250.0);
     QCOMPARE(category->budgetLimitForMonth(QDate(2026, 1, 1)), -300.0);
     QCOMPARE(undoStack.count(), commandCount + 1);
     undoStack.undo();
     QCOMPARE(category->name(), QString("Fictional Food"));
-    QCOMPARE(category->budgetLimit(), -250.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2026, 1, 1)), -250.0);
+  }
+
+  void monthlyBudgetLimitsInheritAndCanBeClearedUndoably() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 1, 1));
+    CategoryController controller(budgetData, undoStack);
+    CategoryEditor editor(controller, budgetData, undoStack);
+
+    auto* category = editor.edit("Fictional Budget", 200.0, nullptr, QDate(2025, 1, 1));
+    editor.edit("Fictional Budget", 250.0, category, QDate(2025, 6, 1));
+    editor.edit("Fictional Budget", 220.0, category, QDate(2025, 3, 1));
+
+    QCOMPARE(category->budgetLimitForMonth(QDate(2024, 12, 1)), 0.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2025, 2, 1)), 200.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2025, 5, 1)), 220.0);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2025, 6, 1)), 250.0);
+    QVERIFY(category->hasBudgetLimitOverrideForMonth(QDate(2025, 6, 1)));
+
+    editor.edit("Fictional Budget", 0.0, category, QDate(2025, 6, 1), true);
+    QCOMPARE(category->budgetLimitForMonth(QDate(2025, 6, 1)), 220.0);
+    QVERIFY(!category->hasBudgetLimitOverrideForMonth(QDate(2025, 6, 1)));
+
+    undoStack.undo();
+    QCOMPARE(category->budgetLimitForMonth(QDate(2025, 6, 1)), 250.0);
+    QVERIFY(category->hasBudgetLimitOverrideForMonth(QDate(2025, 6, 1)));
   }
 
   void createsAllocationsForKnownAndUnknownCategories() {
