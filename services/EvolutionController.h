@@ -42,6 +42,7 @@ public:
     MonthlySumRole,
     CurrentMonthRole,
     CurrentCategoryRole,
+    BudgetLimitChangeRole,
   };
   Q_ENUM(Roles)
 

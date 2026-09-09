@@ -124,7 +124,7 @@ private slots:
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 6, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Utilities", -75.0));
+    auto* category = categories.addCategory(new Category("Fictional Utilities"));
     category->setBudgetLimitForMonth(2025, 6, -100.0);
     EvolutionController evolution(budgetData, categories);
 
@@ -159,10 +159,11 @@ private slots:
     const QDate month(2025, 3, 1);
     budgetData.set_budgetDate(month);
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Metrics", -100.0));
+    auto* category = categories.addCategory(new Category("Fictional Metrics"));
     MonthRecord record;
     record.saveAmount = 20.0;
     record.reportAmount = -5.0;
+    record.budgetLimit = -100.0;
     category->setMonthRecord(2025, 3, record);
     auto* account = budgetData.createAccount("Fictional Account");
     auto* operation = new Operation(account, QDate(2025, 3, 10), -30.0);
@@ -184,12 +185,30 @@ private slots:
     QCOMPARE(evolution.data(cell, EvolutionController::AccumulatedRole).toDouble(), -5.0);
   }
 
+  void exposesBudgetLimitChangeRole() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 6, 1));
+    CategoryController categories(budgetData, undoStack);
+    auto* category = categories.addCategory(new Category("Fictional Boundaries"));
+    category->setBudgetLimitForMonth(2025, 1, -200.0);
+    category->setBudgetLimitForMonth(2025, 6, -250.0);
+    EvolutionController evolution(budgetData, categories);
+
+    const QModelIndex january = evolution.index(0, 0);
+    const QModelIndex june = evolution.index(0, 5);
+    QVERIFY(evolution.data(january, EvolutionController::BudgetLimitChangeRole).toBool());
+    QVERIFY(evolution.data(june, EvolutionController::BudgetLimitChangeRole).toBool());
+    QCOMPARE(evolution.data(evolution.index(0, 1), EvolutionController::BudgetLimitChangeRole).toBool(), false);
+    QCOMPARE(evolution.roleNames().value(EvolutionController::BudgetLimitChangeRole), QByteArray("budgetLimitChange"));
+  }
+
   void fixedCategorySummariesUseTheirOwnMetrics() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 2, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Summary", -100.0));
+    auto* category = categories.addCategory(new Category("Fictional Summary"));
     category->setMonthRecord(2025, 1, { 0.0, -7.0 });
     category->setMonthRecord(2025, 2, { 0.0, -9.0 });
     category->setBudgetLimitForMonth(2025, 1, -200.0);
@@ -257,7 +276,7 @@ private slots:
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 3, 1));
     CategoryController categories(budgetData, undoStack);
-    auto* category = categories.addCategory(new Category("Fictional Range", -10.0));
+    auto* category = categories.addCategory(new Category("Fictional Range"));
     category->setBudgetLimitForMonth(2025, 1, -10.0);
     category->setBudgetLimitForMonth(2025, 2, -20.0);
     category->setBudgetLimitForMonth(2025, 3, -30.0);
@@ -348,6 +367,110 @@ private slots:
     QCOMPARE(dataChangedSpy.count(), 1);
     const QList<int> roles = dataChangedSpy.at(0).at(2).value<QList<int>>();
     QCOMPARE(roles, QList<int>{ EvolutionController::CurrentMonthRole });
+  }
+
+  void modelHandlesEmptyAndInvalidIndexes() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 6, 15));
+    CategoryController categories(budgetData, undoStack);
+    EvolutionController evolution(budgetData, categories);
+
+    const QModelIndex invalid;
+    const QModelIndex child = evolution.index(0, 0, evolution.index(0, 0));
+    QVERIFY(!evolution.data(invalid).isValid());
+    QVERIFY(!evolution.data(evolution.index(0, -1)).isValid());
+    QVERIFY(!evolution.data(evolution.index(0, evolution.columnCount())).isValid());
+    QCOMPARE(evolution.rowCount(invalid), 0);
+    QCOMPARE(evolution.columnCount(invalid), 1);
+    QCOMPARE(evolution.rowCount(evolution.index(0, 0)), 0);
+    QVERIFY(!child.isValid());
+    categories.addCategory(new Category("Fictional Parent"));
+    const QModelIndex validParent = evolution.index(0, 0);
+    QCOMPARE(evolution.rowCount(validParent), 0);
+    QCOMPARE(evolution.columnCount(validParent), 0);
+    QVERIFY(!evolution.headerData(-1, Qt::Horizontal).isValid());
+    QVERIFY(!evolution.headerData(evolution.columnCount(), Qt::Horizontal).isValid());
+    QVERIFY(evolution.headerData(0, Qt::Vertical).toString() == QString("Fictional Parent"));
+    QVERIFY(!evolution.headerData(0, Qt::Horizontal, EvolutionController::BudgetRole).isValid());
+  }
+
+  void exposesLabelsAndAllMetricRoles() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 3, 1));
+    CategoryController categories(budgetData, undoStack);
+    auto* category = categories.addCategory(new Category("Fictional Metrics"));
+    category->setMonthRecord(2025, 3, { 12.0, -4.0 });
+    category->setBudgetLimitForMonth(2025, 3, -100.0);
+    auto* account = budgetData.createAccount("Fictional Account");
+    auto* operation = new Operation(account, QDate(2025, 3, 10), -25.0);
+    operation->setAllocations({ new Allocation(category, -25.0) });
+    account->addOperation(operation);
+    EvolutionController evolution(budgetData, categories);
+    const QModelIndex cell = evolution.index(0, 0);
+
+    QCOMPARE(evolution.availableMonthLabels().size(), 1);
+    QVERIFY(!evolution.availableMonthLabels().first().isEmpty());
+    QCOMPARE(evolution.data(cell, EvolutionController::DisplayRole).toDouble(), -100.0);
+    QCOMPARE(evolution.data(cell, EvolutionController::CategoryNameRole).toString(), QString("Fictional Metrics"));
+    QCOMPARE(evolution.data(cell, EvolutionController::MonthDateRole).toDate(), QDate(2025, 3, 1));
+    QCOMPARE(evolution.data(cell, EvolutionController::SpentAverageRole).toDouble(), -25.0);
+    QCOMPARE(evolution.data(cell, EvolutionController::ReportedSumRole).toDouble(), -4.0);
+    QCOMPARE(evolution.data(cell, EvolutionController::MonthlySumRole).toDouble(), -100.0);
+    evolution.set_selectedMetric(99);
+    QCOMPARE(evolution.headerData(0, Qt::Horizontal, EvolutionController::MonthlySumRole).toDouble(), -100.0);
+    QVERIFY(!evolution.data(cell, Qt::UserRole + 1000).isValid());
+  }
+
+  void summaryIndexesClampAndKeepRangeOrdered() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 3, 1));
+    CategoryController categories(budgetData, undoStack);
+    auto* category = categories.addCategory(new Category("Fictional Summary"));
+    category->setBudgetLimitForMonth(2025, 1, -10.0);
+    category->setBudgetLimitForMonth(2025, 3, -30.0);
+    addOperation(budgetData, QDate(2025, 1, 10));
+    EvolutionController evolution(budgetData, categories);
+
+    const QDate initialStart = evolution.summaryStartMonth();
+    evolution.setSummaryStartMonthIndex(-1);
+    evolution.setSummaryEndMonthIndex(evolution.monthCount());
+    QCOMPARE(evolution.summaryStartMonth(), initialStart);
+    QCOMPARE(evolution.summaryEndMonth(), QDate(2025, 1, 1));
+    evolution.setSummaryEndMonthIndex(evolution.monthCount() - 1);
+    QCOMPARE(evolution.summaryEndMonth(), QDate(2025, 3, 1));
+
+    evolution.set_summaryStartMonth(QDate(2025, 3, 20));
+    QCOMPARE(evolution.summaryStartMonth(), QDate(2025, 3, 1));
+    QCOMPARE(evolution.summaryEndMonth(), QDate(2025, 3, 1));
+    evolution.set_summaryEndMonth(QDate(2024, 1, 1));
+    QCOMPARE(evolution.summaryStartMonth(), QDate(2025, 1, 1));
+    QCOMPARE(evolution.summaryEndMonth(), QDate(2025, 1, 1));
+  }
+
+  void refreshSignalsFollowCategoryChanges() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    budgetData.set_budgetDate(QDate(2025, 2, 1));
+    CategoryController categories(budgetData, undoStack);
+    EvolutionController evolution(budgetData, categories);
+    QSignalSpy resetSpy(&evolution, &QAbstractItemModel::modelReset);
+    QSignalSpy dataChangedSpy(&evolution, &QAbstractItemModel::dataChanged);
+    QSignalSpy horizontalHeaderSpy(&evolution, &QAbstractItemModel::headerDataChanged);
+
+    categories.addCategory(new Category("Fictional Added"));
+    QVERIFY(resetSpy.count() >= 1);
+
+    resetSpy.clear();
+    dataChangedSpy.clear();
+    categories.at(0)->setMonthRecord(2025, 2, { 1.0, -2.0 });
+    QVERIFY(dataChangedSpy.count() >= 1);
+    QVERIFY(horizontalHeaderSpy.count() >= 1);
+
+    categories.set_currentIndex(0);
+    QVERIFY(dataChangedSpy.count() >= 2);
   }
 };
 

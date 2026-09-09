@@ -3,8 +3,8 @@
 Category::Category(QObject* parent) :
     QObject(parent) {}
 
-Category::Category(const QString& name, double budgetLimit, QObject* parent) :
-    QObject(parent), _name(name), _budgetLimit(budgetLimit) {}
+Category::Category(const QString& name, QObject* parent) :
+    QObject(parent), _name(name) {}
 
 // Month history management
 
@@ -80,8 +80,12 @@ double Category::budgetLimitForMonth(const QDate& date) const {
     }
   }
 
-  // No historical entry at or before this date: use the category default.
-  return _budgetLimit;
+  // No historical entry at or before this date: no budget is defined yet.
+  return 0.0;
+}
+
+bool Category::hasBudgetLimitOverrideForMonth(const QDate& date) const {
+  return monthRecord(date.year(), date.month()).budgetLimit.has_value();
 }
 
 void Category::setBudgetLimitForMonth(int year, int month, double limit) {

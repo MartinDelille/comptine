@@ -206,9 +206,6 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::budgetDataChanged);
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);

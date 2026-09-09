@@ -121,6 +121,10 @@ Importez et gérez vos données bancaires.</translation>
         <source>This is an income category</source>
         <translation>Il s&apos;agit d&apos;une catégorie de revenus</translation>
     </message>
+    <message>
+        <source>Use previous month&apos;s budget limit</source>
+        <translation>Utiliser la limite budgétaire du mois précédent</translation>
+    </message>
 </context>
 <context>
     <name>CreateCounterPartDialog</name>

@@ -17,11 +17,11 @@ private slots:
     CategoryController controller(budgetData, undoStack);
 
     QVERIFY(controller.addCategory(nullptr) == nullptr);
-    auto* zulu = controller.addCategory(new Category("Fictional Zulu", -10.0));
-    auto* alpha = controller.addCategory(new Category("Fictional Alpha", 20.0));
+    auto* zulu = controller.addCategory(new Category("Fictional Zulu"));
+    auto* alpha = controller.addCategory(new Category("Fictional Alpha"));
     QVERIFY(zulu != nullptr);
     QVERIFY(alpha != nullptr);
-    QVERIFY(controller.addCategory(new Category("Fictional Alpha", 30.0)) == nullptr);
+    QVERIFY(controller.addCategory(new Category("Fictional Alpha")) == nullptr);
     QCOMPARE(controller.categoryNames(), QStringList({ "Fictional Alpha", "Fictional Zulu" }));
     QCOMPARE(controller.categoryIndex(alpha), 0);
     QCOMPARE(controller.categoryIndex(nullptr), -1);
@@ -42,8 +42,8 @@ private slots:
     CategoryController controller(budgetData, undoStack);
     const QDate budgetDate(2026, 6, 15);
     budgetData.set_budgetDate(budgetDate);
-    auto* income = controller.addCategory(new Category("Fictional Income", 500.0));
-    auto* expense = controller.addCategory(new Category("Fictional Expense", -300.0));
+    auto* income = controller.addCategory(new Category("Fictional Income"));
+    auto* expense = controller.addCategory(new Category("Fictional Expense"));
     expense->setMonthRecord(2026, 6, { 20.0, 30.0, -300.0 });
     income->setMonthRecord(2026, 6, { 0.0, -10.0, 500.0 });
 

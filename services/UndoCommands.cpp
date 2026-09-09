@@ -60,7 +60,7 @@ void RenameAccountCommand::redo() {
 
 EditCategoryCommand::EditCategoryCommand(Category& category,
                                          const QString& newName,
-                                         double newBudgetLimit,
+                                         std::optional<double> newBudgetLimit,
                                          const QDate& budgetDate,
                                          QUndoCommand* parent) :
     QUndoCommand(parent),
@@ -72,7 +72,10 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
     _budgetDate(budgetDate) {
   _previousBudgetDateLimit = category.monthRecord(_budgetDate.year(), _budgetDate.month()).budgetLimit;
 
-  if (_oldName != _newName && _oldBudgetLimit != _newBudgetLimit) {
+  const bool budgetChanged = _newBudgetLimit.has_value()
+                                 ? _oldBudgetLimit != _newBudgetLimit.value()
+                                 : _previousBudgetDateLimit.has_value();
+  if (_oldName != _newName && budgetChanged) {
     setText(QObject::tr("Edit category \"%1\"").arg(newName));
   } else if (_oldName != _newName) {
     setText(QObject::tr("Rename category to \"%1\"").arg(newName));
@@ -85,7 +88,7 @@ void EditCategoryCommand::undo() {
   _category.set_name(_oldName);
 
   // If the budget limit changed, restore the previous month override.
-  if (_oldBudgetLimit != _newBudgetLimit) {
+  if (_newBudgetLimit.has_value() || _previousBudgetDateLimit.has_value()) {
     if (_previousBudgetDateLimit.has_value()) {
       _category.setBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month(), _previousBudgetDateLimit.value());
     } else {
@@ -98,8 +101,10 @@ void EditCategoryCommand::redo() {
   _category.set_name(_newName);
 
   // Store the new limit at the month where it becomes effective.
-  if (_oldBudgetLimit != _newBudgetLimit) {
-    _category.setBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month(), _newBudgetLimit);
+  if (_newBudgetLimit.has_value()) {
+    _category.setBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month(), _newBudgetLimit.value());
+  } else {
+    _category.clearBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month());
   }
 }
 

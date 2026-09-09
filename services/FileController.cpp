@@ -110,7 +110,6 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   for (auto category : _categoryController.categories()) {
     out << YAML::BeginMap;
     out << YAML::Key << "name" << YAML::Value << toStdString(category->name());
-    out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(category->budgetLimit(), 'f', 2));
     if (category == currentCategory) {
       out << YAML::Key << "current" << YAML::Value << "true";
     }
@@ -335,9 +334,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         if (cat["name"]) {
           category->set_name(yamlString(cat["name"]));
         }
-        if (cat["budget_limit"]) {
-          category->set_budgetLimit(yamlString(cat["budget_limit"]).toDouble());
-        }
+        const double legacyCurrentLimit = cat["budget_limit"]
+                                              ? yamlString(cat["budget_limit"]).toDouble()
+                                              : 0.0;
 
         // Load month history (new format) or leftover decisions (legacy format)
         QMap<YearMonth, MonthRecord> loadedHistory;
@@ -394,7 +393,6 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           // Before version 2, a budget-limit entry stored the old value in the
           // last month where it was effective. Convert each boundary into an
           // override starting in the following month.
-          const double legacyCurrentLimit = category->budgetLimit();
           QMap<YearMonth, MonthRecord> convertedHistory;
           std::optional<double> legacyBaseLimit;
 
@@ -409,8 +407,10 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
           }
 
-          if (legacyBaseLimit.has_value()) {
-            category->set_budgetLimit(legacyBaseLimit.value());
+          if (legacyBaseLimit.has_value() && !loadedHistory.isEmpty()) {
+            MonthRecord firstRecord = convertedHistory.value(loadedHistory.constBegin().key(), MonthRecord{});
+            firstRecord.budgetLimit = legacyBaseLimit.value();
+            convertedHistory.insert(loadedHistory.constBegin().key(), firstRecord);
           }
 
           for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
@@ -791,7 +791,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
           }
         }
         if (category == nullptr) {
-          category = new Category(categoryName, 0.0);
+          category = new Category(categoryName);
           new AddCategoryCommand(&_categoryController, category, macroCommand);
           newCategories.insert(category);
         }

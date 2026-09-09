@@ -315,6 +315,8 @@ QVariant EvolutionController::data(const QModelIndex& index, int role) const {
     }
     case CurrentCategoryRole:
       return index.row() == _categories.currentIndex();
+    case BudgetLimitChangeRole:
+      return category->hasBudgetLimitOverrideForMonth(month);
   }
   return {};
 }
@@ -372,6 +374,7 @@ QHash<int, QByteArray> EvolutionController::roleNames() const {
     { MonthlySumRole, "monthlySum" },
     { CurrentMonthRole, "currentMonth" },
     { CurrentCategoryRole, "currentCategory" },
+    { BudgetLimitChangeRole, "budgetLimitChange" },
   };
 }
 
@@ -391,7 +394,8 @@ void EvolutionController::refreshData() {
                      { DisplayRole, CategoryNameRole, BudgetRole, SpentRole,
                        LeftoverRole, SavedRole, ReportedRole, AccumulatedRole,
                        SpentAverageRole, ReportedSumRole, MonthlySumRole,
-                       CurrentMonthRole, CurrentCategoryRole });
+                       CurrentMonthRole, CurrentCategoryRole,
+                       BudgetLimitChangeRole });
   }
   if (columnCount() > 0) emit headerDataChanged(Qt::Horizontal, 0, columnCount() - 1);
   if (rowCount() > 0) emit headerDataChanged(Qt::Vertical, 0, rowCount() - 1);
