@@ -9,9 +9,9 @@ Rectangle {
     id: root
 
     required property int row
-    required property real categoryAverage
-    required property real categorySum
-    required property bool sumMode
+    required property real spentAverage
+    required property real reportedSum
+    required property bool reportedMode
     required property bool currentCategory
     required property real columnWidth
     required property real rowHeight
@@ -32,7 +32,7 @@ Rectangle {
     Label {
         anchors.fill: parent
         anchors.rightMargin: Theme.spacingSmall
-        text: Theme.formatAmount(root.sumMode ? root.categorySum : root.categoryAverage)
+        text: Theme.formatAmount(root.reportedMode ? root.reportedSum : root.spentAverage)
         horizontalAlignment: Text.AlignRight
         verticalAlignment: Text.AlignVCenter
         color: Theme.textPrimary

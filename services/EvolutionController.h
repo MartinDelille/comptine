@@ -37,8 +37,8 @@ public:
     SavedRole,
     ReportedRole,
     AccumulatedRole,
-    CategoryAverageRole,
-    CategorySumRole,
+    SpentAverageRole,
+    ReportedSumRole,
     MonthlySumRole,
     CurrentMonthRole,
     CurrentCategoryRole,
@@ -76,7 +76,8 @@ private:
   QDate monthDate(int column) const;
   double metricValue(const Category* category, const QDate& month,
                      int metric) const;
-  double categorySum(const Category* category) const;
+  double categorySum(const Category* category, int metric,
+                     const QDate& start, const QDate& end) const;
   double monthlySum(const QDate& month) const;
   QDate clampMonth(const QDate& month) const;
   int summaryMonthCount() const;

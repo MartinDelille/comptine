@@ -278,12 +278,12 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Indicateur d&apos;évolution</translation>
     </message>
     <message>
-        <source>Average</source>
-        <translation>Moyenne</translation>
+        <source>Average Spent</source>
+        <translation>Dépense moyenne</translation>
     </message>
     <message>
-        <source>Sum</source>
-        <translation>Somme</translation>
+        <source>Sum Reported</source>
+        <translation>Somme reportée</translation>
     </message>
     <message>
         <source>Monthly Sum</source>
