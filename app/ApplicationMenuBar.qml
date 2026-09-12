@@ -19,6 +19,8 @@ MenuBar {
     signal rulesAction
     signal preferencesAction
     signal findOperationsAction
+    signal saveAvailableAction
+    signal reportAvailableAction
 
     signal checkUpdateAction
     signal projectPageAction
@@ -47,6 +49,8 @@ MenuBar {
         anyDialogOpen: root.anyDialogOpen
         metricSelectorFocused: root.metricSelectorFocused
         onFindOperationsAction: root.findOperationsAction()
+        onSaveAvailableAction: root.saveAvailableAction()
+        onReportAvailableAction: root.reportAvailableAction()
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()

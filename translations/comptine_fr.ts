@@ -1066,6 +1066,14 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Mois suivant</translation>
     </message>
     <message>
+        <source>Save Available</source>
+        <translation>Épargner le disponible</translation>
+    </message>
+    <message>
+        <source>Report Available</source>
+        <translation>Reporter le disponible</translation>
+    </message>
+    <message>
         <source>Previous Category</source>
         <translation>Catégorie précédente</translation>
     </message>

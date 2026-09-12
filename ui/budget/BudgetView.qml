@@ -24,6 +24,31 @@ FocusScope {
         categoryEditDialog.edit();
     }
 
+    function saveAvailable() {
+        let categoryItem = categoryListView.currentItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount = categoryItem.saveAmount !== 0 ? 0 : categoryItem.saveAmount + categoryItem.remainingLeftover;
+        CategoryEditor.setSaveAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
+    function reportAvailable() {
+        let categoryItem = categoryListView.currentItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount;
+        if (categoryItem.reportAmount !== 0) {
+            amount = 0;
+        } else if (categoryItem.leftover >= 0) {
+            amount = categoryItem.reportAmount + categoryItem.remainingLeftover;
+        } else {
+            amount = categoryItem.leftover;
+        }
+        CategoryEditor.setReportAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
     CategoryEditDialog {
         id: categoryEditDialog
         date: BudgetData.budgetDate

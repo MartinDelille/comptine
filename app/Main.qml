@@ -121,6 +121,8 @@ ApplicationWindow {
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
         onFindOperationsAction: operationView.focusSearch()
+        onSaveAvailableAction: budgetView.saveAvailable()
+        onReportAvailableAction: budgetView.reportAvailable()
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;

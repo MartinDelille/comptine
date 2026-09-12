@@ -10,6 +10,8 @@ Menu {
     required property bool metricSelectorFocused
 
     signal findOperationsAction
+    signal saveAvailableAction
+    signal reportAvailableAction
 
     title: qsTr("&View")
 
@@ -46,6 +48,19 @@ Menu {
         shortcut: "Right"
         enabled: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) && !root.anyDialogOpen
         onTriggered: BudgetData.nextMonth()
+    }
+    MenuSeparator {}
+    Action {
+        text: qsTr("Save Available")
+        shortcut: "S"
+        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen && CategoryController.current
+        onTriggered: root.saveAvailableAction()
+    }
+    Action {
+        text: qsTr("Report Available")
+        shortcut: "R"
+        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen && CategoryController.current
+        onTriggered: root.reportAvailableAction()
     }
     MenuSeparator {}
     Action {
