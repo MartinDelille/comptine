@@ -54,13 +54,13 @@ FocusScope {
 
             CheckBox {
                 id: averageCheckBox
-                text: qsTr("Average")
+                text: qsTr("Average Spent")
                 checked: true
             }
 
             CheckBox {
                 id: sumCheckBox
-                text: qsTr("Sum")
+                text: qsTr("Sum Reported")
                 checked: true
             }
 
@@ -199,7 +199,7 @@ FocusScope {
                     delegate: EvolutionSummaryHeaderDelegate {
                         columnWidth: root.summaryColumnWidth
                         rowHeight: root.rowHeight
-                        sumMode: false
+                        reportedMode: false
                         onCategorySelected: row => CategoryController.currentIndex = row
                     }
                 }
@@ -219,7 +219,7 @@ FocusScope {
                     delegate: EvolutionSummaryHeaderDelegate {
                         columnWidth: root.summaryColumnWidth
                         rowHeight: root.rowHeight
-                        sumMode: true
+                        reportedMode: true
                         onCategorySelected: row => CategoryController.currentIndex = row
                     }
                 }
@@ -251,7 +251,7 @@ FocusScope {
                     Label {
                         anchors.fill: parent
                         anchors.leftMargin: Theme.spacingNormal
-                        text: qsTr("Average")
+                        text: qsTr("Average Spent")
                         verticalAlignment: Text.AlignVCenter
                         font.bold: true
                         color: Theme.textPrimary
@@ -269,7 +269,7 @@ FocusScope {
                     Label {
                         anchors.fill: parent
                         anchors.leftMargin: Theme.spacingNormal
-                        text: qsTr("Sum")
+                        text: qsTr("Sum Reported")
                         verticalAlignment: Text.AlignVCenter
                         font.bold: true
                         color: Theme.textPrimary

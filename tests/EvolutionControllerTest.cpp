@@ -184,12 +184,14 @@ private slots:
     QCOMPARE(evolution.data(cell, EvolutionController::AccumulatedRole).toDouble(), -5.0);
   }
 
-  void categorySummarySupportsAverageAndSum() {
+  void fixedCategorySummariesUseTheirOwnMetrics() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 2, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Summary", -100.0));
+    category->setMonthRecord(2025, 1, { 0.0, -7.0 });
+    category->setMonthRecord(2025, 2, { 0.0, -9.0 });
     category->setBudgetLimitForMonth(2025, 1, -200.0);
     category->setBudgetLimitForMonth(2025, 2, -100.0);
     auto* account = budgetData.createAccount("Fictional Account");
@@ -206,13 +208,13 @@ private slots:
     QCOMPARE(evolution.summaryStartIndex(), 0);
     QCOMPARE(evolution.summaryEndIndex(), 1);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
-             -150.0);
+             -20.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -300.0);
+             -16.0);
     QCOMPARE(evolution.headerData(0, Qt::Horizontal,
                                   EvolutionController::MonthlySumRole)
                  .toDouble(),
@@ -223,23 +225,23 @@ private slots:
              -100.0);
 
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
-                 .toDouble(),
-             -150.0);
-    QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
-                 .toDouble(),
-             -300.0);
-
-    evolution.set_selectedMetric(1);
-    QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
              -20.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -40.0);
+             -16.0);
+
+    evolution.set_selectedMetric(1);
+    QCOMPARE(evolution.headerData(0, Qt::Vertical,
+                                  EvolutionController::SpentAverageRole)
+                 .toDouble(),
+             -20.0);
+    QCOMPARE(evolution.headerData(0, Qt::Vertical,
+                                  EvolutionController::ReportedSumRole)
+                 .toDouble(),
+             -16.0);
     QCOMPARE(evolution.headerData(0, Qt::Horizontal,
                                   EvolutionController::MonthlySumRole)
                  .toDouble(),
@@ -250,7 +252,7 @@ private slots:
              -30.0);
   }
 
-  void categorySummaryRangeIsInclusiveAndSelfAdjusting() {
+  void spentAverageUsesSelectedRangeAndReportedSumUsesFullRange() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     budgetData.set_budgetDate(QDate(2025, 3, 1));
@@ -259,6 +261,9 @@ private slots:
     category->setBudgetLimitForMonth(2025, 1, -10.0);
     category->setBudgetLimitForMonth(2025, 2, -20.0);
     category->setBudgetLimitForMonth(2025, 3, -30.0);
+    category->setMonthRecord(2025, 1, { 0.0, -1.0 });
+    category->setMonthRecord(2025, 2, { 0.0, -2.0 });
+    category->setMonthRecord(2025, 3, { 0.0, -3.0 });
     auto* account = budgetData.createAccount("Fictional Account");
     auto* firstOperation = new Operation(account, QDate(2025, 1, 10), -10.0);
     firstOperation->setAllocations({ new Allocation(category, -10.0) });
@@ -271,60 +276,60 @@ private slots:
     QCOMPARE(evolution.summaryStartIndex(), 0);
     QCOMPARE(evolution.summaryEndIndex(), 2);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
-                 .toDouble(),
-             -20.0);
-    QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
-                 .toDouble(),
-             -60.0);
-
-    evolution.set_selectedMetric(1);
-    QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
              -40.0 / 3.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -40.0);
+             -6.0);
+
+    evolution.set_selectedMetric(1);
+    QCOMPARE(evolution.headerData(0, Qt::Vertical,
+                                  EvolutionController::SpentAverageRole)
+                 .toDouble(),
+             -40.0 / 3.0);
+    QCOMPARE(evolution.headerData(0, Qt::Vertical,
+                                  EvolutionController::ReportedSumRole)
+                 .toDouble(),
+             -6.0);
     evolution.set_selectedMetric(0);
 
     evolution.setSummaryStartMonthIndex(0);
     QCOMPARE(evolution.summaryStartIndex(), 0);
     QCOMPARE(evolution.summaryEndIndex(), 2);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
-             -20.0);
+             -40.0 / 3.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -60.0);
+             -6.0);
 
     evolution.setSummaryStartMonthIndex(1);
     QCOMPARE(evolution.summaryStartIndex(), 1);
     QCOMPARE(evolution.summaryEndIndex(), 2);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
-             -25.0);
+             -15.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -50.0);
+             -6.0);
 
     evolution.setSummaryEndMonthIndex(0);
     QCOMPARE(evolution.summaryStartIndex(), 0);
     QCOMPARE(evolution.summaryEndIndex(), 0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategoryAverageRole)
+                                  EvolutionController::SpentAverageRole)
                  .toDouble(),
              -10.0);
     QCOMPARE(evolution.headerData(0, Qt::Vertical,
-                                  EvolutionController::CategorySumRole)
+                                  EvolutionController::ReportedSumRole)
                  .toDouble(),
-             -10.0);
+             -6.0);
   }
 
   void changingSelectedMonthOnlyRefreshesSelectionRole() {
