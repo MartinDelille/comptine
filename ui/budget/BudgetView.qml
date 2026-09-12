@@ -24,11 +24,36 @@ FocusScope {
         categoryEditDialog.edit();
     }
 
+    function saveAvailable() {
+        let categoryItem = categoryListView.currentItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount = categoryItem.saveAmount !== 0 ? 0 : categoryItem.saveAmount + categoryItem.remainingLeftover;
+        CategoryEditor.setSaveAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
+    function reportAvailable() {
+        let categoryItem = categoryListView.currentItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount;
+        if (categoryItem.reportAmount !== 0) {
+            amount = 0;
+        } else if (categoryItem.leftover >= 0) {
+            amount = categoryItem.reportAmount + categoryItem.remainingLeftover;
+        } else {
+            amount = categoryItem.leftover;
+        }
+        CategoryEditor.setReportAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
     CategoryEditDialog {
         id: categoryEditDialog
         date: BudgetData.budgetDate
-        onCategoryEdited: function (category, newName, newBudgetLimit) {
-            CategoryEditor.edit(newName, newBudgetLimit, category, date);
+        onCategoryEdited: function (category, newName, newBudgetLimit, inheritPrevious) {
+            CategoryEditor.edit(newName, newBudgetLimit, category, date, inheritPrevious);
         }
     }
 
@@ -175,7 +200,6 @@ FocusScope {
             clip: true
             focus: true
             currentIndex: CategoryController.currentIndex
-            onCurrentIndexChanged: CategoryController.currentIndex = currentIndex
 
             Keys.onReturnPressed: categoryDetailView.open()
             ScrollBar.vertical: ScrollBar {
@@ -190,12 +214,12 @@ FocusScope {
                 isCurrentItem: categoryListView.currentIndex === index
 
                 onClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryDetailView.open();
                 }
 
                 onEditClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryEditDialog.edit(category);
                 }
             }

@@ -5,6 +5,7 @@ MenuBar {
     id: root
 
     required property bool anyDialogOpen
+    required property bool metricSelectorFocused
     required property var window
 
     signal newFileAction
@@ -17,6 +18,9 @@ MenuBar {
     signal deleteAction
     signal rulesAction
     signal preferencesAction
+    signal findOperationsAction
+    signal saveAvailableAction
+    signal reportAvailableAction
 
     signal checkUpdateAction
     signal projectPageAction
@@ -43,6 +47,10 @@ MenuBar {
     }
     ViewMenu {
         anyDialogOpen: root.anyDialogOpen
+        metricSelectorFocused: root.metricSelectorFocused
+        onFindOperationsAction: root.findOperationsAction()
+        onSaveAvailableAction: root.saveAvailableAction()
+        onReportAvailableAction: root.reportAvailableAction()
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()

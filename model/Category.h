@@ -58,11 +58,10 @@ class Category : public QObject {
   QML_ELEMENT
   QML_UNCREATABLE("Categories are created by the backend")
   PROPERTY_RW(QString, name, QString())
-  PROPERTY_RW(double, budgetLimit, 0.0)
 
 public:
   explicit Category(QObject* parent = nullptr);
-  Category(const QString& name, double budgetLimit = 0.0, QObject* parent = nullptr);
+  explicit Category(const QString& name, QObject* parent = nullptr);
 
   // Month history management (leftover decisions + budget limit overrides)
   MonthRecord monthRecord(int year, int month) const;
@@ -77,13 +76,15 @@ public:
 
   // Budget limit for a specific month
   // Looks up month_history for the effective budget limit at that date.
-  // If no historical entry is found, returns the current budgetLimit().
+  // If no historical entry is found, returns zero.
   Q_INVOKABLE double budgetLimitForMonth(const QDate& date) const;
+
+  Q_INVOKABLE bool hasBudgetLimitOverrideForMonth(const QDate& date) const;
 
   // Set a historical budget limit for a specific month
   void setBudgetLimitForMonth(int year, int month, double limit);
 
-  // Clear a historical budget limit for a specific month (revert to current)
+  // Clear a historical budget limit for a specific month (inherit from before)
   void clearBudgetLimitForMonth(int year, int month);
 
   // Calculate accumulated leftover up to (but not including) a specific month

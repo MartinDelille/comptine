@@ -41,21 +41,21 @@ private slots:
   void categoryCommandRestoresHistoricalBudgetLimit() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
-    Category category("Fictional Original", -100.0);
+    Category category("Fictional Original");
+    category.setBudgetLimitForMonth(2026, 1, -100.0);
     category.setBudgetLimitForMonth(2026, 2, -80.0);
 
     undoStack.push(new EditCategoryCommand(category, "Fictional Updated", -120.0,
                                            QDate(2026, 3, 1)));
     QCOMPARE(category.name(), QString("Fictional Updated"));
-    QCOMPARE(category.budgetLimit(), -120.0);
-    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -100.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 3, 1)), -120.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -80.0);
 
     undoStack.undo();
     QCOMPARE(category.name(), QString("Fictional Original"));
-    QCOMPARE(category.budgetLimit(), -100.0);
     QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -80.0);
     undoStack.redo();
-    QCOMPARE(category.budgetLimit(), -120.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 3, 1)), -120.0);
   }
 
   void ruleCommandsRoundTrip() {

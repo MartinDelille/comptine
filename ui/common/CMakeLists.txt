@@ -11,6 +11,7 @@ qt_add_qml_module(
   QML_FILES
   AmountField.qml
   AmountLabel.qml
+  AppTabButton.qml
   BaseDialog.qml
   DateLabel.qml
   Theme.qml

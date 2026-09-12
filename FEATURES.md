@@ -18,6 +18,7 @@
 ## Operations
 
 - **Operation List**: View all operations for the current account sorted by date (most recent first)
+- **Operation Search**: Search the current account by label, details, or amount with the inline search field (Ctrl/Cmd+F)
 - **Operation Details**: View detailed information for selected operation(s)
 - **Selection**: Single click, Ctrl+click (toggle), Shift+click (range), Cmd+A (select all)
 - **Keyboard Navigation**: Up/Down arrows to navigate, with Shift for extending selection
@@ -57,8 +58,10 @@
 
 - **Monthly Budget**: View budget summary by month
 - **Category Tracking**: Track spending by category with budget limits
-- **Per-Month Budget Limits**: Budget limits can vary by month; changing a category's budget limit records the old limit in the month history so past months retain their original limits
+- **Per-Month Budget Limits**: Budget limits are defined by month, inherit from the previous month by default, and can be changed at any month boundary
+- **Budget Limit Inheritance**: Clear a month's override to inherit the previous effective limit; months before the first override have a limit of zero
 - **Month Navigation**: Navigate between months to view historical data
+- **Keyboard Allocation**: Press `S` to toggle saving the selected category's available amount or `R` to toggle reporting it
 - **Accumulated Leftover Display**: Budget display shows carried-over amounts (e.g., "€150 / €200 (+€50)")
 
 ## Budget Leftover
@@ -73,6 +76,18 @@ Manage unspent budget at the end of each month with flexible options:
 - **Monthly Summary**: View totals for savings, amounts to/from leftover account, and net transfer
 - **Undoable**: All leftover decisions support undo/redo
 - **Persistence**: Leftover decisions are saved in the YAML file per category
+
+## Evolution View
+
+- **Allocated Budget Grid**: View effective category budget limits across the model-driven contiguous range of recorded history
+- **Selectable Metric**: Switch the grid between budget, spent, leftover, saved, reported, and accumulated leftover values
+- **Category Summaries**: Show each category's average spent over the selected range or sum reported over the full available history, plus an optional monthly sum across all categories
+- **Historical Limits**: Per-month budget overrides are shown in their effective month
+- **Budget Change Indicators**: Budget cells are bold when that month starts an explicit budget-limit override
+- **Month Navigation**: Navigate the shared budget month with bounded buttons or Left/Right keys
+- **Responsive Layout**: Shows as many historical month columns as fit the available width without horizontal scrolling
+- **Current Month Highlight**: Highlights the selected budget month with the same accent treatment used by Budget View
+- **Centered Current Month**: Keeps the selected month centered when the available range permits, moving it toward the edges at the history boundaries
 
 ## Undo/Redo
 

@@ -41,6 +41,11 @@ qt_add_executable(CategoryTest CategoryTest.cpp)
 target_link_libraries(CategoryTest PRIVATE Qt6::Test services editor)
 add_test(NAME CategoryTest COMMAND CategoryTest)
 
+# EvolutionControllerTest - model-driven evolution range and navigation
+qt_add_executable(EvolutionControllerTest EvolutionControllerTest.cpp)
+target_link_libraries(EvolutionControllerTest PRIVATE Qt6::Test services editor)
+add_test(NAME EvolutionControllerTest COMMAND EvolutionControllerTest)
+
 # RuleTest - unit tests for categorization rules
 qt_add_executable(RuleTest RuleTest.cpp)
 target_link_libraries(RuleTest PRIVATE Qt6::Test services editor)
@@ -100,6 +105,14 @@ add_test(NAME AccountTest COMMAND AccountTest)
 qt_add_executable(OperationTest OperationTest.cpp)
 target_link_libraries(OperationTest PRIVATE Qt6::Test services editor)
 add_test(NAME OperationTest COMMAND OperationTest)
+
+# OperationFilterModelTest - filtered operation matching and source selection mapping
+qt_add_executable(OperationFilterModelTest OperationFilterModelTest.cpp)
+target_link_libraries(
+    OperationFilterModelTest
+    PRIVATE Qt6::Test services editor
+)
+add_test(NAME OperationFilterModelTest COMMAND OperationFilterModelTest)
 
 # CategoryControllerTest - category aggregates, model roles, and operation lookup
 qt_add_executable(CategoryControllerTest CategoryControllerTest.cpp)

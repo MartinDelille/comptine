@@ -15,6 +15,11 @@ Use exact commands below to configure, build, run, and clean the project. If you
 
 When done, you can run the application as shown above to show the progress.
 
+### QML linting
+
+- Run `qmllint` with `--json -` when the JSON report should be written to stdout. The `--json` option requires an output filename; omitting `-` can cause the next option to be created as a file.
+- Full-project command: `~/Qt/$(cat .qt-version)/macos/bin/qmllint --json - --qmldirs app --qmldirs ui --qmldirs services --qmldirs model --qmldirs utils --qmldirs editor $(rg --files -g '*.qml')`
+
 ## Project Structure
 
 - Qt6 QML application with C++ backend (version specified in `.qt-version`)
@@ -29,6 +34,10 @@ When done, you can run the application as shown above to show the progress.
 - Keep domain calculations and data contracts in the appropriate backend/model layer, and let the UI consume them through the framework’s intended view and binding mechanisms.
 - Before creating a custom workaround, check the project’s configured framework version and its official documentation for existing facilities that match the required behavior.
 - Prefer a clean, extensible implementation on the first pass. Use provisional structures only when the data is genuinely small and static, or when the user explicitly requests a prototype.
+- Keep each piece of application state owned by one layer. If a controller exposes shared state such as the selected category, views should bind to it and user actions should update the controller directly.
+- Avoid two-way QML synchronization patterns such as `property: controller.value` combined with `onPropertyChanged: controller.value = property`; this creates binding cycles and duplicates state. If a view must adapt external state, use explicit one-way commands or a dedicated selection model rather than reciprocal bindings.
+- Keep commands and shortcuts at the application command/menu layer (`app/ViewMenu.qml`, `app/EditMenu.qml`, etc.). Individual views should render state and emit intent, not duplicate global keyboard actions.
+- Treat runtime layout warnings as design feedback. Do not hide an immediate `forceLayout()` warning with a `Timer` or `Qt.callLater()` until checking why the layout is being invalidated. For `TableView`, keep `columnWidthProvider` and `rowHeightProvider` stable when possible; use stable delegate implicit sizes and scrolling/content positioning instead of returning changing or zero sizes to implement viewport windowing. Call `forceLayout()` only when a provider’s returned dimensions genuinely changed.
 
 ### C++ (Qt Style)
 

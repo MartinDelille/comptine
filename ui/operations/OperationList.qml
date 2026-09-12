@@ -3,43 +3,68 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 
+import model
+import ui.common
+
 ListView {
     id: root
 
     required property var account
+    property string query: ""
 
-    model: account
-    currentIndex: account?.currentOperationIndex ?? -1
+    readonly property int visibleOperationCount: filterModel.count
+
+    model: filterModel
+    currentIndex: filterModel.currentOperationIndex
     activeFocusOnTab: true
     clip: true
     focus: true
     keyNavigationEnabled: false  // We handle key navigation ourselves
     highlightFollowsCurrentItem: false  // Don't auto-scroll highlight
 
+    OperationFilterModel {
+        id: filterModel
+        account: root.account
+        query: root.query
+    }
+
+    Label {
+        anchors.centerIn: parent
+        visible: root.account && root.account.count > 0 && root.visibleOperationCount === 0
+        text: qsTr("No matching operations")
+        color: Theme.textSecondary
+    }
+
     ScrollBar.vertical: ScrollBar {
         id: scrollBar
     }
-    onCurrentIndexChanged: {
-        Qt.callLater(() => {
+    onCurrentItemChanged: {
+        if (currentItem && currentIndex >= 0 && currentIndex < count)
             positionViewAtIndex(currentIndex, ListView.Contain);
-        });
     }
 
     Keys.onUpPressed: event => {
-        account.previousOperation(event.modifiers & Qt.ShiftModifier);
+        filterModel.previousOperation(event.modifiers & Qt.ShiftModifier);
     }
 
     Keys.onDownPressed: event => {
-        account.nextOperation(event.modifiers & Qt.ShiftModifier);
+        filterModel.nextOperation(event.modifiers & Qt.ShiftModifier);
+    }
+
+    Keys.onPressed: event => {
+        if (event.key !== Qt.Key_PageUp && event.key !== Qt.Key_PageDown)
+            return;
+
+        const pageSize = Math.max(1, Math.floor(root.height / 50));
+        const offset = event.key === Qt.Key_PageUp ? -pageSize : pageSize;
+        filterModel.moveOperation(offset, event.modifiers & Qt.ShiftModifier);
+        event.accepted = true;
     }
 
     delegate: OperationDelegate {
+        id: operationDelegate
         required property int index
-        required property var model
         width: root.width - scrollBar.width
-        operation: model.operation
-        balance: model.balance
-        selected: model.selected
         focused: root.currentIndex === index
         alternate: index % 2 === 0
 
@@ -48,9 +73,9 @@ ListView {
             onClicked: mouse => {
                 if (mouse.modifiers & Qt.ControlModifier) {
                     // Cmd/Ctrl+click: toggle selection
-                    root.account.toggleSelectionAt(parent.index);
+                    filterModel.toggleSelectionAt(operationDelegate.index);
                 } else {
-                    root.account.selectAt(parent.index, mouse.modifiers & Qt.ShiftModifier);
+                    filterModel.selectAt(operationDelegate.index, mouse.modifiers & Qt.ShiftModifier);
                 }
             }
         }

@@ -299,9 +299,12 @@ private slots:
   // Save/Load with Categories and Budget Limits
 
   void testSaveAndLoadCategories() {
-    categoryController->addCategory(new Category("Food", 500.0));
-    categoryController->addCategory(new Category("Transport", 200.0));
-    categoryController->addCategory(new Category("Entertainment", 100.0));
+    auto* foodToSave = categoryController->addCategory(new Category("Food"));
+    auto* transportToSave = categoryController->addCategory(new Category("Transport"));
+    auto* entertainmentToSave = categoryController->addCategory(new Category("Entertainment"));
+    foodToSave->setBudgetLimitForMonth(2025, 1, 500.0);
+    transportToSave->setBudgetLimitForMonth(2025, 1, 200.0);
+    entertainmentToSave->setBudgetLimitForMonth(2025, 1, 100.0);
 
     // Save and reload
     QString filePath = tempDir->filePath("categories.comptine");
@@ -313,13 +316,13 @@ private slots:
     QCOMPARE(categoryController->rowCount(), 3);
     auto food = categoryController->getCategoryByName("Food");
     QVERIFY(food != nullptr);
-    QCOMPARE(food->budgetLimit(), 500.0);
+    QCOMPARE(food->budgetLimitForMonth(QDate(2025, 1, 1)), 500.0);
   }
 
   // Save/Load with Leftover Decisions
 
   void testSaveAndLoadLeftoverDecisions() {
-    auto cat = new Category("Savings", 300.0);
+    auto cat = new Category("Savings");
     categoryController->addCategory(cat);
 
     // Set leftover decision for January 2025
@@ -368,10 +371,10 @@ private slots:
   // Save/Load with Month History and Budget Limit Overrides
 
   void testSaveAndLoadMonthHistoryWithBudgetLimit() {
-    auto cat = new Category("Groceries", -300.0);
+    auto cat = new Category("Groceries");
     categoryController->addCategory(cat);
 
-    // Record that budget was 250 until June (old limit stored in history)
+    // Record the limit effective from June.
     cat->setBudgetLimitForMonth(2025, 6, -250.0);
 
     // Also set leftover decision for June
@@ -386,7 +389,6 @@ private slots:
     // Verify
     auto loaded = categoryController->getCategoryByName("Groceries");
     QVERIFY(loaded != nullptr);
-    QCOMPARE(loaded->budgetLimit(), -300.0);
 
     // Verify month record has both leftover data and budget limit
     MonthRecord record = loaded->monthRecord(2025, 6);
@@ -396,13 +398,13 @@ private slots:
     QCOMPARE(record.budgetLimit.value(), -250.0);
 
     // Verify budgetLimitForMonth lookup works after reload
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), 0.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -250.0);
   }
 
   void testSaveAndLoadMonthHistoryBudgetLimitOnly() {
-    auto cat = new Category("Transport", -150.0);
+    auto cat = new Category("Transport");
     categoryController->addCategory(cat);
 
     // Only budget limit in history, no leftover data
@@ -423,8 +425,38 @@ private slots:
     QCOMPARE(record.budgetLimit.value(), -100.0);
   }
 
+  void testLoadLegacyBudgetLimitHistory() {
+    const QString filePath = tempDir->filePath("legacy_budget_limit_history.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    QTextStream out(&file);
+    out << "categories:\n";
+    out << "  - name: Food\n";
+    out << "    budget_limit: -300.00\n";
+    out << "    month_history:\n";
+    out << "      - year: 2025\n";
+    out << "        month: 6\n";
+    out << "        budget_limit: -250.00\n";
+    out << "      - year: 2025\n";
+    out << "        month: 8\n";
+    out << "        budget_limit: -200.00\n";
+    out << "accounts: []\n";
+    file.close();
+
+    QVERIFY(fileController->loadFromYamlFile(filePath));
+    auto loaded = categoryController->getCategoryByName("Food");
+    QVERIFY(loaded != nullptr);
+
+    // Legacy entries are converted to month-effective boundaries.
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 5, 1)), 0.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 8, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 9, 1)), -300.0);
+  }
+
   void testSaveAndLoadMultipleBudgetLimitChanges() {
-    auto cat = new Category("Food", -400.0);
+    auto cat = new Category("Food");
     categoryController->addCategory(cat);
 
     // Multiple historical budget limit changes
@@ -439,14 +471,13 @@ private slots:
 
     auto loaded = categoryController->getCategoryByName("Food");
     QVERIFY(loaded != nullptr);
-    QCOMPARE(loaded->budgetLimit(), -400.0);
 
-    // Verify the forward-scan lookup works correctly
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 1, 1)), -200.0);
+    // Verify the month-effective lookup works correctly
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 1, 1)), 0.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -200.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 4, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 4, 1)), -200.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -400.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
   }
 
   void testLoadLegacyLeftoverDecisionsKey() {
@@ -477,7 +508,7 @@ private slots:
 
   void testSaveUsesMonthHistoryKey() {
     // Verify that saving uses the new "month_history" key
-    auto cat = new Category("Test", -100.0);
+    auto cat = new Category("Test");
     categoryController->addCategory(cat);
     cat->setLeftoverDecision(2025, 1, { 10.0, 5.0 });
 
@@ -491,6 +522,7 @@ private slots:
 
     QVERIFY(content.contains("month_history"));
     QVERIFY(!content.contains("leftover_decisions"));
+    QVERIFY(content.contains("budget_limit_history_version: 2"));
   }
 
   // Save/Load with Categorization Rules

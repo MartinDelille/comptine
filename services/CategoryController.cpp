@@ -20,6 +20,7 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::evolutionDataChanged);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
@@ -205,10 +206,10 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::budgetDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
+  connect(category, &Category::monthHistoryChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);
+  connect(category, &Category::nameChanged, this, &CategoryController::evolutionDataChanged);
 
   QCollator collator;
   collator.setCaseSensitivity(Qt::CaseInsensitive);

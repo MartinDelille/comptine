@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QByteArray>
 #include <QFileSystemWatcher>
 #include <QObject>
 #include <QQmlEngine>
@@ -64,4 +65,6 @@ private:
   RuleController& _ruleController;
   QUndoStack& _undoStack;
   QFileSystemWatcher _fileWatcher;
+  QString _knownFilePath;
+  QByteArray _knownFileHash;
 };
