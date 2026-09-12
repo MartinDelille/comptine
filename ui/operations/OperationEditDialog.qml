@@ -13,7 +13,7 @@ BaseDialog {
     id: root
 
     property var _operation: null
-    property var _unaffectedCategoryComboBox: null
+    property int _focusedCategoryAllocationIndex: -1
 
     // Category list for ComboBoxes - refreshed on open
     property var categoryList: []
@@ -52,7 +52,7 @@ BaseDialog {
 
     function initialize(operation) {
         const isNewOperation = operation === null;
-        _unaffectedCategoryComboBox = null;
+        _focusedCategoryAllocationIndex = -1;
 
         _operation = isNewOperation ? OperationEditor.beginNew(new Date(), 0, "", "") : operation;
 
@@ -73,12 +73,28 @@ BaseDialog {
         open();
     }
 
-    function focusUnaffectedComboBox() {
-        if (_unaffectedCategoryComboBox && labelField.text && amountField.value) {
-            _unaffectedCategoryComboBox.forceActiveFocus();
+    function focusFocusedCategoryComboBox() {
+        const index = _focusedCategoryAllocationIndex;
+
+        if (index < 0)
+            return;
+
+        if (index >= allocationListView.count) {
+            _focusedCategoryAllocationIndex = -1;
+            return;
         }
+
+        allocationListView.positionViewAtIndex(index, ListView.Contain);
+
+        const delegate = allocationListView.itemAtIndex(index);
+        if (!delegate || !delegate.categoryComboBox) {
+            Qt.callLater(root.focusFocusedCategoryComboBox);
+            return;
+        }
+
+        _focusedCategoryAllocationIndex = -1;
+        delegate.categoryComboBox.forceActiveFocus();
     }
-    on_UnaffectedCategoryComboBoxChanged: Qt.callLater(focusUnaffectedComboBox)
 
     function applyChanges() {
         let newLabel = labelField.text.trim();
@@ -101,6 +117,31 @@ BaseDialog {
             BudgetData.navigateToOperation(operation);
             initialize(operation);
         }
+    }
+
+    function addAllocation() {
+        const newIndex = root._operation?.allocationCount ?? -1;
+        OperationEditor.addAllocation(root._operation, null, root.remainingAmount);
+        root._focusedCategoryAllocationIndex = newIndex;
+        Qt.callLater(root.focusFocusedCategoryComboBox);
+    }
+
+    Shortcut {
+        sequence: "A"
+        enabled: root.visible && root._operation !== null
+        onActivated: root.addAllocation()
+    }
+
+    Shortcut {
+        sequence: "Alt+Left"
+        enabled: root.visible && root._operation && RuleController.previousUncategorizedOperation(root._operation) !== null
+        onActivated: root.goToOperation(RuleController.previousUncategorizedOperation(root._operation))
+    }
+
+    Shortcut {
+        sequence: "Alt+Right"
+        enabled: root.visible && root._operation && RuleController.nextUncategorizedOperation(root._operation) !== null
+        onActivated: root.goToOperation(RuleController.nextUncategorizedOperation(root._operation))
     }
 
     onAccepted: {
@@ -301,6 +342,7 @@ BaseDialog {
                 required property int index
                 required property var category
                 required property double amount
+                property alias categoryComboBox: categoryCombo
 
                 ComboBox {
                     id: categoryCombo
@@ -318,12 +360,10 @@ BaseDialog {
                         return currentIndex < 0 ? qsTr("Deleted category") : currentText;
                     }
                     onActivated: idx => {
+                        if (categoryCombo.activeFocus || categoryCombo.popup.visible)
+                            root._focusedCategoryAllocationIndex = allocationDelegate.index;
                         OperationEditor.setAllocationCategory(root._operation, allocationDelegate.index, CategoryController.getCategoryByName(root.categoryList[idx]));
-                    }
-                    Component.onCompleted: {
-                        if (!allocationDelegate.category) {
-                            root._unaffectedCategoryComboBox = categoryCombo;
-                        }
+                        Qt.callLater(root.focusFocusedCategoryComboBox);
                     }
                 }
 
@@ -364,7 +404,7 @@ BaseDialog {
         Button {
             Layout.alignment: Qt.AlignLeft
             text: qsTr("+ Add Category")
-            onClicked: OperationEditor.addAllocation(root._operation, null, root.remainingAmount)
+            onClicked: root.addAllocation()
         }
 
         RowLayout {
