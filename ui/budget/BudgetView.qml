@@ -12,6 +12,7 @@ FocusScope {
     id: root
 
     property bool dialogOpen: categoryEditDialog.visible
+    readonly property var currentCategoryItem: categoryListView.currentItem
 
     function editCurrentCategory() {
         let category = CategoryController.current;
@@ -25,7 +26,7 @@ FocusScope {
     }
 
     function saveAvailable() {
-        let categoryItem = categoryListView.currentItem;
+        let categoryItem = root.currentCategoryItem;
         if (!categoryItem || !categoryItem.category)
             return;
 
@@ -34,7 +35,7 @@ FocusScope {
     }
 
     function reportAvailable() {
-        let categoryItem = categoryListView.currentItem;
+        let categoryItem = root.currentCategoryItem;
         if (!categoryItem || !categoryItem.category)
             return;
 
