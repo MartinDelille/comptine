@@ -28,7 +28,7 @@ repos:
         language: system
         types_or: [c++, c]
 
-  # QML formatting and translation checks
+  # QML and CMake formatting
   - repo: local
     hooks:
       - id: qmlformat
@@ -40,8 +40,8 @@ repos:
       - id: gersemi
         name: gersemi
         description: Gersemi - A formatter to make your CMake code the real treasure.
-        entry: gersemi
+        entry: uv run gersemi
         args: ["-i"]
         require_serial: true
-        language: python
+        language: system
         types: [cmake]

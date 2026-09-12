@@ -21,7 +21,7 @@ configure_file(
 # yaml-cpp (managed by Conan)
 find_package(yaml-cpp REQUIRED)
 
-find_package(Qt6 6.8 REQUIRED COMPONENTS Quick LinguistTools Network)
+find_package(Qt6 6.8 REQUIRED COMPONENTS Quick LinguistTools Network QuickTest)
 
 qt_standard_project_setup(REQUIRES 6.8)
 

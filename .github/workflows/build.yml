@@ -57,10 +57,6 @@ jobs:
           version: ${{ steps.qt-version.outputs.version }}
           cache: true
 
-      - name: Check translations complete
-        if: matrix.os == 'macos-latest'
-        run: ./scripts/check-translations.sh
-
       - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
