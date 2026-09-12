@@ -49,5 +49,20 @@ Item {
             tryCompare(editedSpy, "count", 1);
             compare(editedSpy.signalArguments[0][0], 12.34);
         }
+
+        function test_editingCanDeferUpdateUntilFinished() {
+            let field = createTemporaryObject(amountFieldComponent, root, {
+                liveUpdate: false
+            });
+            verify(!!field, "Component exists");
+            editedSpy.target = field;
+            editedSpy.clear();
+            field.forceActiveFocus();
+            field.text = "12,34";
+            compare(editedSpy.count, 0);
+            field.editingFinished();
+            compare(editedSpy.count, 1);
+            compare(editedSpy.signalArguments[0][0], 12.34);
+        }
     }
 }

@@ -12,6 +12,11 @@ TextField {
     // The numeric value of the amount
     property double value: 0
 
+    // Emit edits while typing when the consumer needs live calculations.
+    // Consumers that update a model on edited should disable this so the
+    // editing control is not recreated for every keystroke.
+    property bool liveUpdate: true
+
     // Track if text is being edited by user (to avoid reformatting during typing)
     property bool _userEditing: false
 
@@ -74,7 +79,7 @@ TextField {
         if (activeFocus) {
             _userEditing = true;
             let parsed = root.parseAmount(text);
-            if (!isNaN(parsed)) {
+            if (liveUpdate && !isNaN(parsed)) {
                 root.edited(parsed);
             }
         }
