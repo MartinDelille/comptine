@@ -48,7 +48,7 @@ When done, you can run the application as shown above to show the progress.
 - **IDs**: `camelCase` (e.g., `listView`, `fileDialog`)
 - **Properties**: Declare `required property` for delegate bindings
 - **Strings**: Use `qsTr()` for translatable text
-- **Translations**: When adding new `qsTr()` strings, update all translation files in `translations/` with appropriate translations
+- **Translations**: When adding or changing user-visible `qsTr()` strings, run `scripts/check-translations.sh` to update the translation catalog, then complete the corresponding translations in `translations/`. Do not leave entries marked `type="unfinished"`.
 - **Formatting**: 4-space indentation, prefer named properties over property bindings where possible
 
 ### Reusable Components
