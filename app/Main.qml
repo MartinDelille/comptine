@@ -121,8 +121,20 @@ ApplicationWindow {
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
         onFindOperationsAction: operationView.focusSearch()
-        onPreviousOperationsPageAction: extendSelection => operationView.movePage(-1, extendSelection)
-        onNextOperationsPageAction: extendSelection => operationView.movePage(1, extendSelection)
+        onPreviousPageAction: extendSelection => {
+            if (BudgetData.currentTabIndex === 0)
+                operationView.movePage(-1, extendSelection);
+            else
+                budgetView.movePage(-1);
+        }
+        onNextPageAction: extendSelection => {
+            if (BudgetData.currentTabIndex === 0)
+                operationView.movePage(1, extendSelection);
+            else
+                budgetView.movePage(1);
+        }
+        onPreviousUnbalancedCategoryAction: budgetView.moveToUnbalanced(-1)
+        onNextUnbalancedCategoryAction: budgetView.moveToUnbalanced(1)
         onSaveAvailableAction: budgetView.saveAvailable()
         onReportAvailableAction: budgetView.reportAvailable()
 

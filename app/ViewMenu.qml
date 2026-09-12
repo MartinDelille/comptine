@@ -10,8 +10,10 @@ Menu {
     required property bool metricSelectorFocused
 
     signal findOperationsAction
-    signal previousOperationsPageAction(bool extendSelection)
-    signal nextOperationsPageAction(bool extendSelection)
+    signal previousPageAction(bool extendSelection)
+    signal nextPageAction(bool extendSelection)
+    signal previousUnbalancedCategoryAction
+    signal nextUnbalancedCategoryAction
     signal saveAvailableAction
     signal reportAvailableAction
 
@@ -35,30 +37,42 @@ Menu {
     Action {
         text: qsTr("Find Operations")
         shortcut: StandardKey.Find
-        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
+        enabled: (BudgetData.currentTabIndex === 0 || BudgetData.currentTabIndex === 1) && !root.anyDialogOpen
         onTriggered: root.findOperationsAction()
     }
     Action {
-        text: qsTr("Previous Operations Page")
+        text: qsTr("Previous Page")
         shortcut: "PgUp"
-        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
-        onTriggered: root.previousOperationsPageAction(false)
+        enabled: (BudgetData.currentTabIndex === 0 || BudgetData.currentTabIndex === 1) && !root.anyDialogOpen
+        onTriggered: root.previousPageAction(false)
     }
     Shortcut {
         sequence: "Shift+PgUp"
-        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
-        onActivated: root.previousOperationsPageAction(true)
+        enabled: (BudgetData.currentTabIndex === 0 || BudgetData.currentTabIndex === 1) && !root.anyDialogOpen
+        onActivated: root.previousPageAction(true)
     }
     Action {
-        text: qsTr("Next Operations Page")
+        text: qsTr("Next Page")
         shortcut: "PgDown"
-        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
-        onTriggered: root.nextOperationsPageAction(false)
+        enabled: (BudgetData.currentTabIndex === 0 || BudgetData.currentTabIndex === 1) && !root.anyDialogOpen
+        onTriggered: root.nextPageAction(false)
     }
     Shortcut {
         sequence: "Shift+PgDown"
-        enabled: BudgetData.currentTabIndex === 0 && !root.anyDialogOpen
-        onActivated: root.nextOperationsPageAction(true)
+        enabled: (BudgetData.currentTabIndex === 0 || BudgetData.currentTabIndex === 1) && !root.anyDialogOpen
+        onActivated: root.nextPageAction(true)
+    }
+    Action {
+        text: qsTr("Previous Unbalanced Category")
+        shortcut: "Alt+Up"
+        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen
+        onTriggered: root.previousUnbalancedCategoryAction()
+    }
+    Action {
+        text: qsTr("Next Unbalanced Category")
+        shortcut: "Alt+Down"
+        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen
+        onTriggered: root.nextUnbalancedCategoryAction()
     }
     MenuSeparator {}
     Action {

@@ -1,0 +1,131 @@
+budget_limit_history_version: 2
+state:
+  currentTab: 1
+  budgetYear: 2026
+  budgetMonth: 9
+categories:
+  - name: Under budget
+    budget_limit: -100.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+  - name: Positive report
+    budget_limit: -100.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+        report_amount: 20.00
+  - name: Save only
+    budget_limit: -100.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+        save_amount: 30.00
+  - name: Report and save
+    budget_limit: -100.00
+    current: true
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+        report_amount: 15.00
+        save_amount: 25.00
+  - name: Over budget
+    budget_limit: -100.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+  - name: Over budget with deficit report
+    budget_limit: -100.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -100.00
+        report_amount: -50.00
+  - name: Tiny budget
+    budget_limit: -0.10
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -0.10
+  - name: Large budget
+    budget_limit: -1000000.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: -1000000.00
+        report_amount: 100000.00
+        save_amount: 50000.00
+  - name: Income under budget
+    budget_limit: 1000.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: 1000.00
+  - name: Income with allocations
+    budget_limit: 1000.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: 1000.00
+        report_amount: 100.00
+        save_amount: 50.00
+  - name: No budget limit
+    budget_limit: 0.00
+    month_history:
+      - year: 2026
+        month: 9
+        budget_limit: 0.00
+
+accounts:
+  - name: Dummy account
+    current: true
+    operations:
+      - date: 2026-09-02
+        amount: -25.00
+        label: Dummy under budget expense
+        category: Under budget
+      - date: 2026-09-03
+        amount: -40.00
+        label: Dummy reported expense
+        category: Positive report
+      - date: 2026-09-04
+        amount: -50.00
+        label: Dummy saved expense
+        category: Save only
+      - date: 2026-09-05
+        amount: -40.00
+        label: Dummy reported and saved expense
+        category: Report and save
+      - date: 2026-09-06
+        amount: -150.00
+        label: Dummy over budget expense
+        category: Over budget
+      - date: 2026-09-07
+        amount: -150.00
+        label: Dummy deficit expense
+        category: Over budget with deficit report
+      - date: 2026-09-08
+        amount: -0.05
+        label: Dummy tiny expense
+        category: Tiny budget
+      - date: 2026-09-09
+        amount: -650000.00
+        label: Dummy large expense
+        category: Large budget
+      - date: 2026-09-10
+        amount: 600.00
+        label: Dummy income
+        category: Income under budget
+      - date: 2026-09-11
+        amount: 800.00
+        label: Dummy allocated income
+        category: Income with allocations
+      - date: 2026-09-12
+        amount: -30.00
+        label: Dummy uncapped expense
+        category: No budget limit

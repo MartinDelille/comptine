@@ -34,6 +34,17 @@ private slots:
     QCOMPARE(controller.current(), alpha);
     controller.set_currentIndex(20);
     QVERIFY(controller.current() == nullptr);
+
+    auto* taken = controller.takeCategoryByName("fIcTiOnAl zUlU");
+    QCOMPARE(taken, zulu);
+    delete taken;
+    QVERIFY(controller.takeCategoryByName("missing") == nullptr);
+    QCOMPARE(controller.rowCount(QModelIndex()), 1);
+    QCOMPARE(controller.rowCount(controller.index(0, 0)), 0);
+
+    controller.clear();
+    QCOMPARE(controller.rowCount(), 0);
+    controller.clear();
   }
 
   void aggregatesAndModelRolesUseBudgetMonthData() {
@@ -45,7 +56,7 @@ private slots:
     auto* income = controller.addCategory(new Category("Fictional Income"));
     auto* expense = controller.addCategory(new Category("Fictional Expense"));
     expense->setMonthRecord(2026, 6, { 20.0, 30.0, -300.0 });
-    income->setMonthRecord(2026, 6, { 0.0, -10.0, 500.0 });
+    income->setMonthRecord(2026, 6, { 0.0, 0.0, 500.0 });
 
     auto* account = budgetData.createAccount("Fictional Checking");
     account->addOperation(new Operation(account, QDate(2026, 6, 10), 500.0,
@@ -62,8 +73,8 @@ private slots:
     QCOMPARE(controller.totalExpense(), 300.0);
     QCOMPARE(controller.totalToSave(), 20.0);
     QCOMPARE(controller.totalToReport(), 30.0);
-    QCOMPARE(controller.totalFromReport(), 10.0);
-    QCOMPARE(controller.netReport(), 20.0);
+    QCOMPARE(controller.totalFromReport(), 0.0);
+    QCOMPARE(controller.netReport(), 30.0);
     QCOMPARE(controller.spentInCategory(income, budgetDate), 500.0);
     QCOMPARE(controller.spentInCategory(expense, budgetDate), -100.0);
     QCOMPARE(controller.spentInCategory(nullptr, budgetDate), 0.0);
@@ -72,6 +83,16 @@ private slots:
     QCOMPARE(controller.leftoverForCategory(nullptr, budgetDate), 0.0);
     QCOMPARE(controller.accumulatedLeftover("Missing", budgetDate), 0.0);
 
+    QCOMPARE(controller.accumulatedLeftover("Fictional Expense", budgetDate), 30.0);
+    QCOMPARE(controller.data(controller.index(controller.categoryIndex(expense), 0),
+                             CategoryController::AccumulatedRole)
+                 .toDouble(),
+             30.0);
+    QCOMPARE(controller.data(controller.index(controller.categoryIndex(expense), 0),
+                             CategoryController::LeftoverRole)
+                 .toDouble(),
+             200.0);
+
     const QModelIndex index = controller.index(controller.categoryIndex(expense), 0);
     QCOMPARE(controller.data(index, CategoryController::CategoryRole).value<Category*>(), expense);
     QCOMPARE(controller.data(index, CategoryController::AmountRole).toDouble(), -100.0);
@@ -79,6 +100,17 @@ private slots:
     QCOMPARE(controller.data(index, CategoryController::ReportAmountRole).toDouble(), 30.0);
     QCOMPARE(controller.data(index, CategoryController::BudgetLimitRole).toDouble(), -300.0);
     QVERIFY(!controller.data(QModelIndex(), CategoryController::AmountRole).isValid());
+
+    const auto roles = controller.roleNames();
+    QCOMPARE(roles.value(CategoryController::CategoryRole), QByteArray("category"));
+    QCOMPARE(roles.value(CategoryController::AccumulatedRole), QByteArray("accumulated"));
+    QVERIFY(!controller.isBalanced(controller.categoryIndex(expense)));
+    QVERIFY(controller.isBalanced(-1));
+    QCOMPARE(controller.balancedCount(), 1);
+
+    expense->setMonthRecord(2026, 6, { 170.0, 30.0, -300.0 });
+    QVERIFY(controller.isBalanced(controller.categoryIndex(expense)));
+    QCOMPARE(controller.balancedCount(), 2);
   }
 
   void operationsForCategoryReturnsOnlyMatchingMonthAndCategory() {
@@ -95,17 +127,30 @@ private slots:
     auto* newer = account->addOperation(
         new Operation(account, QDate(2026, 7, 20), -30.0, "Newer", {},
                       { new Allocation(category, -15.0), new Allocation(other, -15.0) }));
+    auto* budgetDated = account->addOperation(
+        new Operation(account, QDate(2026, 8, 1), -10.0, "Budget dated", {},
+                      { new Allocation(category, -10.0) }));
+    budgetDated->set_budgetDate(date);
+    account->addOperation(new Operation(account, QDate(2026, 7, 10), 0.0,
+                                        "Zero allocation", {},
+                                        { new Allocation(category, 0.0) }));
     account->addOperation(new Operation(account, QDate(2026, 6, 30), -40.0,
                                         "Wrong month", {},
                                         { new Allocation(category, -40.0) }));
 
     const QVariantList result = controller.operationsForCategory(category, date);
-    QCOMPARE(result.size(), 2);
-    QCOMPARE(result.at(0).toMap().value("operation").value<Operation*>(), newer);
-    QCOMPARE(result.at(0).toMap().value("amount").toDouble(), -15.0);
-    QCOMPARE(result.at(0).toMap().value("totalAmount").toDouble(), -30.0);
+    QCOMPARE(result.size(), 3);
+    QCOMPARE(result.at(0).toMap().value("operation").value<Operation*>(), budgetDated);
+    QCOMPARE(result.at(0).toMap().value("amount").toDouble(), -10.0);
+    QCOMPARE(result.at(0).toMap().value("totalAmount").toDouble(), -10.0);
     QCOMPARE(result.at(0).toMap().value("accountName").toString(), QString("Fictional Checking"));
-    QCOMPARE(result.at(1).toMap().value("operation").value<Operation*>(), older);
+    QCOMPARE(result.at(0).toMap().value("label").toString(), QString("Budget dated"));
+    QCOMPARE(result.at(0).toMap().value("date").toDate(), QDate(2026, 8, 1));
+    QCOMPARE(result.at(0).toMap().value("budgetDate").toDate(), date);
+    QVERIFY(result.at(0).toMap().value("isCategorized").toBool());
+    QCOMPARE(result.at(1).toMap().value("operation").value<Operation*>(), newer);
+    QCOMPARE(result.at(1).toMap().value("amount").toDouble(), -15.0);
+    QCOMPARE(result.at(2).toMap().value("operation").value<Operation*>(), older);
     QCOMPARE(controller.operationsForCategory(nullptr, date).size(), 0);
   }
 };

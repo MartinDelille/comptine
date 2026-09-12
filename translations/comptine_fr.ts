@@ -53,32 +53,40 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>BudgetView</name>
     <message>
-        <source>Total Budget:</source>
-        <translation>Budget total :</translation>
-    </message>
-    <message>
-        <source>To Save:</source>
-        <translation>À épargner :</translation>
-    </message>
-    <message>
-        <source>To Leftover:</source>
-        <translation>Vers le reliquat :</translation>
-    </message>
-    <message>
-        <source>From Leftover:</source>
-        <translation>Depuis le reliquat :</translation>
-    </message>
-    <message>
-        <source>Net:</source>
-        <translation>Net :</translation>
-    </message>
-    <message>
-        <source>Balanced:</source>
-        <translation>Équilibré :</translation>
-    </message>
-    <message>
         <source>No categories defined</source>
         <translation>Aucune catégorie définie</translation>
+    </message>
+    <message>
+        <source>Monthly overview</source>
+        <translation>Vue mensuelle</translation>
+    </message>
+    <message>
+        <source>%1 of %2 categories balanced</source>
+        <translation>%1 catégorie(s) équilibrée(s) sur %2</translation>
+    </message>
+    <message>
+        <source>Income</source>
+        <translation>Revenus</translation>
+    </message>
+    <message>
+        <source>Expenses</source>
+        <translation>Dépenses</translation>
+    </message>
+    <message>
+        <source>Net</source>
+        <translation>Net</translation>
+    </message>
+    <message>
+        <source>To save</source>
+        <translation>À épargner</translation>
+    </message>
+    <message>
+        <source>To report</source>
+        <translation>À reporter</translation>
+    </message>
+    <message>
+        <source>Reported balance</source>
+        <translation>Solde reporté</translation>
     </message>
 </context>
 <context>
@@ -512,60 +520,76 @@ Importez et gérez vos données bancaires.</translation>
 <context>
     <name>MonthCategoryItem</name>
     <message>
-        <source>(income)</source>
-        <translation>(revenus)</translation>
-    </message>
-    <message>
-        <source>Save:</source>
-        <translation>Épargne :</translation>
-    </message>
-    <message>
-        <source>Discard</source>
-        <translation>Abandonner</translation>
-    </message>
-    <message>
         <source>Allocate remaining to Save</source>
         <translation>Allouer le montant restant à l&apos;épargne</translation>
-    </message>
-    <message>
-        <source>Report:</source>
-        <translation>Reliquat :</translation>
-    </message>
-    <message>
-        <source>Clear report</source>
-        <translation>Effacer le reliquat</translation>
     </message>
     <message>
         <source>Allocate remaining to Report</source>
         <translation>Allouer le montant restant au reliquat</translation>
     </message>
     <message>
-        <source>Carry forward deficit</source>
-        <translation>Reporter le déficit</translation>
+        <source>Expense</source>
+        <translation>Dépense</translation>
     </message>
     <message>
-        <source>Expected: %1</source>
-        <translation>Prévu : %1</translation>
+        <source>Income</source>
+        <translation>Revenus</translation>
     </message>
     <message>
-        <source>Received: %1 extra</source>
-        <translation>Reçu : %1 supplémentaire</translation>
+        <source>Balanced</source>
+        <translation>Équilibré</translation>
     </message>
     <message>
-        <source>Remaining: %1</source>
-        <translation>Restant : %1</translation>
+        <source>Needs attention</source>
+        <translation>À vérifier</translation>
     </message>
     <message>
-        <source>Exceeded: %1</source>
-        <translation>Dépassement : %1</translation>
+        <source>Edit category</source>
+        <translation>Modifier la catégorie</translation>
     </message>
     <message>
-        <source>PENDING</source>
-        <translation>EN ATTENTE</translation>
+        <source>Accumulated leftover</source>
+        <translation>Reste accumulé</translation>
     </message>
     <message>
-        <source>EXCEEDED</source>
-        <translation>DÉPASSÉ</translation>
+        <source>Save</source>
+        <translation>Épargner</translation>
+    </message>
+    <message>
+        <source>Report</source>
+        <translation>Reporter</translation>
+    </message>
+    <message>
+        <source>Clear saved amount</source>
+        <translation>Effacer le montant épargné</translation>
+    </message>
+    <message>
+        <source>Available</source>
+        <translation>Disponible</translation>
+    </message>
+    <message>
+        <source>Clear reported amount</source>
+        <translation>Effacer le montant reporté</translation>
+    </message>
+    <message>
+        <source>No budget limit</source>
+        <translation>Aucune limite budgétaire</translation>
+    </message>
+    <message>
+        <source>Expected: %1 · %2% received</source>
+        <translation>Attendu : %1 · %2 % reçu</translation>
+    </message>
+    <message>
+        <source>Received: %1 extra · %2% received</source>
+        <translation>Reçu : %1 en plus · %2 % reçu</translation>
+    </message>
+    <message>
+        <source>Remaining: %1 · %2% used</source>
+        <translation>Reste : %1 · %2 % utilisé</translation>
+    </message>
+    <message>
+        <source>Exceeded by %1 · %2% used</source>
+        <translation>Dépassé de %1 · %2 % utilisé</translation>
     </message>
 </context>
 <context>
@@ -1058,12 +1082,20 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Rechercher des opérations</translation>
     </message>
     <message>
-        <source>Previous Operations Page</source>
-        <translation>Page d’opérations précédente</translation>
+        <source>Previous Page</source>
+        <translation>Page précédente</translation>
     </message>
     <message>
-        <source>Next Operations Page</source>
-        <translation>Page d’opérations suivante</translation>
+        <source>Next Page</source>
+        <translation>Page suivante</translation>
+    </message>
+    <message>
+        <source>Previous Unbalanced Category</source>
+        <translation>Catégorie déséquilibrée précédente</translation>
+    </message>
+    <message>
+        <source>Next Unbalanced Category</source>
+        <translation>Catégorie déséquilibrée suivante</translation>
     </message>
     <message>
         <source>&amp;Previous Month</source>

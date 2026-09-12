@@ -19,8 +19,10 @@ MenuBar {
     signal rulesAction
     signal preferencesAction
     signal findOperationsAction
-    signal previousOperationsPageAction(bool extendSelection)
-    signal nextOperationsPageAction(bool extendSelection)
+    signal previousPageAction(bool extendSelection)
+    signal nextPageAction(bool extendSelection)
+    signal previousUnbalancedCategoryAction
+    signal nextUnbalancedCategoryAction
     signal saveAvailableAction
     signal reportAvailableAction
 
@@ -51,8 +53,10 @@ MenuBar {
         anyDialogOpen: root.anyDialogOpen
         metricSelectorFocused: root.metricSelectorFocused
         onFindOperationsAction: root.findOperationsAction()
-        onPreviousOperationsPageAction: extendSelection => root.previousOperationsPageAction(extendSelection)
-        onNextOperationsPageAction: extendSelection => root.nextOperationsPageAction(extendSelection)
+        onPreviousPageAction: extendSelection => root.previousPageAction(extendSelection)
+        onNextPageAction: extendSelection => root.nextPageAction(extendSelection)
+        onPreviousUnbalancedCategoryAction: root.previousUnbalancedCategoryAction()
+        onNextUnbalancedCategoryAction: root.nextUnbalancedCategoryAction()
         onSaveAvailableAction: root.saveAvailableAction()
         onReportAvailableAction: root.reportAvailableAction()
     }
