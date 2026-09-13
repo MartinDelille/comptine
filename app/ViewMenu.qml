@@ -14,6 +14,8 @@ Menu {
     signal nextPageAction(bool extendSelection)
     signal previousUnbalancedCategoryAction
     signal nextUnbalancedCategoryAction
+    signal previousEvolutionMetricAction
+    signal nextEvolutionMetricAction
     signal saveAvailableAction
     signal reportAvailableAction
 
@@ -63,16 +65,26 @@ Menu {
         onActivated: root.nextPageAction(true)
     }
     Action {
-        text: qsTr("Previous Unbalanced Category")
+        text: BudgetData.currentTabIndex === 2 ? qsTr("Previous Evolution Metric") : qsTr("Previous Unbalanced Category")
         shortcut: "Alt+Up"
-        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen
-        onTriggered: root.previousUnbalancedCategoryAction()
+        enabled: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) && !root.anyDialogOpen
+        onTriggered: {
+            if (BudgetData.currentTabIndex === 2)
+                root.previousEvolutionMetricAction();
+            else
+                root.previousUnbalancedCategoryAction();
+        }
     }
     Action {
-        text: qsTr("Next Unbalanced Category")
+        text: BudgetData.currentTabIndex === 2 ? qsTr("Next Evolution Metric") : qsTr("Next Unbalanced Category")
         shortcut: "Alt+Down"
-        enabled: BudgetData.currentTabIndex === 1 && !root.anyDialogOpen
-        onTriggered: root.nextUnbalancedCategoryAction()
+        enabled: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) && !root.anyDialogOpen
+        onTriggered: {
+            if (BudgetData.currentTabIndex === 2)
+                root.nextEvolutionMetricAction();
+            else
+                root.nextUnbalancedCategoryAction();
+        }
     }
     MenuSeparator {}
     Action {

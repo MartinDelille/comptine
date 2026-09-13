@@ -1098,6 +1098,14 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Catégorie déséquilibrée suivante</translation>
     </message>
     <message>
+        <source>Previous Evolution Metric</source>
+        <translation>Métrique d’évolution précédente</translation>
+    </message>
+    <message>
+        <source>Next Evolution Metric</source>
+        <translation>Métrique d’évolution suivante</translation>
+    </message>
+    <message>
         <source>&amp;Previous Month</source>
         <translation>Mois précédent</translation>
     </message>

@@ -135,6 +135,8 @@ ApplicationWindow {
         }
         onPreviousUnbalancedCategoryAction: budgetView.moveToUnbalanced(-1)
         onNextUnbalancedCategoryAction: budgetView.moveToUnbalanced(1)
+        onPreviousEvolutionMetricAction: EvolutionController.selectedMetric = (EvolutionController.selectedMetric + 5) % 6
+        onNextEvolutionMetricAction: EvolutionController.selectedMetric = (EvolutionController.selectedMetric + 1) % 6
         onSaveAvailableAction: budgetView.saveAvailable()
         onReportAvailableAction: budgetView.reportAvailable()
 

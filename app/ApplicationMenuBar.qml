@@ -23,6 +23,8 @@ MenuBar {
     signal nextPageAction(bool extendSelection)
     signal previousUnbalancedCategoryAction
     signal nextUnbalancedCategoryAction
+    signal previousEvolutionMetricAction
+    signal nextEvolutionMetricAction
     signal saveAvailableAction
     signal reportAvailableAction
 
@@ -57,6 +59,8 @@ MenuBar {
         onNextPageAction: extendSelection => root.nextPageAction(extendSelection)
         onPreviousUnbalancedCategoryAction: root.previousUnbalancedCategoryAction()
         onNextUnbalancedCategoryAction: root.nextUnbalancedCategoryAction()
+        onPreviousEvolutionMetricAction: root.previousEvolutionMetricAction()
+        onNextEvolutionMetricAction: root.nextEvolutionMetricAction()
         onSaveAvailableAction: root.saveAvailableAction()
         onReportAvailableAction: root.reportAvailableAction()
     }
