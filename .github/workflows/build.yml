@@ -99,7 +99,11 @@ jobs:
 
       - name: Run qmllint
         if: matrix.os == 'macos-latest'
-        run: qmllint --max-warnings 0 --qmldirs build/Release **/*.qml
+        run: |
+          find . \
+            -path './build' -prune -o \
+            -type f -name '*.qml' \
+            -exec qmllint --max-warnings 0 --qmldirs build/Release {} +
 
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'
