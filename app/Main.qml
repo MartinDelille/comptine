@@ -123,6 +123,8 @@ ApplicationWindow {
         onFindOperationsAction: operationView.focusSearch()
         onPreviousOperationsPageAction: extendSelection => operationView.movePage(-1, extendSelection)
         onNextOperationsPageAction: extendSelection => operationView.movePage(1, extendSelection)
+        onSaveAvailableAction: budgetView.saveAvailable()
+        onReportAvailableAction: budgetView.reportAvailable()
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;

@@ -61,6 +61,7 @@
 - **Per-Month Budget Limits**: Budget limits are defined by month, inherit from the previous month by default, and can be changed at any month boundary
 - **Budget Limit Inheritance**: Clear a month's override to inherit the previous effective limit; months before the first override have a limit of zero
 - **Month Navigation**: Navigate between months to view historical data
+- **Keyboard Allocation**: Press `S` to toggle saving the selected category's available amount or `R` to toggle reporting it
 - **Accumulated Leftover Display**: Budget display shows carried-over amounts (e.g., "€150 / €200 (+€50)")
 
 ## Budget Leftover

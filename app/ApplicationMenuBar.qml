@@ -21,6 +21,8 @@ MenuBar {
     signal findOperationsAction
     signal previousOperationsPageAction(bool extendSelection)
     signal nextOperationsPageAction(bool extendSelection)
+    signal saveAvailableAction
+    signal reportAvailableAction
 
     signal checkUpdateAction
     signal projectPageAction
@@ -51,6 +53,8 @@ MenuBar {
         onFindOperationsAction: root.findOperationsAction()
         onPreviousOperationsPageAction: extendSelection => root.previousOperationsPageAction(extendSelection)
         onNextOperationsPageAction: extendSelection => root.nextOperationsPageAction(extendSelection)
+        onSaveAvailableAction: root.saveAvailableAction()
+        onReportAvailableAction: root.reportAvailableAction()
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()
