@@ -5,6 +5,7 @@
 #include <QDate>
 #include <QList>
 #include <QObject>
+#include <QPointer>
 #include <QString>
 #include <QVariantList>
 
@@ -18,12 +19,20 @@ class Allocation : public QObject {
   Q_OBJECT
   QML_ELEMENT
 
-  PROPERTY_RW(const Category*, category, nullptr)
+  Q_PROPERTY(const Category* category READ category WRITE set_category NOTIFY categoryChanged)
   PROPERTY_RW(double, amount, 0.0)
 
 public:
   explicit Allocation(const Category* c = nullptr, double a = 0.0, QObject* parent = nullptr) :
-      QObject(parent), _category(c), _amount(a) {
+      QObject(parent), _amount(a), _category(c) {
+  }
+
+  const Category* category() const { return _category; }
+  Q_INVOKABLE void set_category(const Category* value) {
+    if (_category != value) {
+      _category = value;
+      emit categoryChanged();
+    }
   }
 
   bool operator==(const Allocation& other) const {
@@ -33,6 +42,12 @@ public:
   }
 
   bool operator!=(const Allocation& other) const { return !(*this == other); }
+
+signals:
+  void categoryChanged();
+
+private:
+  QPointer<const Category> _category;
 };
 
 class Operation : public QAbstractListModel {
@@ -91,5 +106,8 @@ signals:
   void allocationsChanged();
 
 private:
+  void connectCategorySignals(const QList<Allocation*>& allocations);
+  void disconnectCategorySignals(const QList<Allocation*>& allocations);
+
   QList<Allocation*> _allocations;
 };

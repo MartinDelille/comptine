@@ -163,6 +163,7 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   connect(operation, &Operation::labelChanged, this, &Account::operationDataChanged);
   connect(operation, &Operation::detailsChanged, this, &Account::operationDataChanged);
   connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
+  connect(operation, &Operation::allocationsChanged, this, &Account::operationDataChanged);
   emit countChanged();
   emit operationDataChanged();
   return operation;
@@ -191,6 +192,7 @@ void Account::replaceOperations(const QList<Operation*>& operations) {
     connect(operation, &Operation::labelChanged, this, &Account::operationDataChanged);
     connect(operation, &Operation::detailsChanged, this, &Account::operationDataChanged);
     connect(operation, &Operation::budgetDateChanged, this, &Account::operationDataChanged);
+    connect(operation, &Operation::allocationsChanged, this, &Account::operationDataChanged);
   }
 
   std::stable_sort(_operations.begin(), _operations.end(), [](Operation* first, Operation* second) {
