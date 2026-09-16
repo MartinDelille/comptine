@@ -17,6 +17,7 @@ class ComptineConan(ConanFile):
     def generate(self):
         generator = "Ninja"
         tc = CMakeToolchain(self, generator=generator)
+        tc.user_presets_path = "ConanPresets.json"
         tc.variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = True
         tc.variables["QT_QML_GENERATE_QMLLS_INI_NO_CMAKE_CALLS"] = True
 

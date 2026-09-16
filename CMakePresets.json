@@ -1,0 +1,57 @@
+{
+    "version": 4,
+    "include": [
+        "ConanPresets.json"
+    ],
+    "configurePresets": [
+        {
+            "name": "development",
+            "displayName": "Development Debug",
+            "description": "Uninstrumented Debug build",
+            "binaryDir": "${sourceDir}/build/Debug",
+            "inherits": "conan-debug",
+            "cacheVariables": {
+                "COMPTINE_ENABLE_COVERAGE": "OFF"
+            }
+        },
+        {
+            "name": "coverage",
+            "displayName": "Coverage",
+            "description": "Debug build with C++ coverage instrumentation",
+            "binaryDir": "${sourceDir}/build/Coverage",
+            "inherits": "conan-debug",
+            "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
+            "cacheVariables": {
+                "COMPTINE_ENABLE_COVERAGE": "ON"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "development",
+            "configurePreset": "development",
+            "jobs": 12
+        },
+        {
+            "name": "coverage",
+            "configurePreset": "coverage",
+            "jobs": 12
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "development",
+            "configurePreset": "development",
+            "execution": {
+                "jobs": 12
+            }
+        },
+        {
+            "name": "coverage",
+            "configurePreset": "coverage",
+            "execution": {
+                "jobs": 12
+            }
+        }
+    ]
+}

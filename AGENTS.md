@@ -6,12 +6,26 @@ Use exact commands below to configure, build, run, and clean the project. If you
 
 ### MacOS
 
-- The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
-- **Install dependencies**: `conan install . --build=missing`
-- **Configure**: `qt-cmake --preset=conan-debug`
-- **Build**: `cmake --build --preset=conan-debug`
-- **Run**: `./build/Comptine.app/Contents/MacOS/Comptine`
+- The project uses the Qt version specified in `.qt-version`, installed at: `~/Qt/{version}/macos`
+- **Prerequisites**: CMake 3.23 or newer is required for the included CMake preset files.
+- **Install dependencies**:
+  `uv run conan install . --build=missing -pr:h=conan/profiles/macos -pr:b=conan/profiles/macos -s:h build_type=Debug -s:b build_type=Debug`
+- **Configure**: `cmake --preset=development`
+- **Build**: `cmake --build --preset=development`
+- **Run**: `./build/Debug/app/Comptine.app/Contents/MacOS/Comptine`
 - **Clean**: `rm -rf build` (run it only if you need a full clean)
+
+### Code coverage
+
+- Keep coverage builds separate from normal Debug builds by using the `coverage`
+  CMake preset, which writes to `build/Coverage`.
+- Use the `development` preset for regular Debug work; it explicitly disables
+  coverage instrumentation in `build/Debug`.
+- Install Debug dependencies first with the macOS Conan profile, then run:
+  `cmake --preset=coverage`, `cmake --build --preset=coverage`, and
+  `ctest --test-dir build/Coverage --output-on-failure`.
+- Generate LCOV data from `build/Coverage`; on macOS use the LLVM compatibility
+  error options documented in `README.md`.
 
 When done, you can run the application as shown above to show the progress.
 

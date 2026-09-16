@@ -9,7 +9,7 @@ La Compta qui Chante !
 ### Prerequisites
 
 - Qt 6.8+ (see `.qt-version` for exact version)
-- CMake 3.16+
+- CMake 3.23+
 - librsvg (for icon generation from SVG)
 - ImageMagick (Windows only, for ICO creation)
 - NSIS (Windows only, for installer)
@@ -27,7 +27,7 @@ qt-cmake -B build -S .
 cmake --build build
 
 # Run
-./build/Comptine.app/Contents/MacOS/Comptine
+./build/app/Comptine.app/Contents/MacOS/Comptine
 ```
 
 ### Windows
@@ -49,17 +49,30 @@ cmake --build build --config Release
 ### Code coverage
 
 Coverage is generated in GitHub Actions for Linux builds and reported by Codecov on
-pull requests. To generate it locally, install `lcov`, install dependencies, and use
-the debug preset with coverage enabled:
+pull requests. To generate it locally, install `lcov`, install the Debug dependencies,
+and use the dedicated coverage preset. Normal Debug builds remain uninstrumented.
 
 ```bash
-uv run conan install . --build=missing -pr:h=conan/profiles/linux -pr:b=conan/profiles/linux -s:h build_type=Debug -s:b build_type=Debug
-qt-cmake --preset=conan-debug -DCOMPTINE_ENABLE_COVERAGE=ON
-cmake --build --preset=conan-debug
-ctest --test-dir build/Debug --output-on-failure
-lcov --capture --directory build/Debug --output-file coverage.info
-lcov --list coverage.info
+brew install lcov
+uv run conan install . --build=missing \
+  -pr:h=conan/profiles/macos \
+  -pr:b=conan/profiles/macos \
+  -s:h build_type=Debug \
+  -s:b build_type=Debug
+cmake --preset=coverage
+cmake --build --preset=coverage
+ctest --test-dir build/Coverage --output-on-failure
+bash scripts/generate-coverage.sh
+genhtml coverage.info \
+  --output-directory coverage-html \
+  --ignore-errors inconsistent,corrupt,format,category
+open coverage-html/index.html
 ```
+
+The coverage preset uses `build/Coverage`, so it does not affect the regular
+`development` Debug build in `build/Debug`. Conan generates `ConanPresets.json`
+with the dependency/toolchain presets used by the project presets. The same
+workflow is available through `make coverage`.
 
 ## Creating Installers
 
@@ -69,7 +82,7 @@ lcov --list coverage.info
 # Build and deploy Qt dependencies
 qt-cmake -B build -S .
 cmake --build build
-macdeployqt build/Comptine.app -qmldir=.
+macdeployqt build/app/Comptine.app -qmldir=.
 
 # Create DMG installer
 cd build && cpack -G DragNDrop
