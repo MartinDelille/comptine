@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 import ui.common
 
-Rectangle {
+Card {
     id: root
 
     required property var account
@@ -15,11 +15,6 @@ Rectangle {
 
     // Multi-selection state
     readonly property bool multipleSelected: account?.selectionCount > 1
-
-    radius: Theme.cardRadius
-    border.width: Theme.cardBorderWidth
-    border.color: Theme.border
-    color: Theme.surface
 
     ColumnLayout {
         anchors.fill: parent

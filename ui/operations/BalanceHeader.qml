@@ -4,7 +4,7 @@ import QtQuick.Layouts
 
 import ui.common
 
-Rectangle {
+Card {
     id: root
 
     required property double balance
@@ -12,11 +12,6 @@ Rectangle {
 
     Layout.fillWidth: true
     Layout.preferredHeight: 50
-    color: Theme.surface
-    border.width: Theme.cardBorderWidth
-    border.color: Theme.border
-    radius: Theme.cardRadius
-
     RowLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingNormal

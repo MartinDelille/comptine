@@ -49,13 +49,10 @@ BaseDialog {
         }
 
         // Rules list
-        Rectangle {
+        Card {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: Theme.surface
             border.color: Theme.borderLight
-            border.width: Theme.cardBorderWidth
-            radius: Theme.cardRadius
 
             ListView {
                 id: ruleListView

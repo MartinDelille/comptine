@@ -13,6 +13,7 @@ qt_add_qml_module(
   AmountLabel.qml
   AppTabButton.qml
   BaseDialog.qml
+  Card.qml
   DateLabel.qml
   Theme.qml
 )

@@ -124,13 +124,9 @@ FocusScope {
         }
 
         // Monthly overview
-        Rectangle {
+        Card {
             Layout.fillWidth: true
             Layout.preferredHeight: overviewColumn.implicitHeight + 24
-            color: Theme.surface
-            border.color: Theme.border
-            border.width: Theme.cardBorderWidth
-            radius: Theme.cardRadius
 
             ColumnLayout {
                 id: overviewColumn
