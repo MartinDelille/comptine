@@ -49,7 +49,7 @@ int BudgetData::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
     return 0;
 
-  return _accounts.size();
+  return static_cast<int>(_accounts.size());
 }
 
 QVariant BudgetData::data(const QModelIndex& index, int role) const {
@@ -116,7 +116,7 @@ QString BudgetData::suggestedAccountForUrl(const QUrl& url) const {
 }
 
 int BudgetData::accountIndex(Account* account) const {
-  return _accounts.indexOf(account);
+  return static_cast<int>(_accounts.indexOf(account));
 }
 
 Account* BudgetData::addAccount(Account* account) {
@@ -127,7 +127,8 @@ Account* BudgetData::addAccount(Account* account) {
     auto index = createIndex(this->accountIndex(account), 0);
     emit dataChanged(index, index);
   });
-  beginInsertRows(QModelIndex(), _accounts.size(), _accounts.size());
+  const int insertIndex = static_cast<int>(_accounts.size());
+  beginInsertRows(QModelIndex(), insertIndex, insertIndex);
   account->setParent(this);
   _accounts.append(account);
   endInsertRows();
@@ -154,7 +155,7 @@ void BudgetData::removeAccount(int index) {
 }
 
 Account* BudgetData::takeAccount(Account* account) {
-  int index = _accounts.indexOf(account);
+  int index = static_cast<int>(_accounts.indexOf(account));
   if (index >= 0) {
     // If this is the current account, update navigation before removing
     if (account == _currentAccount) {

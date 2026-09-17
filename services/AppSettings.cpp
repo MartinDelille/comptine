@@ -131,7 +131,7 @@ QStringList AppSettings::recentFiles() const {
 void AppSettings::addRecentFile(const QString& filePath) {
   // Find if file already exists in the list
   QStringList files = _recentFilesModel.stringList();
-  int existingIndex = files.indexOf(filePath);
+  int existingIndex = static_cast<int>(files.indexOf(filePath));
 
   if (existingIndex == 0) {
     // Already at the front, nothing to do

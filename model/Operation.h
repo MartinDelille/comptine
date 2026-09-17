@@ -82,8 +82,8 @@ public:
             const QDate& date = {},
             double amount = 0.0,
             const QString& label = {},
-            const QString& details = {},
-            const QList<Allocation*>& allocations = {});
+            const QList<Allocation*>& allocations = {},
+            const QString& details = {});
   ~Operation();
 
   // Split allocations methods

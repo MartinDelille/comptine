@@ -94,7 +94,7 @@ bool UpdateController::shouldAutoCheck() const {
   }
 
   qint64 secondsSinceLastCheck = lastCheck.secsTo(QDateTime::currentDateTime());
-  constexpr qint64 ONE_DAY_IN_SECONDS = 24 * 60 * 60;
+  constexpr qint64 ONE_DAY_IN_SECONDS = qint64{ 24 } * 60 * 60;
 
   return secondsSinceLastCheck >= ONE_DAY_IN_SECONDS;
 }
@@ -112,7 +112,7 @@ bool UpdateController::isVersionNewer(const QString& remote, const QString& loca
   QList<int> localParts = parseVersion(local);
 
   // Compare each part
-  int maxParts = qMax(remoteParts.size(), localParts.size());
+  int maxParts = static_cast<int>(qMax(remoteParts.size(), localParts.size()));
   for (int i = 0; i < maxParts; ++i) {
     int remotePart = (i < remoteParts.size()) ? remoteParts[i] : 0;
     int localPart = (i < localParts.size()) ? localParts[i] : 0;
@@ -132,7 +132,7 @@ QList<int> UpdateController::parseVersion(const QString& version) const {
 
   // Remove suffix after hyphen (e.g., "-dev-abc123")
   QString cleanVersion = version;
-  int hyphenIndex = cleanVersion.indexOf('-');
+  int hyphenIndex = static_cast<int>(cleanVersion.indexOf('-'));
   if (hyphenIndex > 0) {
     cleanVersion = cleanVersion.left(hyphenIndex);
   }
