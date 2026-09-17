@@ -24,6 +24,18 @@
             "cacheVariables": {
                 "COMPTINE_ENABLE_COVERAGE": "ON"
             }
+        },
+        {
+            "name": "analysis",
+            "displayName": "Clang-Tidy Analysis",
+            "description": "Debug build with clang-tidy static analysis",
+            "binaryDir": "${sourceDir}/build/Analysis",
+            "inherits": "conan-debug",
+            "toolchainFile": "${sourceDir}/build/Debug/generators/conan_toolchain.cmake",
+            "cacheVariables": {
+                "COMPTINE_ENABLE_COVERAGE": "OFF",
+                "COMPTINE_ENABLE_CLANG_TIDY": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -35,6 +47,11 @@
         {
             "name": "coverage",
             "configurePreset": "coverage",
+            "jobs": 12
+        },
+        {
+            "name": "analysis",
+            "configurePreset": "analysis",
             "jobs": 12
         }
     ],

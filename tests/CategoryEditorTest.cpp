@@ -102,20 +102,20 @@ private slots:
     QCOMPARE(undoStack.count(), 0);
 
     editor.setSaveAmount(category, date, 10.0);
-    QCOMPARE(category->monthRecord(2026, 2).saveAmount, 10.0);
+    QCOMPARE(category->monthRecord(QDate(2026, 2, 1)).saveAmount, 10.0);
     QCOMPARE(undoStack.count(), 1);
     editor.setSaveAmount(category, date, 10.0);
     QCOMPARE(undoStack.count(), 1);
 
     editor.setReportAmount(category, date, 25.0);
-    QCOMPARE(category->monthRecord(2026, 2).reportAmount, 25.0);
+    QCOMPARE(category->monthRecord(QDate(2026, 2, 1)).reportAmount, 25.0);
     QCOMPARE(undoStack.count(), 1);
     editor.setReportAmount(category, date, 25.0);
     QCOMPARE(undoStack.count(), 1);
 
     undoStack.undo();
-    QCOMPARE(category->monthRecord(2026, 2).reportAmount, 0.0);
-    QCOMPARE(category->monthRecord(2026, 2).saveAmount, 0.0);
+    QCOMPARE(category->monthRecord(QDate(2026, 2, 1)).reportAmount, 0.0);
+    QCOMPARE(category->monthRecord(QDate(2026, 2, 1)).saveAmount, 0.0);
   }
 
   void removingCategoryRemovesAllocationsAndUndoRestoresBoth() {
@@ -129,7 +129,7 @@ private slots:
     auto* account = budgetData.createAccount("Fictional Checking");
     auto* operation = account->addOperation(
         new Operation(account, QDate(2026, 3, 1), -100.0, "Mixed purchase",
-                      {}, { new Allocation(category, -60.0), new Allocation(otherCategory, -40.0) }));
+                      { new Allocation(category, -60.0), new Allocation(otherCategory, -40.0) }, {}));
 
     editor.remove(nullptr);
     QCOMPARE(controller.rowCount(), 2);

@@ -49,8 +49,8 @@ bool OperationEditor::beginEditing(Operation* operation) {
   return true;
 }
 
-Operation* OperationEditor::beginNew(const QDate& date, double amount,
-                                     const QString& label, const QString& details) {
+Operation* OperationEditor::beginNew(const QDate& date, const QString& label,
+                                     double amount, const QString& details) {
   if (_editingOperation) {
     emit transactionRejected();
     return nullptr;
@@ -59,7 +59,7 @@ Operation* OperationEditor::beginNew(const QDate& date, double amount,
   if (!account) return nullptr;
   _editingStartCount = _undoStack.count();
   _undoStack.beginMacro(QObject::tr("Add operation"));
-  auto* operation = new Operation(account, date, amount, label, details, {});
+  auto* operation = new Operation(account, date, amount, label, {}, details);
   _undoStack.push(new AddOperationCommand(operation, *account));
   _editingOperation = operation;
   connect(operation, &QObject::destroyed, this, [this]() {
@@ -104,7 +104,7 @@ void OperationEditor::redo() {
   _undoStack.redo();
 }
 
-void OperationEditor::add(const QDate& date, double amount, const QString& label,
+void OperationEditor::add(const QDate& date, const QString& label, double amount,
                           const QString& details, const QVariantList& values) {
   const auto allocations = typedAllocations(values);
   auto* account = _budgetData.currentAccount();
@@ -112,7 +112,7 @@ void OperationEditor::add(const QDate& date, double amount, const QString& label
     qDeleteAll(allocations);
     return;
   }
-  auto* operation = new Operation(account, date, amount, label, details, allocations);
+  auto* operation = new Operation(account, date, amount, label, allocations, details);
   _undoStack.push(new AddOperationCommand(operation, *account));
 }
 
@@ -222,7 +222,7 @@ Operation* OperationEditor::createCounterpart(Operation* operation, Account* acc
     }
   }
   auto* counterpart = new Operation(account, operation->date(), amount,
-                                    operation->label(), operation->details(), allocations);
+                                    operation->label(), allocations, operation->details());
   _undoStack.push(new AddOperationCommand(counterpart, *account));
   return counterpart;
 }

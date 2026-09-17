@@ -1,0 +1,11 @@
+Checks: >-
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  -bugprone-invalid-enum-default-initialization,
+  -bugprone-throwing-static-initialization,
+  -bugprone-signed-bitwise
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(^|/)(app|editor|model|services|tests|utils)/.*'
+SystemHeaders: false
+FormatStyle: file

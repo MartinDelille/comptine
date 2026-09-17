@@ -26,7 +26,7 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
     }
   }
   int line = context.line;
-  const char* colorStr = "";
+  const char* colorStr;
 
   switch (type) {
     case QtDebugMsg:
@@ -41,6 +41,9 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
       break;
     case QtInfoMsg:
       colorStr = "\033[36;1m";
+      break;
+    default:
+      colorStr = "";
       break;
   }
   // Format: file:line: type: message

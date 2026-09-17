@@ -69,7 +69,7 @@ private slots:
         new Operation(account, QDate(2026, 2, 2), -20.0, "Fictional Grocery"));
     auto* categorized = account->addOperation(
         new Operation(account, QDate(2026, 2, 3), -15.0, "Fictional Grocery",
-                      {}, { new Allocation(&category, -15.0) }));
+                      { new Allocation(&category, -15.0) }, {}));
 
     QCOMPARE(editor.applyToUncategorized(nullptr, "Fictional Grocery", -15.0), 0);
     QCOMPARE(editor.applyToUncategorized(&category, QString(), -15.0), 0);

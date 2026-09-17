@@ -26,6 +26,19 @@ find_package(Qt6 6.8 REQUIRED COMPONENTS Quick LinguistTools Network QuickTest)
 qt_standard_project_setup(REQUIRES 6.8)
 
 option(COMPTINE_ENABLE_COVERAGE "Enable C++ code coverage instrumentation" OFF)
+option(COMPTINE_ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
+
+if(COMPTINE_ENABLE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy)
+    if(NOT CLANG_TIDY_EXECUTABLE)
+        message(
+            FATAL_ERROR
+            "COMPTINE_ENABLE_CLANG_TIDY is ON, but clang-tidy was not found"
+        )
+    endif()
+
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+endif()
 
 if(COMPTINE_ENABLE_COVERAGE)
     if(MSVC)

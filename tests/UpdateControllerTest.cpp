@@ -55,9 +55,9 @@ private slots:
     settings.set_lastUpdateCheck({});
     QVERIFY(controller.shouldAutoCheck());
 
-    settings.set_lastUpdateCheck(QDateTime::currentDateTime().addSecs(-23 * 60 * 60));
+    settings.set_lastUpdateCheck(QDateTime::currentDateTime().addSecs(-qint64{ 23 } * 60 * 60));
     QVERIFY(!controller.shouldAutoCheck());
-    settings.set_lastUpdateCheck(QDateTime::currentDateTime().addSecs(-25 * 60 * 60));
+    settings.set_lastUpdateCheck(QDateTime::currentDateTime().addSecs(-qint64{ 25 } * 60 * 60));
     QVERIFY(controller.shouldAutoCheck());
 
     settings.set_checkForUpdates(false);

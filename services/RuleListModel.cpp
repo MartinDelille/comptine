@@ -15,7 +15,7 @@ int RuleListModel::rowCount(const QModelIndex& parent) const {
   if (parent.isValid() || !_controller) {
     return 0;
   }
-  return _controller->rules().size();
+  return static_cast<int>(_controller->rules().size());
 }
 
 QVariant RuleListModel::data(const QModelIndex& index, int role) const {

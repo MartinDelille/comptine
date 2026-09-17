@@ -25,7 +25,7 @@ Operation* Account::currentOperation() const {
 int Account::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
     return 0;
-  return _operations.size();
+  return static_cast<int>(_operations.size());
 }
 
 QVariant Account::data(const QModelIndex& index, int role) const {
@@ -109,7 +109,7 @@ void Account::setImportSourcePrefixes(const QStringList& sources) {
 
 int Account::currentOperationIndex() const {
   if (!_currentOperation) return -1;
-  return _operations.indexOf(_currentOperation);
+  return static_cast<int>(_operations.indexOf(_currentOperation));
 }
 
 void Account::set_currentOperationIndex(int index) {
@@ -126,7 +126,7 @@ void Account::clearCurrentOperation() {
 
 int Account::operationIndex(Operation* operation) const {
   if (!operation) return -1;
-  return _operations.indexOf(operation);
+  return static_cast<int>(_operations.indexOf(operation));
 }
 
 QList<Operation*> Account::operations() const {
@@ -137,7 +137,7 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   if (operation == nullptr) {
     return nullptr;
   }
-  int insertIndex = _operations.size();
+  int insertIndex = static_cast<int>(_operations.size());
   if (sort) {
     insertIndex = 0;
     // Insert in sorted order (most recent first)
@@ -216,7 +216,7 @@ bool Account::removeOperation(Operation* operation) {
   if (operation == nullptr) {
     return false;
   }
-  int index = _operations.indexOf(operation);
+  int index = static_cast<int>(_operations.indexOf(operation));
   if (index < 0) {
     return false;
   }
@@ -313,8 +313,8 @@ void Account::select(Operation* operation, bool extend) {
   } else {
     // Extend selection from currentOperation to this operation
     if (_currentOperation && _operations.contains(_currentOperation)) {
-      int fromIndex = _operations.indexOf(_currentOperation);
-      int toIndex = _operations.indexOf(operation);
+      int fromIndex = static_cast<int>(_operations.indexOf(_currentOperation));
+      int toIndex = static_cast<int>(_operations.indexOf(operation));
       int start = qMin(fromIndex, toIndex);
       int end = qMax(fromIndex, toIndex);
       for (int i = start; i <= end; ++i) {
@@ -344,12 +344,12 @@ void Account::selectOperations(const QList<Operation*>& operations, bool extend)
     for (auto* operation : validOperations)
       _selectedOperations.insert(operation);
   } else if (_currentOperation && _operations.contains(_currentOperation)) {
-    const int fromIndex = _operations.indexOf(_currentOperation);
-    const int toIndex = _operations.indexOf(validOperations.last());
+    const int fromIndex = static_cast<int>(_operations.indexOf(_currentOperation));
+    const int toIndex = static_cast<int>(_operations.indexOf(validOperations.last()));
     const int start = qMin(fromIndex, toIndex);
     const int end = qMax(fromIndex, toIndex);
     for (auto* operation : validOperations) {
-      const int index = _operations.indexOf(operation);
+      const int index = static_cast<int>(_operations.indexOf(operation));
       if (index >= start && index <= end)
         _selectedOperations.insert(operation);
     }
@@ -394,7 +394,7 @@ void Account::toggleSelectionAt(int index) {
 
 void Account::selectRange(int fromIndex, int toIndex) {
   int start = qMax(0, qMin(fromIndex, toIndex));
-  int end = qMin(_operations.size() - 1, qMax(fromIndex, toIndex));
+  int end = qMin(static_cast<int>(_operations.size()) - 1, qMax(fromIndex, toIndex));
 
   for (int i = start; i <= end; ++i) {
     _selectedOperations.insert(_operations[i]);
@@ -404,7 +404,7 @@ void Account::selectRange(int fromIndex, int toIndex) {
 }
 
 void Account::selectAll() {
-  selectRange(0, _operations.size() - 1);
+  selectRange(0, static_cast<int>(_operations.size()) - 1);
 }
 
 void Account::clearSelection() {
@@ -416,7 +416,7 @@ void Account::clearSelection() {
 }
 
 int Account::selectionCount() const {
-  return _selectedOperations.size();
+  return static_cast<int>(_selectedOperations.size());
 }
 
 double Account::selectedTotal() const {
@@ -461,7 +461,7 @@ int Account::countOperationsWithCategory(const Category* category) const {
   auto hasCategory = [category](const Operation* operation) {
     return operation->amountForCategory(category);
   };
-  return std::count_if(_operations.begin(), _operations.end(), hasCategory);
+  return static_cast<int>(std::count_if(_operations.begin(), _operations.end(), hasCategory));
 }
 
 double Account::currentBalance() const {

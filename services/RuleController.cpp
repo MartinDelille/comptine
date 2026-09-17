@@ -20,7 +20,7 @@ RuleController::~RuleController() {
 }
 
 int RuleController::ruleCount() const {
-  return _rules.size();
+  return static_cast<int>(_rules.size());
 }
 
 Rule* RuleController::at(int index) const {

@@ -5,8 +5,8 @@ Operation::Operation(Account* account,
                      const QDate& date,
                      double amount,
                      const QString& label,
-                     const QString& details,
-                     const QList<Allocation*>& allocations) :
+                     const QList<Allocation*>& allocations,
+                     const QString& details) :
     _account(account),
     _date(date),
     _amount(amount),
@@ -39,7 +39,7 @@ void Operation::disconnectCategorySignals(const QList<Allocation*>& allocations)
 }
 
 int Operation::rowCount(const QModelIndex& parent) const {
-  return parent.isValid() ? 0 : _allocations.size();
+  return parent.isValid() ? 0 : static_cast<int>(_allocations.size());
 }
 
 QVariant Operation::data(const QModelIndex& modelIndex, int role) const {
@@ -52,8 +52,9 @@ QVariant Operation::data(const QModelIndex& modelIndex, int role) const {
       return QVariant::fromValue(allocation->category());
     case AmountRole:
       return allocation->amount();
+    default:
+      return {};
   }
-  return {};
 }
 
 QHash<int, QByteArray> Operation::roleNames() const {

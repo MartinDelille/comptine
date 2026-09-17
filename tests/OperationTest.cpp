@@ -11,9 +11,10 @@ private slots:
   void exposesAllocationModelRolesAndCategorySummaries() {
     Category food("Fictional Food");
     Category travel("Fictional Travel");
-    Operation operation(nullptr, QDate(2026, 5, 1), -100.0, "Mixed purchase", "Details",
+    Operation operation(nullptr, QDate(2026, 5, 1), -100.0, "Mixed purchase",
                         { new Allocation(&food, -60.0), new Allocation(&food, -10.0),
-                          new Allocation(&travel, -30.0) });
+                          new Allocation(&travel, -30.0) },
+                        "Details");
 
     QCOMPARE(operation.rowCount(), 3);
     const QModelIndex index = operation.index(0, 0);
@@ -35,9 +36,10 @@ private slots:
 
   void coversModelMetadataAndNullAllocations() {
     Category category("Fictional Category");
-    Operation operation(nullptr, {}, 25.0, "Income", {},
+    Operation operation(nullptr, {}, 25.0, "Income",
                         { nullptr, new Allocation(nullptr, 5.0),
-                          new Allocation(&category, 20.0) });
+                          new Allocation(&category, 20.0) },
+                        {});
 
     QCOMPARE(operation.rowCount(operation.index(0)), 0);
     QCOMPARE(operation.roleNames().value(Operation::CategoryRole), QByteArray("category"));
@@ -57,14 +59,14 @@ private slots:
     Allocation matching(&first, 10.0);
     Allocation differentAmount(&first, 11.0);
     Allocation differentCategory(&second, 10.0);
-    Operation operation(nullptr, {}, 10.0, "Purchase", {}, { new Allocation(&first, 10.0) });
+    Operation operation(nullptr, {}, 10.0, "Purchase", { new Allocation(&first, 10.0) }, {});
 
     QVERIFY(operation.sameAllocations({ &matching }));
     QVERIFY(!operation.sameAllocations({}));
     QVERIFY(!operation.sameAllocations({ &differentAmount }));
     QVERIFY(!operation.sameAllocations({ &differentCategory }));
 
-    Operation nullOperation(nullptr, {}, 0.0, "Empty", {}, { nullptr });
+    Operation nullOperation(nullptr, {}, 0.0, "Empty", { nullptr }, {});
     QVERIFY(nullOperation.sameAllocations({ nullptr }));
     QVERIFY(!nullOperation.sameAllocations({ &matching }));
     QVERIFY(!nullOperation.sameAllocations({ nullptr, nullptr }));
@@ -92,7 +94,7 @@ private slots:
   void allocationReplacementAndClearingNotifyOnlyOnChanges() {
     Category category("Fictional Category");
     Operation operation(nullptr, {}, -50.0, "Purchase",
-                        {}, { new Allocation(&category, -50.0) });
+                        { new Allocation(&category, -50.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
     operation.setAllocations({ new Allocation(&category, -50.0) });
@@ -114,7 +116,7 @@ private slots:
   void categoryRenameUpdatesCategorySummary() {
     Category category("Fictional Old Name");
     Operation operation(nullptr, {}, -50.0, "Purchase",
-                        {}, { new Allocation(&category, -50.0) });
+                        { new Allocation(&category, -50.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
     category.set_name("Fictional New Name");
@@ -127,8 +129,8 @@ private slots:
   void categorySignalsFollowAllocationReplacement() {
     Category oldCategory("Fictional Old");
     Category newCategory("Fictional New");
-    Operation operation(nullptr, {}, -10.0, "Purchase", {},
-                        { new Allocation(&oldCategory, -10.0) });
+    Operation operation(nullptr, {}, -10.0, "Purchase",
+                        { new Allocation(&oldCategory, -10.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
     operation.setAllocations({ new Allocation(&newCategory, -10.0) });
