@@ -124,6 +124,20 @@ qt_add_executable(BudgetDataTest BudgetDataTest.cpp)
 target_link_libraries(BudgetDataTest PRIVATE Qt6::Test services editor)
 add_test(NAME BudgetDataTest COMMAND BudgetDataTest)
 
+# ClipboardControllerTest - copying selected operations to the system clipboard
+qt_add_executable(ClipboardControllerTest ClipboardControllerTest.cpp)
+target_link_libraries(ClipboardControllerTest PRIVATE Qt6::Test services editor)
+add_test(NAME ClipboardControllerTest COMMAND ClipboardControllerTest)
+set_tests_properties(
+    ClipboardControllerTest
+    PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+)
+
+# RuleEditorTest - rule editing, ordering, removal, and application
+qt_add_executable(RuleEditorTest RuleEditorTest.cpp)
+target_link_libraries(RuleEditorTest PRIVATE Qt6::Test services editor)
+add_test(NAME RuleEditorTest COMMAND RuleEditorTest)
+
 # FileControllerTest - integration test with all dependencies
 qt_add_executable(FileControllerTest FileControllerTest.cpp)
 

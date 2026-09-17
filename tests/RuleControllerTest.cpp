@@ -57,15 +57,29 @@ private slots:
     RuleController controller(budgetData, undoStack);
     Category category("Fictional Category");
     controller.addRule(new Rule(&category, "Fictional Match", -12.50));
+    controller.addRule(new Rule(nullptr, "Fictional Without Category"));
 
     auto* model = controller.ruleModel();
-    QCOMPARE(model->rowCount(), 1);
+    QCOMPARE(model->rowCount(), 2);
     const QModelIndex index = model->index(0, 0);
     QCOMPARE(model->data(index, RuleListModel::CategoryRole).toString(), QString("Fictional Category"));
     QCOMPARE(model->data(index, RuleListModel::LabelMatchRole).toString(), QString("Fictional Match"));
     QCOMPARE(model->data(index, RuleListModel::AmountFilterRole).toDouble(), -12.50);
+    QVERIFY(!model->data(model->index(1, 0), RuleListModel::CategoryRole).isValid());
     QVERIFY(!model->data(QModelIndex(), RuleListModel::CategoryRole).isValid());
     QVERIFY(!model->data(model->index(5, 0), RuleListModel::CategoryRole).isValid());
+
+    RuleListModel emptyModel;
+    QCOMPARE(emptyModel.rowCount(), 0);
+    QCOMPARE(emptyModel.rowCount(model->index(0, 0)), 0);
+    QVERIFY(!emptyModel.data(QModelIndex(), RuleListModel::CategoryRole).isValid());
+    QVERIFY(!emptyModel.data(model->index(0, 0), RuleListModel::CategoryRole).isValid());
+    const auto roles = emptyModel.roleNames();
+    QCOMPARE(roles.value(RuleListModel::CategoryRole), QByteArray("category"));
+    QCOMPARE(roles.value(RuleListModel::LabelMatchRole), QByteArray("labelMatch"));
+    QCOMPARE(roles.value(RuleListModel::AmountFilterRole), QByteArray("amountFilter"));
+
+    model->refresh();
   }
 
   void navigatesUncategorizedOperationsAcrossAccounts() {

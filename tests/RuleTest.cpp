@@ -23,6 +23,8 @@ private slots:
 
   void testDoesNotMatchMissingOrEmptyLabel() {
     Category category("Food");
+    Rule emptyRule;
+    QVERIFY(!emptyRule.matches(nullptr));
     Rule rule(&category, "market");
     Operation operation(nullptr, {}, -42.50, "Coffee Shop");
 

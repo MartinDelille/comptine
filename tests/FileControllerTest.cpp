@@ -7,6 +7,7 @@
 #include <QUrl>
 
 #include "editor/CategoryEditor.h"
+#include "editor/ImportEditor.h"
 #include "model/Account.h"
 #include "model/Category.h"
 #include "model/Operation.h"
@@ -135,6 +136,14 @@ private slots:
     QUrl fileUrl = QUrl::fromLocalFile(filePath);
     QVERIFY(fileController->loadFromYamlUrl(fileUrl));
     QCOMPARE(budgetData->rowCount(), 1);
+  }
+
+  void testImportEditorDelegatesToFileController() {
+    ImportEditor importEditor(*fileController);
+
+    QVERIFY(importEditor.importCsv(QUrl("file::/tests/import1.csv"),
+                                   "Fictional Imported Account", false));
+    QCOMPARE(budgetData->accountByName("Fictional Imported Account") != nullptr, true);
   }
 
   // Save/Load with Accounts and Operations
