@@ -32,5 +32,24 @@ jobs:
           version: ${{ steps.qt-version.outputs.version }}
           cache: true
 
+      - name: Install clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+
       - name: Run pre-commit
         run: uv run pre-commit run --all-files
+
+      - name: Install C++ dependencies
+        shell: bash
+        run: |
+          uv run conan install . \
+            --build=missing \
+            -pr:h=conan/profiles/linux \
+            -pr:b=conan/profiles/linux \
+            -s:h build_type=Debug \
+            -s:b build_type=Debug
+
+      - name: Configure clang-tidy analysis
+        run: cmake --preset=analysis
+
+      - name: Run clang-tidy analysis
+        run: cmake --build --preset=analysis

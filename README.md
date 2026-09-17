@@ -74,6 +74,22 @@ The coverage preset uses `build/Coverage`, so it does not affect the regular
 with the dependency/toolchain presets used by the project presets. The same
 workflow is available through `make coverage`.
 
+### Clang-tidy analysis
+
+Install the C++ dependencies, then configure and build the separate analysis
+preset:
+
+```bash
+uv run conan install . --build=missing \
+  -pr:h=conan/profiles/linux -pr:b=conan/profiles/linux \
+  -s:h build_type=Debug -s:b build_type=Debug
+cmake --preset=analysis
+cmake --build --preset=analysis
+```
+
+The analysis build requires `clang-tidy` to be installed and writes its build
+artifacts to `build/Analysis`.
+
 ## Creating Installers
 
 ### MacOS (DMG)
