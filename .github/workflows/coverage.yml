@@ -47,28 +47,24 @@ jobs:
             -s:b build_type=Debug
 
       - name: Configure
-        run: qt-cmake --preset=conan-debug -DCOMPTINE_ENABLE_COVERAGE=ON
+        run: cmake --preset=coverage
 
       - name: Build
-        run: cmake --build --preset=conan-debug
+        run: cmake --build --preset=coverage
 
       - name: Test
-        run: ctest --test-dir build/Debug --output-on-failure
+        run: ctest --test-dir build/Coverage --output-on-failure
 
       - name: Generate LCOV report
         shell: bash
-        run: |
-          lcov --capture \
-            --directory build/Debug \
-            --output-file coverage.info \
-            --ignore-errors mismatch
-          lcov --remove coverage.info \
-            '*/tests/*' \
-            '*/build/*' \
-            '/usr/*' \
-            '*/.conan2/*' \
-            --output-file coverage.info \
-            --ignore-errors unused
+        run: bash scripts/generate-coverage.sh
+
+      - name: Archive LCOV report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.info
+          if-no-files-found: error
 
       - name: Upload coverage
         uses: codecov/codecov-action@v5

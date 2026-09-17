@@ -49,13 +49,10 @@ BaseDialog {
         }
 
         // Rules list
-        Rectangle {
+        Card {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            color: Theme.surface
             border.color: Theme.borderLight
-            border.width: Theme.cardBorderWidth
-            radius: Theme.cardRadius
 
             ListView {
                 id: ruleListView
@@ -66,6 +63,11 @@ BaseDialog {
                 focus: true
                 spacing: Theme.spacingSmall
 
+                ScrollBar.vertical: ScrollBar {
+                    id: verticalScrollBar
+                    policy: ScrollBar.AsNeeded
+                }
+
                 delegate: Rectangle {
                     id: ruleDelegate
                     required property int index
@@ -73,7 +75,7 @@ BaseDialog {
                     required property string labelMatch
                     required property double amountFilter
 
-                    width: ListView.view.width
+                    width: ListView.view.width - (verticalScrollBar.visible ? verticalScrollBar.width + Theme.spacingSmall : 0)
                     height: contentRow.implicitHeight + Theme.spacingNormal * 2
                     color: delegateMouseArea.containsMouse ? Theme.backgroundHover : Theme.surfaceElevated
                     border.color: ListView.isCurrentItem ? Theme.accent : Theme.borderLight

@@ -23,6 +23,7 @@ QtObject {
     readonly property color backgroundAlt: isDark ? "#242424" : "#f9f9f9"
     readonly property color backgroundHover: isDark ? "#2a2a2a" : "#f5f5f5"
     readonly property color backgroundSelected: isDark ? "#1e3a5f" : "#e3f2fd"
+    readonly property color backgroundSelectedStrong: isDark ? "#2f5f8f" : "#bbdefb"
     readonly property color surface: isDark ? "#2d2d2d" : "#fafafa"
     readonly property color surfaceElevated: isDark ? "#363636" : "#ffffff"
 

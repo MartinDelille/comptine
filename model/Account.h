@@ -66,8 +66,11 @@ public:
   // Operation navigation
   Q_INVOKABLE void previousOperation(bool extendSelection = false);
   Q_INVOKABLE void nextOperation(bool extendSelection = false);
+  Q_INVOKABLE void clearCurrentOperation();
 
   Operation* addOperation(Operation* operation, bool sort = true);
+  // Replace all operations in one model update. Takes ownership of operations.
+  void replaceOperations(const QList<Operation*>& operations);
   bool removeOperation(Operation* operation);  // Remove by pointer, returns true if found
   void clear();
   void sortOperations();  // Re-sort operations by date (most recent first)
@@ -81,6 +84,7 @@ public:
   bool isSelected(Operation* operation) const;
   Q_INVOKABLE bool isSelectedAt(int index) const;
   void select(Operation* operation, bool extend = false);
+  void selectOperations(const QList<Operation*>& operations, bool extend = false);
   Q_INVOKABLE void selectAt(int index, bool extend = false);
   void toggleSelection(Operation* operation);
   Q_INVOKABLE void toggleSelectionAt(int index);
@@ -99,12 +103,13 @@ public:
 
 signals:
   void countChanged();
+  void operationDataChanged();
   void selectionChanged();
   void balanceChanged();
   void importSourcePrefixesChanged();
 
 private:
-  void recalculateBalances();
+  void recalculateBalances(bool notify = true);
 
   Operation* _currentOperation = nullptr;
   QList<Operation*> _operations;

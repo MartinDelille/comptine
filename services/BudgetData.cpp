@@ -132,6 +132,9 @@ Account* BudgetData::addAccount(Account* account) {
   _accounts.append(account);
   endInsertRows();
   emit accountCountChanged();
+  connect(account, &Account::operationDataChanged,
+          this, &BudgetData::operationDataChanged);
+  emit operationDataChanged();
   return account;
 }
 
@@ -146,6 +149,7 @@ void BudgetData::removeAccount(int index) {
     delete _accounts.takeAt(index);
     endRemoveRows();
     emit accountCountChanged();
+    emit operationDataChanged();
   }
 }
 
@@ -155,7 +159,7 @@ Account* BudgetData::takeAccount(Account* account) {
     // If this is the current account, update navigation before removing
     if (account == _currentAccount) {
       // Select previous account, or -1 if this was the only account
-      set_currentAccount(account);
+      set_currentAccount(at(index - 1));
     } else if (currentAccountIndex() > index) {
       // Adjust index if removing an account before the current one
       set_currentAccountIndex(currentAccountIndex() - 1);
@@ -178,6 +182,7 @@ void BudgetData::clearAccounts() {
   _accounts.clear();
   endResetModel();
   emit accountCountChanged();
+  emit operationDataChanged();
 }
 
 int BudgetData::countOperationsWithCategory(const Category* category) const {
@@ -189,9 +194,13 @@ int BudgetData::countOperationsWithCategory(const Category* category) const {
 }
 
 void BudgetData::clear() {
-  clearAccounts();
+  // Undo commands keep raw references/pointers to accounts and operations.
+  // Destroy the commands while those objects are still alive.  In particular,
+  // an undone AddOperationCommand may own an operation and its destructor
+  // must not run after the account that used to own it has been destroyed.
   _undoStack.clear();
   _undoStack.setClean();
+  clearAccounts();
 }
 
 void BudgetData::copySelectedOperations() const {

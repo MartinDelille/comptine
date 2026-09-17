@@ -23,6 +23,15 @@ FocusScope {
         operationEditDialog.initialize(BudgetData.currentAccount.currentOperation);
     }
 
+    function focusSearch() {
+        searchField.forceActiveFocus();
+        searchField.selectAll();
+    }
+
+    function movePage(direction, extendSelection) {
+        operationList.movePage(direction, extendSelection);
+    }
+
     RenameAccountDialog {
         id: renameDialog
     }
@@ -54,10 +63,17 @@ FocusScope {
                 onClicked: renameDialog.open()
             }
 
+            TextField {
+                id: searchField
+                Layout.preferredWidth: 220
+                placeholderText: qsTr("Search operations")
+                selectByMouse: true
+            }
+
             BalanceHeader {
                 Layout.fillWidth: true
                 balance: BudgetData.currentAccount?.currentBalance || 0
-                operationCount: BudgetData.currentAccount?.count || 0
+                operationCount: operationList.visibleOperationCount
             }
         }
 
@@ -69,6 +85,7 @@ FocusScope {
             OperationList {
                 id: operationList
                 account: BudgetData.currentAccount
+                query: searchField.text
                 Layout.fillWidth: true
                 Layout.fillHeight: true
             }

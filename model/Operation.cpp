@@ -17,6 +17,25 @@ Operation::Operation(Account* account,
     if (!allocation) continue;
     allocation->setParent(this);
   }
+  connectCategorySignals(_allocations);
+}
+
+void Operation::connectCategorySignals(const QList<Allocation*>& allocations) {
+  for (auto* allocation : allocations) {
+    if (allocation && allocation->category()) {
+      connect(allocation->category(), &Category::nameChanged,
+              this, &Operation::allocationsChanged, Qt::UniqueConnection);
+    }
+  }
+}
+
+void Operation::disconnectCategorySignals(const QList<Allocation*>& allocations) {
+  for (auto* allocation : allocations) {
+    if (allocation && allocation->category()) {
+      disconnect(allocation->category(), &Category::nameChanged,
+                 this, &Operation::allocationsChanged);
+    }
+  }
 }
 
 int Operation::rowCount(const QModelIndex& parent) const {
@@ -69,6 +88,7 @@ QStringList Operation::allocatedCategoryNames() const {
 
 void Operation::setAllocations(const QList<Allocation*>& allocations) {
   if (!sameAllocations(allocations)) {
+    disconnectCategorySignals(_allocations);
     beginResetModel();
     qDeleteAll(_allocations);
     _allocations = allocations;
@@ -76,12 +96,14 @@ void Operation::setAllocations(const QList<Allocation*>& allocations) {
       if (allocation) allocation->setParent(this);
     }
     endResetModel();
+    connectCategorySignals(_allocations);
     emit allocationsChanged();
   }
 }
 
 void Operation::clearAllocations() {
   if (!_allocations.isEmpty()) {
+    disconnectCategorySignals(_allocations);
     beginResetModel();
     qDeleteAll(_allocations);
     _allocations.clear();
@@ -95,6 +117,10 @@ bool Operation::sameAllocations(const QList<Allocation*>& otherAllocations) cons
     return false;
   }
   for (int i = 0; i < _allocations.count(); i++) {
+    if (_allocations[i] == nullptr || otherAllocations[i] == nullptr) {
+      if (_allocations[i] != otherAllocations[i]) return false;
+      continue;
+    }
     if (*_allocations[i] != *otherAllocations[i]) {
       return false;
     }
@@ -139,7 +165,7 @@ double Operation::amountForCategory(const Category* category) const {
   // Split - sum all allocations for this category
   double total = 0.0;
   for (const auto& alloc : _allocations) {
-    if (alloc->category() == category) {
+    if (alloc && alloc->category() && alloc->category() == category) {
       total += alloc->amount();
     }
   }

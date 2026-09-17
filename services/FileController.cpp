@@ -1,5 +1,6 @@
 #include <yaml-cpp/yaml.h>
 
+#include <QCryptographicHash>
 #include <QDate>
 #include <QDebug>
 #include <QFile>
@@ -7,6 +8,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QUrl>
+#include <iterator>
 #include <string>
 
 #include "AppSettings.h"
@@ -24,6 +26,16 @@
 
 using namespace CsvParser;
 
+static bool fileHash(const QString& filePath, QByteArray& hash) {
+  QFile file(filePath);
+  if (!file.open(QIODevice::ReadOnly)) {
+    return false;
+  }
+
+  hash = QCryptographicHash::hash(file.readAll(), QCryptographicHash::Sha256);
+  return true;
+}
+
 FileController::FileController(AppSettings& appSettings,
                                BudgetData& budgetData,
                                CategoryController& categoryController,
@@ -37,6 +49,12 @@ FileController::FileController(AppSettings& appSettings,
   connect(&_fileWatcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
     qDebug() << "File changed detected by QFileSystemWatcher:" << path;
     if (path == currentFilePath()) {
+      QByteArray currentHash;
+      if (path == _knownFilePath && fileHash(path, currentHash) && currentHash == _knownFileHash) {
+        qDebug() << "Ignoring file watcher notification for unchanged application content:" << path;
+        return;
+      }
+
       if (hasUnsavedChanges()) {
         qDebug() << "Current file was modified externally, but there are unsaved changes.";
         emit externalChangeDetected();
@@ -73,6 +91,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
   YAML::Emitter out;
   out << YAML::BeginMap;
+  out << YAML::Key << "budget_limit_history_version" << YAML::Value << 2;
 
   // Get navigation state from NavigationController
   int currentTabIndex = _budgetData.currentTabIndex();
@@ -91,7 +110,6 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   for (auto category : _categoryController.categories()) {
     out << YAML::BeginMap;
     out << YAML::Key << "name" << YAML::Value << toStdString(category->name());
-    out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(category->budgetLimit(), 'f', 2));
     if (category == currentCategory) {
       out << YAML::Key << "current" << YAML::Value << "true";
     }
@@ -219,6 +237,11 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   file.close();
 
   qDebug() << "Budget data saved to:" << filePath;
+  QByteArray savedHash;
+  if (fileHash(filePath, savedHash)) {
+    _knownFilePath = filePath;
+    _knownFileHash = savedHash;
+  }
   _undoStack.setClean();
   emit dataSaved();
   set_currentFilePath(filePath);
@@ -277,6 +300,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   try {
     YAML::Node root = YAML::Load(std::string(data.constData(), data.size()));
+    const int budgetLimitHistoryVersion = root["budget_limit_history_version"]
+                                              ? root["budget_limit_history_version"].as<int>()
+                                              : 1;
 
     // Load state section
     if (root["state"]) {
@@ -308,11 +334,12 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         if (cat["name"]) {
           category->set_name(yamlString(cat["name"]));
         }
-        if (cat["budget_limit"]) {
-          category->set_budgetLimit(yamlString(cat["budget_limit"]).toDouble());
-        }
+        const double legacyCurrentLimit = cat["budget_limit"]
+                                              ? yamlString(cat["budget_limit"]).toDouble()
+                                              : 0.0;
 
         // Load month history (new format) or leftover decisions (legacy format)
+        QMap<YearMonth, MonthRecord> loadedHistory;
         auto loadMonthEntries = [&](const YAML::Node& entriesNode) {
           for (const auto& entryNode : entriesNode) {
             int year = 0, month = 0;
@@ -347,7 +374,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
 
             if (year > 0 && month > 0 && !record.isEmpty()) {
-              category->setMonthRecord(year, month, record);
+              loadedHistory.insert({ year, month }, record);
             }
           }
         };
@@ -356,6 +383,59 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           loadMonthEntries(cat["month_history"]);
         } else if (cat["leftover_decisions"]) {
           loadMonthEntries(cat["leftover_decisions"]);
+        }
+
+        if (budgetLimitHistoryVersion >= 2) {
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            category->setMonthRecord(it.key().year, it.key().month, it.value());
+          }
+        } else {
+          // Before version 2, a budget-limit entry stored the old value in the
+          // last month where it was effective. Convert each boundary into an
+          // override starting in the following month.
+          QMap<YearMonth, MonthRecord> convertedHistory;
+          std::optional<double> legacyBaseLimit;
+
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            MonthRecord record = it.value();
+            if (record.budgetLimit.has_value() && !legacyBaseLimit.has_value()) {
+              legacyBaseLimit = record.budgetLimit;
+            }
+            record.budgetLimit.reset();
+            if (!record.isEmpty()) {
+              convertedHistory.insert(it.key(), record);
+            }
+          }
+
+          if (legacyBaseLimit.has_value() && !loadedHistory.isEmpty()) {
+            MonthRecord firstRecord = convertedHistory.value(loadedHistory.constBegin().key(), MonthRecord{});
+            firstRecord.budgetLimit = legacyBaseLimit.value();
+            convertedHistory.insert(loadedHistory.constBegin().key(), firstRecord);
+          }
+
+          for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
+            if (!it.value().budgetLimit.has_value()) {
+              continue;
+            }
+
+            double effectiveLimit = legacyCurrentLimit;
+            for (auto next = std::next(it); next != loadedHistory.constEnd(); ++next) {
+              if (next.value().budgetLimit.has_value()) {
+                effectiveLimit = next.value().budgetLimit.value();
+                break;
+              }
+            }
+
+            const QDate month(it.key().year, it.key().month, 1);
+            const YearMonth effectiveMonth = YearMonth::fromDate(month.addMonths(1));
+            MonthRecord record = convertedHistory.value(effectiveMonth, MonthRecord{});
+            record.budgetLimit = effectiveLimit;
+            convertedHistory.insert(effectiveMonth, record);
+          }
+
+          for (auto it = convertedHistory.constBegin(); it != convertedHistory.constEnd(); ++it) {
+            category->setMonthRecord(it.key().year, it.key().month, it.value());
+          }
         }
 
         _categoryController.addCategory(category);
@@ -391,6 +471,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           account->setImportSourcePrefixes(sources);
         }
         // Note: balance field is ignored - balance is calculated from operations
+        QList<Operation*> operations;
+        Operation* currentOperation = nullptr;
         if (acc["operations"]) {
           for (const auto& opNode : acc["operations"]) {
             auto op = new Operation(account);
@@ -427,16 +509,18 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             if (opNode["budget_date"]) {
               op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"));
             }
-            account->addOperation(op, false);  // Preserve file order
+            operations.append(op);
             if (opNode["current"]) {
               if (yamlString(opNode["current"]).toLower() == "true") {
-                // Set this operation as the current operation for this account
-                account->select(op);
+                currentOperation = op;
               }
             }
           }
         }
-        account->sortOperations();
+        account->replaceOperations(operations);
+        if (currentOperation) {
+          account->select(currentOperation);
+        }
         if (acc["current"]) {
           if (yamlString(acc["current"]).toLower() == "true") {
             _budgetData.set_currentAccount(account);
@@ -504,6 +588,12 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   qDebug() << "Budget data loaded from:" << filePath;
 
   _fileWatcher.addPath(filePath);
+
+  QByteArray loadedHash;
+  if (fileHash(filePath, loadedHash)) {
+    _knownFilePath = filePath;
+    _knownFileHash = loadedHash;
+  }
 
   return true;
 }
@@ -701,7 +791,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
           }
         }
         if (category == nullptr) {
-          category = new Category(categoryName, 0.0);
+          category = new Category(categoryName);
           new AddCategoryCommand(&_categoryController, category, macroCommand);
           newCategories.insert(category);
         }
@@ -809,6 +899,8 @@ void FileController::clear() {
   if (_fileWatcher.files().contains(currentFilePath())) {
     _fileWatcher.removePath(currentFilePath());
   }
+  _knownFilePath.clear();
+  _knownFileHash.clear();
   set_currentFilePath({});
 }
 

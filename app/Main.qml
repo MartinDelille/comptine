@@ -7,6 +7,7 @@ import QtQuick.Layouts
 
 import ui.common
 import ui.budget
+import ui.evolution
 import ui.operations
 import ui.rules
 import services
@@ -68,6 +69,7 @@ ApplicationWindow {
 
     menuBar: ApplicationMenuBar {
         anyDialogOpen: window.anyDialogOpen
+        metricSelectorFocused: evolutionView.metricSelectorFocused
         window: window
 
         onNewFileAction: {
@@ -118,6 +120,25 @@ ApplicationWindow {
         }
         onRulesAction: rulesView.open()
         onPreferencesAction: preferencesDialog.open()
+        onFindOperationsAction: operationView.focusSearch()
+        onPreviousPageAction: extendSelection => {
+            if (BudgetData.currentTabIndex === 0)
+                operationView.movePage(-1, extendSelection);
+            else
+                budgetView.movePage(-1);
+        }
+        onNextPageAction: extendSelection => {
+            if (BudgetData.currentTabIndex === 0)
+                operationView.movePage(1, extendSelection);
+            else
+                budgetView.movePage(1);
+        }
+        onPreviousUnbalancedCategoryAction: budgetView.moveToUnbalanced(-1)
+        onNextUnbalancedCategoryAction: budgetView.moveToUnbalanced(1)
+        onPreviousEvolutionMetricAction: EvolutionController.selectedMetric = (EvolutionController.selectedMetric + 5) % 6
+        onNextEvolutionMetricAction: EvolutionController.selectedMetric = (EvolutionController.selectedMetric + 1) % 6
+        onSaveAvailableAction: budgetView.saveAvailable()
+        onReportAvailableAction: budgetView.reportAvailable()
 
         onCheckUpdateAction: {
             window.manualUpdateCheck = true;
@@ -326,12 +347,16 @@ ApplicationWindow {
                 color: Theme.surface
             }
 
-            TabButton {
+            AppTabButton {
                 text: qsTr("Operations")
                 focusPolicy: Qt.NoFocus
             }
-            TabButton {
+            AppTabButton {
                 text: qsTr("Budget")
+                focusPolicy: Qt.NoFocus
+            }
+            AppTabButton {
+                text: qsTr("Evolution")
                 focusPolicy: Qt.NoFocus
             }
         }
@@ -352,6 +377,13 @@ ApplicationWindow {
             // Budget view
             BudgetView {
                 id: budgetView
+                focus: StackLayout.isCurrentItem
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+            }
+
+            EvolutionView {
+                id: evolutionView
                 focus: StackLayout.isCurrentItem
                 Layout.fillWidth: true
                 Layout.fillHeight: true

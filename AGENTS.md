@@ -6,14 +6,33 @@ Use exact commands below to configure, build, run, and clean the project. If you
 
 ### MacOS
 
-- The project uses the Qt version specified in `.qt-version`, installed at: ~/Qt/{version}/macos
-- **Install dependencies**: `conan install . --build=missing`
-- **Configure**: `qt-cmake --preset=conan-debug`
-- **Build**: `cmake --build --preset=conan-debug`
-- **Run**: `./build/Comptine.app/Contents/MacOS/Comptine`
+- The project uses the Qt version specified in `.qt-version`, installed at: `~/Qt/{version}/macos`
+- **Prerequisites**: CMake 3.23 or newer is required for the included CMake preset files.
+- **Install dependencies**:
+  `uv run conan install . --build=missing -pr:h=conan/profiles/macos -pr:b=conan/profiles/macos -s:h build_type=Debug -s:b build_type=Debug`
+- **Configure**: `cmake --preset=development`
+- **Build**: `cmake --build --preset=development`
+- **Run**: `./build/Debug/app/Comptine.app/Contents/MacOS/Comptine`
 - **Clean**: `rm -rf build` (run it only if you need a full clean)
 
+### Code coverage
+
+- Keep coverage builds separate from normal Debug builds by using the `coverage`
+  CMake preset, which writes to `build/Coverage`.
+- Use the `development` preset for regular Debug work; it explicitly disables
+  coverage instrumentation in `build/Debug`.
+- Install Debug dependencies first with the macOS Conan profile, then run:
+  `cmake --preset=coverage`, `cmake --build --preset=coverage`, and
+  `ctest --test-dir build/Coverage --output-on-failure`.
+- Generate LCOV data from `build/Coverage`; on macOS use the LLVM compatibility
+  error options documented in `README.md`.
+
 When done, you can run the application as shown above to show the progress.
+
+### QML linting
+
+- Run `qmllint` with `--json -` when the JSON report should be written to stdout. The `--json` option requires an output filename; omitting `-` can cause the next option to be created as a file.
+- Full-project command: `~/Qt/$(cat .qt-version)/macos/bin/qmllint --json - --qmldirs app --qmldirs ui --qmldirs services --qmldirs model --qmldirs utils --qmldirs editor $(rg --files -g '*.qml')`
 
 ## Project Structure
 
@@ -29,6 +48,12 @@ When done, you can run the application as shown above to show the progress.
 - Keep domain calculations and data contracts in the appropriate backend/model layer, and let the UI consume them through the framework’s intended view and binding mechanisms.
 - Before creating a custom workaround, check the project’s configured framework version and its official documentation for existing facilities that match the required behavior.
 - Prefer a clean, extensible implementation on the first pass. Use provisional structures only when the data is genuinely small and static, or when the user explicitly requests a prototype.
+- Keep each piece of application state owned by one layer. If a controller exposes shared state such as the selected category, views should bind to it and user actions should update the controller directly.
+- Avoid two-way QML synchronization patterns such as `property: controller.value` combined with `onPropertyChanged: controller.value = property`; this creates binding cycles and duplicates state. If a view must adapt external state, use explicit one-way commands or a dedicated selection model rather than reciprocal bindings.
+- Keep commands and shortcuts at the application command/menu layer (`app/ViewMenu.qml`, `app/EditMenu.qml`, etc.). Individual views should render state and emit intent, not duplicate global keyboard actions.
+- Add menu actions through the existing signal flow: declare the action signal in the relevant menu, forward it through `app/ApplicationMenuBar.qml`, and handle the resulting intent in `app/Main.qml` or the owning view/controller.
+- When one shortcut serves different tabs or contexts, keep a single `Action` with a `BudgetData.currentTabIndex` (or equivalent context) branch and emit the appropriate action signal. Do not duplicate the same shortcut sequence in multiple `Action` objects or view-local `Shortcut` items.
+- Treat runtime layout warnings as design feedback. Do not hide an immediate `forceLayout()` warning with a `Timer` or `Qt.callLater()` until checking why the layout is being invalidated. For `TableView`, keep `columnWidthProvider` and `rowHeightProvider` stable when possible; use stable delegate implicit sizes and scrolling/content positioning instead of returning changing or zero sizes to implement viewport windowing. Call `forceLayout()` only when a provider’s returned dimensions genuinely changed.
 
 ### C++ (Qt Style)
 
@@ -48,7 +73,7 @@ When done, you can run the application as shown above to show the progress.
 - **IDs**: `camelCase` (e.g., `listView`, `fileDialog`)
 - **Properties**: Declare `required property` for delegate bindings
 - **Strings**: Use `qsTr()` for translatable text
-- **Translations**: When adding new `qsTr()` strings, update all translation files in `translations/` with appropriate translations
+- **Translations**: When adding or changing user-visible `qsTr()` strings, run `scripts/check-translations.sh` to update the translation catalog, then complete the corresponding translations in `translations/`. Do not leave entries marked `type="unfinished"`.
 - **Formatting**: 4-space indentation, prefer named properties over property bindings where possible
 
 ### Reusable Components

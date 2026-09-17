@@ -33,6 +33,45 @@ private slots:
     QCOMPARE(operation.amountForCategory(nullptr), 0.0);
   }
 
+  void coversModelMetadataAndNullAllocations() {
+    Category category("Fictional Category");
+    Operation operation(nullptr, {}, 25.0, "Income", {},
+                        { nullptr, new Allocation(nullptr, 5.0),
+                          new Allocation(&category, 20.0) });
+
+    QCOMPARE(operation.rowCount(operation.index(0)), 0);
+    QCOMPARE(operation.roleNames().value(Operation::CategoryRole), QByteArray("category"));
+    QCOMPARE(operation.roleNames().value(Operation::AmountRole), QByteArray("amount"));
+    QVERIFY(!operation.data(operation.index(0), Operation::CategoryRole).isValid());
+    QCOMPARE(operation.data(operation.index(1), Operation::CategoryRole).value<const Category*>(), nullptr);
+    QCOMPARE(operation.allocatedAmount(), 25.0);
+    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional Category" }));
+    QCOMPARE(operation.categoryDisplay(), QString("Fictional Category"));
+    QCOMPARE(operation.amountForCategory(&category), 20.0);
+    QCOMPARE(operation.amountForCategory(nullptr), 0.0);
+  }
+
+  void comparesAllocationsIncludingNullAndDifferentValues() {
+    Category first("Fictional First");
+    Category second("Fictional Second");
+    Allocation matching(&first, 10.0);
+    Allocation differentAmount(&first, 11.0);
+    Allocation differentCategory(&second, 10.0);
+    Operation operation(nullptr, {}, 10.0, "Purchase", {}, { new Allocation(&first, 10.0) });
+
+    QVERIFY(operation.sameAllocations({ &matching }));
+    QVERIFY(!operation.sameAllocations({}));
+    QVERIFY(!operation.sameAllocations({ &differentAmount }));
+    QVERIFY(!operation.sameAllocations({ &differentCategory }));
+
+    Operation nullOperation(nullptr, {}, 0.0, "Empty", {}, { nullptr });
+    QVERIFY(nullOperation.sameAllocations({ nullptr }));
+    QVERIFY(!nullOperation.sameAllocations({ &matching }));
+    QVERIFY(!nullOperation.sameAllocations({ nullptr, nullptr }));
+
+    QVERIFY(matching != differentAmount);
+  }
+
   void budgetDateFallsBackAndSupportsExplicitValue() {
     const QDate operationDate(2026, 5, 15);
     Operation operation(nullptr, operationDate, 10.0, "Income");
@@ -69,6 +108,35 @@ private slots:
     QCOMPARE(operation.rowCount(), 0);
     QCOMPARE(allocationsSpy.count(), 2);
     operation.clearAllocations();
+    QCOMPARE(allocationsSpy.count(), 2);
+  }
+
+  void categoryRenameUpdatesCategorySummary() {
+    Category category("Fictional Old Name");
+    Operation operation(nullptr, {}, -50.0, "Purchase",
+                        {}, { new Allocation(&category, -50.0) });
+    QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
+
+    category.set_name("Fictional New Name");
+
+    QCOMPARE(operation.categoryDisplay(), QString("Fictional New Name"));
+    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional New Name" }));
+    QCOMPARE(allocationsSpy.count(), 1);
+  }
+
+  void categorySignalsFollowAllocationReplacement() {
+    Category oldCategory("Fictional Old");
+    Category newCategory("Fictional New");
+    Operation operation(nullptr, {}, -10.0, "Purchase", {},
+                        { new Allocation(&oldCategory, -10.0) });
+    QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
+
+    operation.setAllocations({ new Allocation(&newCategory, -10.0) });
+    QCOMPARE(allocationsSpy.count(), 1);
+
+    oldCategory.set_name("Fictional Old Renamed");
+    QCOMPARE(allocationsSpy.count(), 1);
+    newCategory.set_name("Fictional New Renamed");
     QCOMPARE(allocationsSpy.count(), 2);
   }
 };

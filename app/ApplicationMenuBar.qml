@@ -5,6 +5,7 @@ MenuBar {
     id: root
 
     required property bool anyDialogOpen
+    required property bool metricSelectorFocused
     required property var window
 
     signal newFileAction
@@ -17,6 +18,15 @@ MenuBar {
     signal deleteAction
     signal rulesAction
     signal preferencesAction
+    signal findOperationsAction
+    signal previousPageAction(bool extendSelection)
+    signal nextPageAction(bool extendSelection)
+    signal previousUnbalancedCategoryAction
+    signal nextUnbalancedCategoryAction
+    signal previousEvolutionMetricAction
+    signal nextEvolutionMetricAction
+    signal saveAvailableAction
+    signal reportAvailableAction
 
     signal checkUpdateAction
     signal projectPageAction
@@ -43,6 +53,16 @@ MenuBar {
     }
     ViewMenu {
         anyDialogOpen: root.anyDialogOpen
+        metricSelectorFocused: root.metricSelectorFocused
+        onFindOperationsAction: root.findOperationsAction()
+        onPreviousPageAction: extendSelection => root.previousPageAction(extendSelection)
+        onNextPageAction: extendSelection => root.nextPageAction(extendSelection)
+        onPreviousUnbalancedCategoryAction: root.previousUnbalancedCategoryAction()
+        onNextUnbalancedCategoryAction: root.nextUnbalancedCategoryAction()
+        onPreviousEvolutionMetricAction: root.previousEvolutionMetricAction()
+        onNextEvolutionMetricAction: root.nextEvolutionMetricAction()
+        onSaveAvailableAction: root.saveAvailableAction()
+        onReportAvailableAction: root.reportAvailableAction()
     }
     HelpMenu {
         onCheckUpdateAction: root.checkUpdateAction()

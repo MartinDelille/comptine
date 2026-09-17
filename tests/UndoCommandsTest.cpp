@@ -38,24 +38,38 @@ private slots:
     QCOMPARE(account->operations().size(), 2);
   }
 
+  void addOperationCommandIsClearedBeforeAccountDestruction() {
+    QUndoStack undoStack;
+    {
+      BudgetData budgetData(undoStack);
+      auto* account = budgetData.createAccount("Fictional Checking");
+      auto* operation = new Operation(account, QDate(2026, 1, 1), -10.0,
+                                      "Fictional Operation");
+      undoStack.push(new AddOperationCommand(operation, *account));
+      QCOMPARE(account->operations().size(), 1);
+    }
+
+    QVERIFY(true);
+  }
+
   void categoryCommandRestoresHistoricalBudgetLimit() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
-    Category category("Fictional Original", -100.0);
+    Category category("Fictional Original");
+    category.setBudgetLimitForMonth(2026, 1, -100.0);
     category.setBudgetLimitForMonth(2026, 2, -80.0);
 
     undoStack.push(new EditCategoryCommand(category, "Fictional Updated", -120.0,
                                            QDate(2026, 3, 1)));
     QCOMPARE(category.name(), QString("Fictional Updated"));
-    QCOMPARE(category.budgetLimit(), -120.0);
-    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -100.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 3, 1)), -120.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -80.0);
 
     undoStack.undo();
     QCOMPARE(category.name(), QString("Fictional Original"));
-    QCOMPARE(category.budgetLimit(), -100.0);
     QCOMPARE(category.budgetLimitForMonth(QDate(2026, 2, 1)), -80.0);
     undoStack.redo();
-    QCOMPARE(category.budgetLimit(), -120.0);
+    QCOMPARE(category.budgetLimitForMonth(QDate(2026, 3, 1)), -120.0);
   }
 
   void ruleCommandsRoundTrip() {

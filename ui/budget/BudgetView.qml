@@ -12,6 +12,9 @@ FocusScope {
     id: root
 
     property bool dialogOpen: categoryEditDialog.visible
+    readonly property var currentCategoryItem: categoryListView.currentItem
+    readonly property real netBudget: CategoryController.totalIncome - CategoryController.totalExpense
+    readonly property real netReported: CategoryController.netReport
 
     function editCurrentCategory() {
         let category = CategoryController.current;
@@ -24,11 +27,57 @@ FocusScope {
         categoryEditDialog.edit();
     }
 
+    function movePage(direction) {
+        const itemHeight = categoryListView.currentItem?.implicitHeight || 100;
+        const pageSize = Math.max(1, Math.floor(categoryListView.height / itemHeight));
+        CategoryController.currentIndex = Math.max(0, Math.min(CategoryController.count - 1, CategoryController.currentIndex + direction * pageSize));
+    }
+
+    function moveToUnbalanced(direction) {
+        let index = CategoryController.currentIndex;
+        if (index < 0)
+            index = direction > 0 ? -1 : CategoryController.count;
+
+        index += direction;
+        while (index >= 0 && index < CategoryController.count) {
+            if (!CategoryController.isBalanced(index)) {
+                CategoryController.currentIndex = index;
+                return;
+            }
+            index += direction;
+        }
+    }
+
+    function saveAvailable() {
+        let categoryItem = root.currentCategoryItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount = categoryItem.saveAmount !== 0 ? 0 : categoryItem.saveAmount + categoryItem.remainingLeftover;
+        CategoryEditor.setSaveAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
+    function reportAvailable() {
+        let categoryItem = root.currentCategoryItem;
+        if (!categoryItem || !categoryItem.category)
+            return;
+
+        let amount;
+        if (categoryItem.reportAmount !== 0) {
+            amount = 0;
+        } else if (categoryItem.leftover >= 0) {
+            amount = categoryItem.reportAmount + categoryItem.remainingLeftover;
+        } else {
+            amount = categoryItem.leftover;
+        }
+        CategoryEditor.setReportAmount(categoryItem.category, BudgetData.budgetDate, amount);
+    }
+
     CategoryEditDialog {
         id: categoryEditDialog
         date: BudgetData.budgetDate
-        onCategoryEdited: function (category, newName, newBudgetLimit) {
-            CategoryEditor.edit(newName, newBudgetLimit, category, date);
+        onCategoryEdited: function (category, newName, newBudgetLimit, inheritPrevious) {
+            CategoryEditor.edit(newName, newBudgetLimit, category, date, inheritPrevious);
         }
     }
 
@@ -74,94 +123,125 @@ FocusScope {
             }
         }
 
-        // Summary
-        ColumnLayout {
-            RowLayout {
-                Label {
-                    text: qsTr("Total Budget:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
-                }
-                Label {
-                    property real _balance: CategoryController.totalIncome - CategoryController.totalExpense
-                    text: `${Theme.formatAmountWithoutCurrency(CategoryController.totalIncome)} - ${Theme.formatAmountWithoutCurrency(CategoryController.totalExpense)} = ${Theme.formatAmount(_balance)}`
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
-                    color: _balance == 0 ? Theme.textMuted : Theme.negative
-                }
-            }
+        // Monthly overview
+        Card {
+            Layout.fillWidth: true
+            Layout.preferredHeight: overviewColumn.implicitHeight + 24
 
-            RowLayout {
+            ColumnLayout {
+                id: overviewColumn
+                anchors.fill: parent
+                anchors.margins: 12
                 spacing: Theme.spacingSmall
 
-                Label {
-                    text: qsTr("To Save:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
-                }
-                AmountLabel {
-                    amount: CategoryController.totalToSave
-                    font.pixelSize: Theme.fontSizeSmall
-                }
-            }
+                RowLayout {
+                    Layout.fillWidth: true
 
-            RowLayout {
-                spacing: Theme.spacingSmall
+                    Label {
+                        text: qsTr("Monthly overview")
+                        color: Theme.textPrimary
+                        font.pixelSize: Theme.fontSizeLarge
+                        font.weight: Font.Medium
+                    }
 
-                Label {
-                    text: qsTr("To Leftover:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
-                }
-                AmountLabel {
-                    amount: CategoryController.totalToReport
-                    color: Theme.accent
-                    font.pixelSize: Theme.fontSizeSmall
-                }
-            }
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
-            RowLayout {
-                spacing: Theme.spacingSmall
-                visible: CategoryController.totalFromReport > 0
-
-                Label {
-                    text: qsTr("From Leftover:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
+                    Label {
+                        text: qsTr("%1 of %2 categories balanced").arg(CategoryController.balancedCount).arg(CategoryController.count)
+                        color: CategoryController.balancedCount === CategoryController.count ? Theme.positive : Theme.warning
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
                 }
-                AmountLabel {
-                    amount: CategoryController.totalFromReport
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.warning
-                }
-            }
 
-            RowLayout {
-                spacing: Theme.spacingSmall
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.spacingSmall
 
-                Label {
-                    text: qsTr("Net:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
-                }
-                AmountLabel {
-                    amount: CategoryController.netReport
-                    font.pixelSize: Theme.fontSizeSmall
-                }
-            }
+                    Label {
+                        text: qsTr("Income")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: CategoryController.totalIncome
+                        font.pixelSize: Theme.fontSizeNormal
+                    }
 
-            RowLayout {
-                spacing: Theme.spacingSmall
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
-                Label {
-                    text: qsTr("Balanced:")
-                    font.pixelSize: Theme.fontSizeSmall
-                    color: Theme.textSecondary
+                    Label {
+                        text: qsTr("Expenses")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: CategoryController.totalExpense
+                        font.pixelSize: Theme.fontSizeNormal
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Label {
+                        text: qsTr("Net")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: root.netBudget
+                        color: root.netBudget >= 0 ? Theme.positive : Theme.negative
+                        font.pixelSize: Theme.fontSizeNormal
+                    }
                 }
-                Label {
-                    text: `${CategoryController.balancedCount} / ${CategoryController.count}`
-                    font.pixelSize: Theme.fontSizeSmall
-                    font.bold: true
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Theme.spacingSmall
+
+                    Label {
+                        text: qsTr("To save")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: CategoryController.totalToSave
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Label {
+                        text: qsTr("To report")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: CategoryController.totalToReport
+                        color: Theme.accent
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Label {
+                        text: qsTr("Reported balance")
+                        color: Theme.textSecondary
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                    AmountLabel {
+                        amount: root.netReported
+                        color: root.netReported >= 0 ? Theme.accent : Theme.warning
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
                 }
             }
         }
@@ -175,9 +255,20 @@ FocusScope {
             clip: true
             focus: true
             currentIndex: CategoryController.currentIndex
-            onCurrentIndexChanged: CategoryController.currentIndex = currentIndex
+
+            function ensureCurrentCategoryVisible() {
+                if (count > 0 && currentIndex >= 0)
+                    positionViewAtIndex(currentIndex, ListView.Contain);
+            }
+
+            onCountChanged: ensureCurrentCategoryVisible()
+            onCurrentIndexChanged: ensureCurrentCategoryVisible()
 
             Keys.onReturnPressed: categoryDetailView.open()
+            Keys.onSpacePressed: function (event) {
+                event.accepted = true;
+                categoryDetailView.open();
+            }
             ScrollBar.vertical: ScrollBar {
                 id: scrollBar
             }
@@ -190,12 +281,12 @@ FocusScope {
                 isCurrentItem: categoryListView.currentIndex === index
 
                 onClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryDetailView.open();
                 }
 
                 onEditClicked: {
-                    categoryListView.currentIndex = index;
+                    CategoryController.currentIndex = index;
                     categoryEditDialog.edit(category);
                 }
             }

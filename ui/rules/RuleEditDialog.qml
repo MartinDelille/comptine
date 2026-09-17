@@ -10,6 +10,7 @@ BaseDialog {
     id: root
     title: isNewRule ? qsTr("Add Rule") : qsTr("Edit Rule")
     width: 450
+    height: root.parent ? Math.min(implicitHeight, root.parent.height - 40) : implicitHeight
 
     property bool isNewRule: true
     property int ruleIndex: -1
@@ -91,68 +92,80 @@ BaseDialog {
         }
     }
 
-    ColumnLayout {
+    ScrollView {
+        id: scrollView
         anchors.fill: parent
-        spacing: Theme.spacingNormal
+        contentWidth: availableWidth
+        clip: true
 
-        Label {
-            text: qsTr("Label Match")
-            font.pixelSize: Theme.fontSizeNormal
-            color: Theme.textPrimary
+        ScrollBar.vertical: ScrollBar {
+            policy: ScrollBar.AsNeeded
         }
 
-        TextField {
-            id: descriptionMatchField
-            Layout.fillWidth: true
-            placeholderText: qsTr("Operations starting with this text will match")
-            font.pixelSize: Theme.fontSizeNormal
-            onActiveFocusChanged: if (activeFocus)
-                selectAll()
-        }
+        ColumnLayout {
+            id: contentColumn
+            width: scrollView.availableWidth
+            spacing: Theme.spacingNormal
 
-        Label {
-            text: qsTr("Assign Category")
-            font.pixelSize: Theme.fontSizeNormal
-            color: Theme.textPrimary
-        }
+            Label {
+                text: qsTr("Label Match")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textPrimary
+            }
 
-        ComboBox {
-            id: categoryCombo
-            Layout.fillWidth: true
-            model: root.categoryList
-            font.pixelSize: Theme.fontSizeNormal
-        }
+            TextField {
+                id: descriptionMatchField
+                Layout.fillWidth: true
+                placeholderText: qsTr("Operations starting with this text will match")
+                font.pixelSize: Theme.fontSizeNormal
+                onActiveFocusChanged: if (activeFocus)
+                    selectAll()
+            }
 
-        // Optional amount filter
-        CheckBox {
-            id: amountCheckBox
-            text: qsTr("Match specific amount")
-            font.pixelSize: Theme.fontSizeNormal
-        }
+            Label {
+                text: qsTr("Assign Category")
+                font.pixelSize: Theme.fontSizeNormal
+                color: Theme.textPrimary
+            }
 
-        AmountField {
-            id: amountFilterField
-            enabled: amountCheckBox.checked
-            Layout.fillWidth: true
-            value: 0
-        }
+            ComboBox {
+                id: categoryCombo
+                Layout.fillWidth: true
+                model: root.categoryList
+                font.pixelSize: Theme.fontSizeNormal
+            }
 
-        // Show a hint about how rules work
-        Label {
-            Layout.fillWidth: true
-            text: qsTr("Rules are matched in order. The first matching rule wins.")
-            font.pixelSize: Theme.fontSizeSmall
-            color: Theme.textSecondary
-            wrapMode: Text.WordWrap
-        }
+            // Optional amount filter
+            CheckBox {
+                id: amountCheckBox
+                text: qsTr("Match specific amount")
+                font.pixelSize: Theme.fontSizeNormal
+            }
 
-        // Option to apply the new rule to existing uncategorized operations
-        CheckBox {
-            id: applyToExistingCheckBox
-            visible: root.isNewRule
-            checked: true
-            text: qsTr("Apply to existing uncategorized operations")
-            font.pixelSize: Theme.fontSizeSmall
+            AmountField {
+                id: amountFilterField
+                enabled: amountCheckBox.checked
+                Layout.fillWidth: true
+                value: 0
+            }
+
+            // Show a hint about how rules work
+            Label {
+                Layout.fillWidth: true
+                text: qsTr("Rules are matched in order. The first matching rule wins.")
+                font.pixelSize: Theme.fontSizeSmall
+                color: Theme.textSecondary
+                wrapMode: Text.WordWrap
+            }
+
+            // Option to apply the new rule to existing uncategorized operations
+            CheckBox {
+                id: applyToExistingCheckBox
+                visible: root.isNewRule
+                checked: true
+                text: qsTr("Apply to existing uncategorized operations")
+                font.pixelSize: Theme.fontSizeSmall
+            }
         }
     }
 }

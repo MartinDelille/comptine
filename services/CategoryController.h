@@ -53,6 +53,7 @@ public:
   // QAbstractListModel interface
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   int balancedCount() const;
+  Q_INVOKABLE bool isBalanced(int index) const;
   QVariant data(const QModelIndex& index, int role) const override;
   QHash<int, QByteArray> roleNames() const override;
 
@@ -93,6 +94,7 @@ signals:
   void countChanged();
   void budgetDataChanged();
   void monthHistoryChanged();
+  void evolutionDataChanged();
 
 private:
   QList<Category*> _categories;

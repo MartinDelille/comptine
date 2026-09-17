@@ -14,13 +14,14 @@ BaseDialog {
     property var _category: null
     okEnabled: categoryNameField.text.trim().length > 0
 
-    signal categoryEdited(var category, string newName, double newBudgetLimit)
+    signal categoryEdited(var category, string newName, double newBudgetLimit, bool inheritPrevious)
 
     function edit(category = null) {
         _category = category;
         categoryNameField.text = _category ? _category.name : "";
         // Set checkbox based on sign (positive = income)
         let budgetLimit = _category ? _category.budgetLimitForMonth(date) : 0;
+        inheritCheckBox.checked = _category ? !_category.hasBudgetLimitOverrideForMonth(date) : false;
         incomeCheckBox.checked = budgetLimit > 0;
         // Display absolute value
         budgetLimitField.value = Math.abs(budgetLimit);
@@ -37,7 +38,7 @@ BaseDialog {
         let amount = budgetLimitField.value;
         // Apply sign based on checkbox: income = positive, expense = negative
         let newBudgetLimit = incomeCheckBox.checked ? amount : -amount;
-        categoryEdited(_category, categoryNameField.text, newBudgetLimit);
+        categoryEdited(_category, categoryNameField.text, newBudgetLimit, inheritCheckBox.checked);
     }
 
     ColumnLayout {
@@ -68,6 +69,7 @@ BaseDialog {
         AmountField {
             id: budgetLimitField
             Layout.fillWidth: true
+            enabled: !inheritCheckBox.checked
             font.pixelSize: Theme.fontSizeNormal
             onEdited: function (newValue) {
                 value = newValue;
@@ -77,6 +79,12 @@ BaseDialog {
         CheckBox {
             id: incomeCheckBox
             text: qsTr("This is an income category")
+        }
+
+        CheckBox {
+            id: inheritCheckBox
+            text: qsTr("Use previous month's budget limit")
+            visible: root._category !== null
         }
     }
 }

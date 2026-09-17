@@ -87,5 +87,8 @@ docs/assets/screenshots
 compile_commands.json
 .cache
 CMakeUserPresets.json
+ConanPresets.json
+coverage.info
+coverage-html/
 .qtcreator/
 .op

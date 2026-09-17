@@ -20,6 +20,7 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::evolutionDataChanged);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
@@ -59,15 +60,23 @@ int CategoryController::rowCount(const QModelIndex& parent) const {
 
 int CategoryController::balancedCount() const {
   int result = 0;
-  int year = _budgetData.budgetDate().year();
-  int month = _budgetData.budgetDate().month();
-  for (auto category : _categories) {
-    if (qAbs(category->budgetLimitForMonth(_budgetData.budgetDate()) - spentInCategory(category, _budgetData.budgetDate()) + category->leftoverDecision(year, month).leftoverTotal()) < 0.01) {
+  for (int index = 0; index < _categories.size(); ++index) {
+    if (isBalanced(index)) {
       result++;
     }
   }
 
   return result;
+}
+
+bool CategoryController::isBalanced(int index) const {
+  auto category = at(index);
+  if (!category)
+    return true;
+
+  const auto date = _budgetData.budgetDate();
+  const auto record = category->monthRecord(date.year(), date.month());
+  return qAbs(category->budgetLimitForMonth(date) - spentInCategory(category, date) + record.leftoverTotal()) < 0.01;
 }
 
 QVariant CategoryController::data(const QModelIndex& index, int role) const {
@@ -205,10 +214,10 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::refresh);
-  connect(category, &Category::budgetLimitChanged, this, &CategoryController::budgetDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
+  connect(category, &Category::monthHistoryChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);
+  connect(category, &Category::nameChanged, this, &CategoryController::evolutionDataChanged);
 
   QCollator collator;
   collator.setCaseSensitivity(Qt::CaseInsensitive);

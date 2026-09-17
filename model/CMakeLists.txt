@@ -7,6 +7,7 @@ qt_add_qml_module(model
         Account.cpp Account.h
         Category.cpp Category.h
         Operation.cpp Operation.h
+        OperationFilterModel.cpp OperationFilterModel.h
         Rule.cpp Rule.h
 )
 

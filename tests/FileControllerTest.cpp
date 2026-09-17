@@ -7,6 +7,7 @@
 #include <QUrl>
 
 #include "editor/CategoryEditor.h"
+#include "editor/ImportEditor.h"
 #include "model/Account.h"
 #include "model/Category.h"
 #include "model/Operation.h"
@@ -119,6 +120,11 @@ private slots:
     QVERIFY(QFile::exists(filePath));
   }
 
+  void testSaveToInvalidUrl() {
+    QVERIFY(!fileController->saveToYamlUrl(QUrl("https://example.com/file.comptine")));
+    QVERIFY(fileController->errorMessage().contains("Invalid or unsupported"));
+  }
+
   void testLoadFromYamlUrl() {
     // Create a test file
     QString filePath = tempDir->filePath("url_load.comptine");
@@ -130,6 +136,14 @@ private slots:
     QUrl fileUrl = QUrl::fromLocalFile(filePath);
     QVERIFY(fileController->loadFromYamlUrl(fileUrl));
     QCOMPARE(budgetData->rowCount(), 1);
+  }
+
+  void testImportEditorDelegatesToFileController() {
+    ImportEditor importEditor(*fileController);
+
+    QVERIFY(importEditor.importCsv(QUrl("file::/tests/import1.csv"),
+                                   "Fictional Imported Account", false));
+    QCOMPARE(budgetData->accountByName("Fictional Imported Account") != nullptr, true);
   }
 
   // Save/Load with Accounts and Operations
@@ -299,9 +313,12 @@ private slots:
   // Save/Load with Categories and Budget Limits
 
   void testSaveAndLoadCategories() {
-    categoryController->addCategory(new Category("Food", 500.0));
-    categoryController->addCategory(new Category("Transport", 200.0));
-    categoryController->addCategory(new Category("Entertainment", 100.0));
+    auto* foodToSave = categoryController->addCategory(new Category("Food"));
+    auto* transportToSave = categoryController->addCategory(new Category("Transport"));
+    auto* entertainmentToSave = categoryController->addCategory(new Category("Entertainment"));
+    foodToSave->setBudgetLimitForMonth(2025, 1, 500.0);
+    transportToSave->setBudgetLimitForMonth(2025, 1, 200.0);
+    entertainmentToSave->setBudgetLimitForMonth(2025, 1, 100.0);
 
     // Save and reload
     QString filePath = tempDir->filePath("categories.comptine");
@@ -313,13 +330,13 @@ private slots:
     QCOMPARE(categoryController->rowCount(), 3);
     auto food = categoryController->getCategoryByName("Food");
     QVERIFY(food != nullptr);
-    QCOMPARE(food->budgetLimit(), 500.0);
+    QCOMPARE(food->budgetLimitForMonth(QDate(2025, 1, 1)), 500.0);
   }
 
   // Save/Load with Leftover Decisions
 
   void testSaveAndLoadLeftoverDecisions() {
-    auto cat = new Category("Savings", 300.0);
+    auto cat = new Category("Savings");
     categoryController->addCategory(cat);
 
     // Set leftover decision for January 2025
@@ -368,10 +385,10 @@ private slots:
   // Save/Load with Month History and Budget Limit Overrides
 
   void testSaveAndLoadMonthHistoryWithBudgetLimit() {
-    auto cat = new Category("Groceries", -300.0);
+    auto cat = new Category("Groceries");
     categoryController->addCategory(cat);
 
-    // Record that budget was 250 until June (old limit stored in history)
+    // Record the limit effective from June.
     cat->setBudgetLimitForMonth(2025, 6, -250.0);
 
     // Also set leftover decision for June
@@ -386,7 +403,6 @@ private slots:
     // Verify
     auto loaded = categoryController->getCategoryByName("Groceries");
     QVERIFY(loaded != nullptr);
-    QCOMPARE(loaded->budgetLimit(), -300.0);
 
     // Verify month record has both leftover data and budget limit
     MonthRecord record = loaded->monthRecord(2025, 6);
@@ -396,13 +412,13 @@ private slots:
     QCOMPARE(record.budgetLimit.value(), -250.0);
 
     // Verify budgetLimitForMonth lookup works after reload
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), 0.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -250.0);
   }
 
   void testSaveAndLoadMonthHistoryBudgetLimitOnly() {
-    auto cat = new Category("Transport", -150.0);
+    auto cat = new Category("Transport");
     categoryController->addCategory(cat);
 
     // Only budget limit in history, no leftover data
@@ -423,8 +439,38 @@ private slots:
     QCOMPARE(record.budgetLimit.value(), -100.0);
   }
 
+  void testLoadLegacyBudgetLimitHistory() {
+    const QString filePath = tempDir->filePath("legacy_budget_limit_history.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    QTextStream out(&file);
+    out << "categories:\n";
+    out << "  - name: Food\n";
+    out << "    budget_limit: -300.00\n";
+    out << "    month_history:\n";
+    out << "      - year: 2025\n";
+    out << "        month: 6\n";
+    out << "        budget_limit: -250.00\n";
+    out << "      - year: 2025\n";
+    out << "        month: 8\n";
+    out << "        budget_limit: -200.00\n";
+    out << "accounts: []\n";
+    file.close();
+
+    QVERIFY(fileController->loadFromYamlFile(filePath));
+    auto loaded = categoryController->getCategoryByName("Food");
+    QVERIFY(loaded != nullptr);
+
+    // Legacy entries are converted to month-effective boundaries.
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 5, 1)), 0.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -250.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 8, 1)), -200.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 9, 1)), -300.0);
+  }
+
   void testSaveAndLoadMultipleBudgetLimitChanges() {
-    auto cat = new Category("Food", -400.0);
+    auto cat = new Category("Food");
     categoryController->addCategory(cat);
 
     // Multiple historical budget limit changes
@@ -439,14 +485,13 @@ private slots:
 
     auto loaded = categoryController->getCategoryByName("Food");
     QVERIFY(loaded != nullptr);
-    QCOMPARE(loaded->budgetLimit(), -400.0);
 
-    // Verify the forward-scan lookup works correctly
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 1, 1)), -200.0);
+    // Verify the month-effective lookup works correctly
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 1, 1)), 0.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 3, 1)), -200.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 4, 1)), -300.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 4, 1)), -200.0);
     QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 6, 1)), -300.0);
-    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -400.0);
+    QCOMPARE(loaded->budgetLimitForMonth(QDate(2025, 7, 1)), -300.0);
   }
 
   void testLoadLegacyLeftoverDecisionsKey() {
@@ -477,7 +522,7 @@ private slots:
 
   void testSaveUsesMonthHistoryKey() {
     // Verify that saving uses the new "month_history" key
-    auto cat = new Category("Test", -100.0);
+    auto cat = new Category("Test");
     categoryController->addCategory(cat);
     cat->setLeftoverDecision(2025, 1, { 10.0, 5.0 });
 
@@ -491,6 +536,7 @@ private slots:
 
     QVERIFY(content.contains("month_history"));
     QVERIFY(!content.contains("leftover_decisions"));
+    QVERIFY(content.contains("budget_limit_history_version: 2"));
   }
 
   // Save/Load with Categorization Rules
@@ -567,6 +613,150 @@ private slots:
   void testLoadFromInvalidUrl() {
     QUrl invalidUrl("http://example.com/file.comptine");
     QVERIFY(!fileController->loadFromYamlUrl(invalidUrl));
+  }
+
+  void testLoadFromInvalidYaml() {
+    QString filePath = tempDir->filePath("invalid.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    file.write("categories: [broken yaml\n");
+    file.close();
+
+    QVERIFY(!fileController->loadFromYamlFile(filePath));
+    QVERIFY(fileController->errorMessage().contains("Could not parse file"));
+  }
+
+  void testLoadLegacyStateFields() {
+    QString filePath = tempDir->filePath("legacy_state.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    QTextStream out(&file);
+    out << "state:\n"
+        << "  currentTab: 2\n"
+        << "  budgetYear: 2024\n"
+        << "  budgetMonth: 11\n"
+        << "categories: []\n"
+        << "accounts: []\n";
+    file.close();
+
+    QVERIFY(fileController->loadFromYamlFile(filePath));
+    QCOMPARE(budgetData->currentTabIndex(), 2);
+    QCOMPARE(budgetData->budgetDate(), QDate(2024, 11, 1));
+  }
+
+  void testSaveAllOptionalFields() {
+    auto category = categoryController->addCategory(new Category("Food"));
+    categoryController->set_current(category);
+    auto account = budgetData->createAccount("Checking");
+    budgetData->set_currentAccount(account);
+    account->addImportSourcePrefix("fictional-bank.csv");
+
+    auto operation = account->addOperation(new Operation(account, QDate(2025, 1, 2), -12.5, "Lunch"), false);
+    operation->setAllocations({ new Allocation(nullptr, -12.5) });
+    account->select(operation);
+    ruleController->addRule(new Rule(category, "Lunch", -12.5));
+
+    const QString filePath = tempDir->filePath("optional_fields.comptine");
+    QVERIFY(fileController->saveToYamlFile(filePath));
+
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
+    const QString content = file.readAll();
+    QVERIFY(content.contains("current: true"));
+    QVERIFY(content.contains("import_source_prefixes"));
+    QVERIFY(content.contains("label_match: Lunch"));
+    QVERIFY(content.contains("amount: -12.5"));
+    QVERIFY(content.contains("allocations:"));
+  }
+
+  void testReloadCurrentFile() {
+    auto account = budgetData->createAccount("Before");
+    account->addOperation(new Operation(account, QDate(2025, 1, 1), 10.0, "Original"), false);
+    const QString filePath = tempDir->filePath("reload.comptine");
+    QVERIFY(fileController->saveToYamlFile(filePath));
+
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    file.write("categories: []\naccounts:\n  - name: After\n    operations: []\n");
+    file.close();
+
+    fileController->reloadCurrentFile();
+    QCOMPARE(budgetData->at(0)->name(), QString("After"));
+  }
+
+  void testLoadInitialFileDispatchesByExtension() {
+    const QString yamlPath = tempDir->filePath("initial.yaml");
+    QFile yamlFile(yamlPath);
+    QVERIFY(yamlFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    yamlFile.write("categories: []\naccounts:\n  - name: YAML\n");
+    yamlFile.close();
+
+    fileController->loadInitialFile({ "comptine", yamlPath });
+    QCOMPARE(budgetData->at(0)->name(), QString("YAML"));
+
+    fileController->clear();
+    const QString csvPath = tempDir->filePath("initial.csv");
+    QFile csvFile(csvPath);
+    QVERIFY(csvFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    csvFile.write("Date,Montant,Opération\n01/02/2025,4.50,Initial CSV\n");
+    csvFile.close();
+
+    fileController->loadInitialFile({ "comptine", csvPath });
+    QCOMPARE(budgetData->at(0)->operations().size(), 1);
+    QCOMPARE(budgetData->at(0)->operations().first()->label(), QString("Initial CSV"));
+  }
+
+  void testLoadInitialFileUsesExistingRecentFile() {
+    const QString filePath = tempDir->filePath("recent.comptine");
+    QFile file(filePath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    file.write("categories: []\naccounts:\n  - name: Recent\n");
+    file.close();
+    appSettings->addRecentFile(filePath);
+
+    fileController->loadInitialFile({ "comptine" });
+    QCOMPARE(budgetData->at(0)->name(), QString("Recent"));
+  }
+
+  void testImportCsvSkipsInvalidRowsAndDuplicates() {
+    auto account = budgetData->createAccount("Checking");
+    account->addOperation(new Operation(account, QDate(2025, 2, 1), -5.0, "Duplicate"), false);
+
+    const QString csvPath = tempDir->filePath("skipped_rows.csv");
+    QFile file(csvPath);
+    QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));
+    QTextStream out(&file);
+    out << "Date;Débit;Crédit;Libellé;budget date\n"
+        << "bad-date;-1.00;;Bad date;\n"
+        << "01/02/2025;-5.00;;Duplicate;\n"
+        << "02/02/2025;;7.50;Credit;03/02/2025\n"
+        << "03/02/2025;-2.00;;;\n"
+        << "\n";
+    file.close();
+
+    QVERIFY(fileController->importFromCsv(QUrl::fromLocalFile(csvPath), "Checking", false));
+    QCOMPARE(account->operations().size(), 2);
+    auto imported = account->operationAt(0);
+    QCOMPARE(imported->amount(), 7.5);
+    QCOMPARE(imported->budgetDate(), QDate(2025, 2, 3));
+  }
+
+  void testImportCsvRejectsInvalidHeaderAndEmptyData() {
+    const QString invalidPath = tempDir->filePath("invalid.csv");
+    QFile invalidFile(invalidPath);
+    QVERIFY(invalidFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    invalidFile.write("Date;Label\n01/01/2025;Nothing\n");
+    invalidFile.close();
+    QVERIFY(!fileController->importFromCsv(QUrl::fromLocalFile(invalidPath)));
+    QVERIFY(fileController->errorMessage().contains("Invalid CSV format"));
+
+    const QString emptyDataPath = tempDir->filePath("no_rows.csv");
+    QFile emptyDataFile(emptyDataPath);
+    QVERIFY(emptyDataFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    emptyDataFile.write("Date,Montant,Opération\n");
+    emptyDataFile.close();
+    QVERIFY(!fileController->importFromCsv(QUrl::fromLocalFile(emptyDataPath)));
+    QVERIFY(fileController->errorMessage().isEmpty());
   }
 
   // Signals
