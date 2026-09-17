@@ -348,7 +348,12 @@ private:
 // Command for moving a categorization rule (reordering priority)
 class MoveRuleCommand : public QUndoCommand {
 public:
-  MoveRuleCommand(RuleController& ruleController, int fromIndex, int toIndex,
+  struct Indexes {
+    int from = 0;
+    int to = 0;
+  };
+
+  MoveRuleCommand(RuleController& ruleController, Indexes indexes,
                   QUndoCommand* parent = nullptr);
 
   void undo() override;

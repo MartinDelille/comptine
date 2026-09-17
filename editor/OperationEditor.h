@@ -27,13 +27,13 @@ public:
   bool canUndo() const;
   bool canRedo() const;
   Q_INVOKABLE bool beginEditing(Operation* operation);
-  Q_INVOKABLE Operation* beginNew(const QDate& date, double amount,
-                                  const QString& label, const QString& details);
+  Q_INVOKABLE Operation* beginNew(const QDate& date, const QString& label,
+                                  double amount, const QString& details);
   Q_INVOKABLE void endEditing(bool commit);
   Q_INVOKABLE void undo();
   Q_INVOKABLE void redo();
 
-  Q_INVOKABLE void add(const QDate& date, double amount, const QString& label,
+  Q_INVOKABLE void add(const QDate& date, const QString& label, double amount,
                        const QString& details, const QVariantList& allocations);
   Q_INVOKABLE void setBudgetDate(Operation* operation, const QDate& date);
   Q_INVOKABLE void setAmount(Operation* operation, double amount);

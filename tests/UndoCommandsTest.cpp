@@ -56,8 +56,8 @@ private slots:
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
     Category category("Fictional Original");
-    category.setBudgetLimitForMonth(2026, 1, -100.0);
-    category.setBudgetLimitForMonth(2026, 2, -80.0);
+    category.setBudgetLimitForMonth(QDate(2026, 1, 1), -100.0);
+    category.setBudgetLimitForMonth(QDate(2026, 2, 1), -80.0);
 
     undoStack.push(new EditCategoryCommand(category, "Fictional Updated", -120.0,
                                            QDate(2026, 3, 1)));
@@ -93,7 +93,7 @@ private slots:
     QCOMPARE(controller.at(0)->category(), &firstCategory);
     undoStack.redo();
 
-    undoStack.push(new MoveRuleCommand(controller, 0, 1));
+    undoStack.push(new MoveRuleCommand(controller, { 0, 1 }));
     QCOMPARE(controller.at(0), secondRule);
     undoStack.undo();
     QCOMPARE(controller.at(0), firstRule);

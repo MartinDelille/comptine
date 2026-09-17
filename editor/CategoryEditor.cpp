@@ -35,7 +35,7 @@ Category* CategoryEditor::edit(const QString& name, double budgetLimit,
   }
   auto* newCategory = new Category(name);
   if (budgetDate.isValid() && !inheritPrevious) {
-    newCategory->setBudgetLimitForMonth(budgetDate.year(), budgetDate.month(), budgetLimit);
+    newCategory->setBudgetLimitForMonth(budgetDate, budgetLimit);
   }
   _undoStack.push(new AddCategoryCommand(&_controller, newCategory));
   return newCategory;
@@ -63,7 +63,7 @@ void CategoryEditor::remove(Category* category) {
 
 void CategoryEditor::setSaveAmount(Category* category, const QDate& date, double amount) {
   if (!category) return;
-  auto oldRecord = category->monthRecord(date.year(), date.month());
+  auto oldRecord = category->monthRecord(date);
   auto newRecord = oldRecord;
   newRecord.saveAmount = amount;
   if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount))
@@ -72,7 +72,7 @@ void CategoryEditor::setSaveAmount(Category* category, const QDate& date, double
 
 void CategoryEditor::setReportAmount(Category* category, const QDate& date, double amount) {
   if (!category) return;
-  auto oldRecord = category->monthRecord(date.year(), date.month());
+  auto oldRecord = category->monthRecord(date);
   auto newRecord = oldRecord;
   newRecord.reportAmount = amount;
   if (!qFuzzyCompare(oldRecord.saveAmount, newRecord.saveAmount) || !qFuzzyCompare(oldRecord.reportAmount, newRecord.reportAmount))

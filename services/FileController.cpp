@@ -115,16 +115,16 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     }
 
     // Write month history (leftover decisions + budget limit overrides)
-    QMap<YearMonth, MonthRecord> history = category->allMonthHistory();
+    QMap<QDate, MonthRecord> history = category->allMonthHistory();
     if (!history.isEmpty()) {
       out << YAML::Key << "month_history" << YAML::Value << YAML::BeginSeq;
       for (auto it = history.constBegin(); it != history.constEnd(); ++it) {
-        const YearMonth& ym = it.key();
+        const QDate& month = it.key();
         const MonthRecord& record = it.value();
         if (!record.isEmpty()) {
           out << YAML::BeginMap;
-          out << YAML::Key << "year" << YAML::Value << ym.year;
-          out << YAML::Key << "month" << YAML::Value << ym.month;
+          out << YAML::Key << "year" << YAML::Value << month.year();
+          out << YAML::Key << "month" << YAML::Value << month.month();
           if (record.budgetLimit.has_value()) {
             out << YAML::Key << "budget_limit" << YAML::Value << toStdString(QString::number(record.budgetLimit.value(), 'f', 2));
           }
@@ -339,7 +339,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
                                               : 0.0;
 
         // Load month history (new format) or leftover decisions (legacy format)
-        QMap<YearMonth, MonthRecord> loadedHistory;
+        QMap<QDate, MonthRecord> loadedHistory;
         auto loadMonthEntries = [&](const YAML::Node& entriesNode) {
           for (const auto& entryNode : entriesNode) {
             int year = 0, month = 0;
@@ -374,7 +374,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             }
 
             if (year > 0 && month > 0 && !record.isEmpty()) {
-              loadedHistory.insert({ year, month }, record);
+              loadedHistory.insert(QDate(year, month, 1), record);
             }
           }
         };
@@ -387,13 +387,13 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
         if (budgetLimitHistoryVersion >= 2) {
           for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
-            category->setMonthRecord(it.key().year, it.key().month, it.value());
+            category->setMonthRecord(it.key(), it.value());
           }
         } else {
           // Before version 2, a budget-limit entry stored the old value in the
           // last month where it was effective. Convert each boundary into an
           // override starting in the following month.
-          QMap<YearMonth, MonthRecord> convertedHistory;
+          QMap<QDate, MonthRecord> convertedHistory;
           std::optional<double> legacyBaseLimit;
 
           for (auto it = loadedHistory.constBegin(); it != loadedHistory.constEnd(); ++it) {
@@ -409,7 +409,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
           if (legacyBaseLimit.has_value() && !loadedHistory.isEmpty()) {
             MonthRecord firstRecord = convertedHistory.value(loadedHistory.constBegin().key(), MonthRecord{});
-            firstRecord.budgetLimit = legacyBaseLimit.value();
+            firstRecord.budgetLimit = legacyBaseLimit;
             convertedHistory.insert(loadedHistory.constBegin().key(), firstRecord);
           }
 
@@ -426,15 +426,14 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               }
             }
 
-            const QDate month(it.key().year, it.key().month, 1);
-            const YearMonth effectiveMonth = YearMonth::fromDate(month.addMonths(1));
+            const QDate effectiveMonth = it.key().addMonths(1);
             MonthRecord record = convertedHistory.value(effectiveMonth, MonthRecord{});
             record.budgetLimit = effectiveLimit;
             convertedHistory.insert(effectiveMonth, record);
           }
 
           for (auto it = convertedHistory.constBegin(); it != convertedHistory.constEnd(); ++it) {
-            category->setMonthRecord(it.key().year, it.key().month, it.value());
+            category->setMonthRecord(it.key(), it.value());
           }
         }
 
@@ -855,15 +854,15 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
 
   // Set text based on what was imported
   if (isNewAccount && newCategories.count()) {
-    macroCommand->setText(QObject::tr("Import %n operation(s) to new account with %1 category(ies)", "", importedOperations.size())
+    macroCommand->setText(QObject::tr("Import %n operation(s) to new account with %1 category(ies)", "", static_cast<int>(importedOperations.size()))
                               .arg(newCategories.count()));
   } else if (isNewAccount) {
-    macroCommand->setText(QObject::tr("Import %n operation(s) to new account", "", importedOperations.size()));
+    macroCommand->setText(QObject::tr("Import %n operation(s) to new account", "", static_cast<int>(importedOperations.size())));
   } else if (newCategories.count()) {
-    macroCommand->setText(QObject::tr("Import %n operation(s) with %1 category(ies)", "", importedOperations.size())
+    macroCommand->setText(QObject::tr("Import %n operation(s) with %1 category(ies)", "", static_cast<int>(importedOperations.size()))
                               .arg(newCategories.count()));
   } else {
-    macroCommand->setText(QObject::tr("Import %n operation(s)", "", importedOperations.size()));
+    macroCommand->setText(QObject::tr("Import %n operation(s)", "", static_cast<int>(importedOperations.size())));
   }
 
   _undoStack.push(macroCommand);

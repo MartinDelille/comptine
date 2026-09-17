@@ -93,7 +93,7 @@ private slots:
         new Operation(firstAccount, QDate(2026, 1, 1), -10.0, "First"), false);
     auto* categorized = firstAccount->addOperation(
         new Operation(firstAccount, QDate(2026, 1, 2), -20.0, "Categorized",
-                      {}, { new Allocation(&category, -20.0) }),
+                      { new Allocation(&category, -20.0) }, {}),
         false);
     auto* second = secondAccount->addOperation(
         new Operation(secondAccount, QDate(2026, 1, 3), -30.0, "Second"), false);

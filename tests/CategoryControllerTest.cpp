@@ -55,19 +55,19 @@ private slots:
     budgetData.set_budgetDate(budgetDate);
     auto* income = controller.addCategory(new Category("Fictional Income"));
     auto* expense = controller.addCategory(new Category("Fictional Expense"));
-    expense->setMonthRecord(2026, 6, { 20.0, 30.0, -300.0 });
-    income->setMonthRecord(2026, 6, { 0.0, 0.0, 500.0 });
+    expense->setMonthRecord(QDate(2026, 6, 1), { 20.0, 30.0, -300.0 });
+    income->setMonthRecord(QDate(2026, 6, 1), { 0.0, 0.0, 500.0 });
 
     auto* account = budgetData.createAccount("Fictional Checking");
     account->addOperation(new Operation(account, QDate(2026, 6, 10), 500.0,
-                                        "Fictional Salary", {},
-                                        { new Allocation(income, 500.0) }));
+                                        "Fictional Salary",
+                                        { new Allocation(income, 500.0) }, {}));
     account->addOperation(new Operation(account, QDate(2026, 6, 12), -100.0,
-                                        "Fictional Purchase", {},
-                                        { new Allocation(expense, -100.0) }));
+                                        "Fictional Purchase",
+                                        { new Allocation(expense, -100.0) }, {}));
     account->addOperation(new Operation(account, QDate(2026, 5, 31), -50.0,
-                                        "Previous month", {},
-                                        { new Allocation(expense, -50.0) }));
+                                        "Previous month",
+                                        { new Allocation(expense, -50.0) }, {}));
 
     QCOMPARE(controller.totalIncome(), 500.0);
     QCOMPARE(controller.totalExpense(), 300.0);
@@ -108,7 +108,7 @@ private slots:
     QVERIFY(controller.isBalanced(-1));
     QCOMPARE(controller.balancedCount(), 1);
 
-    expense->setMonthRecord(2026, 6, { 170.0, 30.0, -300.0 });
+    expense->setMonthRecord(QDate(2026, 6, 1), { 170.0, 30.0, -300.0 });
     QVERIFY(controller.isBalanced(controller.categoryIndex(expense)));
     QCOMPARE(controller.balancedCount(), 2);
   }
@@ -122,21 +122,21 @@ private slots:
     auto* other = controller.addCategory(new Category("Fictional Other"));
     auto* account = budgetData.createAccount("Fictional Checking");
     auto* older = account->addOperation(
-        new Operation(account, QDate(2026, 7, 2), -20.0, "Older", {},
-                      { new Allocation(category, -20.0) }));
+        new Operation(account, QDate(2026, 7, 2), -20.0, "Older",
+                      { new Allocation(category, -20.0) }, {}));
     auto* newer = account->addOperation(
-        new Operation(account, QDate(2026, 7, 20), -30.0, "Newer", {},
-                      { new Allocation(category, -15.0), new Allocation(other, -15.0) }));
+        new Operation(account, QDate(2026, 7, 20), -30.0, "Newer",
+                      { new Allocation(category, -15.0), new Allocation(other, -15.0) }, {}));
     auto* budgetDated = account->addOperation(
-        new Operation(account, QDate(2026, 8, 1), -10.0, "Budget dated", {},
-                      { new Allocation(category, -10.0) }));
+        new Operation(account, QDate(2026, 8, 1), -10.0, "Budget dated",
+                      { new Allocation(category, -10.0) }, {}));
     budgetDated->set_budgetDate(date);
     account->addOperation(new Operation(account, QDate(2026, 7, 10), 0.0,
-                                        "Zero allocation", {},
-                                        { new Allocation(category, 0.0) }));
+                                        "Zero allocation",
+                                        { new Allocation(category, 0.0) }, {}));
     account->addOperation(new Operation(account, QDate(2026, 6, 30), -40.0,
-                                        "Wrong month", {},
-                                        { new Allocation(category, -40.0) }));
+                                        "Wrong month",
+                                        { new Allocation(category, -40.0) }, {}));
 
     const QVariantList result = controller.operationsForCategory(category, date);
     QCOMPARE(result.size(), 3);

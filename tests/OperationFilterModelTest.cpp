@@ -10,13 +10,13 @@ private slots:
   void filtersTextAndAmount() {
     Account account("Fictional Checking", nullptr);
     auto* detailsMatch = account.addOperation(
-        new Operation(&account, QDate(2026, 2, 3), -12.50, "Groceries", "Weekly shop"));
+        new Operation(&account, QDate(2026, 2, 3), -12.50, "Groceries", {}, "Weekly shop"));
     account.addOperation(
-        new Operation(&account, QDate(2026, 2, 2), 25.00, "Salary", "Monthly income"));
+        new Operation(&account, QDate(2026, 2, 2), 25.00, "Salary", {}, "Monthly income"));
     account.addOperation(
-        new Operation(&account, QDate(2026, 2, 2), 12.50, "Refund", "Returned purchase"));
+        new Operation(&account, QDate(2026, 2, 2), 12.50, "Refund", {}, "Returned purchase"));
     auto* amountMatch = account.addOperation(
-        new Operation(&account, QDate(2026, 2, 1), -12.50, "Transport", "Bus pass"));
+        new Operation(&account, QDate(2026, 2, 1), -12.50, "Transport", {}, "Bus pass"));
 
     OperationFilterModel model;
     model.setAccount(&account);

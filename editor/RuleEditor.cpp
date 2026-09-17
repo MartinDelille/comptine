@@ -39,7 +39,7 @@ void RuleEditor::edit(int index, const Category* category, const QString& labelM
 
 void RuleEditor::move(int fromIndex, int toIndex) {
   if (fromIndex >= 0 && fromIndex < _controller.rules().size() && toIndex >= 0 && toIndex < _controller.rules().size() && fromIndex != toIndex)
-    _undoStack.push(new MoveRuleCommand(_controller, fromIndex, toIndex));
+    _undoStack.push(new MoveRuleCommand(_controller, { fromIndex, toIndex }));
 }
 
 int RuleEditor::applyToUncategorized(const Category* category, const QString& labelMatch,

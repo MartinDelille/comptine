@@ -18,7 +18,7 @@ private slots:
     BudgetData budgetData(undoStack);
     auto* account = budgetData.createAccount("Fictional Checking");
     auto* operation = account->addOperation(
-        new Operation(account, QDate(2026, 1, 15), -42.50, "Fictional Purchase", "Original details"));
+        new Operation(account, QDate(2026, 1, 15), -42.50, "Fictional Purchase", {}, "Original details"));
     OperationEditor editor(budgetData, undoStack);
 
     QSignalSpy rejectedSpy(&editor, &OperationEditor::transactionRejected);
@@ -54,7 +54,7 @@ private slots:
     BudgetData budgetData(undoStack);
     auto* account = budgetData.createAccount("Fictional Checking");
     auto* operation = account->addOperation(
-        new Operation(account, QDate(2026, 1, 15), -42.50, "Original label", "Original details"));
+        new Operation(account, QDate(2026, 1, 15), -42.50, "Original label", {}, "Original details"));
     OperationEditor editor(budgetData, undoStack);
 
     QVERIFY(editor.beginEditing(operation));
@@ -90,7 +90,7 @@ private slots:
     QUndoStack emptyUndoStack;
     BudgetData emptyBudget(emptyUndoStack);
     OperationEditor emptyEditor(emptyBudget, emptyUndoStack);
-    QVERIFY(emptyEditor.beginNew(QDate(2026, 1, 1), 10.0, "No account", "") == nullptr);
+    QVERIFY(emptyEditor.beginNew(QDate(2026, 1, 1), "No account", 10.0, "") == nullptr);
 
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);
@@ -98,7 +98,7 @@ private slots:
     budgetData.set_currentAccount(account);
     OperationEditor editor(budgetData, undoStack);
 
-    auto* operation = editor.beginNew(QDate(2026, 2, 1), -20.0, "New operation", "Details");
+    auto* operation = editor.beginNew(QDate(2026, 2, 1), "New operation", -20.0, "Details");
     QVERIFY(operation != nullptr);
     QCOMPARE(account->operations().size(), 1);
     QVERIFY(editor.isEditing());
@@ -107,7 +107,7 @@ private slots:
     QCOMPARE(account->operations().size(), 0);
     QCOMPARE(undoStack.count(), 1);
 
-    operation = editor.beginNew(QDate(2026, 2, 1), -20.0, "New operation", "Details");
+    operation = editor.beginNew(QDate(2026, 2, 1), "New operation", -20.0, "Details");
     QVERIFY(operation != nullptr);
     editor.endEditing(true);
     QCOMPARE(account->operations().size(), 1);
@@ -124,7 +124,7 @@ private slots:
     QVariantList values = { QVariant::fromValue(static_cast<QObject*>(allocation)), 42 };
     OperationEditor editor(budgetData, undoStack);
 
-    editor.add(QDate(2026, 4, 1), -25.0, "Added operation", "Details", values);
+    editor.add(QDate(2026, 4, 1), "Added operation", -25.0, "Details", values);
 
     QCOMPARE(account->operations().size(), 1);
     auto* operation = account->operationAt(0);
@@ -184,8 +184,8 @@ private slots:
     Category food("Fictional Food");
     Category travel("Fictional Travel");
     auto* operation = sourceAccount->addOperation(
-        new Operation(sourceAccount, QDate(2026, 3, 1), -100.0, "Transfer", "Details",
-                      { new Allocation(&food, -60.0), new Allocation(&travel, -40.0) }));
+        new Operation(sourceAccount, QDate(2026, 3, 1), -100.0, "Transfer",
+                      { new Allocation(&food, -60.0), new Allocation(&travel, -40.0) }, "Details"));
     OperationEditor editor(budgetData, undoStack);
 
     auto* counterpart = editor.createCounterpart(operation, targetAccount, "Fictional Food");

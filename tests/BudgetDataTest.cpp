@@ -76,10 +76,10 @@ private slots:
     auto* otherAccount = budgetData.createAccount("Fictional Savings");
     auto* operation = account->addOperation(
         new Operation(account, QDate(2026, 1, 1), -12.0, "Fictional Purchase",
-                      {}, { new Allocation(&category, -12.0) }));
+                      { new Allocation(&category, -12.0) }, {}));
     otherAccount->addOperation(
         new Operation(otherAccount, QDate(2026, 1, 2), -7.0, "Fictional Other",
-                      {}, { new Allocation(&otherCategory, -7.0) }));
+                      { new Allocation(&otherCategory, -7.0) }, {}));
 
     QCOMPARE(budgetData.countOperationsWithCategory(&category), 1);
     QCOMPARE(budgetData.countOperationsWithCategory(&otherCategory), 1);

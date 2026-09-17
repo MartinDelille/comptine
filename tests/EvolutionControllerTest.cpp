@@ -12,6 +12,11 @@
 class EvolutionControllerTest : public QObject {
   Q_OBJECT
 
+  struct OperationDates {
+    QDate operation;
+    QDate budget;
+  };
+
   static void addOperation(BudgetData& budgetData, const QDate& date) {
     auto* account = budgetData.accounts().isEmpty()
                         ? budgetData.createAccount("Fictional Account")
@@ -19,13 +24,12 @@ class EvolutionControllerTest : public QObject {
     account->addOperation(new Operation(account, date, -10.0, "Fictional purchase"));
   }
 
-  static void addOperation(BudgetData& budgetData, const QDate& date,
-                           const QDate& budgetDate) {
+  static void addOperation(BudgetData& budgetData, const OperationDates& dates) {
     auto* account = budgetData.accounts().isEmpty()
                         ? budgetData.createAccount("Fictional Account")
                         : budgetData.accounts().first();
-    auto* operation = new Operation(account, date, -10.0, "Fictional purchase");
-    operation->set_budgetDate(budgetDate);
+    auto* operation = new Operation(account, dates.operation, -10.0, "Fictional purchase");
+    operation->set_budgetDate(dates.budget);
     account->addOperation(operation);
   }
 
@@ -54,8 +58,8 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 3, 20));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Food"));
-    category->setMonthRecord(2025, 1, { 1.0, 0.0 });
-    category->setMonthRecord(2025, 5, { 2.0, 0.0 });
+    category->setMonthRecord(QDate(2025, 1, 1), { 1.0, 0.0 });
+    category->setMonthRecord(QDate(2025, 5, 1), { 2.0, 0.0 });
     addOperation(budgetData, QDate(2025, 1, 10));
     addOperation(budgetData, QDate(2025, 5, 10));
     EvolutionController evolution(budgetData, categories);
@@ -74,8 +78,8 @@ private slots:
     BudgetData budgetData(undoStack);
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Transit"));
-    category->setMonthRecord(2025, 3, { 1.0, 0.0 });
-    category->setMonthRecord(2025, 5, { 2.0, 0.0 });
+    category->setMonthRecord(QDate(2025, 3, 1), { 1.0, 0.0 });
+    category->setMonthRecord(QDate(2025, 5, 1), { 2.0, 0.0 });
     addOperation(budgetData, QDate(2025, 3, 10));
     addOperation(budgetData, QDate(2025, 5, 10));
     EvolutionController evolution(budgetData, categories);
@@ -98,7 +102,7 @@ private slots:
     CategoryController categories(budgetData, undoStack);
     EvolutionController evolution(budgetData, categories);
 
-    addOperation(budgetData, QDate(2025, 1, 10), QDate(2024, 12, 1));
+    addOperation(budgetData, { QDate(2025, 1, 10), QDate(2024, 12, 1) });
 
     QCOMPARE(evolution.monthCount(), 2);
     const QDate expectedHeader(2024, 12, 1);
@@ -111,7 +115,7 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 6, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Utilities"));
-    category->setBudgetLimitForMonth(2024, 1, -75.0);
+    category->setBudgetLimitForMonth(QDate(2024, 1, 1), -75.0);
     EvolutionController evolution(budgetData, categories);
 
     QCOMPARE(evolution.monthCount(), 18);
@@ -125,7 +129,7 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 6, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Utilities"));
-    category->setBudgetLimitForMonth(2025, 6, -100.0);
+    category->setBudgetLimitForMonth(QDate(2025, 6, 1), -100.0);
     EvolutionController evolution(budgetData, categories);
 
     QCOMPARE(evolution.monthCount(), 1);
@@ -164,7 +168,7 @@ private slots:
     record.saveAmount = 20.0;
     record.reportAmount = -5.0;
     record.budgetLimit = -100.0;
-    category->setMonthRecord(2025, 3, record);
+    category->setMonthRecord(QDate(2025, 3, 1), record);
     auto* account = budgetData.createAccount("Fictional Account");
     auto* operation = new Operation(account, QDate(2025, 3, 10), -30.0);
     operation->setAllocations({ new Allocation(category, -30.0) });
@@ -191,8 +195,8 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 6, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Boundaries"));
-    category->setBudgetLimitForMonth(2025, 1, -200.0);
-    category->setBudgetLimitForMonth(2025, 6, -250.0);
+    category->setBudgetLimitForMonth(QDate(2025, 1, 1), -200.0);
+    category->setBudgetLimitForMonth(QDate(2025, 6, 1), -250.0);
     EvolutionController evolution(budgetData, categories);
 
     const QModelIndex january = evolution.index(0, 0);
@@ -209,10 +213,10 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 2, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Summary"));
-    category->setMonthRecord(2025, 1, { 0.0, -7.0 });
-    category->setMonthRecord(2025, 2, { 0.0, -9.0 });
-    category->setBudgetLimitForMonth(2025, 1, -200.0);
-    category->setBudgetLimitForMonth(2025, 2, -100.0);
+    category->setMonthRecord(QDate(2025, 1, 1), { 0.0, -7.0 });
+    category->setMonthRecord(QDate(2025, 2, 1), { 0.0, -9.0 });
+    category->setBudgetLimitForMonth(QDate(2025, 1, 1), -200.0);
+    category->setBudgetLimitForMonth(QDate(2025, 2, 1), -100.0);
     auto* account = budgetData.createAccount("Fictional Account");
 
     auto* firstOperation = new Operation(account, QDate(2025, 1, 10), -10.0);
@@ -277,12 +281,12 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 3, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Range"));
-    category->setBudgetLimitForMonth(2025, 1, -10.0);
-    category->setBudgetLimitForMonth(2025, 2, -20.0);
-    category->setBudgetLimitForMonth(2025, 3, -30.0);
-    category->setMonthRecord(2025, 1, { 0.0, -1.0 });
-    category->setMonthRecord(2025, 2, { 0.0, -2.0 });
-    category->setMonthRecord(2025, 3, { 0.0, -3.0 });
+    category->setBudgetLimitForMonth(QDate(2025, 1, 1), -10.0);
+    category->setBudgetLimitForMonth(QDate(2025, 2, 1), -20.0);
+    category->setBudgetLimitForMonth(QDate(2025, 3, 1), -30.0);
+    category->setMonthRecord(QDate(2025, 1, 1), { 0.0, -1.0 });
+    category->setMonthRecord(QDate(2025, 2, 1), { 0.0, -2.0 });
+    category->setMonthRecord(QDate(2025, 3, 1), { 0.0, -3.0 });
     auto* account = budgetData.createAccount("Fictional Account");
     auto* firstOperation = new Operation(account, QDate(2025, 1, 10), -10.0);
     firstOperation->setAllocations({ new Allocation(category, -10.0) });
@@ -401,8 +405,8 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 3, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Metrics"));
-    category->setMonthRecord(2025, 3, { 12.0, -4.0 });
-    category->setBudgetLimitForMonth(2025, 3, -100.0);
+    category->setMonthRecord(QDate(2025, 3, 1), { 12.0, -4.0 });
+    category->setBudgetLimitForMonth(QDate(2025, 3, 1), -100.0);
     auto* account = budgetData.createAccount("Fictional Account");
     auto* operation = new Operation(account, QDate(2025, 3, 10), -25.0);
     operation->setAllocations({ new Allocation(category, -25.0) });
@@ -429,8 +433,8 @@ private slots:
     budgetData.set_budgetDate(QDate(2025, 3, 1));
     CategoryController categories(budgetData, undoStack);
     auto* category = categories.addCategory(new Category("Fictional Summary"));
-    category->setBudgetLimitForMonth(2025, 1, -10.0);
-    category->setBudgetLimitForMonth(2025, 3, -30.0);
+    category->setBudgetLimitForMonth(QDate(2025, 1, 1), -10.0);
+    category->setBudgetLimitForMonth(QDate(2025, 3, 1), -30.0);
     addOperation(budgetData, QDate(2025, 1, 10));
     EvolutionController evolution(budgetData, categories);
 
@@ -465,7 +469,7 @@ private slots:
 
     resetSpy.clear();
     dataChangedSpy.clear();
-    categories.at(0)->setMonthRecord(2025, 2, { 1.0, -2.0 });
+    categories.at(0)->setMonthRecord(QDate(2025, 2, 1), { 1.0, -2.0 });
     QVERIFY(dataChangedSpy.count() >= 1);
     QVERIFY(horizontalHeaderSpy.count() >= 1);
 
