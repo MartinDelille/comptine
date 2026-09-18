@@ -33,7 +33,13 @@ jobs:
           cache: true
 
       - name: Install clang-tidy
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy
+        run: sudo apt-get update && sudo apt-get install -y clang-tidy clazy
+
+      - name: Report analysis tool versions
+        run: |
+          clang-tidy --version
+          clazy-standalone --version
+          clang++ --version
 
       - name: Run pre-commit
         run: uv run pre-commit run --all-files
@@ -53,3 +59,6 @@ jobs:
 
       - name: Build with clang-tidy
         run: cmake --build --preset=analysis
+
+      - name: Run Clazy analysis
+        run: cmake --build --preset=analysis --target clazy-analysis

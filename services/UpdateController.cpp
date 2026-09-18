@@ -21,6 +21,8 @@
 #include "UpdateController.h"
 #include "Version.h"
 
+using namespace Qt::StringLiterals;
+
 UpdateController::UpdateController(AppSettings& appSettings) :
     _appSettings(appSettings) {
   connect(&_networkManager, &QNetworkAccessManager::finished,
@@ -38,7 +40,7 @@ void UpdateController::checkForUpdates() {
   set_updateReady(false);
   set_downloadProgress(0.0);
 
-  QString apiUrl = QString("https://github.com/%1/%2/releases/latest/download/Comptine-update.json")
+  QString apiUrl = u"https://github.com/%1/%2/releases/latest/download/Comptine-update.json"_s
                        .arg(GITHUB_OWNER)
                        .arg(GITHUB_REPO);
 #ifdef COMPTINE_ENABLE_UPDATE_TEST_OVERRIDE
@@ -308,7 +310,7 @@ void UpdateController::failDownload(const QString& error) {
 }
 
 void UpdateController::openDownloadPage() {
-  QDesktopServices::openUrl(QUrl("https://martin.delille.org/comptine"));
+  QDesktopServices::openUrl(QUrl("https://martin.delille.org/comptine"_L1));
 }
 
 bool UpdateController::shouldAutoCheck() const {

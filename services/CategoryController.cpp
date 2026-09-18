@@ -10,6 +10,8 @@
 #include "model/Category.h"
 #include "model/Operation.h"
 
+using namespace Qt::StringLiterals;
+
 bool isSameMonth(const QDate& d1, const QDate& d2) {
   return (d1.year() == d2.year()) && (d1.month() == d2.month());
 }
@@ -278,14 +280,14 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
         double categoryAmount = op->amountForCategory(category);
         if (!qFuzzyIsNull(categoryAmount)) {
           QVariantMap item;
-          item["operation"] = QVariant::fromValue(op);
-          item["date"] = op->date();
-          item["budgetDate"] = op->budgetDate();
-          item["label"] = op->label();
-          item["amount"] = categoryAmount;     // Show only the amount for this category
-          item["totalAmount"] = op->amount();  // Total operation amount
-          item["isCategorized"] = op->isCategorized();
-          item["accountName"] = account->name();
+          item["operation"_L1] = QVariant::fromValue(op);
+          item["date"_L1] = op->date();
+          item["budgetDate"_L1] = op->budgetDate();
+          item["label"_L1] = op->label();
+          item["amount"_L1] = categoryAmount;     // Show only the amount for this category
+          item["totalAmount"_L1] = op->amount();  // Total operation amount
+          item["isCategorized"_L1] = op->isCategorized();
+          item["accountName"_L1] = account->name();
           result.append(item);
         }
       }
@@ -294,7 +296,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
 
   // Sort by date (most recent first)
   std::sort(result.begin(), result.end(), [](const QVariant& a, const QVariant& b) {
-    return a.toMap()["date"].toDate() > b.toMap()["date"].toDate();
+    return a.toMap()["date"_L1].toDate() > b.toMap()["date"_L1].toDate();
   });
 
   return result;

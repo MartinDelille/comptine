@@ -9,6 +9,8 @@
 #include "services/TranslationManager.h"
 #include "services/UpdateController.h"
 
+using namespace Qt::StringLiterals;
+
 void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
   QByteArray localMsg = msg.toLocal8Bit();
   const char* file = context.file ? context.file : "";
@@ -54,8 +56,8 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
 int main(int argc, char* argv[]) {
   qInstallMessageHandler(comptineMessageHandler);
   QGuiApplication app(argc, argv);
-  app.setOrganizationDomain("martin.delille.org");
-  app.setApplicationName("Comptine");
+  app.setOrganizationDomain("martin.delille.org"_L1);
+  app.setApplicationName("Comptine"_L1);
 
   QUndoStack undoStack;
   AppSettings settings;

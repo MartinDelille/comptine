@@ -88,7 +88,18 @@ cmake --build --preset=analysis
 ```
 
 The analysis build requires `clang-tidy` to be installed and writes its build
-artifacts to `build/Analysis`.
+artifacts to `build/Analysis`. The analysis policy is shared by macOS and CI;
+only checks with known platform-dependent results are excluded in `.clang-tidy`.
+
+To run the complete analysis locally, including Clazy:
+
+```bash
+clang-tidy --version
+clazy-standalone --version
+clang++ --version
+cmake --build --preset=analysis
+cmake --build --preset=analysis --target clazy-analysis
+```
 
 ## Creating Installers
 

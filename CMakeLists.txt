@@ -33,6 +33,7 @@ option(
     OFF
 )
 option(COMPTINE_ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
+option(COMPTINE_ENABLE_CLAZY "Enable Clazy static analysis" OFF)
 
 if(COMPTINE_ENABLE_CLANG_TIDY)
     find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy)
@@ -43,7 +44,9 @@ if(COMPTINE_ENABLE_CLANG_TIDY)
         )
     endif()
 
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+    if(NOT CMAKE_CXX_CLANG_TIDY)
+        set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXECUTABLE}")
+    endif()
 endif()
 
 if(COMPTINE_ENABLE_COVERAGE)
@@ -90,5 +93,9 @@ add_subdirectory(app)
 
 include(CTest)
 add_subdirectory(tests)
+
+if(COMPTINE_ENABLE_CLAZY)
+    include(cmake/Clazy.cmake)
+endif()
 
 include(cmake/packaging.cmake)

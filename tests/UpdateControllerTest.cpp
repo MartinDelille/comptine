@@ -6,6 +6,8 @@
 #include "services/AppSettings.h"
 #include "services/UpdateController.h"
 
+using namespace Qt::StringLiterals;
+
 namespace {
 
 class FakeReply : public QNetworkReply {
@@ -15,7 +17,7 @@ public:
   FakeReply(NetworkError error, QByteArray data) : _data(std::move(data)) {
     open(QIODevice::ReadOnly);
     if (error != NoError)
-      setError(error, "Fictional network error");
+      setError(error, u"Fictional network error"_s);
   }
 
   void abort() override {}
@@ -43,8 +45,8 @@ class UpdateControllerTest : public QObject {
 
 private slots:
   void initTestCase() {
-    QCoreApplication::setOrganizationName("Fictional Coverage Organization");
-    QCoreApplication::setApplicationName("Fictional UpdateController Test");
+    QCoreApplication::setOrganizationName(u"Fictional Coverage Organization"_s);
+    QCoreApplication::setApplicationName(u"Fictional UpdateController Test"_s);
   }
 
   void autoCheckHonorsPreferenceAndOneDayInterval() {
@@ -89,7 +91,7 @@ private slots:
     QCOMPARE(failedSpy.count(), 1);
     QVERIFY(!controller.updateAvailable());
 
-    auto* invalid = new FakeReply(QNetworkReply::NoError, "not-json");
+    auto* invalid = new FakeReply(QNetworkReply::NoError, "not-json"_ba);
     QVERIFY(QMetaObject::invokeMethod(&controller, "onNetworkReply", Qt::DirectConnection,
                                       Q_ARG(QNetworkReply*, invalid)));
     QCOMPARE(failedSpy.count(), 2);
@@ -110,7 +112,7 @@ private slots:
     controller.checkForUpdates();
     QVERIFY(controller.checking());
 
-    auto* reply = new FakeReply(QNetworkReply::NoError, "{}");
+    auto* reply = new FakeReply(QNetworkReply::NoError, "{}"_ba);
     QVERIFY(QMetaObject::invokeMethod(&controller, "onNetworkReply", Qt::DirectConnection,
                                       Q_ARG(QNetworkReply*, reply)));
     QVERIFY(!controller.checking());

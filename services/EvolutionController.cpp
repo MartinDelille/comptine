@@ -6,6 +6,8 @@
 #include "CategoryController.h"
 #include "model/Operation.h"
 
+using namespace Qt::StringLiterals;
+
 EvolutionController::EvolutionController(BudgetData& budgetData,
                                          CategoryController& categories,
                                          QObject* parent) :
@@ -35,7 +37,7 @@ QStringList EvolutionController::availableMonthLabels() const {
   QStringList labels;
   const QLocale locale;
   for (const QDate& month : _availableMonths) {
-    labels.append(locale.toString(month, "MMMM yyyy"));
+    labels.append(locale.toString(month, "MMMM yyyy"_L1));
   }
   return labels;
 }

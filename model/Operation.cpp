@@ -1,6 +1,8 @@
 #include "Operation.h"
 #include "Account.h"
 
+using namespace Qt::StringLiterals;
+
 Operation::Operation(Account* account,
                      const QDate& date,
                      double amount,
@@ -159,7 +161,7 @@ QString Operation::categoryDisplay() const {
   for (auto category : uniqueCategories) {
     displayNames.append(category->name());
   }
-  return displayNames.join(", ");
+  return displayNames.join(", "_L1);
 }
 
 double Operation::amountForCategory(const Category* category) const {

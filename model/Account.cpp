@@ -3,6 +3,8 @@
 #include "Account.h"
 #include "Operation.h"
 
+using namespace Qt::StringLiterals;
+
 Account::Account(const QString& name, QObject* parent) :
     QAbstractListModel(parent),
     _name(name) {
@@ -444,12 +446,12 @@ QString Account::selectedOperationsAsCsv() const {
   }
 
   QString csv;
-  csv += "Date,Label,Amount,Category\n";
+  csv += "Date,Label,Amount,Category\n"_L1;
 
   for (auto op : sortedSelected) {
-    csv += QString("%0,\"%1\",%2,%3\n")
-               .arg(op->date().toString("yyyy-MM-dd"),
-                    op->label().replace("\"", "\"\""))
+    csv += u"%0,\"%1\",%2,%3\n"_s
+               .arg(op->date().toString("yyyy-MM-dd"_L1),
+                    op->label().replace("\""_L1, "\"\""_L1))
                .arg(op->amount(), 0, 'f', 2)
                .arg((op->categoryDisplay()));
   }

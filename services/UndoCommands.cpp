@@ -8,6 +8,8 @@
 #include "model/Operation.h"
 #include "model/Rule.h"
 
+using namespace Qt::StringLiterals;
+
 // AddAccountCommand implementation
 
 AddAccountCommand::AddAccountCommand(Account* account, BudgetData& budgetData,
@@ -265,7 +267,7 @@ SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operatio
     _operation(operation),
     _oldBudgetDate(operation.budgetDate()),
     _newBudgetDate(newBudgetDate) {
-  setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy")));
+  setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy"_L1)));
 }
 
 void SetOperationBudgetDateCommand::undo() {
@@ -288,7 +290,7 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
   } else if (newAllocations.size() == 1) {
     auto category = newAllocations.first()->category();
-    auto name = category ? category->name() : "";
+    auto name = category ? category->name() : u""_s;
     setText(QObject::tr("Set operation category to \"%1\"").arg(name));
   } else {
     setText(QObject::tr("Clear operation split"));
@@ -341,7 +343,7 @@ SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
     _operation(operation),
     _oldDate(operation.date()),
     _newDate(newDate) {
-  setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy")));
+  setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy"_L1)));
 }
 
 void SetOperationDateCommand::undo() {

@@ -24,6 +24,8 @@
 #include "model/Operation.h"
 #include "model/Rule.h"
 
+using namespace Qt::StringLiterals;
+
 using namespace CsvParser;
 
 static bool fileHash(const QString& filePath, QByteArray& hash) {
@@ -101,7 +103,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
   // Write state section
   out << YAML::Key << "state" << YAML::Value << YAML::BeginMap;
   out << YAML::Key << "currentTab" << YAML::Value << currentTabIndex;
-  out << YAML::Key << "budgetDate" << YAML::Value << toStdString(_budgetData.budgetDate().toString("MMMM yyyy"));
+  out << YAML::Key << "budgetDate" << YAML::Value << toStdString(_budgetData.budgetDate().toString("MMMM yyyy"_L1));
   out << YAML::EndMap;
 
   // Write categories
@@ -167,7 +169,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
     for (int opIdx = 0; opIdx < ops.size(); opIdx++) {
       auto op = ops[opIdx];
       out << YAML::BeginMap;
-      out << YAML::Key << "date" << YAML::Value << toStdString(op->date().toString("yyyy-MM-dd"));
+      out << YAML::Key << "date" << YAML::Value << toStdString(op->date().toString("yyyy-MM-dd"_L1));
       out << YAML::Key << "amount" << YAML::Value << toStdString(QString::number(op->amount(), 'f', 2));
       out << YAML::Key << "label" << YAML::Value << toStdString(op->label());
 
@@ -187,7 +189,7 @@ bool FileController::saveToYamlFile(const QString& filePath) {
 
       // Only save budget_date if explicitly set (different from operation date)
       if (op->budgetDate() != op->date()) {
-        out << YAML::Key << "budget_date" << YAML::Value << toStdString(op->budgetDate().toString("yyyy-MM-dd"));
+        out << YAML::Key << "budget_date" << YAML::Value << toStdString(op->budgetDate().toString("yyyy-MM-dd"_L1));
       }
       // Mark current operation for this account
       if (op == account->currentOperation()) {
@@ -311,7 +313,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         loadedTabIndex = state["currentTab"].as<int>();
       }
       if (state["budgetDate"]) {
-        loadedBudgetDate = QDate::fromString(yamlString(state["budgetDate"]), "MMMM yyyy");
+        loadedBudgetDate = QDate::fromString(yamlString(state["budgetDate"]), "MMMM yyyy"_L1);
       } else {
         int loadedBudgetYear = 0;
         int loadedBudgetMonth = 0;
@@ -366,9 +368,9 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
             if (entryNode["action"] && entryNode["amount"]) {
               QString actionStr = yamlString(entryNode["action"]).toLower();
               double amount = yamlString(entryNode["amount"]).toDouble();
-              if (actionStr == "save") {
+              if (actionStr == "save"_L1) {
                 record.saveAmount = amount;
-              } else if (actionStr == "report") {
+              } else if (actionStr == "report"_L1) {
                 record.reportAmount = amount;
               }
             }
@@ -440,7 +442,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
         _categoryController.addCategory(category);
 
         if (cat["current"]) {
-          if (yamlString(cat["current"]).toLower() == "true") {
+          if (yamlString(cat["current"]).toLower() == "true"_L1) {
             _categoryController.set_current(category);
           }
         }
@@ -476,7 +478,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           for (const auto& opNode : acc["operations"]) {
             auto op = new Operation(account);
             if (opNode["date"]) {
-              op->set_date(QDate::fromString(yamlString(opNode["date"]), "yyyy-MM-dd"));
+              op->set_date(QDate::fromString(yamlString(opNode["date"]), "yyyy-MM-dd"_L1));
             }
             if (opNode["amount"]) {
               op->set_amount(yamlString(opNode["amount"]).toDouble());
@@ -506,11 +508,11 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
               op->set_details(yamlString(opNode["details"]));
             }
             if (opNode["budget_date"]) {
-              op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"));
+              op->set_budgetDate(QDate::fromString(yamlString(opNode["budget_date"]), "yyyy-MM-dd"_L1));
             }
             operations.append(op);
             if (opNode["current"]) {
-              if (yamlString(opNode["current"]).toLower() == "true") {
+              if (yamlString(opNode["current"]).toLower() == "true"_L1) {
                 currentOperation = op;
               }
             }
@@ -521,7 +523,7 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
           account->select(currentOperation);
         }
         if (acc["current"]) {
-          if (yamlString(acc["current"]).toLower() == "true") {
+          if (yamlString(acc["current"]).toLower() == "true"_L1) {
             _budgetData.set_currentAccount(account);
           }
         }
@@ -702,7 +704,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
   }
 
   // Create or get account
-  QString name = accountName.isEmpty() ? "Imported Account" : accountName;
+  QString name = accountName.isEmpty() ? u"Imported Account"_s : accountName;
   auto account = _budgetData.accountByName(name);
   bool isNewAccount = false;
   if (account == nullptr) {
@@ -731,9 +733,9 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     QStringList fields = parseCsvLine(line, delimiter);
 
     // Parse date (required)
-    QDate date = QDate::fromString(getField(fields, idx.date), "dd/MM/yyyy");
+    QDate date = QDate::fromString(getField(fields, idx.date), "dd/MM/yyyy"_L1);
     if (!date.isValid()) {
-      date = QDate::fromString(getField(fields, idx.date), "yyyy-MM-dd");
+      date = QDate::fromString(getField(fields, idx.date), "yyyy-MM-dd"_L1);
     }
     if (!date.isValid()) {
       qDebug() << "Skipping row with invalid date:" << getField(fields, idx.date);
@@ -812,7 +814,7 @@ bool FileController::importFromCsv(const QUrl& fileUrl,
     if (idx.budgetDate >= 0) {
       QString budgetDateStr = getField(fields, idx.budgetDate);
       if (!budgetDateStr.isEmpty()) {
-        QDate budgetDate = QDate::fromString(budgetDateStr, "dd/MM/yyyy");
+        QDate budgetDate = QDate::fromString(budgetDateStr, "dd/MM/yyyy"_L1);
         if (budgetDate.isValid()) {
           operation->set_budgetDate(budgetDate);
         }
@@ -907,10 +909,10 @@ void FileController::loadInitialFile(const QStringList& args) {
   // Command line argument takes priority (skip first arg which is the program name)
   if (args.size() > 1) {
     QString filePath = args.at(1);
-    if (filePath.endsWith(".comptine") || filePath.endsWith(".yaml") || filePath.endsWith(".yml")) {
+    if (filePath.endsWith(".comptine"_L1) || filePath.endsWith(".yaml"_L1) || filePath.endsWith(".yml"_L1)) {
       loadFromYamlFile(filePath);
       return;
-    } else if (filePath.endsWith(".csv")) {
+    } else if (filePath.endsWith(".csv"_L1)) {
       importFromCsv(QUrl::fromLocalFile(filePath));
       return;
     }
