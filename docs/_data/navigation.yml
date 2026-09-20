@@ -6,6 +6,8 @@ fr:
       url: /fr/features/
     - title: Télécharger
       url: /fr/download/
+    - title: Financement
+      url: /fr/funding/
 
 en:
   links:
@@ -15,3 +17,5 @@ en:
       url: /en/features/
     - title: Download
       url: /en/download/
+    - title: Funding
+      url: /en/funding/
