@@ -11,7 +11,8 @@
             "binaryDir": "${sourceDir}/build/Debug",
             "inherits": "conan-debug",
             "cacheVariables": {
-                "COMPTINE_ENABLE_COVERAGE": "OFF"
+                "COMPTINE_ENABLE_COVERAGE": "OFF",
+                "COMPTINE_ENABLE_UPDATE_TEST_OVERRIDE": "ON"
             }
         },
         {

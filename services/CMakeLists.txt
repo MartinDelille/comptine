@@ -35,11 +35,19 @@ target_link_libraries(
         Qt6::Gui
         Qt6::Qml
         Qt6::Network
+        OpenSSL::Crypto
         yaml-cpp::yaml-cpp
         model
         comptine_utils
     PRIVATE project_warnings
 )
+
+if(COMPTINE_ENABLE_UPDATE_TEST_OVERRIDE)
+    target_compile_definitions(
+        services
+        PRIVATE COMPTINE_ENABLE_UPDATE_TEST_OVERRIDE
+    )
+endif()
 
 if(APPLE)
     target_link_libraries(services PRIVATE "-framework Foundation")

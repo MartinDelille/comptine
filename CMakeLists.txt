@@ -20,12 +20,18 @@ configure_file(
 )
 # yaml-cpp (managed by Conan)
 find_package(yaml-cpp REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 find_package(Qt6 6.8 REQUIRED COMPONENTS Quick LinguistTools Network QuickTest)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
 option(COMPTINE_ENABLE_COVERAGE "Enable C++ code coverage instrumentation" OFF)
+option(
+    COMPTINE_ENABLE_UPDATE_TEST_OVERRIDE
+    "Enable environment overrides for update testing"
+    OFF
+)
 
 if(COMPTINE_ENABLE_COVERAGE)
     if(MSVC)

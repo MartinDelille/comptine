@@ -10,6 +10,7 @@ class ComptineConan(ConanFile):
 
     def requirements(self):
         self.requires("yaml-cpp/0.8.0")
+        self.requires("openssl/3.3.2")
 
     def layout(self):
         cmake_layout(self)
