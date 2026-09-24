@@ -38,7 +38,6 @@
                 "COMPTINE_ENABLE_CLANG_TIDY": "ON",
                 "COMPTINE_ENABLE_CLAZY": "ON",
                 "COMPTINE_CLAZY_CHECKS": "qstring-allocations",
-                "CMAKE_CXX_CLANG_TIDY": "clang-tidy",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
         }

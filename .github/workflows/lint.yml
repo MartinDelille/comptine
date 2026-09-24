@@ -32,14 +32,40 @@ jobs:
           version: ${{ steps.qt-version.outputs.version }}
           cache: true
 
-      - name: Install clang-tidy
-        run: sudo apt-get update && sudo apt-get install -y clang-tidy clazy
+      - name: Install LLVM 22
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget
+          wget -qO- https://apt.llvm.org/llvm.sh | sudo bash -s -- 22
+          sudo apt-get install -y \
+            clang-22 \
+            clang-tools-22 \
+            libclang-cpp22-dev \
+            libclang-22-dev \
+            llvm-22 \
+            llvm-22-dev \
+            ninja-build
+
+      - name: Build Clazy
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v1.17.1 https://github.com/KDE/clazy.git "$RUNNER_TEMP/clazy-src"
+          cmake -S "$RUNNER_TEMP/clazy-src" -B "$RUNNER_TEMP/clazy-build" \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/clazy" \
+            -DCMAKE_PREFIX_PATH=/usr/lib/llvm-22 \
+            -DCLAZY_LINK_CLANG_DYLIB=ON \
+            -DLLVM_ROOT=/usr/lib/llvm-22
+          cmake --build "$RUNNER_TEMP/clazy-build"
+          cmake --install "$RUNNER_TEMP/clazy-build"
 
       - name: Report analysis tool versions
         run: |
-          clang-tidy --version
-          clazy-standalone --version
-          clang++ --version
+          /usr/lib/llvm-22/bin/clang-tidy --version
+          "$RUNNER_TEMP/clazy/bin/clazy-standalone" --version
+          /usr/lib/llvm-22/bin/clang++ --version
 
       - name: Run pre-commit
         run: uv run pre-commit run --all-files
@@ -55,7 +81,11 @@ jobs:
             -s:b build_type=Debug
 
       - name: Configure analysis
-        run: cmake --preset=analysis
+        run: |
+          cmake --preset=analysis \
+            -DCOMPTINE_CLANG_TIDY_EXECUTABLE=/usr/lib/llvm-22/bin/clang-tidy \
+            -DCOMPTINE_CLAZY_STANDALONE_EXECUTABLE="$RUNNER_TEMP/clazy/bin/clazy-standalone" \
+            -DCOMPTINE_CLAZY_CLANGXX_EXECUTABLE=/usr/lib/llvm-22/bin/clang++
 
       - name: Build with clang-tidy
         run: cmake --build --preset=analysis

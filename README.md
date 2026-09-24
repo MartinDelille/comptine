@@ -90,6 +90,8 @@ cmake --build --preset=analysis
 The analysis build requires `clang-tidy` to be installed and writes its build
 artifacts to `build/Analysis`. The analysis policy is shared by macOS and CI;
 only checks with known platform-dependent results are excluded in `.clang-tidy`.
+CI uses a pinned LLVM toolchain and builds Clazy against that toolchain so that
+the Clang-Tidy and Clazy executables are not selected accidentally from `PATH`.
 
 To run the complete analysis locally, including Clazy:
 

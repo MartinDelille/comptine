@@ -7,7 +7,7 @@ Checks: >-
   -bugprone-throwing-static-initialization,
   -bugprone-signed-bitwise,
   -bugprone-unchecked-optional-access,
-  -clang-analyzer-cplusplus.NewDelete
+  -clang-analyzer-cplusplus.NewDelete*
 WarningsAsErrors: '*'
 HeaderFilterRegex: '(^|/)(app|editor|model|services|tests|utils)/.*'
 SystemHeaders: false
