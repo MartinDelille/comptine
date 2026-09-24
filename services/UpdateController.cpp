@@ -60,7 +60,7 @@ void UpdateController::checkForUpdates() {
   connect(reply, &QNetworkReply::downloadProgress, this,
           [this](qint64 received, qint64 total) {
             if (total > 0)
-              set_downloadProgress(static_cast<double>(received) / total);
+              set_downloadProgress(static_cast<double>(received) / static_cast<double>(total));
           });
 }
 
@@ -134,7 +134,7 @@ void UpdateController::downloadUpdate() {
   connect(_downloadReply, &QNetworkReply::downloadProgress, this,
           [this](qint64 received, qint64 total) {
             if (total > 0)
-              set_downloadProgress(static_cast<double>(received) / total);
+              set_downloadProgress(static_cast<double>(received) / static_cast<double>(total));
           });
   connect(_downloadReply, &QNetworkReply::finished, this, [this]() {
     QNetworkReply* reply = _downloadReply;
@@ -297,7 +297,7 @@ bool UpdateController::verifyDownloadedUpdate(const QString& path) const {
     return false;
   QCryptographicHash hash(QCryptographicHash::Sha256);
   while (!file.atEnd())
-    hash.addData(file.read(1024 * 1024));
+    hash.addData(file.read(qint64{ 1024 } * 1024));
   return hash.result() == _downloadHash;
 }
 
