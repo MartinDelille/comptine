@@ -108,7 +108,7 @@ void UpdateController::downloadUpdate() {
     return;
 
   QString directory = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)
-                      + "/updates";
+                      + u"/updates"_s;
   if (!QDir().mkpath(directory)) {
     failDownload(tr("Could not create the update directory"));
     return;
@@ -116,8 +116,8 @@ void UpdateController::downloadUpdate() {
 
   QString filename = QFileInfo(QUrl(_downloadUrl).path()).fileName();
   if (filename.isEmpty())
-    filename = "Comptine-update.download";
-  _downloadPath = directory + "/" + filename;
+    filename = u"Comptine-update.download"_s;
+  _downloadPath = directory + u"/"_s + filename;
   qInfo() << "Downloading update from" << _downloadUrl << "to" << _downloadPath;
   QFile::remove(_downloadPath);
   set_errorMessage({});
@@ -200,7 +200,7 @@ void UpdateController::installUpdate() {
   }
   QCoreApplication::exit(0);
 #else
-  if (_downloadPath.endsWith(".AppImage", Qt::CaseInsensitive)) {
+  if (_downloadPath.endsWith(u".AppImage"_s, Qt::CaseInsensitive)) {
     QFile::setPermissions(_downloadPath, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::ReadGroup | QFileDevice::ExeGroup | QFileDevice::ReadOther | QFileDevice::ExeOther);
   }
   QDesktopServices::openUrl(QUrl::fromLocalFile(_downloadPath));
@@ -212,7 +212,7 @@ bool UpdateController::parseManifest(const QByteArray& data) {
   if (!doc.isObject())
     return false;
   QJsonObject root = doc.object();
-  QString version = root["version"].toString();
+  QString version = root[u"version"_s].toString();
   if (version.isEmpty()) {
     qWarning() << "Update manifest has no version";
     return false;
@@ -221,7 +221,7 @@ bool UpdateController::parseManifest(const QByteArray& data) {
   qInfo() << "Update manifest version:" << version << "current version:" << currentVersion();
 
   set_latestVersion(version);
-  set_releaseNotes(root["releaseNotes"].toString());
+  set_releaseNotes(root[u"releaseNotes"_s].toString());
   if (!isVersionNewer(version, currentVersion())) {
     qInfo() << "No newer update is available";
     set_updateAvailable(false);
@@ -230,31 +230,31 @@ bool UpdateController::parseManifest(const QByteArray& data) {
 
   QString platform;
 #ifdef Q_OS_MACOS
-  platform = "macos";
+  platform = u"macos"_s;
 #elif defined(Q_OS_WIN)
-  platform = "windows";
+  platform = u"windows"_s;
 #else
-  platform = "linux";
+  platform = u"linux"_s;
 #endif
   QString architecture = QSysInfo::currentCpuArchitecture();
   QJsonObject selected;
-  for (const QJsonValue& value : root["assets"].toArray()) {
+  for (const QJsonValue& value : root[u"assets"_s].toArray()) {
     QJsonObject asset = value.toObject();
-    if (asset["platform"].toString() == platform && (asset["architecture"].toString() == architecture || asset["architecture"].toString() == "universal")) {
+    if (asset[u"platform"_s].toString() == platform && (asset[u"architecture"_s].toString() == architecture || asset[u"architecture"_s].toString() == u"universal"_s)) {
       selected = asset;
       break;
     }
   }
-  QString url = selected["url"].toString();
-  QByteArray hash = QByteArray::fromHex(selected["sha256"].toString().toLatin1());
-  QByteArray signature = QByteArray::fromBase64(selected["signature"].toString().toLatin1());
+  QString url = selected[u"url"_s].toString();
+  QByteArray hash = QByteArray::fromHex(selected[u"sha256"_s].toString().toLatin1());
+  QByteArray signature = QByteArray::fromBase64(selected[u"signature"_s].toString().toLatin1());
   if (url.isEmpty() || !QUrl(url).isValid() || hash.size() != QCryptographicHash::hashLength(QCryptographicHash::Sha256) || signature.isEmpty())
     qWarning() << "Update manifest has no valid asset for platform" << platform
                << "architecture" << architecture;
   if (url.isEmpty() || !QUrl(url).isValid() || hash.size() != QCryptographicHash::hashLength(QCryptographicHash::Sha256) || signature.isEmpty())
     return false;
 
-  QByteArray signedPayload = (version + "\n" + platform + "\n" + selected["architecture"].toString() + "\n" + url + "\n" + selected["sha256"].toString()).toUtf8();
+  QByteArray signedPayload = (version + u"\n"_s + platform + u"\n"_s + selected[u"architecture"_s].toString() + u"\n"_s + url + u"\n"_s + selected[u"sha256"_s].toString()).toUtf8();
   if (!verifySignature(signedPayload, signature)) {
     qWarning() << "Update manifest signature verification failed for" << url;
     return false;
@@ -265,7 +265,7 @@ bool UpdateController::parseManifest(const QByteArray& data) {
   _downloadUrl = url;
   _downloadHash = hash;
   _downloadSignature = signature;
-  set_installSupported(platform == "macos");
+  set_installSupported(platform == u"macos"_s);
   set_updateAvailable(true);
   return true;
 }
