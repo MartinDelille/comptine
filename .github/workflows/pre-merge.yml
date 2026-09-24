@@ -18,8 +18,8 @@ jobs:
         run: |
           BASE_SHA=${{ github.event.pull_request.base.sha }}
           HEAD_SHA=${{ github.event.pull_request.head.sha }}
-          PATTERN='^[a-f0-9]+ (wip[: ]|fixup!|squash!|amend!|\[skip ci\])'
-          WIP_COMMITS=$(git log --oneline "$BASE_SHA..$HEAD_SHA" | \
+          PATTERN='wip|fixup!|squash!|amend!|\[skip ci\]'
+          WIP_COMMITS=$(git log --format='%h %B' "$BASE_SHA..$HEAD_SHA" | \
             grep -iE "$PATTERN" || true)
           if [ -n "$WIP_COMMITS" ]; then
             echo "Error: Found WIP/fixup commits that should be cleaned up:"
