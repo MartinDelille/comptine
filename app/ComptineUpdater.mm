@@ -113,6 +113,14 @@ int main(int argc, const char* argv[]) {
       return 5;
     }
 
+    NSLog(@"Validating replacement application bundle %@", replacement);
+    if (!runTask(@"/usr/bin/codesign", @[ @"--verify", @"--deep", @"--strict", replacement ])) {
+      NSLog(@"Replacement application bundle has an invalid code signature");
+      runTask(@"/usr/bin/hdiutil", @[ @"detach", mountPoint, @"-quiet" ]);
+      [[NSFileManager defaultManager] removeItemAtPath:mountPoint error:nil];
+      return 6;
+    }
+
     NSLog(@"Replacing application bundle %@ with %@", appBundle, replacement);
     bool copied = mounted && runTask(@"/usr/bin/ditto", @[ replacement, appBundle ]);
 

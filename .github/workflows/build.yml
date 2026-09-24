@@ -108,8 +108,30 @@ jobs:
       - name: Deploy Qt (MacOS)
         if: matrix.os == 'macos-latest'
         run: |
+          expected_version=""
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            expected_version="$GITHUB_REF_NAME"
+          fi
           macdeployqt build/Release/app/Comptine.app -qmldir=.
-          codesign --force --deep --sign - build/Release/app/Comptine.app
+          bash scripts/sign-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
+          bash scripts/validate-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
+          test "$(lipo -archs build/Release/app/Comptine.app/Contents/MacOS/Comptine)" = "arm64"
+
+      - name: Create and validate installer (MacOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cd build/Release
+          cpack -G DragNDrop
+          dmg=$(find . -maxdepth 1 -name '*.dmg' -print -quit)
+          test -n "$dmg"
+          mountpoint=$(mktemp -d)
+          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mountpoint"
+          trap 'hdiutil detach "$mountpoint" -quiet || true; rmdir "$mountpoint" || true' EXIT
+          expected_version=""
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            expected_version="$GITHUB_REF_NAME"
+          fi
+          bash "$GITHUB_WORKSPACE/scripts/validate-macos-bundle.sh" "$mountpoint/Comptine.app" "$expected_version"
 
       - name: Capture screenshots (MacOS)
         if: matrix.os == 'macos-latest'
@@ -125,12 +147,6 @@ jobs:
         with:
           name: screenshots
           path: screenshots/*.png
-
-      - name: Create installer (MacOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          cd build/Release
-          cpack -G DragNDrop
 
       - name: Create installer (Windows)
         if: matrix.os == 'windows-latest'
@@ -237,7 +253,7 @@ jobs:
             --notes release-notes.txt \
             --private-key update-private.pem \
             --output Comptine-update.json \
-            --asset macos universal "$RELEASE_BASE/Comptine-MacOS.dmg" \
+            --asset macos arm64 "$RELEASE_BASE/Comptine-MacOS.dmg" \
               Comptine-MacOS.dmg "" \
             --asset windows x86_64 "$RELEASE_BASE/Comptine-Windows.exe" \
               Comptine-Windows.exe "" \
