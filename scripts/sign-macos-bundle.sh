@@ -56,6 +56,7 @@ while IFS= read -r path; do
   codesign --force --sign - --timestamp=none "$path"
 done < <(mach_o_files)
 
-codesign --force --sign - --timestamp=none "$app_bundle"
+# The outer bundle needs a resource seal as well as signed nested code.
+codesign --force --deep --sign - --timestamp=none "$app_bundle"
 
 echo "Ad-hoc signed macOS bundle: $app_bundle"
