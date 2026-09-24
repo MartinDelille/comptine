@@ -124,10 +124,12 @@ The following actions modify user data and support undo/redo:
 
 ## Updates
 
-- **Auto-Update Check**: Automatically checks for new releases on startup (once per day)
+- **Auto-Update Check**: Automatically checks for signed stable releases on startup (once per day)
+- **Verified Download**: Downloads updates with progress and verifies their signature and checksum
+- **Automatic macOS Installation**: Prompts to install and restart after a verified download
+- **Platform Fallback**: Opens verified installers on Windows and Linux
 - **Manual Check**: Check for updates via Help > Check for Updates
 - **Release Notes**: View release notes for new versions
-- **Download Link**: Opens GitHub releases page for easy download
 - **Preferences**: Enable or disable automatic update checks in Preferences
 
 ## Data Format

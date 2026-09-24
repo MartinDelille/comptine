@@ -28,6 +28,19 @@ set_target_properties(
         MACOSX_BUNDLE TRUE
 )
 
+add_executable(ComptineUpdater ${PROJECT_SOURCE_DIR}/app/ComptineUpdater.mm)
+set_target_properties(
+    ComptineUpdater
+    PROPERTIES
+        MACOSX_BUNDLE FALSE
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ComptineUpdater
+)
+target_link_libraries(
+    ComptineUpdater
+    PRIVATE "-framework Foundation" "-framework AppKit"
+)
+add_dependencies(Comptine ComptineUpdater)
+
 add_custom_command(
     TARGET Comptine
     POST_BUILD
@@ -38,4 +51,16 @@ add_custom_command(
         ${CMAKE_COMMAND} -E copy_if_different ${APP_ICON_ICNS}
         "$<TARGET_FILE_DIR:Comptine>/../Resources/comptine.icns"
     COMMENT "Installing macOS icon into application bundle"
+)
+
+add_custom_command(
+    TARGET Comptine
+    POST_BUILD
+    COMMAND
+        ${CMAKE_COMMAND} -E make_directory
+        "$<TARGET_FILE_DIR:Comptine>/../Helpers"
+    COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:ComptineUpdater>"
+        "$<TARGET_FILE_DIR:Comptine>/../Helpers/ComptineUpdater"
+    COMMENT "Installing macOS update helper into application bundle"
 )

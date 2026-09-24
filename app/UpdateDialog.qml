@@ -8,9 +8,23 @@ import services
 BaseDialog {
     id: root
 
+    signal installRequested
+
     title: qsTr("Update Available")
-    rejectButtonText: ""
+    acceptButtonText: UpdateController.downloading ? qsTr("Cancel Download") : UpdateController.updateReady ? (UpdateController.installSupported ? qsTr("Install and Restart") : qsTr("Open Installer")) : qsTr("Download Update")
     width: 400
+
+    onAccepted: {
+        if (UpdateController.downloading) {
+            UpdateController.cancelDownload();
+        } else if (UpdateController.updateReady) {
+            root.installRequested();
+        } else {
+            UpdateController.downloadUpdate();
+        }
+    }
+
+    onRejected: UpdateController.cancelDownload()
 
     ColumnLayout {
         anchors.fill: parent
@@ -39,6 +53,19 @@ BaseDialog {
                 font.bold: true
                 color: Theme.accent
             }
+
+            ProgressBar {
+                Layout.fillWidth: true
+                visible: UpdateController.downloading || UpdateController.updateReady
+                value: UpdateController.downloadProgress
+            }
+
+            Label {
+                Layout.fillWidth: true
+                visible: UpdateController.downloading
+                text: qsTr("Downloading update: %1%").arg(Math.round(UpdateController.downloadProgress * 100))
+                opacity: 0.7
+            }
         }
 
         // Release notes section
@@ -61,14 +88,12 @@ BaseDialog {
             }
         }
 
-        // Download button
-        Button {
-            text: qsTr("Download Update")
-            Layout.alignment: Qt.AlignHCenter
-            highlighted: true
-            onClicked: {
-                UpdateController.openDownloadPage();
-            }
+        Label {
+            Layout.fillWidth: true
+            visible: UpdateController.updateReady && !UpdateController.installSupported
+            text: qsTr("The verified installer is ready. Opening it will finish the update.")
+            wrapMode: Text.WordWrap
+            opacity: 0.7
         }
     }
 }

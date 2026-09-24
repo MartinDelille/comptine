@@ -21,12 +21,25 @@ class UpdateController : public QObject {
   PROPERTY_RW(QString, latestVersion, {})
   PROPERTY_RW(QString, releaseNotes, {})
   PROPERTY_RW(QString, errorMessage, {})
+  PROPERTY_RW(double, downloadProgress, 0.0)
+  PROPERTY_RW(bool, downloading, false)
+  PROPERTY_RW(bool, updateReady, false)
+  PROPERTY_RW(bool, installSupported, false)
 
 public:
   explicit UpdateController(AppSettings& appSettings);
 
   // Check for updates from GitHub releases
   Q_INVOKABLE void checkForUpdates();
+
+  // Download the verified update selected by the latest manifest.
+  Q_INVOKABLE void downloadUpdate();
+
+  // Cancel an in-progress download and remove its temporary file.
+  Q_INVOKABLE void cancelDownload();
+
+  // Install the verified update. On macOS this starts the updater helper.
+  Q_INVOKABLE void installUpdate();
 
   // Open the download page in the default browser
   Q_INVOKABLE void openDownloadPage();
@@ -43,6 +56,9 @@ public:
 signals:
   void updateCheckCompleted();
   void updateCheckFailed(const QString& error);
+  void updateDownloadCompleted();
+  void updateDownloadFailed(const QString& error);
+  void updateInstallFailed(const QString& error);
 
 private slots:
   void onNetworkReply(QNetworkReply* reply);
@@ -50,9 +66,18 @@ private slots:
 private:
   bool isVersionNewer(const QString& remote, const QString& local) const;
   QList<int> parseVersion(const QString& version) const;
+  bool parseManifest(const QByteArray& data);
+  bool verifySignature(const QByteArray& message, const QByteArray& signature) const;
+  bool verifyDownloadedUpdate(const QString& path) const;
+  void failDownload(const QString& error);
 
   AppSettings& _appSettings;
   QNetworkAccessManager _networkManager;
+  QNetworkReply* _downloadReply = nullptr;
+  QString _downloadPath;
+  QString _downloadUrl;
+  QByteArray _downloadHash;
+  QByteArray _downloadSignature;
 
   // GitHub repository information
   static constexpr const char* GITHUB_OWNER = "MartinDelille";

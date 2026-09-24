@@ -84,10 +84,11 @@ Gérez le budget non dépensé à la fin de chaque mois :
 
 ## Mises à jour
 
-- **Vérification automatique** : Recherche de nouvelles versions au démarrage
+- **Vérification automatique** : Recherche de versions stables signées au démarrage
 - **Vérification manuelle** : Aide > Rechercher des mises à jour
 - **Notes de version** : Consultez les nouveautés
-- **Lien de téléchargement** : Accès direct aux releases GitHub
+- **Téléchargement vérifié** : Téléchargement avec progression et vérification de signature
+- **Installation macOS** : Propose l’installation et le redémarrage après vérification
 
 ## Format de données
 

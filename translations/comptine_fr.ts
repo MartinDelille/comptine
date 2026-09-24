@@ -473,6 +473,14 @@ Importez et gérez vos données bancaires.</translation>
         <translation>Supprimer</translation>
     </message>
     <message>
+        <source>Install Update</source>
+        <translation>Installer la mise à jour</translation>
+    </message>
+    <message>
+        <source>The update has been downloaded and verified. Install and restart now?</source>
+        <translation>La mise à jour a été téléchargée et vérifiée. L&apos;installer et redémarrer maintenant ?</translation>
+    </message>
+    <message>
         <source>File Changed Externally</source>
         <translation>Fichier modifié par un autre programme</translation>
     </message>
@@ -1031,12 +1039,48 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <source>Invalid response from GitHub</source>
         <translation>Réponse invalide de GitHub</translation>
     </message>
+    <message>
+        <source>Invalid or unsigned update manifest</source>
+        <translation>Manifeste de mise à jour invalide ou non signé</translation>
+    </message>
+    <message>
+        <source>Could not create the update directory</source>
+        <translation>Impossible de créer le dossier de mise à jour</translation>
+    </message>
+    <message>
+        <source>Update download failed</source>
+        <translation>Échec du téléchargement de la mise à jour</translation>
+    </message>
+    <message>
+        <source>The downloaded update failed verification</source>
+        <translation>La mise à jour téléchargée n’a pas pu être vérifiée</translation>
+    </message>
+    <message>
+        <source>The update helper is not installed</source>
+        <translation>L’assistant de mise à jour n’est pas installé</translation>
+    </message>
+    <message>
+        <source>Could not start the update installer</source>
+        <translation>Impossible de démarrer l’installation de la mise à jour</translation>
+    </message>
 </context>
 <context>
     <name>UpdateDialog</name>
     <message>
         <source>Update Available</source>
         <translation>Mise à jour disponible</translation>
+    </message>
+    <message>
+        <source>Cancel Download</source>
+        <translation>Annuler le téléchargement</translation>
+    </message>
+    <message>
+        <source>Install and Restart</source>
+        <translation>Installer et redémarrer</translation>
+    </message>
+    <message>
+        <source>Open Installer</source>
+        <translation>Ouvrir l’installateur</translation>
     </message>
     <message>
         <source>A new version of Comptine is available!</source>
@@ -1051,8 +1095,16 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Dernière version : %1</translation>
     </message>
     <message>
+        <source>Downloading update: %1%</source>
+        <translation>Téléchargement de la mise à jour : %1 %</translation>
+    </message>
+    <message>
         <source>Release Notes</source>
         <translation>Notes de version</translation>
+    </message>
+    <message>
+        <source>The verified installer is ready. Opening it will finish the update.</source>
+        <translation>L’installateur vérifié est prêt. Son ouverture terminera la mise à jour.</translation>
     </message>
     <message>
         <source>Download Update</source>

@@ -84,10 +84,11 @@ Manage unspent budget at the end of each month:
 
 ## Updates
 
-- **Automatic check**: Checks for new versions on startup
+- **Automatic check**: Checks for signed stable releases on startup
 - **Manual check**: Help > Check for Updates
 - **Release notes**: View what's new
-- **Download link**: Direct access to GitHub releases
+- **Verified download**: Downloads include progress and signature verification
+- **macOS installation**: Prompts to install and restart after verification
 
 ## Data format
 

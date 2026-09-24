@@ -234,6 +234,18 @@ ApplicationWindow {
     }
 
     MessageDialog {
+        id: updateInstallDialog
+        title: qsTr("Install Update")
+        text: qsTr("The update has been downloaded and verified. Install and restart now?")
+        buttons: MessageDialog.Yes | MessageDialog.No
+        onButtonClicked: function (button, role) {
+            if (button === MessageDialog.Yes) {
+                UpdateController.installUpdate();
+            }
+        }
+    }
+
+    MessageDialog {
         id: externalChangeDialog
         title: qsTr("File Changed Externally")
         text: qsTr("The current file has been modified outside of Comptine. Do you want to reload it? Any unsaved changes will be lost.")
@@ -328,6 +340,24 @@ ApplicationWindow {
                 updateErrorDialog.open();
             }
             window.manualUpdateCheck = false;
+        }
+        function onUpdateDownloadFailed(error) {
+            if (updateDialog.visible) {
+                updateErrorDialog.open();
+            }
+        }
+        function onUpdateDownloadCompleted() {
+            updateInstallDialog.open();
+        }
+        function onUpdateInstallFailed(error) {
+            updateErrorDialog.open();
+        }
+    }
+
+    Connections {
+        target: updateDialog
+        function onInstallRequested() {
+            updateInstallDialog.open();
         }
     }
 

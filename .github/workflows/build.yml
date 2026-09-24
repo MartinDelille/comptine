@@ -223,6 +223,34 @@ jobs:
 
             **[Full Changelog](${{ env.COMPARE_URL }}/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
 
+      - name: Generate signed update manifest
+        env:
+          UPDATE_PRIVATE_KEY: ${{ secrets.COMPTINE_UPDATE_PRIVATE_KEY }}
+        run: |
+          test -n "$UPDATE_PRIVATE_KEY"
+          printf '%s' "$UPDATE_PRIVATE_KEY" > update-private.pem
+          printf '%s' "${{ github.ref_name }}" > release-version.txt
+          printf '%s\n' "See the GitHub release notes for this version." > release-notes.txt
+          RELEASE_BASE="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}"
+          uv run python scripts/create-update-manifest.py \
+            --version "${{ github.ref_name }}" \
+            --notes release-notes.txt \
+            --private-key update-private.pem \
+            --output Comptine-update.json \
+            --asset macos universal "$RELEASE_BASE/Comptine-MacOS.dmg" \
+              Comptine-MacOS.dmg "" \
+            --asset windows x86_64 "$RELEASE_BASE/Comptine-Windows.exe" \
+              Comptine-Windows.exe "" \
+            --asset linux x86_64 "$RELEASE_BASE/Comptine-x86_64.AppImage" \
+              Comptine-x86_64.AppImage ""
+          rm -f update-private.pem
+
+      - name: Upload update manifest
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: Comptine-update.json
+
   comment-artifacts:
     if: github.event_name == 'pull_request'
     needs: build

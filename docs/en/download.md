@@ -49,3 +49,5 @@ You can build the application yourself by following the instructions in the READ
 ## Previous versions
 
 All previous versions are available on the [GitHub releases page]({{ site.github_repo }}/releases).
+
+Comptine checks stable releases for updates. On macOS, verified updates can be downloaded and installed from the application; Windows and Linux open the verified installer for confirmation.

@@ -36,3 +36,5 @@ Vous pouvez compiler l'application vous-même en suivant les instructions du fic
 ## Anciennes versions
 
 Toutes les versions précédentes sont disponibles sur la [page des releases GitHub]({{ site.github_repo }}/releases).
+
+Comptine recherche les versions stables disponibles. Sur macOS, les mises à jour vérifiées peuvent être téléchargées et installées depuis l’application ; sous Windows et Linux, l’installateur vérifié est ouvert pour confirmation.

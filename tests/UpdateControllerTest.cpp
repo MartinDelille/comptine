@@ -75,31 +75,30 @@ private slots:
     QVERIFY(!controller.currentVersion().isEmpty());
   }
 
-  void networkResponsesUpdateControllerState() {
+  void invalidManifestsAreRejected() {
     AppSettings settings;
     UpdateController controller(settings);
     QSignalSpy completedSpy(&controller, &UpdateController::updateCheckCompleted);
     QSignalSpy failedSpy(&controller, &UpdateController::updateCheckFailed);
 
-    auto* newer = new FakeReply(QNetworkReply::NoError,
-                                R"({"tag_name":"99.0","body":"Fictional release notes"})");
+    auto* invalidManifest = new FakeReply(QNetworkReply::NoError,
+                                          R"({"version":"99.0","assets":[]})");
     QVERIFY(QMetaObject::invokeMethod(&controller, "onNetworkReply", Qt::DirectConnection,
-                                      Q_ARG(QNetworkReply*, newer)));
-    QCOMPARE(completedSpy.count(), 1);
-    QCOMPARE(controller.latestVersion(), QString("99.0"));
-    QCOMPARE(controller.releaseNotes(), QString("Fictional release notes"));
-    QVERIFY(controller.updateAvailable());
+                                      Q_ARG(QNetworkReply*, invalidManifest)));
+    QCOMPARE(completedSpy.count(), 0);
+    QCOMPARE(failedSpy.count(), 1);
+    QVERIFY(!controller.updateAvailable());
 
     auto* invalid = new FakeReply(QNetworkReply::NoError, "not-json");
     QVERIFY(QMetaObject::invokeMethod(&controller, "onNetworkReply", Qt::DirectConnection,
                                       Q_ARG(QNetworkReply*, invalid)));
-    QCOMPARE(failedSpy.count(), 1);
+    QCOMPARE(failedSpy.count(), 2);
     QVERIFY(!controller.errorMessage().isEmpty());
 
     auto* failed = new FakeReply(QNetworkReply::ConnectionRefusedError, {});
     QVERIFY(QMetaObject::invokeMethod(&controller, "onNetworkReply", Qt::DirectConnection,
                                       Q_ARG(QNetworkReply*, failed)));
-    QCOMPARE(failedSpy.count(), 2);
+    QCOMPARE(failedSpy.count(), 3);
   }
 
   void repeatedCheckIsIgnoredWhilePending() {
