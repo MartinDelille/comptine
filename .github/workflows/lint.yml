@@ -63,7 +63,7 @@ jobs:
 
       - name: Report analysis tool versions
         run: |
-          /usr/bin/clang-tidy-22 --version
+          /usr/lib/llvm-22/bin/clang-tidy --version
           "$RUNNER_TEMP/clazy/bin/clazy-standalone" --version
           /usr/lib/llvm-22/bin/clang++ --version
 
@@ -83,7 +83,7 @@ jobs:
       - name: Configure analysis
         run: |
           cmake --preset=analysis \
-            -DCOMPTINE_CLANG_TIDY_EXECUTABLE=/usr/bin/clang-tidy-22 \
+            -DCOMPTINE_CLANG_TIDY_EXECUTABLE=/usr/lib/llvm-22/bin/clang-tidy \
             -DCOMPTINE_CLAZY_STANDALONE_EXECUTABLE="$RUNNER_TEMP/clazy/bin/clazy-standalone" \
             -DCOMPTINE_CLAZY_CLANGXX_EXECUTABLE=/usr/lib/llvm-22/bin/clang++
 
