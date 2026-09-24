@@ -198,9 +198,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup uv
-        uses: astral-sh/setup-uv@v7
-
       - name: Download all release artifacts
         uses: actions/download-artifact@v4
         with:
@@ -227,22 +224,6 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Publish release
-        uses: softprops/action-gh-release@v2
-        env:
-          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare
-        with:
-          files: |
-            *.dmg
-            *.AppImage
-            *.exe
-          body: |
-            ## What's Changed
-
-            ${{ steps.changelog.outputs.content }}
-
-            **[Full Changelog](${{ env.COMPARE_URL }}/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
-
       - name: Generate signed update manifest
         env:
           UPDATE_PRIVATE_KEY: ${{ secrets.COMPTINE_UPDATE_PRIVATE_KEY }}
@@ -252,7 +233,7 @@ jobs:
           printf '%s' "${{ github.ref_name }}" > release-version.txt
           printf '%s\n' "See the GitHub release notes for this version." > release-notes.txt
           RELEASE_BASE="${{ github.server_url }}/${{ github.repository }}/releases/download/${{ github.ref_name }}"
-          uv run python scripts/create-update-manifest.py \
+          python3 scripts/create-update-manifest.py \
             --version "${{ github.ref_name }}" \
             --notes release-notes.txt \
             --private-key update-private.pem \
@@ -265,11 +246,22 @@ jobs:
               Comptine-x86_64.AppImage ""
           rm -f update-private.pem
 
-      - name: Upload update manifest
+      - name: Publish release
         uses: softprops/action-gh-release@v2
+        env:
+          COMPARE_URL: ${{ github.server_url }}/${{ github.repository }}/compare
         with:
-          tag_name: ${{ github.ref_name }}
-          files: Comptine-update.json
+          files: |
+            *.dmg
+            *.AppImage
+            *.exe
+            Comptine-update.json
+          body: |
+            ## What's Changed
+
+            ${{ steps.changelog.outputs.content }}
+
+            **[Full Changelog](${{ env.COMPARE_URL }}/${{ steps.prev-tag.outputs.tag }}...${{ github.ref_name }})**
 
   comment-artifacts:
     if: github.event_name == 'pull_request'
