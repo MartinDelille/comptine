@@ -124,14 +124,15 @@ jobs:
           cpack -G DragNDrop
           dmg=$(find . -maxdepth 1 -name '*.dmg' -print -quit)
           test -n "$dmg"
-          mountpoint=$(mktemp -d)
-          hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mountpoint"
-          trap 'hdiutil detach "$mountpoint" -quiet || true; rmdir "$mountpoint" || true' EXIT
           expected_version=""
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             expected_version="$GITHUB_REF_NAME"
           fi
-          bash "$GITHUB_WORKSPACE/scripts/validate-macos-bundle.sh" "$mountpoint/Comptine.app" "$expected_version"
+          bash "$GITHUB_WORKSPACE/scripts/validate-macos-dmg.sh" \
+            "$dmg" \
+            "$expected_version" \
+            arm64 \
+            "$GITHUB_WORKSPACE/long_example.comptine"
 
       - name: Capture screenshots (MacOS)
         if: matrix.os == 'macos-latest'
