@@ -129,10 +129,22 @@ void UpdateController::downloadUpdate() {
   _downloadReply = _networkManager.get(request);
   set_downloading(true);
 
+  int lastLoggedPercent = -1;
+  qint64 lastLoggedReceived = 0;
   connect(_downloadReply, &QNetworkReply::downloadProgress, this,
-          [this](qint64 received, qint64 total) {
-            if (total > 0)
+          [this, lastLoggedPercent, lastLoggedReceived](qint64 received, qint64 total) mutable {
+            if (total > 0) {
               set_downloadProgress(static_cast<double>(received) / total);
+              const int percent = static_cast<int>((received * 100) / total);
+              if (percent != lastLoggedPercent && (percent % 5 == 0 || percent == 100)) {
+                qInfo() << "Update download progress:" << percent << "% ("
+                        << received << "/" << total << "bytes)";
+                lastLoggedPercent = percent;
+              }
+            } else if (received - lastLoggedReceived >= 1024 * 1024) {
+              qInfo() << "Update download progress:" << received << "bytes";
+              lastLoggedReceived = received;
+            }
           });
   connect(_downloadReply, &QNetworkReply::finished, this, [this]() {
     QNetworkReply* reply = _downloadReply;

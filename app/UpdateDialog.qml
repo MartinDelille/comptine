@@ -9,16 +9,19 @@ BaseDialog {
     id: root
 
     signal installRequested
+    acceptCloses: false
 
     title: qsTr("Update Available")
     acceptButtonText: UpdateController.downloading ? qsTr("Cancel Download") : UpdateController.updateReady ? (UpdateController.installSupported ? qsTr("Install and Restart") : qsTr("Open Installer")) : qsTr("Download Update")
     width: 400
 
-    onAccepted: {
+    onAcceptRequested: {
         if (UpdateController.downloading) {
             UpdateController.cancelDownload();
+            root.close();
         } else if (UpdateController.updateReady) {
             root.installRequested();
+            root.close();
         } else {
             UpdateController.downloadUpdate();
         }
