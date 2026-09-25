@@ -129,10 +129,22 @@ void UpdateController::downloadUpdate() {
   _downloadReply = _networkManager.get(request);
   set_downloading(true);
 
+  int lastLoggedPercent = -1;
+  qint64 lastLoggedReceived = 0;
   connect(_downloadReply, &QNetworkReply::downloadProgress, this,
-          [this](qint64 received, qint64 total) {
-            if (total > 0)
+          [this, lastLoggedPercent, lastLoggedReceived](qint64 received, qint64 total) mutable {
+            if (total > 0) {
               set_downloadProgress(static_cast<double>(received) / total);
+              const int percent = static_cast<int>((received * 100) / total);
+              if (percent != lastLoggedPercent && (percent % 5 == 0 || percent == 100)) {
+                qInfo() << "Update download progress:" << percent << "% ("
+                        << received << "/" << total << "bytes)";
+                lastLoggedPercent = percent;
+              }
+            } else if (received - lastLoggedReceived >= 1024 * 1024) {
+              qInfo() << "Update download progress:" << received << "bytes";
+              lastLoggedReceived = received;
+            }
           });
   connect(_downloadReply, &QNetworkReply::finished, this, [this]() {
     QNetworkReply* reply = _downloadReply;
@@ -193,6 +205,14 @@ void UpdateController::installUpdate() {
   if (!QProcess::startDetached(helper, { QCoreApplication::applicationFilePath(), _downloadPath,
                                          QString::number(QCoreApplication::applicationPid()) })) {
     qWarning() << "Could not start update helper:" << helper;
+    emit updateInstallFailed(tr("Could not start the update installer"));
+    return;
+  }
+  QCoreApplication::exit(0);
+#elif defined(Q_OS_WIN)
+  qInfo() << "Starting Windows installer" << _downloadPath;
+  if (!QProcess::startDetached(_downloadPath, {})) {
+    qWarning() << "Could not start Windows installer:" << _downloadPath;
     emit updateInstallFailed(tr("Could not start the update installer"));
     return;
   }
@@ -263,7 +283,7 @@ bool UpdateController::parseManifest(const QByteArray& data) {
   _downloadUrl = url;
   _downloadHash = hash;
   _downloadSignature = signature;
-  set_installSupported(platform == "macos");
+  set_installSupported(platform == "macos" || platform == "windows");
   set_updateAvailable(true);
   return true;
 }

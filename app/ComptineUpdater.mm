@@ -5,6 +5,61 @@
 #include <unistd.h>
 #include <cstring>
 
+static NSWindow* progressWindow = nil;
+static NSTextField* progressLabel = nil;
+static NSProgressIndicator* progressIndicator = nil;
+
+static void pumpRunLoop() {
+  [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+}
+
+static void showProgressWindow(NSString* status) {
+  if (!progressWindow) {
+    NSApplication* application = [NSApplication sharedApplication];
+    [application setActivationPolicy:NSApplicationActivationPolicyAccessory];
+    [application finishLaunching];
+
+    NSRect frame = NSMakeRect(0, 0, 460, 150);
+    progressWindow = [[NSWindow alloc] initWithContentRect:frame
+                                                 styleMask:NSWindowStyleMaskTitled
+                                                   backing:NSBackingStoreBuffered
+                                                     defer:NO];
+    progressWindow.title = @"Comptine Update";
+    progressWindow.level = NSFloatingWindowLevel;
+    progressWindow.releasedWhenClosed = NO;
+
+    NSView* contentView = progressWindow.contentView;
+    progressLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(24, 88, 412, 24)];
+    progressLabel.bezeled = NO;
+    progressLabel.drawsBackground = NO;
+    progressLabel.editable = NO;
+    progressLabel.selectable = NO;
+    progressLabel.alignment = NSTextAlignmentCenter;
+    progressLabel.font = [NSFont systemFontOfSize:14.0];
+    [contentView addSubview:progressLabel];
+
+    progressIndicator = [[NSProgressIndicator alloc] initWithFrame:NSMakeRect(24, 52, 412, 20)];
+    progressIndicator.style = NSProgressIndicatorStyleBar;
+    progressIndicator.indeterminate = YES;
+    [contentView addSubview:progressIndicator];
+
+    [progressWindow center];
+  }
+
+  progressLabel.stringValue = status;
+  [progressIndicator startAnimation:nil];
+  [progressWindow makeKeyAndOrderFront:nil];
+  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  [progressWindow displayIfNeeded];
+  pumpRunLoop();
+}
+
+static void closeProgressWindow() {
+  [progressIndicator stopAnimation:nil];
+  [progressWindow orderOut:nil];
+  pumpRunLoop();
+}
+
 static bool runTask(NSString* executable, NSArray<NSString*>* arguments) {
   NSTask* task = [[NSTask alloc] init];
   task.executableURL = [NSURL fileURLWithPath:executable];
@@ -80,16 +135,19 @@ int main(int argc, const char* argv[]) {
       return 3;
     }
 
+    showProgressWindow(@"Waiting for Comptine to close…");
     bool parentExited = false;
     for (int attempt = 0; attempt < 120; ++attempt) {
       if (kill(parentPid, 0) != 0) {
         parentExited = true;
         break;
       }
+      pumpRunLoop();
       sleep(1);
     }
     if (!parentExited) {
       NSLog(@"Timed out waiting for Comptine process %d to exit", parentPid);
+      closeProgressWindow();
       return 4;
     }
 
@@ -100,6 +158,7 @@ int main(int argc, const char* argv[]) {
                                                attributes:nil
                                                     error:nil];
 
+    showProgressWindow(@"Mounting update…");
     NSLog(@"Mounting update image %@ at %@", image, mountPoint);
     bool mounted = runTask(@"/usr/bin/hdiutil",
                            @[ @"attach", image, @"-nobrowse", @"-readonly",
@@ -110,17 +169,21 @@ int main(int argc, const char* argv[]) {
       if (mounted)
         runTask(@"/usr/bin/hdiutil", @[ @"detach", mountPoint, @"-quiet" ]);
       [[NSFileManager defaultManager] removeItemAtPath:mountPoint error:nil];
+      closeProgressWindow();
       return 5;
     }
 
+    showProgressWindow(@"Verifying update…");
     NSLog(@"Validating replacement application bundle %@", replacement);
     if (!runTask(@"/usr/bin/codesign", @[ @"--verify", @"--deep", @"--strict", replacement ])) {
       NSLog(@"Replacement application bundle has an invalid code signature");
       runTask(@"/usr/bin/hdiutil", @[ @"detach", mountPoint, @"-quiet" ]);
       [[NSFileManager defaultManager] removeItemAtPath:mountPoint error:nil];
+      closeProgressWindow();
       return 6;
     }
 
+    showProgressWindow(@"Installing update…");
     NSLog(@"Replacing application bundle %@ with %@", appBundle, replacement);
     bool copied = mounted && runTask(@"/usr/bin/ditto", @[ replacement, appBundle ]);
 
@@ -140,13 +203,16 @@ int main(int argc, const char* argv[]) {
 
     if (!copied) {
       NSLog(@"Failed to replace application bundle");
+      closeProgressWindow();
       return 1;
     }
 
+    showProgressWindow(@"Relaunching Comptine…");
     [[NSFileManager defaultManager] removeItemAtPath:image error:nil];
     if (workerPath)
       [[NSFileManager defaultManager] removeItemAtPath:workerPath error:nil];
     NSLog(@"Update installed successfully; relaunching %@", appBundle);
+    closeProgressWindow();
     [[NSWorkspace sharedWorkspace] launchApplication:appBundle];
     return 0;
   }

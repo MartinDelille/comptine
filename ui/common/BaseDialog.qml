@@ -11,7 +11,9 @@ Dialog {
     property string acceptButtonText: qsTr("Ok")
     property string discardButtonText: qsTr("")
     property string rejectButtonText: qsTr("Cancel")
+    property bool acceptCloses: true
     property alias okEnabled: acceptButton.enabled
+    signal acceptRequested
 
     modal: true
     parent: Overlay.overlay
@@ -24,7 +26,12 @@ Dialog {
     Shortcut {
         sequence: "Return"
         enabled: root.visible && root.okEnabled && root.canSubmit
-        onActivated: root.accept()
+        onActivated: {
+            if (root.acceptCloses)
+                root.accept();
+            else
+                root.acceptRequested();
+        }
     }
 
     footer: DialogButtonBox {
@@ -35,7 +42,11 @@ Dialog {
 
             focus: true
             text: root.acceptButtonText
-            DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+            DialogButtonBox.buttonRole: root.acceptCloses ? DialogButtonBox.AcceptRole : DialogButtonBox.ActionRole
+            onClicked: {
+                if (!root.acceptCloses)
+                    root.acceptRequested();
+            }
         }
 
         Button {
