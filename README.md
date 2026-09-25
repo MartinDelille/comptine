@@ -103,6 +103,22 @@ cmake --build --preset=analysis
 cmake --build --preset=analysis --target clazy-analysis
 ```
 
+On macOS, the portable Linux analysis environment can be run through Colima and
+Docker. Start Colima once, then run:
+
+```bash
+colima start
+./scripts/analysis-docker.sh
+```
+
+The container installs the Qt version from `.qt-version`, LLVM 22, and Clazy
+1.17. It runs as `linux/amd64` to match GitHub’s Ubuntu runner and uses a
+separate Docker volume for the source copy and `build/`, so it does not reuse
+or modify the native macOS build artifacts.
+
+GitHub Actions builds and runs the same `docker/analysis.Dockerfile`, using
+Docker layer caching for the image build.
+
 ## Creating Installers
 
 ### MacOS (DMG)
