@@ -4,16 +4,19 @@
 #include "model/Category.h"
 #include "model/Operation.h"
 
+using namespace Qt::StringLiterals;
+
 class OperationTest : public QObject {
   Q_OBJECT
 
 private slots:
   void exposesAllocationModelRolesAndCategorySummaries() {
-    Category food("Fictional Food");
-    Category travel("Fictional Travel");
-    Operation operation(nullptr, QDate(2026, 5, 1), -100.0, "Mixed purchase", "Details",
+    Category food(u"Fictional Food"_s);
+    Category travel(u"Fictional Travel"_s);
+    Operation operation(nullptr, QDate(2026, 5, 1), -100.0, u"Mixed purchase"_s,
                         { new Allocation(&food, -60.0), new Allocation(&food, -10.0),
-                          new Allocation(&travel, -30.0) });
+                          new Allocation(&travel, -30.0) },
+                        u"Details"_s);
 
     QCOMPARE(operation.rowCount(), 3);
     const QModelIndex index = operation.index(0, 0);
@@ -25,46 +28,47 @@ private slots:
 
     QCOMPARE(operation.allocatedAmount(), -100.0);
     QVERIFY(operation.isCategorized());
-    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional Food", "Fictional Food", "Fictional Travel" }));
-    QVERIFY(operation.categoryDisplay().contains("Fictional Food"));
-    QVERIFY(operation.categoryDisplay().contains("Fictional Travel"));
+    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional Food"_L1, "Fictional Food"_L1, "Fictional Travel"_L1 }));
+    QVERIFY(operation.categoryDisplay().contains("Fictional Food"_L1));
+    QVERIFY(operation.categoryDisplay().contains("Fictional Travel"_L1));
     QCOMPARE(operation.amountForCategory(&food), -70.0);
     QCOMPARE(operation.amountForCategory(&travel), -30.0);
     QCOMPARE(operation.amountForCategory(nullptr), 0.0);
   }
 
   void coversModelMetadataAndNullAllocations() {
-    Category category("Fictional Category");
-    Operation operation(nullptr, {}, 25.0, "Income", {},
+    Category category(u"Fictional Category"_s);
+    Operation operation(nullptr, {}, 25.0, u"Income"_s,
                         { nullptr, new Allocation(nullptr, 5.0),
-                          new Allocation(&category, 20.0) });
+                          new Allocation(&category, 20.0) },
+                        {});
 
     QCOMPARE(operation.rowCount(operation.index(0)), 0);
-    QCOMPARE(operation.roleNames().value(Operation::CategoryRole), QByteArray("category"));
-    QCOMPARE(operation.roleNames().value(Operation::AmountRole), QByteArray("amount"));
+    QCOMPARE(operation.roleNames().value(Operation::CategoryRole), "category"_ba);
+    QCOMPARE(operation.roleNames().value(Operation::AmountRole), "amount"_ba);
     QVERIFY(!operation.data(operation.index(0), Operation::CategoryRole).isValid());
     QCOMPARE(operation.data(operation.index(1), Operation::CategoryRole).value<const Category*>(), nullptr);
     QCOMPARE(operation.allocatedAmount(), 25.0);
-    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional Category" }));
-    QCOMPARE(operation.categoryDisplay(), QString("Fictional Category"));
+    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional Category"_L1 }));
+    QCOMPARE(operation.categoryDisplay(), u"Fictional Category"_s);
     QCOMPARE(operation.amountForCategory(&category), 20.0);
     QCOMPARE(operation.amountForCategory(nullptr), 0.0);
   }
 
   void comparesAllocationsIncludingNullAndDifferentValues() {
-    Category first("Fictional First");
-    Category second("Fictional Second");
+    Category first(u"Fictional First"_s);
+    Category second(u"Fictional Second"_s);
     Allocation matching(&first, 10.0);
     Allocation differentAmount(&first, 11.0);
     Allocation differentCategory(&second, 10.0);
-    Operation operation(nullptr, {}, 10.0, "Purchase", {}, { new Allocation(&first, 10.0) });
+    Operation operation(nullptr, {}, 10.0, u"Purchase"_s, { new Allocation(&first, 10.0) }, {});
 
     QVERIFY(operation.sameAllocations({ &matching }));
     QVERIFY(!operation.sameAllocations({}));
     QVERIFY(!operation.sameAllocations({ &differentAmount }));
     QVERIFY(!operation.sameAllocations({ &differentCategory }));
 
-    Operation nullOperation(nullptr, {}, 0.0, "Empty", {}, { nullptr });
+    Operation nullOperation(nullptr, {}, 0.0, u"Empty"_s, { nullptr }, {});
     QVERIFY(nullOperation.sameAllocations({ nullptr }));
     QVERIFY(!nullOperation.sameAllocations({ &matching }));
     QVERIFY(!nullOperation.sameAllocations({ nullptr, nullptr }));
@@ -74,7 +78,7 @@ private slots:
 
   void budgetDateFallsBackAndSupportsExplicitValue() {
     const QDate operationDate(2026, 5, 15);
-    Operation operation(nullptr, operationDate, 10.0, "Income");
+    Operation operation(nullptr, operationDate, 10.0, u"Income"_s);
     QCOMPARE(operation.budgetDate(), operationDate);
 
     QSignalSpy budgetDateSpy(&operation, &Operation::budgetDateChanged);
@@ -90,9 +94,9 @@ private slots:
   }
 
   void allocationReplacementAndClearingNotifyOnlyOnChanges() {
-    Category category("Fictional Category");
-    Operation operation(nullptr, {}, -50.0, "Purchase",
-                        {}, { new Allocation(&category, -50.0) });
+    Category category(u"Fictional Category"_s);
+    Operation operation(nullptr, {}, -50.0, u"Purchase"_s,
+                        { new Allocation(&category, -50.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
     operation.setAllocations({ new Allocation(&category, -50.0) });
@@ -112,31 +116,31 @@ private slots:
   }
 
   void categoryRenameUpdatesCategorySummary() {
-    Category category("Fictional Old Name");
-    Operation operation(nullptr, {}, -50.0, "Purchase",
-                        {}, { new Allocation(&category, -50.0) });
+    Category category(u"Fictional Old Name"_s);
+    Operation operation(nullptr, {}, -50.0, u"Purchase"_s,
+                        { new Allocation(&category, -50.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
-    category.set_name("Fictional New Name");
+    category.set_name(u"Fictional New Name"_s);
 
-    QCOMPARE(operation.categoryDisplay(), QString("Fictional New Name"));
-    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional New Name" }));
+    QCOMPARE(operation.categoryDisplay(), u"Fictional New Name"_s);
+    QCOMPARE(operation.allocatedCategoryNames(), QStringList({ "Fictional New Name"_L1 }));
     QCOMPARE(allocationsSpy.count(), 1);
   }
 
   void categorySignalsFollowAllocationReplacement() {
-    Category oldCategory("Fictional Old");
-    Category newCategory("Fictional New");
-    Operation operation(nullptr, {}, -10.0, "Purchase", {},
-                        { new Allocation(&oldCategory, -10.0) });
+    Category oldCategory(u"Fictional Old"_s);
+    Category newCategory(u"Fictional New"_s);
+    Operation operation(nullptr, {}, -10.0, u"Purchase"_s,
+                        { new Allocation(&oldCategory, -10.0) }, {});
     QSignalSpy allocationsSpy(&operation, &Operation::allocationsChanged);
 
     operation.setAllocations({ new Allocation(&newCategory, -10.0) });
     QCOMPARE(allocationsSpy.count(), 1);
 
-    oldCategory.set_name("Fictional Old Renamed");
+    oldCategory.set_name(u"Fictional Old Renamed"_s);
     QCOMPARE(allocationsSpy.count(), 1);
-    newCategory.set_name("Fictional New Renamed");
+    newCategory.set_name(u"Fictional New Renamed"_s);
     QCOMPARE(allocationsSpy.count(), 2);
   }
 };

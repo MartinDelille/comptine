@@ -6,6 +6,8 @@
 #include "CategoryController.h"
 #include "model/Operation.h"
 
+using namespace Qt::StringLiterals;
+
 EvolutionController::EvolutionController(BudgetData& budgetData,
                                          CategoryController& categories,
                                          QObject* parent) :
@@ -28,24 +30,24 @@ QDate EvolutionController::monthDate(int column) const {
 }
 
 int EvolutionController::monthCount() const {
-  return _availableMonths.size();
+  return static_cast<int>(_availableMonths.size());
 }
 
 QStringList EvolutionController::availableMonthLabels() const {
   QStringList labels;
   const QLocale locale;
   for (const QDate& month : _availableMonths) {
-    labels.append(locale.toString(month, "MMMM yyyy"));
+    labels.append(locale.toString(month, "MMMM yyyy"_L1));
   }
   return labels;
 }
 
 int EvolutionController::summaryStartIndex() const {
-  return _availableMonths.indexOf(summaryStartMonth());
+  return static_cast<int>(_availableMonths.indexOf(summaryStartMonth()));
 }
 
 int EvolutionController::summaryEndIndex() const {
-  return _availableMonths.indexOf(summaryEndMonth());
+  return static_cast<int>(_availableMonths.indexOf(summaryEndMonth()));
 }
 
 void EvolutionController::setSummaryStartMonthIndex(int index) {
@@ -58,7 +60,7 @@ void EvolutionController::setSummaryEndMonthIndex(int index) {
 
 int EvolutionController::currentMonthIndex() const {
   const QDate selected(_budgetData.budgetDate().year(), _budgetData.budgetDate().month(), 1);
-  return _availableMonths.indexOf(selected);
+  return static_cast<int>(_availableMonths.indexOf(selected));
 }
 
 QDate EvolutionController::summaryStartMonth() const {
@@ -122,7 +124,7 @@ QDate EvolutionController::historyStart() const {
   for (const Category* category : _categories.categories()) {
     const auto history = category->allMonthHistory();
     for (auto it = history.constBegin(); it != history.constEnd(); ++it) {
-      const QDate month(it.key().year, it.key().month, 1);
+      const QDate& month = it.key();
       if (month.isValid() && (!result.isValid() || month < result)) {
         result = month;
       }
@@ -144,7 +146,7 @@ QDate EvolutionController::historyEnd() const {
   for (const Category* category : _categories.categories()) {
     const auto history = category->allMonthHistory();
     for (auto it = history.constBegin(); it != history.constEnd(); ++it) {
-      const QDate month(it.key().year, it.key().month, 1);
+      const QDate& month = it.key();
       if (month.isValid() && (!result.isValid() || month > result)) {
         result = month;
       }
@@ -201,11 +203,11 @@ bool EvolutionController::updateAvailableMonths() {
 }
 
 int EvolutionController::rowCount(const QModelIndex& parent) const {
-  return parent.isValid() ? 0 : _categories.categories().size();
+  return parent.isValid() ? 0 : static_cast<int>(_categories.categories().size());
 }
 
 int EvolutionController::columnCount(const QModelIndex& parent) const {
-  return parent.isValid() ? 0 : _availableMonths.size();
+  return parent.isValid() ? 0 : static_cast<int>(_availableMonths.size());
 }
 
 double EvolutionController::metricValue(const Category* category,
@@ -219,9 +221,9 @@ double EvolutionController::metricValue(const Category* category,
     case 2:
       return _categories.leftoverForCategory(category, month);
     case 3:
-      return category->monthRecord(month.year(), month.month()).saveAmount;
+      return category->monthRecord(month).saveAmount;
     case 4:
-      return category->monthRecord(month.year(), month.month()).reportAmount;
+      return category->monthRecord(month).reportAmount;
     case 5:
       return category->accumulatedLeftoverBefore(month);
     default:
@@ -296,9 +298,9 @@ QVariant EvolutionController::data(const QModelIndex& index, int role) const {
     case LeftoverRole:
       return _categories.leftoverForCategory(category, month);
     case SavedRole:
-      return category->monthRecord(month.year(), month.month()).saveAmount;
+      return category->monthRecord(month).saveAmount;
     case ReportedRole:
-      return category->monthRecord(month.year(), month.month()).reportAmount;
+      return category->monthRecord(month).reportAmount;
     case AccumulatedRole:
       return category->accumulatedLeftoverBefore(month);
     case SpentAverageRole:

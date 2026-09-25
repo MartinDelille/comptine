@@ -6,13 +6,15 @@
 
 #include "services/AppSettings.h"
 
+using namespace Qt::StringLiterals;
+
 class AppSettingsTest : public QObject {
   Q_OBJECT
 
 private slots:
   void initTestCase() {
-    QCoreApplication::setOrganizationName("Fictional Coverage Organization");
-    QCoreApplication::setApplicationName("Fictional AppSettings Test");
+    QCoreApplication::setOrganizationName(u"Fictional Coverage Organization"_s);
+    QCoreApplication::setApplicationName(u"Fictional AppSettings Test"_s);
     QSettings settings;
     settings.clear();
     settings.sync();
@@ -34,8 +36,8 @@ private slots:
     settings.set_windowY(35);
     settings.set_windowWidth(1024);
     settings.set_windowHeight(768);
-    settings.set_language("fr");
-    settings.set_theme("dark");
+    settings.set_language(u"fr"_s);
+    settings.set_theme(u"dark"_s);
     settings.set_checkForUpdates(false);
     const QDateTime checkedAt(QDate(2026, 4, 5), QTime(10, 30));
     settings.set_lastUpdateCheck(checkedAt);
@@ -46,8 +48,8 @@ private slots:
     QCOMPARE(restored.windowY(), 35);
     QCOMPARE(restored.windowWidth(), 1024);
     QCOMPARE(restored.windowHeight(), 768);
-    QCOMPARE(restored.language(), QString("fr"));
-    QCOMPARE(restored.theme(), QString("dark"));
+    QCOMPARE(restored.language(), u"fr"_s);
+    QCOMPARE(restored.theme(), u"dark"_s);
     QVERIFY(!restored.checkForUpdates());
     QCOMPARE(restored.lastUpdateCheck(), checkedAt);
   }
@@ -57,17 +59,17 @@ private slots:
     QCOMPARE(settings.recentFiles().size(), 0);
     QVERIFY(settings.recentFilesModel() != nullptr);
 
-    settings.addRecentFile("fictional-1.comptine");
-    settings.addRecentFile("fictional-2.comptine");
-    settings.addRecentFile("fictional-1.comptine");
-    QCOMPARE(settings.recentFiles(), QStringList({ "fictional-1.comptine", "fictional-2.comptine" }));
+    settings.addRecentFile(u"fictional-1.comptine"_s);
+    settings.addRecentFile(u"fictional-2.comptine"_s);
+    settings.addRecentFile(u"fictional-1.comptine"_s);
+    QCOMPARE(settings.recentFiles(), QStringList({ "fictional-1.comptine"_L1, "fictional-2.comptine"_L1 }));
 
     for (int i = 3; i <= AppSettings::MaxRecentFiles + 2; ++i)
-      settings.addRecentFile(QString("fictional-%1.comptine").arg(i));
+      settings.addRecentFile(u"fictional-%1.comptine"_s.arg(i));
 
     QCOMPARE(settings.recentFiles().size(), AppSettings::MaxRecentFiles);
-    QCOMPARE(settings.recentFiles().first(), QString("fictional-12.comptine"));
-    QCOMPARE(settings.recentFiles().last(), QString("fictional-3.comptine"));
+    QCOMPARE(settings.recentFiles().first(), u"fictional-12.comptine"_s);
+    QCOMPARE(settings.recentFiles().last(), u"fictional-3.comptine"_s);
 
     AppSettings restored;
     QCOMPARE(restored.recentFiles(), settings.recentFiles());

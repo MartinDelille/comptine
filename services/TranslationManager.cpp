@@ -5,6 +5,8 @@
 #include "AppSettings.h"
 #include "TranslationManager.h"
 
+using namespace Qt::StringLiterals;
+
 TranslationManager::TranslationManager(QGuiApplication& app, QQmlApplicationEngine& engine,
                                        AppSettings& settings, QObject* parent) :
     QObject(parent),
@@ -24,11 +26,11 @@ void TranslationManager::loadTranslation() {
   QString lang = _settings.language();
   if (lang.isEmpty()) {
     // System default
-    if (_translator.load(QLocale(), "comptine", "_", ":/i18n")) {
+    if (_translator.load(QLocale(), "comptine"_L1, "_"_L1, ":/i18n"_L1)) {
       _app.installTranslator(&_translator);
     }
-  } else if (lang == "fr") {
-    if (_translator.load(":/i18n/comptine_fr.qm")) {
+  } else if (lang == "fr"_L1) {
+    if (_translator.load(":/i18n/comptine_fr.qm"_L1)) {
       _app.installTranslator(&_translator);
     }
   }

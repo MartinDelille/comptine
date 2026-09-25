@@ -1,0 +1,14 @@
+# Keep compiler/platform-sensitive checks disabled; portable checks remain enabled.
+Checks: >-
+  -*,
+  bugprone-*,
+  clang-analyzer-*,
+  -bugprone-invalid-enum-default-initialization,
+  -bugprone-throwing-static-initialization,
+  -bugprone-signed-bitwise,
+  -bugprone-unchecked-optional-access,
+  -clang-analyzer-cplusplus.NewDelete*
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(^|/)(app|editor|model|services|tests|utils)/.*'
+SystemHeaders: false
+FormatStyle: file

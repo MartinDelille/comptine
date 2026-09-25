@@ -10,29 +10,6 @@
 
 #include "utils/PropertyMacros.h"
 
-// Key for storing per-month data by year-month
-struct YearMonth {
-  int year = 0;
-  int month = 0;
-
-  bool operator<(const YearMonth& other) const {
-    if (year != other.year) return year < other.year;
-    return month < other.month;
-  }
-
-  bool operator==(const YearMonth& other) const {
-    return year == other.year && month == other.month;
-  }
-
-  bool operator<=(const YearMonth& other) const {
-    return *this < other || *this == other;
-  }
-
-  static YearMonth fromDate(const QDate& date) {
-    return { date.year(), date.month() };
-  }
-};
-
 // Per-month record for a category: leftover decisions and optional budget limit override
 struct MonthRecord {
   double saveAmount = 0.0;            // Amount transferred to personal savings
@@ -64,15 +41,15 @@ public:
   explicit Category(const QString& name, QObject* parent = nullptr);
 
   // Month history management (leftover decisions + budget limit overrides)
-  MonthRecord monthRecord(int year, int month) const;
-  void setMonthRecord(int year, int month, const MonthRecord& record);
-  void clearMonthRecord(int year, int month);
-  QMap<YearMonth, MonthRecord> allMonthHistory() const;
+  MonthRecord monthRecord(const QDate& month) const;
+  void setMonthRecord(const QDate& month, const MonthRecord& record);
+  void clearMonthRecord(const QDate& month);
+  QMap<QDate, MonthRecord> allMonthHistory() const;
 
   // Legacy leftover decision accessors (convenience wrappers)
-  LeftoverDecision leftoverDecision(int year, int month) const;
-  void setLeftoverDecision(int year, int month, const LeftoverDecision& decision);
-  void clearLeftoverDecision(int year, int month);
+  LeftoverDecision leftoverDecision(const QDate& month) const;
+  void setLeftoverDecision(const QDate& month, const LeftoverDecision& decision);
+  void clearLeftoverDecision(const QDate& month);
 
   // Budget limit for a specific month
   // Looks up month_history for the effective budget limit at that date.
@@ -82,18 +59,18 @@ public:
   Q_INVOKABLE bool hasBudgetLimitOverrideForMonth(const QDate& date) const;
 
   // Set a historical budget limit for a specific month
-  void setBudgetLimitForMonth(int year, int month, double limit);
+  void setBudgetLimitForMonth(const QDate& date, double limit);
 
   // Clear a historical budget limit for a specific month (inherit from before)
-  void clearBudgetLimitForMonth(int year, int month);
+  void clearBudgetLimitForMonth(const QDate& month);
 
   // Calculate accumulated leftover up to (but not including) a specific month
   // This sums all "Report" decisions from previous months
   double accumulatedLeftoverBefore(const QDate& date) const;
 
 signals:
-  void monthHistoryChanged(int year, int month);
+  void monthHistoryChanged(const QDate& month);
 
 private:
-  QMap<YearMonth, MonthRecord> _monthHistory;
+  QMap<QDate, MonthRecord> _monthHistory;
 };

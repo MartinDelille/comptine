@@ -32,6 +32,42 @@ option(
     "Enable environment overrides for update testing"
     OFF
 )
+option(COMPTINE_ENABLE_CLANG_TIDY "Enable clang-tidy static analysis" OFF)
+option(COMPTINE_ENABLE_CLAZY "Enable Clazy static analysis" OFF)
+set(COMPTINE_CLANG_TIDY_EXECUTABLE
+    ""
+    CACHE FILEPATH
+    "clang-tidy executable used for static analysis"
+)
+
+if(COMPTINE_ENABLE_CLANG_TIDY)
+    if(COMPTINE_CLANG_TIDY_EXECUTABLE)
+        set(CLANG_TIDY_EXECUTABLE "${COMPTINE_CLANG_TIDY_EXECUTABLE}")
+    else()
+        find_program(CLANG_TIDY_EXECUTABLE NAMES clang-tidy)
+    endif()
+    if(NOT CLANG_TIDY_EXECUTABLE)
+        message(
+            FATAL_ERROR
+            "COMPTINE_ENABLE_CLANG_TIDY is ON, but clang-tidy was not found"
+        )
+    endif()
+
+    set(CMAKE_CXX_CLANG_TIDY
+        "${CLANG_TIDY_EXECUTABLE}"
+        CACHE STRING
+        "clang-tidy command used for C++ compilation"
+        FORCE
+    )
+    execute_process(
+        COMMAND "${CLANG_TIDY_EXECUTABLE}" --version
+        OUTPUT_VARIABLE CLANG_TIDY_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    message(STATUS "Using clang-tidy: ${CLANG_TIDY_EXECUTABLE}")
+    message(STATUS "clang-tidy version: ${CLANG_TIDY_VERSION}")
+endif()
 
 if(COMPTINE_ENABLE_COVERAGE)
     if(MSVC)
@@ -77,5 +113,9 @@ add_subdirectory(app)
 
 include(CTest)
 add_subdirectory(tests)
+
+if(COMPTINE_ENABLE_CLAZY)
+    include(cmake/Clazy.cmake)
+endif()
 
 include(cmake/packaging.cmake)

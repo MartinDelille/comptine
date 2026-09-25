@@ -9,6 +9,8 @@
 #include "services/TranslationManager.h"
 #include "services/UpdateController.h"
 
+using namespace Qt::StringLiterals;
+
 void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
   QByteArray localMsg = msg.toLocal8Bit();
   const char* file = context.file ? context.file : "";
@@ -26,7 +28,7 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
     }
   }
   int line = context.line;
-  const char* colorStr = "";
+  const char* colorStr;
 
   switch (type) {
     case QtDebugMsg:
@@ -42,6 +44,9 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
     case QtInfoMsg:
       colorStr = "\033[36;1m";
       break;
+    default:
+      colorStr = "";
+      break;
   }
   // Format: file:line: type: message
   fprintf(stderr, "%s:%d %s%s\033[0m\n", file, line, colorStr, localMsg.constData());
@@ -51,8 +56,8 @@ void comptineMessageHandler(QtMsgType type, const QMessageLogContext& context, c
 int main(int argc, char* argv[]) {
   qInstallMessageHandler(comptineMessageHandler);
   QGuiApplication app(argc, argv);
-  app.setOrganizationDomain("martin.delille.org");
-  app.setApplicationName("Comptine");
+  app.setOrganizationDomain("martin.delille.org"_L1);
+  app.setApplicationName("Comptine"_L1);
 
   QUndoStack undoStack;
   AppSettings settings;

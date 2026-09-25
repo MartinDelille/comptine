@@ -7,6 +7,8 @@
 
 namespace CsvParser {
 
+using namespace Qt::StringLiterals;
+
 // Parse amount string handling French format (e.g., "-5 428,69 €" or "-5428.69")
 inline double parseAmount(const QString& str) {
   QString cleaned = str.trimmed();
@@ -85,17 +87,17 @@ inline QString getField(const QStringList& fields, int index) {
 inline QString normalizeHeader(const QString& header) {
   QString h = header.trimmed().toLower();
   // Remove common French accents
-  h.replace(QString::fromUtf8("é"), "e");
-  h.replace(QString::fromUtf8("è"), "e");
-  h.replace(QString::fromUtf8("ê"), "e");
-  h.replace(QString::fromUtf8("à"), "a");
-  h.replace(QString::fromUtf8("â"), "a");
-  h.replace(QString::fromUtf8("ô"), "o");
-  h.replace(QString::fromUtf8("î"), "i");
-  h.replace(QString::fromUtf8("ï"), "i");
-  h.replace(QString::fromUtf8("ù"), "u");
-  h.replace(QString::fromUtf8("û"), "u");
-  h.replace(QString::fromUtf8("ç"), "c");
+  h.replace(u"é"_s, "e"_L1);
+  h.replace(u"è"_s, "e"_L1);
+  h.replace(u"ê"_s, "e"_L1);
+  h.replace(u"à"_s, "a"_L1);
+  h.replace(u"â"_s, "a"_L1);
+  h.replace(u"ô"_s, "o"_L1);
+  h.replace(u"î"_s, "i"_L1);
+  h.replace(u"ï"_s, "i"_L1);
+  h.replace(u"ù"_s, "u"_L1);
+  h.replace(u"û"_s, "u"_L1);
+  h.replace(u"ç"_s, "c"_L1);
   return h;
 }
 
@@ -128,11 +130,11 @@ inline CsvFieldIndices parseHeader(const QStringList& headerFields) {
       indices.category = i;
     }
     // Debit column (first match wins)
-    else if (indices.debit < 0 && (h == "debit")) {
+    else if (indices.debit < 0 && (h == "debit"_L1)) {
       indices.debit = i;
     }
     // Credit column (first match wins)
-    else if (indices.credit < 0 && (h == "credit")) {
+    else if (indices.credit < 0 && (h == "credit"_L1)) {
       indices.credit = i;
     }
     // Single amount column (first match wins)

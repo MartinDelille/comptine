@@ -7,6 +7,8 @@
 #include "services/AppSettings.h"
 #include "services/ServiceForeigners.h"
 
+using namespace Qt::StringLiterals;
+
 Q_IMPORT_QML_PLUGIN(servicesPlugin)
 Q_IMPORT_QML_PLUGIN(modelPlugin)
 Q_IMPORT_QML_PLUGIN(editorPlugin)
@@ -18,9 +20,9 @@ class Setup : public QObject {
 
 public slots:
   void applicationAvailable() {
-    QCoreApplication::setOrganizationName("ComptineTests");
-    QCoreApplication::setOrganizationDomain("comptine.example");
-    QCoreApplication::setApplicationName("qmltests");
+    QCoreApplication::setOrganizationName(u"ComptineTests"_s);
+    QCoreApplication::setOrganizationDomain(u"comptine.example"_s);
+    QCoreApplication::setApplicationName(u"qmltests"_s);
 
     _settings = new AppSettings;
     AppSettingsForeign::instance = _settings;

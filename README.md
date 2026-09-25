@@ -74,6 +74,51 @@ The coverage preset uses `build/Coverage`, so it does not affect the regular
 with the dependency/toolchain presets used by the project presets. The same
 workflow is available through `make coverage`.
 
+### Clang-tidy analysis
+
+Install the C++ dependencies, then configure and build the separate analysis
+preset:
+
+```bash
+uv run conan install . --build=missing \
+  -pr:h=conan/profiles/linux -pr:b=conan/profiles/linux \
+  -s:h build_type=Debug -s:b build_type=Debug
+cmake --preset=analysis
+cmake --build --preset=analysis
+```
+
+The analysis build requires `clang-tidy` to be installed and writes its build
+artifacts to `build/Analysis`. The analysis policy is shared by macOS and CI;
+only checks with known platform-dependent results are excluded in `.clang-tidy`.
+CI uses a pinned LLVM toolchain and builds Clazy against that toolchain so that
+the Clang-Tidy and Clazy executables are not selected accidentally from `PATH`.
+
+To run the complete analysis locally, including Clazy:
+
+```bash
+clang-tidy --version
+clazy-standalone --version
+clang++ --version
+cmake --build --preset=analysis
+cmake --build --preset=analysis --target clazy-analysis
+```
+
+On macOS, the portable Linux analysis environment can be run through Colima and
+Docker. Start Colima once, then run:
+
+```bash
+colima start
+./scripts/analysis-docker.sh
+```
+
+The container installs the Qt version from `.qt-version`, LLVM 22, and Clazy
+1.17. It runs as `linux/amd64` to match GitHub’s Ubuntu runner and uses a
+separate Docker volume for the source copy and `build/`, so it does not reuse
+or modify the native macOS build artifacts.
+
+GitHub Actions builds and runs the same `docker/analysis.Dockerfile`, using
+Docker layer caching for the image build.
+
 ## Creating Installers
 
 ### MacOS (DMG)

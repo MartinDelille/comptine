@@ -8,6 +8,8 @@
 #include "model/Operation.h"
 #include "model/Rule.h"
 
+using namespace Qt::StringLiterals;
+
 // AddAccountCommand implementation
 
 AddAccountCommand::AddAccountCommand(Account* account, BudgetData& budgetData,
@@ -70,7 +72,7 @@ EditCategoryCommand::EditCategoryCommand(Category& category,
     _oldBudgetLimit(category.budgetLimitForMonth(budgetDate)),
     _newBudgetLimit(newBudgetLimit),
     _budgetDate(budgetDate) {
-  _previousBudgetDateLimit = category.monthRecord(_budgetDate.year(), _budgetDate.month()).budgetLimit;
+  _previousBudgetDateLimit = category.monthRecord(_budgetDate).budgetLimit;
 
   const bool budgetChanged = _newBudgetLimit.has_value()
                                  ? _oldBudgetLimit != _newBudgetLimit.value()
@@ -90,9 +92,9 @@ void EditCategoryCommand::undo() {
   // If the budget limit changed, restore the previous month override.
   if (_newBudgetLimit.has_value() || _previousBudgetDateLimit.has_value()) {
     if (_previousBudgetDateLimit.has_value()) {
-      _category.setBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month(), _previousBudgetDateLimit.value());
+      _category.setBudgetLimitForMonth(_budgetDate, _previousBudgetDateLimit.value());
     } else {
-      _category.clearBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month());
+      _category.clearBudgetLimitForMonth(_budgetDate);
     }
   }
 }
@@ -102,9 +104,9 @@ void EditCategoryCommand::redo() {
 
   // Store the new limit at the month where it becomes effective.
   if (_newBudgetLimit.has_value()) {
-    _category.setBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month(), _newBudgetLimit.value());
+    _category.setBudgetLimitForMonth(_budgetDate, _newBudgetLimit.value());
   } else {
-    _category.clearBudgetLimitForMonth(_budgetDate.year(), _budgetDate.month());
+    _category.clearBudgetLimitForMonth(_budgetDate);
   }
 }
 
@@ -181,7 +183,7 @@ ImportOperationsCommand::ImportOperationsCommand(Account& account,
     _account(account),
     _operations(operations),
     _ownsOperations(false) {
-  setText(QObject::tr("Import %n operation(s)", "", operations.size()));
+  setText(QObject::tr("Import %n operation(s)", "", static_cast<int>(operations.size())));
 }
 
 ImportOperationsCommand::~ImportOperationsCommand() {
@@ -265,7 +267,7 @@ SetOperationBudgetDateCommand::SetOperationBudgetDateCommand(Operation& operatio
     _operation(operation),
     _oldBudgetDate(operation.budgetDate()),
     _newBudgetDate(newBudgetDate) {
-  setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy")));
+  setText(QObject::tr("Set operation budget date to %1").arg(newBudgetDate.toString("dd/MM/yyyy"_L1)));
 }
 
 void SetOperationBudgetDateCommand::undo() {
@@ -288,7 +290,7 @@ SplitOperationCommand::SplitOperationCommand(Operation& operation,
     setText(QObject::tr("Split operation into %1 categories").arg(newAllocations.size()));
   } else if (newAllocations.size() == 1) {
     auto category = newAllocations.first()->category();
-    auto name = category ? category->name() : "";
+    auto name = category ? category->name() : u""_s;
     setText(QObject::tr("Set operation category to \"%1\"").arg(name));
   } else {
     setText(QObject::tr("Clear operation split"));
@@ -341,7 +343,7 @@ SetOperationDateCommand::SetOperationDateCommand(Operation& operation,
     _operation(operation),
     _oldDate(operation.date()),
     _newDate(newDate) {
-  setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy")));
+  setText(QObject::tr("Set operation date to %1").arg(newDate.toString("dd/MM/yyyy"_L1)));
 }
 
 void SetOperationDateCommand::undo() {
@@ -401,7 +403,7 @@ SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
     _category(category),
     _categoryController(categoryController),
     _date(date),
-    _oldDecision(category.leftoverDecision(date.year(), date.month())),
+    _oldDecision(category.leftoverDecision(date)),
     _newDecision(newDecision) {
   QString actionStr;
   if (newDecision.saveAmount > 0 && newDecision.reportAmount > 0) {
@@ -420,9 +422,9 @@ SetLeftoverDecisionCommand::SetLeftoverDecisionCommand(Category& category,
 
 void SetLeftoverDecisionCommand::undo() {
   if (_oldDecision.isEmpty()) {
-    _category.clearLeftoverDecision(_date.year(), _date.month());
+    _category.clearLeftoverDecision(_date);
   } else {
-    _category.setLeftoverDecision(_date.year(), _date.month(), _oldDecision);
+    _category.setLeftoverDecision(_date, _oldDecision);
   }
   if (_categoryController) {
     emit _categoryController->budgetDataChanged();
@@ -431,9 +433,9 @@ void SetLeftoverDecisionCommand::undo() {
 
 void SetLeftoverDecisionCommand::redo() {
   if (_newDecision.isEmpty()) {
-    _category.clearLeftoverDecision(_date.year(), _date.month());
+    _category.clearLeftoverDecision(_date);
   } else {
-    _category.setLeftoverDecision(_date.year(), _date.month(), _newDecision);
+    _category.setLeftoverDecision(_date, _newDecision);
   }
   if (_categoryController) {
     emit _categoryController->budgetDataChanged();
@@ -495,7 +497,7 @@ AddRuleCommand::~AddRuleCommand() {
 void AddRuleCommand::undo() {
   if (_ruleController) {
     // Find and remove the rule
-    int index = _ruleController->rules().indexOf(_rule);
+    int index = static_cast<int>(_ruleController->rules().indexOf(_rule));
     if (index >= 0) {
       _ruleController->takeRule(index);
       _ownsRule = true;
@@ -536,7 +538,7 @@ void RemoveRuleCommand::undo() {
     // Re-insert the rule at the original index
     _ruleController->addRule(_rule);
     // Move it to the original position if needed
-    int currentIndex = _ruleController->rules().indexOf(_rule);
+    int currentIndex = static_cast<int>(_ruleController->rules().indexOf(_rule));
     if (currentIndex != _index && currentIndex >= 0) {
       _ruleController->moveRuleDirect(currentIndex, _index);
     }
@@ -546,7 +548,7 @@ void RemoveRuleCommand::undo() {
 
 void RemoveRuleCommand::redo() {
   if (_ruleController && _rule) {
-    int index = _ruleController->rules().indexOf(_rule);
+    int index = static_cast<int>(_ruleController->rules().indexOf(_rule));
     if (index >= 0) {
       _rule = _ruleController->takeRule(index);
       _ownsRule = true;
@@ -590,12 +592,12 @@ void EditRuleCommand::redo() {
 }
 
 // MoveRuleCommand implementation
-MoveRuleCommand::MoveRuleCommand(RuleController& ruleController, int fromIndex, int toIndex,
+MoveRuleCommand::MoveRuleCommand(RuleController& ruleController, Indexes indexes,
                                  QUndoCommand* parent) :
     QUndoCommand(parent),
     _ruleController(ruleController),
-    _fromIndex(fromIndex),
-    _toIndex(toIndex) {
+    _fromIndex(indexes.from),
+    _toIndex(indexes.to) {
   setText(QObject::tr("Move rule"));
 }
 

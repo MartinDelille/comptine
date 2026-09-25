@@ -3,64 +3,66 @@
 #include "model/Account.h"
 #include "model/OperationFilterModel.h"
 
+using namespace Qt::StringLiterals;
+
 class OperationFilterModelTest : public QObject {
   Q_OBJECT
 
 private slots:
   void filtersTextAndAmount() {
-    Account account("Fictional Checking", nullptr);
+    Account account(u"Fictional Checking"_s, nullptr);
     auto* detailsMatch = account.addOperation(
-        new Operation(&account, QDate(2026, 2, 3), -12.50, "Groceries", "Weekly shop"));
+        new Operation(&account, QDate(2026, 2, 3), -12.50, u"Groceries"_s, {}, u"Weekly shop"_s));
     account.addOperation(
-        new Operation(&account, QDate(2026, 2, 2), 25.00, "Salary", "Monthly income"));
+        new Operation(&account, QDate(2026, 2, 2), 25.00, u"Salary"_s, {}, u"Monthly income"_s));
     account.addOperation(
-        new Operation(&account, QDate(2026, 2, 2), 12.50, "Refund", "Returned purchase"));
+        new Operation(&account, QDate(2026, 2, 2), 12.50, u"Refund"_s, {}, u"Returned purchase"_s));
     auto* amountMatch = account.addOperation(
-        new Operation(&account, QDate(2026, 2, 1), -12.50, "Transport", "Bus pass"));
+        new Operation(&account, QDate(2026, 2, 1), -12.50, u"Transport"_s, {}, u"Bus pass"_s));
 
     OperationFilterModel model;
     model.setAccount(&account);
 
     QCOMPARE(model.rowCount(), 4);
-    model.setQuery("weekly");
+    model.setQuery(u"weekly"_s);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.operationAt(0), detailsMatch);
 
-    model.setQuery("12.50");
+    model.setQuery(u"12.50"_s);
     QCOMPARE(model.rowCount(), 3);
     QCOMPARE(model.operationAt(0), detailsMatch);
 
-    model.setQuery("12");
+    model.setQuery(u"12"_s);
     QCOMPARE(model.rowCount(), 3);
 
-    model.setQuery("-12");
+    model.setQuery(u"-12"_s);
     QCOMPARE(model.rowCount(), 2);
     QCOMPARE(model.operationAt(0), detailsMatch);
     QCOMPARE(model.operationAt(1), amountMatch);
 
-    model.setQuery("+12");
+    model.setQuery(u"+12"_s);
     QCOMPARE(model.rowCount(), 1);
 
-    model.setQuery("2.50");
+    model.setQuery(u"2.50"_s);
     QCOMPARE(model.rowCount(), 0);
 
-    model.setQuery("salary");
+    model.setQuery(u"salary"_s);
     QCOMPARE(model.rowCount(), 1);
-    QCOMPARE(model.operationAt(0)->property("label").toString(), QString("Salary"));
+    QCOMPARE(model.operationAt(0)->property("label").toString(), u"Salary"_s);
   }
 
   void mapsSelectionAndNavigationToAccount() {
-    Account account("Fictional Checking", nullptr);
+    Account account(u"Fictional Checking"_s, nullptr);
     auto* newest = account.addOperation(
-        new Operation(&account, QDate(2026, 3, 3), -10.0, "Newest"));
+        new Operation(&account, QDate(2026, 3, 3), -10.0, u"Newest"_s));
     auto* middle = account.addOperation(
-        new Operation(&account, QDate(2026, 3, 2), -20.0, "Target"));
+        new Operation(&account, QDate(2026, 3, 2), -20.0, u"Target"_s));
     auto* oldest = account.addOperation(
-        new Operation(&account, QDate(2026, 3, 1), -30.0, "Oldest"));
+        new Operation(&account, QDate(2026, 3, 1), -30.0, u"Oldest"_s));
 
     OperationFilterModel model;
     model.setAccount(&account);
-    model.setQuery("target");
+    model.setQuery(u"target"_s);
     model.selectAt(0);
 
     QCOMPARE(account.currentOperation(), middle);
@@ -68,12 +70,12 @@ private slots:
     model.nextOperation();
     QCOMPARE(account.currentOperation(), middle);
 
-    model.setQuery("newest");
+    model.setQuery(u"newest"_s);
     QCOMPARE(model.currentOperationIndex(), -1);
     QCOMPARE(account.currentOperation(), nullptr);
     QVERIFY(account.isSelected(middle));
 
-    model.setQuery("");
+    model.setQuery(""_L1);
     model.selectAt(0);
     QCOMPARE(account.currentOperation(), newest);
     model.selectAt(2, true);
@@ -117,21 +119,21 @@ private slots:
     model.nextOperation();
     model.moveOperation(1);
 
-    Account account("Fictional Lifecycle", nullptr);
+    Account account(u"Fictional Lifecycle"_s, nullptr);
     auto* operation = account.addOperation(
-        new Operation(&account, QDate(2026, 4, 1), -42.0, "Original"));
+        new Operation(&account, QDate(2026, 4, 1), -42.0, u"Original"_s));
     model.setAccount(&account);
     QCOMPARE(model.account(), &account);
     QCOMPARE(model.rowCount(), 1);
     model.setAccount(&account);
-    model.setQuery("   ");
+    model.setQuery(u"   "_s);
     QCOMPARE(model.rowCount(), 1);
-    model.setQuery("original");
+    model.setQuery(u"original"_s);
     QCOMPARE(model.operationAt(0), operation);
-    model.setQuery("does not match");
+    model.setQuery(u"does not match"_s);
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(model.currentOperationIndex(), -1);
-    model.setQuery("does not match");
+    model.setQuery(u"does not match"_s);
     model.setAccount(nullptr);
     QCOMPARE(model.account(), nullptr);
     QCOMPARE(model.rowCount(), 0);
@@ -139,42 +141,42 @@ private slots:
   }
 
   void filtersSignedAndLocalizedAmountForms() {
-    Account account("Fictional Amounts", nullptr);
+    Account account(u"Fictional Amounts"_s, nullptr);
     auto* expense = account.addOperation(
-        new Operation(&account, QDate(2026, 5, 2), -1234.5, "Expense"));
+        new Operation(&account, QDate(2026, 5, 2), -1234.5, u"Expense"_s));
     auto* income = account.addOperation(
-        new Operation(&account, QDate(2026, 5, 1), 1234.5, "Income"));
+        new Operation(&account, QDate(2026, 5, 1), 1234.5, u"Income"_s));
     OperationFilterModel model;
     model.setAccount(&account);
 
-    model.setQuery("-1234.50");
+    model.setQuery(u"-1234.50"_s);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.operationAt(0), expense);
-    model.setQuery("+1234.50");
+    model.setQuery(u"+1234.50"_s);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.operationAt(0), income);
-    model.setQuery("+1234");
+    model.setQuery(u"+1234"_s);
     QCOMPARE(model.rowCount(), 1);
-    model.setQuery("-1234");
+    model.setQuery(u"-1234"_s);
     QCOMPARE(model.rowCount(), 1);
-    model.setQuery("+1234.50");
+    model.setQuery(u"+1234.50"_s);
     QCOMPARE(model.rowCount(), 1);
-    model.setQuery("-1234.50");
+    model.setQuery(u"-1234.50"_s);
     QCOMPARE(model.rowCount(), 1);
-    model.setQuery("+999");
+    model.setQuery(u"+999"_s);
     QCOMPARE(model.rowCount(), 0);
-    model.setQuery("-999");
+    model.setQuery(u"-999"_s);
     QCOMPARE(model.rowCount(), 0);
   }
 
   void handlesNavigationAndSelectionEdges() {
-    Account account("Fictional Edges", nullptr);
+    Account account(u"Fictional Edges"_s, nullptr);
     auto* first = account.addOperation(
-        new Operation(&account, QDate(2026, 6, 3), -3.0, "First"));
+        new Operation(&account, QDate(2026, 6, 3), -3.0, u"First"_s));
     auto* second = account.addOperation(
-        new Operation(&account, QDate(2026, 6, 2), -2.0, "Second"));
+        new Operation(&account, QDate(2026, 6, 2), -2.0, u"Second"_s));
     auto* third = account.addOperation(
-        new Operation(&account, QDate(2026, 6, 1), -1.0, "Third"));
+        new Operation(&account, QDate(2026, 6, 1), -1.0, u"Third"_s));
     OperationFilterModel model;
     model.setAccount(&account);
 
@@ -185,11 +187,11 @@ private slots:
     model.selectRange(100, -100);
     QCOMPARE(account.selectionCount(), 3);
     model.selectAt(0);
-    model.setQuery("third");
+    model.setQuery(u"third"_s);
     model.selectAt(0, true);
     QCOMPARE(account.currentOperation(), third);
     QCOMPARE(account.selectionCount(), 1);
-    model.setQuery("");
+    model.setQuery(""_L1);
     model.selectAt(1);
     model.moveOperation(0);
     QCOMPARE(account.currentOperation(), second);
@@ -212,21 +214,21 @@ private slots:
   }
 
   void operationChangesRefreshFilterAndCurrentOperation() {
-    Account account("Fictional Updates", nullptr);
+    Account account(u"Fictional Updates"_s, nullptr);
     auto* operation = account.addOperation(
-        new Operation(&account, QDate(2026, 7, 1), -7.0, "Before"));
+        new Operation(&account, QDate(2026, 7, 1), -7.0, u"Before"_s));
     OperationFilterModel model;
     model.setAccount(&account);
     model.selectAt(0);
     QCOMPARE(model.currentOperationIndex(), 0);
 
-    model.setQuery("after");
+    model.setQuery(u"after"_s);
     QCOMPARE(model.rowCount(), 0);
-    operation->set_label("After");
+    operation->set_label(u"After"_s);
     QCOMPARE(model.rowCount(), 1);
     QCOMPARE(model.currentOperationIndex(), -1);
 
-    operation->set_label("Hidden");
+    operation->set_label(u"Hidden"_s);
     QCOMPARE(model.rowCount(), 0);
     QCOMPARE(account.currentOperation(), nullptr);
     account.clear();

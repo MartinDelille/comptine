@@ -26,11 +26,27 @@ jobs:
         id: qt-version
         run: echo "version=$(cat .qt-version)" >> $GITHUB_OUTPUT
 
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build analysis image
+        uses: docker/build-push-action@v6
         with:
-          version: ${{ steps.qt-version.outputs.version }}
-          cache: true
+          context: docker
+          file: docker/analysis.Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: comptine-analysis:${{ steps.qt-version.outputs.version }}
+          build-args: |
+            QT_VERSION=${{ steps.qt-version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Run pre-commit
         run: uv run pre-commit run --all-files
+
+      - name: Run analysis in Docker
+        env:
+          COMPTINE_ANALYSIS_IMAGE: comptine-analysis:${{ steps.qt-version.outputs.version }}
+          COMPTINE_ANALYSIS_SKIP_BUILD: "1"
+        run: ./scripts/analysis-docker.sh

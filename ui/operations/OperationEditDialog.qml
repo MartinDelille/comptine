@@ -55,7 +55,7 @@ BaseDialog {
         const isNewOperation = operation === null;
         _focusedCategoryAllocationIndex = -1;
 
-        _operation = isNewOperation ? OperationEditor.beginNew(new Date(), 0, "", "") : operation;
+        _operation = isNewOperation ? OperationEditor.beginNew(new Date(), "", 0, "") : operation;
 
         editedAmount = _operation?.amount || 0;
         labelField.text = _operation?.label || "";

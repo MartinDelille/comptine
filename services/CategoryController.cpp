@@ -10,6 +10,8 @@
 #include "model/Category.h"
 #include "model/Operation.h"
 
+using namespace Qt::StringLiterals;
+
 bool isSameMonth(const QDate& d1, const QDate& d2) {
   return (d1.year() == d2.year()) && (d1.month() == d2.month());
 }
@@ -35,7 +37,7 @@ void CategoryController::clear() {
   if (_categories.isEmpty()) {
     return;
   }
-  beginRemoveRows(QModelIndex(), 0, _categories.size() - 1);
+  beginRemoveRows(QModelIndex(), 0, static_cast<int>(_categories.size()) - 1);
   for (auto* category : _categories) category->setParent(nullptr);
   qDeleteAll(_categories);
   _categories.clear();
@@ -44,7 +46,7 @@ void CategoryController::clear() {
 }
 
 int CategoryController::currentIndex() const {
-  return _categories.indexOf(_current);
+  return static_cast<int>(_categories.indexOf(_current));
 }
 
 void CategoryController::set_currentIndex(int index) {
@@ -55,7 +57,7 @@ int CategoryController::rowCount(const QModelIndex& parent) const {
   if (parent.isValid())
     return 0;
 
-  return _categories.size();
+  return static_cast<int>(_categories.size());
 }
 
 int CategoryController::balancedCount() const {
@@ -75,7 +77,7 @@ bool CategoryController::isBalanced(int index) const {
     return true;
 
   const auto date = _budgetData.budgetDate();
-  const auto record = category->monthRecord(date.year(), date.month());
+  const auto record = category->monthRecord(date);
   return qAbs(category->budgetLimitForMonth(date) - spentInCategory(category, date) + record.leftoverTotal()) < 0.01;
 }
 
@@ -96,11 +98,11 @@ QVariant CategoryController::data(const QModelIndex& index, int role) const {
       case LeftoverRole:
         return leftoverForCategory(category, _budgetData.budgetDate());
       case SaveAmountRole: {
-        MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
+        MonthRecord record = category->monthRecord(_budgetData.budgetDate());
         return record.saveAmount;
       }
       case ReportAmountRole: {
-        MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
+        MonthRecord record = category->monthRecord(_budgetData.budgetDate());
         return record.reportAmount;
       }
       case BudgetLimitRole:
@@ -147,7 +149,7 @@ double CategoryController::totalExpense() const {
 double CategoryController::totalToSave() const {
   double total = 0.0;
   for (auto category : _categories) {
-    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate());
     total += record.saveAmount;
   }
   return total;
@@ -156,7 +158,7 @@ double CategoryController::totalToSave() const {
 double CategoryController::totalToReport() const {
   double total = 0.0;
   for (auto category : _categories) {
-    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate());
     if (record.reportAmount > 0) {
       total += record.reportAmount;
     }
@@ -167,7 +169,7 @@ double CategoryController::totalToReport() const {
 double CategoryController::totalFromReport() const {
   double total = 0.0;
   for (auto category : _categories) {
-    MonthRecord record = category->monthRecord(_budgetData.budgetDate().year(), _budgetData.budgetDate().month());
+    MonthRecord record = category->monthRecord(_budgetData.budgetDate());
     if (record.reportAmount < 0) {
       total += -record.reportAmount;
     }
@@ -191,7 +193,7 @@ Category* CategoryController::at(int index) const {
 }
 
 int CategoryController::categoryIndex(const Category* category) const {
-  return _categories.indexOf(const_cast<Category*>(category));
+  return static_cast<int>(_categories.indexOf(const_cast<Category*>(category)));
 }
 
 Category* CategoryController::getCategoryByName(const QString& name) const {
@@ -278,14 +280,14 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
         double categoryAmount = op->amountForCategory(category);
         if (!qFuzzyIsNull(categoryAmount)) {
           QVariantMap item;
-          item["operation"] = QVariant::fromValue(op);
-          item["date"] = op->date();
-          item["budgetDate"] = op->budgetDate();
-          item["label"] = op->label();
-          item["amount"] = categoryAmount;     // Show only the amount for this category
-          item["totalAmount"] = op->amount();  // Total operation amount
-          item["isCategorized"] = op->isCategorized();
-          item["accountName"] = account->name();
+          item["operation"_L1] = QVariant::fromValue(op);
+          item["date"_L1] = op->date();
+          item["budgetDate"_L1] = op->budgetDate();
+          item["label"_L1] = op->label();
+          item["amount"_L1] = categoryAmount;     // Show only the amount for this category
+          item["totalAmount"_L1] = op->amount();  // Total operation amount
+          item["isCategorized"_L1] = op->isCategorized();
+          item["accountName"_L1] = account->name();
           result.append(item);
         }
       }
@@ -294,7 +296,7 @@ QVariantList CategoryController::operationsForCategory(const Category* category,
 
   // Sort by date (most recent first)
   std::sort(result.begin(), result.end(), [](const QVariant& a, const QVariant& b) {
-    return a.toMap()["date"].toDate() > b.toMap()["date"].toDate();
+    return a.toMap()["date"_L1].toDate() > b.toMap()["date"_L1].toDate();
   });
 
   return result;
