@@ -20,6 +20,22 @@ Import and manage your bank account data.</source>
 Importez et gérez vos données bancaires.</translation>
     </message>
     <message>
+        <source>Comptine is free software licensed under the GNU General Public License, version 3 or later.
+
+The complete license text is included with the application distribution.</source>
+        <translation>Comptine est un logiciel libre distribué sous licence GNU General Public License, version 3 ou ultérieure.
+
+Le texte intégral de la licence est inclus avec la distribution de l’application.</translation>
+    </message>
+    <message>
+        <source>Copyright © Martin Delille</source>
+        <translation>Copyright © Martin Delille</translation>
+    </message>
+    <message>
+        <source>View License</source>
+        <translation>Voir la licence</translation>
+    </message>
+    <message>
         <source>Commit: %1</source>
         <translation>Commit : %1</translation>
     </message>
