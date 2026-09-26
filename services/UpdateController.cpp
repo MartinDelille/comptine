@@ -210,8 +210,8 @@ void UpdateController::installUpdate() {
   }
   QCoreApplication::exit(0);
 #elif defined(Q_OS_WIN)
-  qInfo() << "Starting Windows installer" << _downloadPath;
-  if (!QProcess::startDetached(_downloadPath, {})) {
+  qInfo() << "Starting Windows installer silently" << _downloadPath;
+  if (!QProcess::startDetached(_downloadPath, { "/S" })) {
     qWarning() << "Could not start Windows installer:" << _downloadPath;
     emit updateInstallFailed(tr("Could not start the update installer"));
     return;
