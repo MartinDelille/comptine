@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Read Qt version
         id: qt-version
@@ -60,7 +60,7 @@ jobs:
         run: bash scripts/generate-coverage.sh
 
       - name: Archive LCOV report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: coverage-report
           path: coverage.info
