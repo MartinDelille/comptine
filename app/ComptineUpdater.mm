@@ -49,7 +49,7 @@ static void showProgressWindow(NSString* status) {
   progressLabel.stringValue = status;
   [progressIndicator startAnimation:nil];
   [progressWindow makeKeyAndOrderFront:nil];
-  [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+  [[NSApplication sharedApplication] activate];
   [progressWindow displayIfNeeded];
   pumpRunLoop();
 }
@@ -213,7 +213,13 @@ int main(int argc, const char* argv[]) {
       [[NSFileManager defaultManager] removeItemAtPath:workerPath error:nil];
     NSLog(@"Update installed successfully; relaunching %@", appBundle);
     closeProgressWindow();
-    [[NSWorkspace sharedWorkspace] launchApplication:appBundle];
+    [[NSWorkspace sharedWorkspace]
+        openApplicationAtURL:[NSURL fileURLWithPath:appBundle]
+               configuration:[NSWorkspaceOpenConfiguration configuration]
+           completionHandler:^(NSRunningApplication*, NSError* error) {
+             if (error)
+               NSLog(@"Failed to relaunch Comptine: %@", error.localizedDescription);
+           }];
     return 0;
   }
 }
