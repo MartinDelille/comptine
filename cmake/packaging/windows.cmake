@@ -28,6 +28,8 @@ WriteRegStr HKCR 'Comptine.Budget' '' 'Comptine Budget File'
 WriteRegStr HKCR 'Comptine.Budget\\\\DefaultIcon' '' '$INSTDIR\\\\bin\\\\Comptine.exe,0'
 WriteRegStr HKCR 'Comptine.Budget\\\\shell\\\\open\\\\command' '' '$\\\"$INSTDIR\\\\bin\\\\Comptine.exe$\\\" $\\\"%1$\\\"'
 System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+IfSilent 0 +2
+Exec '$INSTDIR\\\\bin\\\\Comptine.exe'
 "
 )
 set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
