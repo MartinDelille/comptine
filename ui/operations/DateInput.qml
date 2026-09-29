@@ -12,30 +12,60 @@ Item {
     property bool readOnly: false
     property bool unlockOnModifierClick: false
     property bool _modifierUnlocked: false
-    width: textField.width
-    height: textField.height
-    TextField {
-        id: textField
-        objectName: "textField"
-        text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
-        readOnly: root.readOnly && !root._modifierUnlocked
-        onPressed: function (event) {
-            if (root.unlockOnModifierClick && readOnly && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) {
-                root._modifierUnlocked = true;
-                popup.doSelectDate(root.selectedDate);
-            }
-        }
-        onActiveFocusChanged: {
-            if (activeFocus) {
-                if (!readOnly) {
-                    popup.doSelectDate(root.selectedDate);
-                }
-            } else {
-                popup.close();
-            }
+    implicitWidth: inputRow.implicitWidth
+    implicitHeight: inputRow.implicitHeight
+
+    function shiftDay(days) {
+        const date = root.selectedDate;
+        root.selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+    }
+
+    RowLayout {
+        id: inputRow
+        anchors.fill: parent
+
+        ToolButton {
+            enabled: !root.readOnly
+            text: "-"
+            ToolTip.visible: hovered && enabled
+            ToolTip.text: qsTr("Previous day")
+            Accessible.name: qsTr("Previous day")
+            onClicked: root.shiftDay(-1)
         }
 
-        horizontalAlignment: Text.AlignHCenter
+        TextField {
+            id: textField
+            objectName: "textField"
+            Layout.fillWidth: true
+            text: Qt.formatDate(root.selectedDate, "dd/MM/yyyy")
+            readOnly: root.readOnly && !root._modifierUnlocked
+            onPressed: function (event) {
+                if (root.unlockOnModifierClick && readOnly && (event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) {
+                    root._modifierUnlocked = true;
+                    popup.doSelectDate(root.selectedDate);
+                }
+            }
+            onActiveFocusChanged: {
+                if (activeFocus) {
+                    if (!readOnly) {
+                        popup.doSelectDate(root.selectedDate);
+                    }
+                } else {
+                    popup.close();
+                }
+            }
+
+            horizontalAlignment: Text.AlignHCenter
+        }
+
+        ToolButton {
+            enabled: !root.readOnly
+            text: "+"
+            ToolTip.visible: hovered && enabled
+            ToolTip.text: qsTr("Next day")
+            Accessible.name: qsTr("Next day")
+            onClicked: root.shiftDay(1)
+        }
     }
 
     function resetModifierUnlock() {
