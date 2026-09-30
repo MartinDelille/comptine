@@ -26,3 +26,8 @@ qt_generate_deploy_qml_app_script(TARGET Comptine OUTPUT_SCRIPT deploy_script
                                   NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+qt_generate_deploy_qml_app_script(TARGET ComptineUpdater OUTPUT_SCRIPT updater_deploy_script
+                                  NO_UNSUPPORTED_PLATFORM_ERROR
+)
+install(SCRIPT ${updater_deploy_script})

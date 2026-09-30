@@ -112,7 +112,9 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             expected_version="$GITHUB_REF_NAME"
           fi
-          macdeployqt build/Release/app/Comptine.app -qmldir=.
+          macdeployqt build/Release/app/Comptine.app \
+            -qmldir=. \
+            -executable=build/Release/app/Comptine.app/Contents/Helpers/ComptineUpdater
           bash scripts/sign-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
           bash scripts/validate-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
           test "$(lipo -archs build/Release/app/Comptine.app/Contents/MacOS/Comptine)" = "arm64"
@@ -167,6 +169,7 @@ jobs:
           ./linuxdeploy-x86_64.AppImage \
             --appdir AppDir \
             --executable Release/app/Comptine \
+            --executable Release/app/ComptineUpdater \
             --icon-file ../comptine.svg \
             --desktop-file ../comptine.desktop \
             --plugin qt \

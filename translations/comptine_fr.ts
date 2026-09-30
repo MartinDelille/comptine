@@ -1095,10 +1095,6 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Installer et redémarrer</translation>
     </message>
     <message>
-        <source>Open Installer</source>
-        <translation>Ouvrir l’installateur</translation>
-    </message>
-    <message>
         <source>A new version of Comptine is available!</source>
         <translation>Une nouvelle version de Comptine est disponible !</translation>
     </message>
@@ -1119,12 +1115,74 @@ Cliquez sur « Ajouter une règle... » pour en créer une.</translation>
         <translation>Notes de version</translation>
     </message>
     <message>
-        <source>The verified installer is ready. Opening it will finish the update.</source>
-        <translation>L’installateur vérifié est prêt. Son ouverture terminera la mise à jour.</translation>
-    </message>
-    <message>
         <source>Download Update</source>
         <translation>Télécharger la mise à jour</translation>
+    </message>
+</context>
+<context>
+    <name>Updater</name>
+    <message>
+        <source>Comptine Update</source>
+        <translation>Mise à jour de Comptine</translation>
+    </message>
+</context>
+<context>
+    <name>UpdaterController</name>
+    <message>
+        <source>Invalid updater arguments</source>
+        <translation>Arguments de mise à jour invalides</translation>
+    </message>
+    <message>
+        <source>The application or update package is missing</source>
+        <translation>L’application ou le paquet de mise à jour est introuvable</translation>
+    </message>
+    <message>
+        <source>Waiting for Comptine to close…</source>
+        <translation>En attente de la fermeture de Comptine…</translation>
+    </message>
+    <message>
+        <source>Could not create the update mount directory</source>
+        <translation>Impossible de créer le dossier de montage de la mise à jour</translation>
+    </message>
+    <message>
+        <source>Mounting update…</source>
+        <translation>Montage de la mise à jour…</translation>
+    </message>
+    <message>
+        <source>Installing update…</source>
+        <translation>Installation de la mise à jour…</translation>
+    </message>
+    <message>
+        <source>Could not start the update operation</source>
+        <translation>Impossible de démarrer l’opération de mise à jour</translation>
+    </message>
+    <message>
+        <source>The update operation failed</source>
+        <translation>Échec de l’opération de mise à jour</translation>
+    </message>
+    <message>
+        <source>The update image does not contain Comptine.app</source>
+        <translation>L’image de mise à jour ne contient pas Comptine.app</translation>
+    </message>
+    <message>
+        <source>Verifying update…</source>
+        <translation>Vérification de la mise à jour…</translation>
+    </message>
+    <message>
+        <source>Finishing update…</source>
+        <translation>Finalisation de la mise à jour…</translation>
+    </message>
+    <message>
+        <source>The update operation completed unexpectedly</source>
+        <translation>L’opération de mise à jour s’est terminée de manière inattendue</translation>
+    </message>
+    <message>
+        <source>Could not replace the application</source>
+        <translation>Impossible de remplacer l’application</translation>
+    </message>
+    <message>
+        <source>Restarting Comptine…</source>
+        <translation>Redémarrage de Comptine…</translation>
     </message>
 </context>
 <context>

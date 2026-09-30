@@ -24,7 +24,6 @@ class UpdateController : public QObject {
   PROPERTY_RW(double, downloadProgress, 0.0)
   PROPERTY_RW(bool, downloading, false)
   PROPERTY_RW(bool, updateReady, false)
-  PROPERTY_RW(bool, installSupported, false)
 
 public:
   explicit UpdateController(AppSettings& appSettings);
@@ -38,7 +37,7 @@ public:
   // Cancel an in-progress download and remove its temporary file.
   Q_INVOKABLE void cancelDownload();
 
-  // Install the verified update. On macOS this starts the updater helper.
+  // Install the verified update through the cross-platform updater helper.
   Q_INVOKABLE void installUpdate();
 
   // Open the download page in the default browser
