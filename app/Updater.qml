@@ -14,15 +14,25 @@ ApplicationWindow {
     minimumHeight: 150
     maximumHeight: 150
     visible: true
-    flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint
+    flags: Qt.Dialog | Qt.CustomizeWindowHint | Qt.WindowTitleHint | (Qt.platform.os === "windows" ? Qt.WindowStaysOnTopHint : 0)
+
+    function activateUpdater() {
+        root.show();
+        root.raise();
+        root.requestActivate();
+    }
 
     onClosing: function (close) {
         close.accepted = updater.finished || updater.failed;
     }
 
     Component.onCompleted: {
-        root.raise();
-        root.requestActivate();
+        root.activateUpdater();
+    }
+
+    onVisibleChanged: {
+        if (visible)
+            root.activateUpdater();
     }
 
     ColumnLayout {
