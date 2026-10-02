@@ -8,19 +8,19 @@ import services
 BaseDialog {
     id: root
 
-    signal installRequested
     acceptCloses: false
 
     title: qsTr("Update Available")
     acceptButtonText: UpdateController.downloading ? qsTr("Cancel Download") : UpdateController.updateReady ? qsTr("Install and Restart") : qsTr("Download Update")
     width: 400
+    height: root.parent ? Math.min(Math.max(implicitHeight, 260), root.parent.height - 40) : Math.max(implicitHeight, 260)
 
     onAcceptRequested: {
         if (UpdateController.downloading) {
             UpdateController.cancelDownload();
             root.close();
         } else if (UpdateController.updateReady) {
-            root.installRequested();
+            UpdateController.installUpdate();
             root.close();
         } else {
             UpdateController.downloadUpdate();
