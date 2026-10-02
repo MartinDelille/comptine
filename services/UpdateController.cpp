@@ -194,35 +194,27 @@ void UpdateController::cancelDownload() {
 void UpdateController::installUpdate() {
   if (!updateReady() || _downloadPath.isEmpty())
     return;
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
   QString helper = QCoreApplication::applicationDirPath() + "/../Helpers/ComptineUpdater";
+#elif defined(Q_OS_WIN)
+  QString helper = QCoreApplication::applicationDirPath() + "/ComptineUpdater.exe";
+#else
+  QString helper = QCoreApplication::applicationDirPath() + "/ComptineUpdater";
+#endif
   qInfo() << "Starting update helper" << helper << "with update" << _downloadPath;
   if (!QFileInfo::exists(helper)) {
     qWarning() << "Update helper does not exist:" << helper;
     emit updateInstallFailed(tr("The update helper is not installed"));
     return;
   }
-  if (!QProcess::startDetached(helper, { QCoreApplication::applicationFilePath(), _downloadPath,
-                                         QString::number(QCoreApplication::applicationPid()) })) {
+  if (!QProcess::startDetached(helper, { "--executable", QCoreApplication::applicationFilePath(),
+                                         "--package", _downloadPath,
+                                         "--pid", QString::number(QCoreApplication::applicationPid()) })) {
     qWarning() << "Could not start update helper:" << helper;
     emit updateInstallFailed(tr("Could not start the update installer"));
     return;
   }
   QCoreApplication::exit(0);
-#elif defined(Q_OS_WIN)
-  qInfo() << "Starting Windows installer silently" << _downloadPath;
-  if (!QProcess::startDetached(_downloadPath, { "/S" })) {
-    qWarning() << "Could not start Windows installer:" << _downloadPath;
-    emit updateInstallFailed(tr("Could not start the update installer"));
-    return;
-  }
-  QCoreApplication::exit(0);
-#else
-  if (_downloadPath.endsWith(".AppImage", Qt::CaseInsensitive)) {
-    QFile::setPermissions(_downloadPath, QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner | QFileDevice::ReadGroup | QFileDevice::ExeGroup | QFileDevice::ReadOther | QFileDevice::ExeOther);
-  }
-  QDesktopServices::openUrl(QUrl::fromLocalFile(_downloadPath));
-#endif
 }
 
 bool UpdateController::parseManifest(const QByteArray& data) {
@@ -283,7 +275,6 @@ bool UpdateController::parseManifest(const QByteArray& data) {
   _downloadUrl = url;
   _downloadHash = hash;
   _downloadSignature = signature;
-  set_installSupported(platform == "macos" || platform == "windows");
   set_updateAvailable(true);
   return true;
 }

@@ -12,7 +12,7 @@ BaseDialog {
     acceptCloses: false
 
     title: qsTr("Update Available")
-    acceptButtonText: UpdateController.downloading ? qsTr("Cancel Download") : UpdateController.updateReady ? (UpdateController.installSupported ? qsTr("Install and Restart") : qsTr("Open Installer")) : qsTr("Download Update")
+    acceptButtonText: UpdateController.downloading ? qsTr("Cancel Download") : UpdateController.updateReady ? qsTr("Install and Restart") : qsTr("Download Update")
     width: 400
 
     onAcceptRequested: {
@@ -89,14 +89,6 @@ BaseDialog {
                     background: null
                 }
             }
-        }
-
-        Label {
-            Layout.fillWidth: true
-            visible: UpdateController.updateReady && !UpdateController.installSupported
-            text: qsTr("The verified installer is ready. Opening it will finish the update.")
-            wrapMode: Text.WordWrap
-            opacity: 0.7
         }
     }
 }

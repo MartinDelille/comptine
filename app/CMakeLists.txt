@@ -1,5 +1,24 @@
 qt_add_executable(Comptine main.cpp)
 
+qt_add_executable(ComptineUpdater UpdaterMain.cpp)
+
+qt_add_qml_module(ComptineUpdater
+    URI updater
+    QML_FILES
+        Updater.qml
+    SOURCES
+        UpdaterController.cpp
+        UpdaterController.h
+)
+
+target_link_libraries(ComptineUpdater PRIVATE Qt6::Quick project_warnings)
+
+if(WIN32)
+    set_target_properties(ComptineUpdater PROPERTIES WIN32_EXECUTABLE TRUE)
+endif()
+
+install(TARGETS ComptineUpdater RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
 target_compile_definitions(
     Comptine
     PRIVATE PROJECT_ROOT_DIR="${PROJECT_SOURCE_DIR}"
