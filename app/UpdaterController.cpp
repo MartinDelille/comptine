@@ -204,12 +204,16 @@ void UpdaterController::finishSuccessfully() {
 
 void UpdaterController::relaunchApplication() {
 #ifdef Q_OS_WIN
-  QProcess::startDetached(_executable);
+  const bool started = QProcess::startDetached(_executable);
 #elif defined(Q_OS_MACOS)
-  QProcess::startDetached("/usr/bin/open", { _appBundle });
+  const QString executable = QDir(_appBundle).filePath("Contents/MacOS/Comptine");
+  qInfo() << "Relaunching Comptine from" << _appBundle << "using" << executable;
+  const bool started = QProcess::startDetached("/usr/bin/open", { "-n", _appBundle });
 #else
-  QProcess::startDetached(_installTarget.isEmpty() ? _executable : _installTarget);
+  const QString executable = _installTarget.isEmpty() ? _executable : _installTarget;
+  const bool started = QProcess::startDetached(executable);
 #endif
+  qInfo() << "Relaunch request" << (started ? "succeeded" : "failed");
 }
 
 void UpdaterController::cleanup() {
