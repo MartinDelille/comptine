@@ -489,14 +489,6 @@ Le texte intégral de la licence est inclus avec la distribution de l’applicat
         <translation>Supprimer</translation>
     </message>
     <message>
-        <source>Install Update</source>
-        <translation>Installer la mise à jour</translation>
-    </message>
-    <message>
-        <source>The update has been downloaded and verified. Install and restart now?</source>
-        <translation>La mise à jour a été téléchargée et vérifiée. L&apos;installer et redémarrer maintenant ?</translation>
-    </message>
-    <message>
         <source>File Changed Externally</source>
         <translation>Fichier modifié par un autre programme</translation>
     </message>
