@@ -21,7 +21,6 @@ BaseDialog {
             root.close();
         } else if (UpdateController.updateReady) {
             UpdateController.installUpdate();
-            root.close();
         } else {
             UpdateController.downloadUpdate();
         }
