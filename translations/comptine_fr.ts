@@ -166,6 +166,17 @@ Le texte intégral de la licence est inclus avec la distribution de l’applicat
     </message>
 </context>
 <context>
+    <name>DateInput</name>
+    <message>
+        <source>Previous day</source>
+        <translation>Jour précédent</translation>
+    </message>
+    <message>
+        <source>Next day</source>
+        <translation>Jour suivant</translation>
+    </message>
+</context>
+<context>
     <name>DateLabel</name>
     <message>
         <source>January</source>
