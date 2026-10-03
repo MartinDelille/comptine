@@ -9,9 +9,12 @@ qt_add_qml_module(ComptineUpdater
     SOURCES
         UpdaterController.cpp
         UpdaterController.h
+        UpdaterForeigners.h
 )
 
 target_link_libraries(ComptineUpdater PRIVATE Qt6::Quick project_warnings)
+
+target_include_directories(ComptineUpdater PRIVATE ${PROJECT_SOURCE_DIR})
 
 if(WIN32)
     set_target_properties(ComptineUpdater PROPERTIES WIN32_EXECUTABLE TRUE)

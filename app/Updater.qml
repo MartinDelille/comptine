@@ -2,9 +2,12 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+// The updater singleton is registered by UpdaterForeigners.h in this module.
+// The linter cannot resolve same-module C++ singleton references from this QML file.
+// qmllint disable unqualified
+
 ApplicationWindow {
     id: root
-    required property var updater
 
     title: qsTr("Comptine Update")
     width: 460
@@ -23,7 +26,7 @@ ApplicationWindow {
     }
 
     onClosing: function (close) {
-        close.accepted = updater.finished || updater.failed;
+        close.accepted = UpdaterController.finished || UpdaterController.failed;
     }
 
     Component.onCompleted: {
@@ -42,16 +45,17 @@ ApplicationWindow {
 
         Label {
             Layout.fillWidth: true
-            text: root.updater.failed ? root.updater.errorMessage : root.updater.statusText
+            text: UpdaterController.failed ? UpdaterController.errorMessage : UpdaterController.statusText
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
         }
 
         ProgressBar {
             Layout.fillWidth: true
-            indeterminate: root.updater.indeterminate
-            value: root.updater.progress
-            visible: !root.updater.failed
+            indeterminate: UpdaterController.indeterminate
+            value: UpdaterController.progress
+            visible: !UpdaterController.failed
         }
     }
 }
+// qmllint enable unqualified

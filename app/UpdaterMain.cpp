@@ -1,8 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlContext>
 
 #include "UpdaterController.h"
+#include "UpdaterForeigners.h"
 
 int main(int argc, char* argv[]) {
   QGuiApplication app(argc, argv);
@@ -20,8 +20,8 @@ int main(int argc, char* argv[]) {
 
   qInfo() << "Starting ComptineUpdater with arguments" << arguments;
   UpdaterController updater(arguments[2], arguments[4], parentPid);
+  UpdaterControllerForeign::instance = &updater;
   QQmlApplicationEngine engine;
-  engine.rootContext()->setContextProperty("updater", &updater);
   engine.loadFromModule("updater", "Updater");
   if (engine.rootObjects().isEmpty())
     return 3;

@@ -43,7 +43,7 @@ add_custom_command(
 )
 
 add_custom_command(
-    TARGET Comptine
+    TARGET ComptineUpdater
     POST_BUILD
     COMMAND
         ${CMAKE_COMMAND} -E make_directory
