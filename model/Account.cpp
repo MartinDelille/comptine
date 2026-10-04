@@ -15,7 +15,9 @@ Account::Account(const QString& name, QObject* parent) :
 }
 
 Account::~Account() {
-  clear();
+  // Avoid emitting model signals while the account itself is being destroyed.
+  qDeleteAll(_operations);
+  _operations.clear();
 }
 
 Operation* Account::currentOperation() const {

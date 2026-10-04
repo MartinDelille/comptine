@@ -684,6 +684,27 @@ private slots:
     QCOMPARE(budgetData->at(0)->name(), QString("After"));
   }
 
+  void testLoadingSecondFileClearsCurrentAccount() {
+    const QString firstPath = tempDir->filePath("first.comptine");
+    const QString secondPath = tempDir->filePath("second.comptine");
+
+    QFile firstFile(firstPath);
+    QVERIFY(firstFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    firstFile.write("categories: []\naccounts:\n  - name: First\n    current: true\n");
+    firstFile.close();
+
+    QFile secondFile(secondPath);
+    QVERIFY(secondFile.open(QIODevice::WriteOnly | QIODevice::Text));
+    secondFile.write("categories: []\naccounts:\n  - name: Second\n");
+    secondFile.close();
+
+    QVERIFY(fileController->loadFromYamlFile(firstPath));
+    QVERIFY(budgetData->currentAccount() != nullptr);
+    QVERIFY(fileController->loadFromYamlFile(secondPath));
+    QVERIFY(budgetData->currentAccount() != nullptr);
+    QCOMPARE(budgetData->currentAccount()->name(), QString("Second"));
+  }
+
   void testLoadInitialFileDispatchesByExtension() {
     const QString yamlPath = tempDir->filePath("initial.yaml");
     QFile yamlFile(yamlPath);

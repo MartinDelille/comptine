@@ -175,8 +175,21 @@ Account* BudgetData::takeAccount(Account* account) {
 
 void BudgetData::clearAccounts() {
   if (_accounts.empty()) {
+    if (_currentAccount) {
+      _currentAccount = nullptr;
+      emit currentAccountChanged();
+    }
     return;
   }
+
+  // Clear the navigation pointer before deleting the QObject it references.
+  // Otherwise a subsequent file load may dereference a dangling account when
+  // the new file does not contain an explicit current-account marker.
+  if (_currentAccount) {
+    _currentAccount = nullptr;
+    emit currentAccountChanged();
+  }
+
   beginResetModel();
   qDeleteAll(_accounts);
   _accounts.clear();
@@ -201,6 +214,16 @@ void BudgetData::clear() {
   _undoStack.clear();
   _undoStack.setClean();
   clearAccounts();
+}
+
+void BudgetData::beginBatchUpdate() {
+  beginResetModel();
+}
+
+void BudgetData::endBatchUpdate() {
+  endResetModel();
+  emit accountCountChanged();
+  emit operationDataChanged();
 }
 
 void BudgetData::copySelectedOperations() const {

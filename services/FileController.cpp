@@ -48,6 +48,11 @@ FileController::FileController(AppSettings& appSettings,
     _undoStack(undoStack) {
   connect(&_fileWatcher, &QFileSystemWatcher::fileChanged, this, [this](const QString& path) {
     qDebug() << "File changed detected by QFileSystemWatcher:" << path;
+    if (_isLoading) {
+      qDebug() << "Ignoring file watcher notification while loading:" << path;
+      return;
+    }
+
     if (path == currentFilePath()) {
       QByteArray currentHash;
       if (path == _knownFilePath && fileHash(path, currentHash) && currentHash == _knownFileHash) {
@@ -271,6 +276,12 @@ static QString yamlString(const YAML::Node& node) {
 }
 
 bool FileController::loadFromYamlFile(const QString& filePath) {
+  if (_isLoading) {
+    qWarning() << "Ignoring recursive file load request for:" << filePath;
+    return false;
+  }
+
+  QScopedValueRollback<bool> loadingGuard(_isLoading, true);
   clear();
   // Clear any previous error
   set_errorMessage({});
@@ -292,6 +303,12 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
   }
 
   _budgetData.clear();
+
+  // Populate the models under one reset. This prevents every account,
+  // category, and operation batch from causing a full QML refresh while the
+  // file is still being parsed.
+  _budgetData.beginBatchUpdate();
+  _categoryController.beginBatchUpdate();
 
   // Track state from file for navigation
   // Default to current year/month if not specified in file
@@ -558,10 +575,15 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
       }
     }
   } catch (const std::exception& e) {
+    _categoryController.endBatchUpdate();
+    _budgetData.endBatchUpdate();
     qWarning() << "YAML parsing error:" << e.what();
     set_errorMessage(tr("Could not parse file: %1").arg(QString::fromUtf8(e.what())));
     return false;
   }
+
+  _categoryController.endBatchUpdate();
+  _budgetData.endBatchUpdate();
 
   _budgetData.set_budgetDate(loadedBudgetDate);
   _budgetData.set_currentTabIndex(loadedTabIndex);
@@ -589,11 +611,8 @@ bool FileController::loadFromYamlFile(const QString& filePath) {
 
   _fileWatcher.addPath(filePath);
 
-  QByteArray loadedHash;
-  if (fileHash(filePath, loadedHash)) {
-    _knownFilePath = filePath;
-    _knownFileHash = loadedHash;
-  }
+  _knownFilePath = filePath;
+  _knownFileHash = QCryptographicHash::hash(data, QCryptographicHash::Sha256);
 
   return true;
 }
@@ -606,11 +625,15 @@ void FileController::reloadCurrentFile() {
     int categoryIndex = _categoryController.currentIndex();
     auto account = _budgetData.currentAccount();
     int operationIndex = account ? account->currentOperationIndex() : -1;
-    loadFromYamlFile(currentFilePath());
+    if (!loadFromYamlFile(currentFilePath())) {
+      return;
+    }
     account = _budgetData.at(accountIndex);
     _budgetData.set_currentAccount(account);
     _categoryController.set_currentIndex(categoryIndex);
-    account->selectAt(operationIndex);
+    if (account) {
+      account->selectAt(operationIndex);
+    }
     _budgetData.set_budgetDate(budgetDate);
     _budgetData.set_currentTabIndex(tabIndex);
   }

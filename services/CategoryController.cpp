@@ -19,8 +19,12 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _budgetData(budgetData),
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::evolutionDataChanged);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, [this]() {
+    if (!_batchUpdate) {
+      emit budgetDataChanged();
+      emit evolutionDataChanged();
+    }
+  });
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
@@ -41,6 +45,19 @@ void CategoryController::clear() {
   _categories.clear();
   endRemoveRows();
   emit countChanged();
+}
+
+void CategoryController::beginBatchUpdate() {
+  _batchUpdate = true;
+  beginResetModel();
+}
+
+void CategoryController::endBatchUpdate() {
+  _batchUpdate = false;
+  endResetModel();
+  emit countChanged();
+  emit budgetDataChanged();
+  emit evolutionDataChanged();
 }
 
 int CategoryController::currentIndex() const {
@@ -330,6 +347,14 @@ double CategoryController::accumulatedLeftover(const QString& categoryName, cons
 }
 
 void CategoryController::refresh() {
+  if (_batchUpdate) {
+    return;
+  }
+
+  if (_categories.isEmpty()) {
+    return;
+  }
+
   emit dataChanged(
       index(0, 0),
       index(rowCount() - 1, 0));

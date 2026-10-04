@@ -47,6 +47,10 @@ public:
 
   void clear();
 
+  // Batch model changes so views refresh once after a file has been loaded.
+  void beginBatchUpdate();
+  void endBatchUpdate();
+
   int currentIndex() const;
   void set_currentIndex(int index);
 
@@ -100,4 +104,5 @@ private:
   QList<Category*> _categories;
   BudgetData& _budgetData;
   QUndoStack& _undoStack;
+  bool _batchUpdate = false;
 };
