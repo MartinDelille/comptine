@@ -114,7 +114,7 @@ jobs:
           fi
           macdeployqt build/Release/app/Comptine.app \
             -qmldir=. \
-            -executable=build/Release/app/Comptine.app/Contents/Helpers/ComptineUpdater
+            -executable=build/Release/app/Comptine.app/Contents/MacOS/ComptineUpdater
           bash scripts/sign-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
           bash scripts/validate-macos-bundle.sh build/Release/app/Comptine.app "$expected_version"
           test "$(lipo -archs build/Release/app/Comptine.app/Contents/MacOS/Comptine)" = "arm64"

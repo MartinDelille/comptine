@@ -45,11 +45,9 @@ add_custom_command(
 add_custom_command(
     TARGET ComptineUpdater
     POST_BUILD
-    COMMAND
-        ${CMAKE_COMMAND} -E make_directory
-        "$<TARGET_FILE_DIR:Comptine>/../Helpers"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Comptine>"
     COMMAND
         ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:ComptineUpdater>"
-        "$<TARGET_FILE_DIR:Comptine>/../Helpers/ComptineUpdater"
-    COMMENT "Installing macOS update helper into application bundle"
+        "$<TARGET_FILE_DIR:Comptine>/ComptineUpdater"
+    COMMENT "Installing macOS update helper beside the main executable"
 )

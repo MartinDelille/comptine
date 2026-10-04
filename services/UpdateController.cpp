@@ -195,7 +195,7 @@ void UpdateController::installUpdate() {
   if (!updateReady() || _downloadPath.isEmpty())
     return;
 #if defined(Q_OS_MACOS)
-  QString helper = QCoreApplication::applicationDirPath() + "/../Helpers/ComptineUpdater";
+  QString helper = QCoreApplication::applicationDirPath() + "/ComptineUpdater";
 #elif defined(Q_OS_WIN)
   QString helper = QCoreApplication::applicationDirPath() + "/ComptineUpdater.exe";
 #else
