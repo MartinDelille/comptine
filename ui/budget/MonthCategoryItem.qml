@@ -16,7 +16,7 @@ Rectangle {
     required property bool isCurrentItem
     required property var categoryEditor
 
-    property var category: modelData.category
+    readonly property var category: modelData.category
     property double amount: modelData.amount || 0
     property double budgetLimit: modelData.budgetLimit || 0
     property bool isIncome: budgetLimit > 0
@@ -45,8 +45,8 @@ Rectangle {
     readonly property double deficitSegmentStart: Math.max(0, accountingTotal - negativeReportAmount)
     readonly property double deficitSegmentEnd: accountingTotal
 
-    signal clicked
-    signal editClicked
+    signal clicked(var category)
+    signal editClicked(var category)
 
     implicitHeight: contentColumn.implicitHeight + 24
     color: delegateMouseArea.containsMouse ? Theme.backgroundHover : Theme.surfaceElevated
@@ -75,7 +75,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.clicked()
+        onClicked: root.clicked(root.category)
     }
 
     ColumnLayout {
@@ -144,7 +144,7 @@ Rectangle {
                     focusPolicy: Qt.TabFocus
                     ToolTip.visible: hovered
                     ToolTip.text: qsTr("Edit category")
-                    onClicked: root.editClicked()
+                    onClicked: root.editClicked(root.category)
                 }
             }
 

@@ -1,3 +1,4 @@
+#include <QSignalSpy>
 #include <QTest>
 #include <QUndoStack>
 
@@ -111,6 +112,42 @@ private slots:
     expense->setMonthRecord(2026, 6, { 170.0, 30.0, -300.0 });
     QVERIFY(controller.isBalanced(controller.categoryIndex(expense)));
     QCOMPARE(controller.balancedCount(), 2);
+  }
+
+  void budgetLimitChangesRefreshBudgetModelAndAggregates() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    CategoryController controller(budgetData, undoStack);
+    budgetData.set_budgetDate(QDate(2026, 6, 1));
+    auto* category = controller.addCategory(new Category("Fictional Category"));
+    const QModelIndex index = controller.index(controller.categoryIndex(category), 0);
+    QSignalSpy dataChangedSpy(&controller, &QAbstractItemModel::dataChanged);
+
+    category->setBudgetLimitForMonth(2026, 6, -125.0);
+
+    QCOMPARE(controller.data(index, CategoryController::BudgetLimitRole).toDouble(), -125.0);
+    QCOMPARE(controller.totalExpense(), 125.0);
+    QVERIFY(dataChangedSpy.count() > 0);
+    const auto arguments = dataChangedSpy.constLast();
+    const auto roles = qvariant_cast<QVector<int>>(arguments.at(2));
+    QVERIFY(roles.contains(CategoryController::BudgetLimitRole));
+  }
+
+  void addingCategoryRefreshesBudgetAggregates() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    CategoryController controller(budgetData, undoStack);
+    budgetData.set_budgetDate(QDate(2026, 6, 1));
+    QSignalSpy budgetDataSpy(&controller, &CategoryController::budgetDataChanged);
+
+    auto* category = new Category("Fictional Expense");
+    category->setBudgetLimitForMonth(2026, 6, -125.0);
+    controller.addCategory(category);
+
+    QCOMPARE(controller.totalIncome(), 0.0);
+    QCOMPARE(controller.totalExpense(), 125.0);
+    QCOMPARE(controller.totalIncome() - controller.totalExpense(), -125.0);
+    QVERIFY(budgetDataSpy.count() > 0);
   }
 
   void operationsForCategoryReturnsOnlyMatchingMonthAndCategory() {

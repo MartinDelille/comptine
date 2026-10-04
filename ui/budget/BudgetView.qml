@@ -17,7 +17,7 @@ FocusScope {
     readonly property real netReported: CategoryController.netReport
 
     function editCurrentCategory() {
-        let category = CategoryController.current;
+        const category = CategoryController.current;
         if (category) {
             categoryEditDialog.edit(category);
         }
@@ -254,6 +254,7 @@ FocusScope {
             spacing: Theme.spacingNormal
             clip: true
             focus: true
+            keyNavigationEnabled: false
             currentIndex: CategoryController.currentIndex
 
             function ensureCurrentCategoryVisible() {
@@ -280,13 +281,13 @@ FocusScope {
                 width: ListView.view.width - scrollBar.width
                 isCurrentItem: categoryListView.currentIndex === index
 
-                onClicked: {
-                    CategoryController.currentIndex = index;
+                onClicked: function (category) {
+                    CategoryController.current = category;
                     categoryDetailView.open();
                 }
 
-                onEditClicked: {
-                    CategoryController.currentIndex = index;
+                onEditClicked: function (category) {
+                    CategoryController.current = category;
                     categoryEditDialog.edit(category);
                 }
             }

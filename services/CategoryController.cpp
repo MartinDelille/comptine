@@ -231,7 +231,7 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
-  connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
+  connect(category, &Category::monthHistoryChanged, this, &CategoryController::budgetDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);
   connect(category, &Category::nameChanged, this, &CategoryController::evolutionDataChanged);
@@ -248,6 +248,7 @@ Category* CategoryController::addCategory(Category* category) {
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
+  emit budgetDataChanged();
   return category;
 }
 
@@ -357,5 +358,7 @@ void CategoryController::refresh() {
 
   emit dataChanged(
       index(0, 0),
-      index(rowCount() - 1, 0));
+      index(rowCount() - 1, 0),
+      { CategoryRole, AmountRole, AccumulatedRole, LeftoverRole,
+        SaveAmountRole, ReportAmountRole, BudgetLimitRole });
 }
