@@ -139,6 +139,11 @@ Operation* Account::addOperation(Operation* operation, bool sort) {
   if (operation == nullptr) {
     return nullptr;
   }
+  if (operation->account() == nullptr) {
+    operation->setAccount(this);
+  } else if (operation->account() != this) {
+    return nullptr;
+  }
   int insertIndex = _operations.size();
   if (sort) {
     insertIndex = 0;

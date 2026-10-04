@@ -106,6 +106,10 @@ signals:
   void allocationsChanged();
 
 private:
+  friend class Account;
+
+  void setAccount(Account* account) { _account = account; }
+
   void connectCategorySignals(const QList<Allocation*>& allocations);
   void disconnectCategorySignals(const QList<Allocation*>& allocations);
 

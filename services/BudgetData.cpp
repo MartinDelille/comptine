@@ -36,7 +36,13 @@ void BudgetData::nextMonth() {
 }
 
 void BudgetData::navigateToOperation(Operation* operation) {
+  if (!operation) {
+    return;
+  }
   auto account = operation->account();
+  if (!account || !account->operations().contains(operation)) {
+    return;
+  }
   // Switch to the account
   set_currentAccount(account);
 
