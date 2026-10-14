@@ -60,6 +60,10 @@ public:
   // Clear all data (called by FileController)
   void clear();
 
+  // Batch model changes so views refresh once after a file has been loaded.
+  void beginBatchUpdate();
+  void endBatchUpdate();
+
   // Copy selected operations to system clipboard as CSV
   Q_INVOKABLE void copySelectedOperations() const;
 

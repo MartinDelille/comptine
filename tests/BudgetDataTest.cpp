@@ -92,6 +92,29 @@ private slots:
     QCOMPARE(budgetData.currentTabIndex(), 0);
   }
 
+  void attachesAccountLessOperationsBeforeNavigation() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+    auto* account = budgetData.createAccount("Fictional Checking");
+    auto* operation = account->addOperation(
+        new Operation(nullptr, QDate(2026, 1, 1), -12.0, "Fictional Purchase"));
+
+    QVERIFY(operation != nullptr);
+    QCOMPARE(operation->account(), account);
+
+    budgetData.navigateToOperation(operation);
+    QCOMPARE(budgetData.currentAccount(), account);
+    QCOMPARE(account->currentOperation(), operation);
+  }
+
+  void ignoresInvalidOperationNavigation() {
+    QUndoStack undoStack;
+    BudgetData budgetData(undoStack);
+
+    budgetData.navigateToOperation(nullptr);
+    QCOMPARE(budgetData.currentAccount(), nullptr);
+  }
+
   void removesAndTakesAccounts() {
     QUndoStack undoStack;
     BudgetData budgetData(undoStack);

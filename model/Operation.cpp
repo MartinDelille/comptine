@@ -61,7 +61,11 @@ QHash<int, QByteArray> Operation::roleNames() const {
 }
 
 Operation::~Operation() {
-  clearAllocations();
+  // The object is being destroyed, so model notifications are unnecessary
+  // and can make teardown of a large account extremely expensive. QObject
+  // will destroy the allocations with the operation after this destructor.
+  qDeleteAll(_allocations);
+  _allocations.clear();
 }
 
 QDate Operation::budgetDate() const {

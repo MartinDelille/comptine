@@ -15,7 +15,9 @@ Account::Account(const QString& name, QObject* parent) :
 }
 
 Account::~Account() {
-  clear();
+  // Avoid emitting model signals while the account itself is being destroyed.
+  qDeleteAll(_operations);
+  _operations.clear();
 }
 
 Operation* Account::currentOperation() const {
@@ -135,6 +137,11 @@ QList<Operation*> Account::operations() const {
 
 Operation* Account::addOperation(Operation* operation, bool sort) {
   if (operation == nullptr) {
+    return nullptr;
+  }
+  if (operation->account() == nullptr) {
+    operation->setAccount(this);
+  } else if (operation->account() != this) {
     return nullptr;
   }
   int insertIndex = _operations.size();

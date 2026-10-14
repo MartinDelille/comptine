@@ -19,8 +19,12 @@ CategoryController::CategoryController(BudgetData& budgetData,
     _budgetData(budgetData),
     _undoStack(undoStack) {
   connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::refresh);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::budgetDataChanged);
-  connect(&_budgetData, &BudgetData::operationDataChanged, this, &CategoryController::evolutionDataChanged);
+  connect(&_budgetData, &BudgetData::operationDataChanged, this, [this]() {
+    if (!_batchUpdate) {
+      emit budgetDataChanged();
+      emit evolutionDataChanged();
+    }
+  });
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::refresh);
   connect(&_budgetData, &BudgetData::budgetDateChanged, this, &CategoryController::budgetDataChanged);
   connect(this, &CategoryController::budgetDataChanged, this, &CategoryController::refresh);
@@ -41,6 +45,19 @@ void CategoryController::clear() {
   _categories.clear();
   endRemoveRows();
   emit countChanged();
+}
+
+void CategoryController::beginBatchUpdate() {
+  _batchUpdate = true;
+  beginResetModel();
+}
+
+void CategoryController::endBatchUpdate() {
+  _batchUpdate = false;
+  endResetModel();
+  emit countChanged();
+  emit budgetDataChanged();
+  emit evolutionDataChanged();
 }
 
 int CategoryController::currentIndex() const {
@@ -214,7 +231,7 @@ Category* CategoryController::addCategory(Category* category) {
   }
 
   // Connect category signals so model refreshes when category data changes (e.g., via undo/redo)
-  connect(category, &Category::monthHistoryChanged, this, &CategoryController::refresh);
+  connect(category, &Category::monthHistoryChanged, this, &CategoryController::budgetDataChanged);
   connect(category, &Category::monthHistoryChanged, this, &CategoryController::evolutionDataChanged);
   connect(category, &Category::nameChanged, this, &CategoryController::refresh);
   connect(category, &Category::nameChanged, this, &CategoryController::evolutionDataChanged);
@@ -231,6 +248,7 @@ Category* CategoryController::addCategory(Category* category) {
   _categories.insert(insertRow, category);
   endInsertRows();
   emit countChanged();
+  emit budgetDataChanged();
   return category;
 }
 
@@ -330,7 +348,17 @@ double CategoryController::accumulatedLeftover(const QString& categoryName, cons
 }
 
 void CategoryController::refresh() {
+  if (_batchUpdate) {
+    return;
+  }
+
+  if (_categories.isEmpty()) {
+    return;
+  }
+
   emit dataChanged(
       index(0, 0),
-      index(rowCount() - 1, 0));
+      index(rowCount() - 1, 0),
+      { CategoryRole, AmountRole, AccumulatedRole, LeftoverRole,
+        SaveAmountRole, ReportAmountRole, BudgetLimitRole });
 }

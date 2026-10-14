@@ -4,6 +4,7 @@
 #include <QFileSystemWatcher>
 #include <QObject>
 #include <QQmlEngine>
+#include <QScopedValueRollback>
 #include <QString>
 #include <QUndoStack>
 #include <QUrl>
@@ -67,4 +68,5 @@ private:
   QFileSystemWatcher _fileWatcher;
   QString _knownFilePath;
   QByteArray _knownFileHash;
+  bool _isLoading = false;
 };

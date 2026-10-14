@@ -115,13 +115,13 @@ Menu {
     MenuSeparator {}
     Action {
         text: qsTr("Previous Category")
-        shortcut: BudgetData.currentTabIndex === 2 ? "Up" : ""
+        shortcut: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) ? "Up" : ""
         enabled: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) && !root.anyDialogOpen && !root.metricSelectorFocused && CategoryController.currentIndex > 0
         onTriggered: CategoryController.currentIndex = CategoryController.currentIndex - 1
     }
     Action {
         text: qsTr("Next Category")
-        shortcut: BudgetData.currentTabIndex === 2 ? "Down" : ""
+        shortcut: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) ? "Down" : ""
         enabled: (BudgetData.currentTabIndex === 1 || BudgetData.currentTabIndex === 2) && !root.anyDialogOpen && !root.metricSelectorFocused && CategoryController.currentIndex < CategoryController.count - 1
         onTriggered: {
             if (CategoryController.currentIndex < 0)
