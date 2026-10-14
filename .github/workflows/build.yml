@@ -55,6 +55,9 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ steps.qt-version.outputs.version }}
+          # Qt 6.11+ uses a flattened Windows repository layout that the
+          # latest released aqtinstall does not understand yet.
+          aqtsource: git+https://github.com/miurahr/aqtinstall.git@8c3695d
           cache: true
 
       - name: Install dependencies (Linux)
