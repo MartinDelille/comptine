@@ -59,6 +59,11 @@ private:
   void relaunchApplication();
   void cleanup();
   bool processIsRunning() const;
+#ifdef Q_OS_WIN
+  void startWindowsInstaller();
+  void checkWindowsInstaller();
+  void closeWindowsInstallerHandle();
+#endif
 
   QString _executable;
   QString _packagePath;
@@ -69,6 +74,10 @@ private:
   QString _replacement;
   QProcess _process;
   QTimer _parentTimer;
+#ifdef Q_OS_WIN
+  QTimer _installTimer;
+  quintptr _windowsInstallHandle = 0;
+#endif
   Step _step = Step::None;
   bool _copyRetried = false;
   QString _statusText;
