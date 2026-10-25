@@ -83,7 +83,16 @@ jobs:
           key: conan-${{ matrix.os }}-${{ hashFiles('conanfile.py') }}
           restore-keys: conan-${{ matrix.os }}-
 
-      - name: Install C++ dependencies
+      - name: Install C++ dependencies (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          uv run conan install . --build=missing `
+            "-pr:h=${{ matrix.conan-profile }}" `
+            "-pr:b=${{ matrix.conan-profile }}"
+
+      - name: Install C++ dependencies (Unix)
+        if: matrix.os != 'windows-latest'
         shell: bash
         run: |
           uv run conan install . \
