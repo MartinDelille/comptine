@@ -6,6 +6,8 @@
 #include <QFileInfo>
 #include <QStandardPaths>
 
+#include <string>
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #else
@@ -32,6 +34,9 @@ UpdaterController::UpdaterController(QString executable, QString packagePath, qi
   connect(&_parentTimer, &QTimer::timeout, this, &UpdaterController::checkParentProcess);
   connect(&_process, &QProcess::finished, this, &UpdaterController::processFinished);
   connect(&_process, &QProcess::errorOccurred, this, &UpdaterController::processError);
+#ifdef Q_OS_WIN
+  connect(&_installTimer, &QTimer::timeout, this, &UpdaterController::checkWindowsInstaller);
+#endif
 
   QDir appDirectory(QFileInfo(_executable).absolutePath());
   appDirectory.cdUp();
@@ -100,11 +105,77 @@ void UpdaterController::parentExited() {
   startProcess("/usr/bin/hdiutil", { "attach", _packagePath, "-nobrowse", "-readonly", "-mountpoint", _mountPoint }, Step::Mount);
 #elif defined(Q_OS_WIN)
   setStatus(tr("Installing update…"), 0.2);
-  startProcess(_packagePath, { "/S" }, Step::Install);
+  startWindowsInstaller();
 #else
   installLinuxUpdate();
 #endif
 }
+
+#ifdef Q_OS_WIN
+void UpdaterController::startWindowsInstaller() {
+  SHELLEXECUTEINFOW executeInfo{};
+  executeInfo.cbSize = sizeof(executeInfo);
+  executeInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+  executeInfo.lpVerb = L"runas";
+
+  const std::wstring packagePath = _packagePath.toStdWString();
+  const std::wstring arguments = L"/S";
+  const std::wstring workingDirectory = QFileInfo(_packagePath).absolutePath().toStdWString();
+  executeInfo.lpFile = packagePath.c_str();
+  executeInfo.lpParameters = arguments.c_str();
+  executeInfo.lpDirectory = workingDirectory.c_str();
+  executeInfo.nShow = SW_SHOWNORMAL;
+
+  if (!ShellExecuteExW(&executeInfo)) {
+    const DWORD error = GetLastError();
+    qWarning() << "Could not start elevated Windows installer:" << _packagePath
+               << "error" << error;
+    setError(tr("The update operation failed"));
+    return;
+  }
+
+  if (!executeInfo.hProcess) {
+    qWarning() << "Elevated Windows installer started without a process handle:" << _packagePath;
+    setError(tr("The update operation failed"));
+    return;
+  }
+
+  _windowsInstallHandle = reinterpret_cast<quintptr>(executeInfo.hProcess);
+  _installTimer.start(100);
+}
+
+void UpdaterController::checkWindowsInstaller() {
+  if (!_windowsInstallHandle)
+    return;
+
+  const HANDLE process = reinterpret_cast<HANDLE>(_windowsInstallHandle);
+  DWORD exitCode = STILL_ACTIVE;
+  if (!GetExitCodeProcess(process, &exitCode)) {
+    qWarning() << "Could not query elevated Windows installer process:" << GetLastError();
+    closeWindowsInstallerHandle();
+    setError(tr("The update operation failed"));
+    return;
+  }
+
+  if (exitCode == STILL_ACTIVE)
+    return;
+
+  qInfo() << "Windows installer exited with code" << exitCode;
+  closeWindowsInstallerHandle();
+  if (exitCode == 0)
+    finishSuccessfully();
+  else
+    setError(tr("The update operation failed"));
+}
+
+void UpdaterController::closeWindowsInstallerHandle() {
+  _installTimer.stop();
+  if (_windowsInstallHandle) {
+    CloseHandle(reinterpret_cast<HANDLE>(_windowsInstallHandle));
+    _windowsInstallHandle = 0;
+  }
+}
+#endif
 
 void UpdaterController::startProcess(const QString& program, const QStringList& arguments, Step step) {
   _step = step;
@@ -196,9 +267,7 @@ void UpdaterController::finishSuccessfully() {
   setStatus(tr("Restarting Comptine…"), 1.0, false);
   _finished = true;
   emit finishedChanged();
-#ifndef Q_OS_WIN
   relaunchApplication();
-#endif
   QTimer::singleShot(500, QCoreApplication::instance(), &QCoreApplication::quit);
 }
 
@@ -241,6 +310,9 @@ void UpdaterController::setStatus(const QString& text, double progress, bool ind
 
 void UpdaterController::setError(const QString& error) {
   _parentTimer.stop();
+#ifdef Q_OS_WIN
+  closeWindowsInstallerHandle();
+#endif
   if (_process.state() != QProcess::NotRunning)
     _process.kill();
   _errorMessage = error;
